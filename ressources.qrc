@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/zoomin.svg</file>
+        <file>icons/zoomout.svg</file>
+        <file>icons/zoomselectionxy.svg</file>
+        <file>icons/unzoomxy.svg</file>
+        <file>icons/zoomselectionx.svg</file>
+        <file>icons/unzoomx.svg</file>
+        <file>icons/settings.svg</file>
+        <file>icons/about.svg</file>
+    </qresource>
+</RCC>
