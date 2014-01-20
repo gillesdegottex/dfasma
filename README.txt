@@ -29,8 +29,7 @@ License
     or http://www.gnu.org/licenses/gpl.html
     All source files of any kind (code source, icons, any ressources), except
     the content of the 'external' directory, which are necessary or optional
-    for compiling this software are under the same license. Thus, the icons
-    are also under the GPL (v3) License.
+    for compiling this software are under the same license.
 
 Disclaimer
     This program is distributed in the hope that it will be useful,
