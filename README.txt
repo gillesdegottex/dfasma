@@ -19,7 +19,8 @@ Goals
         (it currently uses libsndfile (http://www.mega-nerd.com/libsndfile)
         supporting ~25 different file formats).
     * Manage mono audio files (stereo files could be addressed in the future)
-    * This is NOT an audio file editor
+    * All features should run on Linux, OS X and Migrosoft operating systems.
+    * This is NOT an audio file editor.
 
 
 Copyright (c) 2014 Gilles Degottex <gilles.degottex@gmail.com>
