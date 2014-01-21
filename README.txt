@@ -1,7 +1,7 @@
                                 DFasma
          A tool to compare mono audio files in time and frequency
                             Version master
-                    http://dfasma.github.io/dfasma
+                https://github.com/gillesdegottex/dfasma
 
 
 DFasma is an open-source software used to compare audio files (mono only) in
