@@ -145,7 +145,8 @@ void WMainWindow::execAbout(){
     <p><i>DFasma</i> is an open-source software whose main purpose is to compare waveforms in time and spectral domains.</p>\
     <p>Its purpose and design are inspired by the <i>Xspect</i> software developed internally at <a href='http://www.ircam.fr'>Ircam</a>.</p>\
     <p>It is coded in C++/<a href='http://qt-project.org'>Qt</a> under the <a href='http://www.gnu.org/licenses/gpl.html'>GPL (v3) License</a>.\
-    <br/>Copyright (&copy;) 2014 Gilles Degottex <a href='mailto:gilles.degottex@gmail.com'>&lt;gilles.degottex@gmail.com&gt;</a></p>\
+    <br/>Copyright (&copy;) 2014 Gilles Degottex <a href='mailto:gilles.degottex@gmail.com'>&lt;gilles.degottex@gmail.com&gt;</a>\
+    <br/>The source code is hosted on <a href='https://github.com/gillesdegottex/dfasma'>GitHub</a>.</p>\
     <br/><p>Any contribution of any sort is very welcome and will be rewarded by your name in this about box, in addition to a pint of your favorite <a href='http://wildsidevancouver.com/wp-content/uploads/2013/07/beer.jpg'>beer</a> during the next signal processing <a href='http://www.obsessedwithsports.com/wp-content/uploads/2013/03/revenge-of-the-nerds-sloan-conference.png'>conference</a>!</p>");
 //    QMessageBox::aboutQt(this, "About this software");
 }
