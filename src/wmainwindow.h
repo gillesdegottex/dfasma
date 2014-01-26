@@ -60,6 +60,8 @@ private slots:
     void audioStateChanged(QAudio::State state);
     void audioOutputDeviceChanged(const QAudioDeviceInfo& device);
     void execAbout();
+    void showSoundContextMenu(const QPoint&);
+    void setSoundShown(bool show);
 
 public:
     explicit WMainWindow(QStringList sndfiles, QWidget* parent=0);

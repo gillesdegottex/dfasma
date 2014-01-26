@@ -316,7 +316,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionOpen"/>
-   <addaction name="actionCloseSelectedFile"/>
+   <addaction name="actionCloseSelectedSound"/>
    <addaction name="separator"/>
    <addaction name="actionPlay"/>
    <addaction name="separator"/>
@@ -324,9 +324,9 @@
    <addaction name="actionAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="actionCloseSelectedFile">
+  <action name="actionCloseSelectedSound">
    <property name="text">
-    <string>CloseSelectedFile</string>
+    <string>Close</string>
    </property>
    <property name="toolTip">
     <string>Close the selected sound file</string>
@@ -378,6 +378,17 @@
     <string>Space</string>
    </property>
   </action>
+  <action name="actionShowSound">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show</string>
+   </property>
+   <property name="toolTip">
+    <string>Show the sound in the views</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
@@ -399,7 +410,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionCloseSelectedFile</sender>
+   <sender>actionCloseSelectedSound</sender>
    <signal>triggered()</signal>
    <receiver>WMainWindow</receiver>
    <slot>closeSelectedFile()</slot>

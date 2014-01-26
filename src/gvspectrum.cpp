@@ -180,7 +180,8 @@ void QGVSpectrum::setSelection(double tstart, double tend){
 
 void QGVSpectrum::computeDFTs(){
 //    std::cout << "QGVSpectrum::computeDFTs " << m_winlen << endl;
-    if(m_winlen<2) return;
+    if(m_winlen<2)
+        return;
 
     if(m_fftresizethread->m_mutex_resizing.tryLock()){
 
@@ -735,34 +736,38 @@ void QGVSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
 
     // Draw spectrum
     for(unsigned int fi=0; fi<m_main->snds.size(); fi++){
-        if(m_main->snds[fi]->m_dft.size()>0){
-    //        QTransform trans = transform();
-    //        float h11 = float(viewport()->rect().width())/(0.5*m_main->getFs());
-    //        setTransform(QTransform(h11, trans.m12(), trans.m21(), trans.m22(), 0, 0));
+        if(!m_main->snds[fi]->m_actionShow->isChecked())
+            continue;
 
-            QPen outlinePen(m_main->snds[fi]->color);
-            outlinePen.setWidth(0);
-            painter->setPen(outlinePen);
-            painter->setBrush(QBrush(m_main->snds[fi]->color));
+        if(m_main->snds[fi]->m_dft.size()<1)
+            continue;
 
-    //        cout << "QGVSpectrum::drawBackground [" << endl;
-            int dftlen = (m_main->snds[fi]->m_dft.size()-1)*2;
-            float prevx = 0;
-            float prevy = 20*log10(abs(m_main->snds[fi]->m_dft[0]));
-            m_minsy = prevy;
-            m_maxsy = prevy;
-            for(int k=0; k<dftlen/2+1; k++){
-    //            cout << 20*log10(abs(m_cfftw3->out[k])) << " ";
-                float x = m_main->getFs()*k/dftlen;
-                float y = 20*log10(abs(m_main->snds[fi]->m_dft[k]));
-                painter->drawLine(QLineF(prevx, -prevy, x, -y));
-                prevx = x;
-                prevy = y;
-                m_minsy = std::min(m_minsy, y);
-                m_maxsy = std::max(m_maxsy, y);
-            }
-    //        cout << "]" << endl;
+//        QTransform trans = transform();
+//        float h11 = float(viewport()->rect().width())/(0.5*m_main->getFs());
+//        setTransform(QTransform(h11, trans.m12(), trans.m21(), trans.m22(), 0, 0));
+
+        QPen outlinePen(m_main->snds[fi]->color);
+        outlinePen.setWidth(0);
+        painter->setPen(outlinePen);
+        painter->setBrush(QBrush(m_main->snds[fi]->color));
+
+//        cout << "QGVSpectrum::drawBackground [" << endl;
+        int dftlen = (m_main->snds[fi]->m_dft.size()-1)*2;
+        float prevx = 0;
+        float prevy = 20*log10(abs(m_main->snds[fi]->m_dft[0]));
+        m_minsy = prevy;
+        m_maxsy = prevy;
+        for(int k=0; k<dftlen/2+1; k++){
+//            cout << 20*log10(abs(m_cfftw3->out[k])) << " ";
+            float x = m_main->getFs()*k/dftlen;
+            float y = 20*log10(abs(m_main->snds[fi]->m_dft[k]));
+            painter->drawLine(QLineF(prevx, -prevy, x, -y));
+            prevx = x;
+            prevy = y;
+            m_minsy = std::min(m_minsy, y);
+            m_maxsy = std::max(m_maxsy, y);
         }
+//        cout << "]" << endl;
     }
 
 //    cout << "~drawBackground" << endl;

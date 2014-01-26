@@ -587,6 +587,8 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 //        std::cout << "Full resolution" << endl;
 
         for(unsigned int fi=0; fi<main->snds.size(); fi++){
+            if(!main->snds[fi]->m_actionShow->isChecked())
+                continue;
 
             QPen outlinePen(main->snds[fi]->color);
             outlinePen.setWidth(0);
@@ -635,6 +637,8 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
         QRectF updateRect = mapFromScene(rect).boundingRect();
 
         for(unsigned int fi=0; fi<main->snds.size(); fi++){
+            if(!main->snds[fi]->m_actionShow->isChecked())
+                continue;
 
             QPen outlinePen(main->snds[fi]->color);
             outlinePen.setWidth(0);

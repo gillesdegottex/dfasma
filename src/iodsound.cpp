@@ -83,6 +83,11 @@ IODSound::IODSound(const QString& _fileName, QObject *parent)
     , m_pos(0)
     , m_end(0)
 {
+    m_actionShow = new QAction("Show", this);
+    m_actionShow->setStatusTip(tr("Show the sound in the views"));
+    m_actionShow->setCheckable(true);
+    m_actionShow->setChecked(true);
+
     load(_fileName);
     std::cout << wav.size() << " samples loaded (" << wav.size()/fs << "s)" << endl;
 
@@ -148,17 +153,15 @@ void IODSound::stop()
     QIODevice::close();
 }
 
+// Assuming the output audio device has been open in 16bits ...
+// TODO Manage more output formats
 const qint16  PCMS16MaxValue     =  32767;
 const quint16 PCMS16MaxAmplitude =  32768; // because minimum is -32768
-
-inline qreal pcmToReal(qint16 pcm)
-{
+inline qreal pcmToReal(qint16 pcm) {
     return qreal(pcm) / PCMS16MaxAmplitude;
 }
-
-inline qint16 realToPcm(qreal real)
-{
-    return real * PCMS16MaxValue; // TODO depends on the output format
+inline qint16 realToPcm(qreal real) {
+    return real * PCMS16MaxValue;
 }
 
 qint64 IODSound::readData(char *data, qint64 len)
@@ -231,6 +234,8 @@ qint64 IODSound::writeData(const char *data, qint64 len){
 
 IODSound::~IODSound(){
     QIODevice::close();
+
+    delete m_actionShow;
 
     sg_colors.push_back(color);
 }

@@ -49,57 +49,6 @@ using namespace std;
 #include <QFileDialog>
 #include <QMessageBox>
 
-#ifdef AUDIOFILEREADING_LIBSNDFILE
-#endif
-
-void WMainWindow::addFile(const QString& filepath) {
-//    cout << "MainWindow::addFile" << endl;
-
-    IODSound* snd = NULL;
-    try
-    {
-        std::cout << filepath.toLocal8Bit().constData() << endl;
-        snd = new IODSound(filepath, this);
-    }
-    catch (QString err)
-    {
-        QMessageBox::warning(this, "Failed to load file ...", "The audio waveform in the following file can't be loaded:\n"+filepath+"'\nReason:\n"+err);
-
-        return;
-    }
-
-//    cout << "MainWindow::addFile 1" << endl;
-    snds.push_back(snd);
-
-//    cout << "MainWindow::addFile 2" << endl;
-    QFileInfo fileInfo(filepath);
-
-//    cout << "MainWindow::addFile 3" << endl;
-    QListWidgetItem* li = new QListWidgetItem(fileInfo.fileName());
-    li->setToolTip(fileInfo.absoluteFilePath());
-
-//    cout << "MainWindow::addFile 4" << endl;
-    QPixmap pm(32,32);
-    pm.fill(snd->color);
-    li->setIcon(QIcon(pm));
-
-//    cout << "MainWindow::addFile 5" << endl;
-    ui->listSndFiles->addItem(li);
-
-    //    cout << "MainWindow::addFile 6" << endl;
-    ui->splitterViews->show();
-    m_gvWaveform->soundsChanged();
-    m_gvSpectrum->soundsChanged();
-    ui->actionCloseSelectedFile->setEnabled(true);
-
-//    cout << "MainWindow::addFile 7" << endl;
-    // The first sound will determine the common fs
-    if(snds.size()==1)
-        initializeSoundSystem(snds[0]->fs);
-
-//    cout << "~MainWindow::addFile" << endl;
-}
-
 WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::WMainWindow)
@@ -116,11 +65,15 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 
     ui->listSndFiles->setSelectionRectVisible(false);
 //    ui->listSndFiles->setSelectionMode(QAbstractItemView::MultiSelection); // TODO fix BUG1 below first
+    ui->listSndFiles->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->listSndFiles, SIGNAL(customContextMenuRequested(const QPoint&)),
+            this, SLOT(showSoundContextMenu(const QPoint&)));
+
     ui->actionAbout->setIcon(QIcon(":/icons/about.svg"));
     ui->actionSettings->setIcon(QIcon(":/icons/settings.svg"));
     ui->actionOpen->setIcon(style()->standardIcon(QStyle::SP_DialogOpenButton));
-    ui->actionCloseSelectedFile->setIcon(style()->standardIcon(QStyle::SP_DialogCloseButton));
-    ui->actionCloseSelectedFile->setEnabled(false);
+    ui->actionCloseSelectedSound->setIcon(style()->standardIcon(QStyle::SP_DialogCloseButton));
+    ui->actionCloseSelectedSound->setEnabled(false);
     connect(ui->actionSettings, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
 
     // Audio engine for playing the selections
@@ -149,51 +102,6 @@ void WMainWindow::execAbout(){
     <br/>The source code is hosted on <a href='https://github.com/gillesdegottex/dfasma'>GitHub</a>.</p>\
     <br/><p>Any contribution of any sort is very welcome and will be rewarded by your name in this about box, in addition to a pint of your favorite <a href='http://wildsidevancouver.com/wp-content/uploads/2013/07/beer.jpg'>beer</a> during the next signal processing <a href='http://www.obsessedwithsports.com/wp-content/uploads/2013/03/revenge-of-the-nerds-sloan-conference.png'>conference</a>!</p>");
 //    QMessageBox::aboutQt(this, "About this software");
-}
-
-void WMainWindow::initializeSoundSystem(float fs){
-
-//    cout << "MainWindow::initializeSoundSystem fs=" << fs << endl;
-
-    if(m_audioengine){
-        delete m_audioengine;
-        m_audioengine = NULL;
-    }
-
-    m_audioengine = new AudioEngine(fs, this);
-    connect(m_audioengine, SIGNAL(stateChanged(QAudio::State)), this, SLOT(audioStateChanged(QAudio::State)));
-    connect(m_audioengine, SIGNAL(audioOutputDeviceChanged(const QAudioDeviceInfo&)), this, SLOT(audioOutputDeviceChanged(const QAudioDeviceInfo&)));
-    connect(m_audioengine, SIGNAL(playPositionChanged(double)), m_gvWaveform, SLOT(setPlayCursor(double)));
-    connect(m_audioengine, SIGNAL(localEnergyChanged(double)), this, SLOT(localEnergyChanged(double)));
-
-
-    // Provide some information
-    QString txt = m_audioengine->audioOutputDevice().deviceName();
-    m_dlgSettings->ui->lblSoundSystem->setText(txt);
-    m_dlgSettings->ui->lblSoundSystem->setToolTip(txt);
-
-    txt = QString("%1Hz").arg(fs);
-    ui->lblFs->setText(txt);
-    ui->lblFs->setToolTip(txt);
-
-    ui->actionPlay->setEnabled(true);
-//    cout << "~MainWindow::initializeSoundSystem" << endl;
-}
-
-void WMainWindow::audioOutputDeviceChanged(const QAudioDeviceInfo& device){
-    // Provide some information
-    QString txt = device.deviceName();
-    m_dlgSettings->ui->lblSoundSystem->setText(txt);
-    m_dlgSettings->ui->lblSoundSystem->setToolTip(txt);
-}
-void WMainWindow::localEnergyChanged(double e){
-
-    if(e==0)
-        ui->pbVolume->setValue(ui->pbVolume->minimum());
-    else
-        ui->pbVolume->setValue(20*log10(e)); // In dB
-
-    ui->pbVolume->repaint();
 }
 
 void WMainWindow::keyPressEvent(QKeyEvent* event){
@@ -258,6 +166,146 @@ float WMainWindow::getMaxDuration(){
 float WMainWindow::getMaxLastSampleTime(){
 
     return getMaxDuration()-1.0/getFs();
+}
+
+// Sound file management =======================================================
+
+void WMainWindow::openFile() {
+
+//      const QString &caption = QString(),
+//      const QString &dir = QString(),
+//      const QString &filter = QString(),
+//      QString *selectedFilter = 0,
+//      Options options = 0);
+    QStringList l = QFileDialog::getOpenFileNames(this, "Open File(s) ...", QString(), QString(), 0, QFileDialog::ReadOnly);
+
+    for(int f=0; f<l.size(); f++)
+        addFile(l.at(f));
+}
+
+void WMainWindow::addFile(const QString& filepath) {
+//    cout << "MainWindow::addFile" << endl;
+
+    IODSound* snd = NULL;
+    try
+    {
+        std::cout << filepath.toLocal8Bit().constData() << endl;
+        snd = new IODSound(filepath, this);
+    }
+    catch (QString err)
+    {
+        QMessageBox::warning(this, "Failed to load file ...", "The audio waveform in the following file can't be loaded:\n"+filepath+"'\nReason:\n"+err);
+
+        return;
+    }
+
+    snds.push_back(snd);
+
+    QFileInfo fileInfo(filepath);
+
+    QListWidgetItem* li = new QListWidgetItem(fileInfo.fileName());
+    li->setToolTip(fileInfo.absoluteFilePath());
+
+    QPixmap pm(32,32);
+    pm.fill(snd->color);
+    li->setIcon(QIcon(pm));
+
+    ui->listSndFiles->addItem(li);
+
+    ui->splitterViews->show();
+    m_gvWaveform->soundsChanged();
+    m_gvSpectrum->soundsChanged();
+    ui->actionCloseSelectedSound->setEnabled(true);
+
+    // The first sound will determine the common fs for the audio output
+    if(snds.size()==1)
+        initializeSoundSystem(snds[0]->fs);
+
+//    cout << "~MainWindow::addFile" << endl;
+}
+void WMainWindow::showSoundContextMenu(const QPoint& pos) {
+    int row = ui->listSndFiles->currentRow();
+
+    QMenu contextmenu(this);
+    contextmenu.addAction(ui->actionPlay);
+    contextmenu.addAction(ui->actionCloseSelectedSound);
+    contextmenu.addAction(snds[row]->m_actionShow);
+    connect(snds[row]->m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setSoundShown(bool)));
+    QSize sh = contextmenu.sizeHint();
+    QPoint posglobal = mapToGlobal(pos+QPoint(0,sh.height()));
+    contextmenu.exec(posglobal);
+}
+void WMainWindow::setSoundShown(bool show){
+    QListWidgetItem* li = ui->listSndFiles->currentItem();
+    if(show)    li->setForeground(QBrush(QColor(0,0,0)));
+    else        li->setForeground(QBrush(QColor(168,168,168)));
+
+    m_gvWaveform->soundsChanged();
+    m_gvSpectrum->soundsChanged();
+}
+void WMainWindow::closeSelectedFile() {
+
+    m_audioengine->stopPlayback();
+
+    QList<QListWidgetItem*> l = ui->listSndFiles->selectedItems();
+
+    for(int i=0; i<l.size(); i++){
+        int r = ui->listSndFiles->row(l.at(i));
+        cout << "Closing file: " << snds[r]->fileName.toLocal8Bit().constData() << endl;
+        delete l.at(i);
+        IODSound* snd = snds[r];
+        snds.erase(snds.begin()+r); // TODO BUG1 Works only if the selection is unique
+        delete snd;
+    }
+
+    // If there is no more files, put the interface in a waiting-for-file state.
+    if(ui->listSndFiles->count()==0){
+        ui->splitterViews->hide();
+        IODSound::fs_common = 0;
+        ui->actionCloseSelectedSound->setEnabled(false);
+    }
+    else{
+        m_gvWaveform->soundsChanged();
+        m_gvSpectrum->soundsChanged();
+    }
+}
+
+// Audio play management =======================================================
+
+void WMainWindow::initializeSoundSystem(float fs){
+
+//    cout << "MainWindow::initializeSoundSystem fs=" << fs << endl;
+
+    if(m_audioengine){
+        delete m_audioengine;
+        m_audioengine = NULL;
+    }
+
+    m_audioengine = new AudioEngine(fs, this);
+    connect(m_audioengine, SIGNAL(stateChanged(QAudio::State)), this, SLOT(audioStateChanged(QAudio::State)));
+    connect(m_audioengine, SIGNAL(audioOutputDeviceChanged(const QAudioDeviceInfo&)), this, SLOT(audioOutputDeviceChanged(const QAudioDeviceInfo&)));
+    connect(m_audioengine, SIGNAL(playPositionChanged(double)), m_gvWaveform, SLOT(setPlayCursor(double)));
+    connect(m_audioengine, SIGNAL(localEnergyChanged(double)), this, SLOT(localEnergyChanged(double)));
+
+
+    // Provide some information
+    QString txt = m_audioengine->audioOutputDevice().deviceName();
+    m_dlgSettings->ui->lblSoundSystem->setText(txt);
+    m_dlgSettings->ui->lblSoundSystem->setToolTip(txt);
+
+    txt = QString("%1Hz").arg(fs);
+    ui->lblFs->setText(txt);
+    ui->lblFs->setToolTip(txt);
+
+    ui->actionPlay->setEnabled(true);
+//    cout << "~MainWindow::initializeSoundSystem" << endl;
+}
+
+void WMainWindow::audioOutputDeviceChanged(const QAudioDeviceInfo& device){
+    // Provide some information
+    QString txt = device.deviceName();
+    m_dlgSettings->ui->lblSoundSystem->setText(txt);
+    m_dlgSettings->ui->lblSoundSystem->setToolTip(txt);
 }
 
 void WMainWindow::play()
@@ -333,43 +381,14 @@ void WMainWindow::audioStateChanged(QAudio::State state){
 //    DEBUGSTRING << "~MainWindow::stateChanged " << state << endl;
 }
 
-void WMainWindow::openFile() {
+void WMainWindow::localEnergyChanged(double e){
 
-//      const QString &caption = QString(),
-//      const QString &dir = QString(),
-//      const QString &filter = QString(),
-//      QString *selectedFilter = 0,
-//      Options options = 0);
-    QStringList l = QFileDialog::getOpenFileNames(this, "Open File(s) ...", QString(), QString(), 0, QFileDialog::ReadOnly);
+    if(e==0)
+        ui->pbVolume->setValue(ui->pbVolume->minimum());
+    else
+        ui->pbVolume->setValue(20*log10(e)); // In dB
 
-    for(int f=0; f<l.size(); f++)
-        addFile(l.at(f));
-}
-void WMainWindow::closeSelectedFile() {
-
-    m_audioengine->stopPlayback();
-
-    QList<QListWidgetItem*> l = ui->listSndFiles->selectedItems();
-
-    for(int i=0; i<l.size(); i++){
-        int r = ui->listSndFiles->row(l.at(i));
-        cout << "Closing file: " << snds[r]->fileName.toLocal8Bit().constData() << endl;
-        delete l.at(i);
-        IODSound* snd = snds[r];
-        snds.erase(snds.begin()+r); // TODO BUG1 Works only if the selection is unique
-        delete snd;
-    }
-
-    // If there is no more files, put the interface in a waiting-for-file state.
-    if(ui->listSndFiles->count()==0){
-        ui->splitterViews->hide();
-        IODSound::fs_common = 0;
-        ui->actionCloseSelectedFile->setEnabled(false);
-    }
-    else{
-        m_gvWaveform->soundsChanged();
-        m_gvSpectrum->soundsChanged();
-    }
+    ui->pbVolume->repaint();
 }
 
 WMainWindow::~WMainWindow()

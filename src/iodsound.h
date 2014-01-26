@@ -28,6 +28,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QString>
 #include <QColor>
 #include <QAudioFormat>
+#include <QAction>
 
 class CFFTW3;
 
@@ -67,6 +68,9 @@ public:
     qint64 m_start;
     qint64 m_pos;
     qint64 m_end;
+
+    // Visualization
+    QAction* m_actionShow;
 
     ~IODSound();
 };
