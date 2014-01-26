@@ -71,6 +71,7 @@ public:
 
     // Visualization
     QAction* m_actionShow;
+    QAction* m_actionInvPolarity;
 
     ~IODSound();
 };

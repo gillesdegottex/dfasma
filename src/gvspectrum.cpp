@@ -191,10 +191,13 @@ void QGVSpectrum::computeDFTs(){
         m_main->ui->lblSpectrumInfoTxt->setText(QString("DFT size=%1").arg(dftlen));
 
         for(unsigned int fi=0; fi<m_main->snds.size(); fi++){
+            int pol = 1;
+            if(m_main->snds[fi]->m_actionInvPolarity->isChecked())
+                pol = -1;
 
             int n=0;
             for(; n<m_winlen; n++)
-                m_cfftw3->in[n] = m_main->snds[fi]->wav[m_nl+n]*m_win[n];
+                m_cfftw3->in[n] = pol*m_main->snds[fi]->wav[m_nl+n]*m_win[n];
             for(; n<dftlen; n++)
                 m_cfftw3->in[n] = 0.0;
 

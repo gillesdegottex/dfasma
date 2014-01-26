@@ -88,6 +88,11 @@ IODSound::IODSound(const QString& _fileName, QObject *parent)
     m_actionShow->setCheckable(true);
     m_actionShow->setChecked(true);
 
+    m_actionInvPolarity = new QAction("Inverse polarity", this);
+    m_actionInvPolarity->setStatusTip(tr("Inverse the polarity of the sound"));
+    m_actionInvPolarity->setCheckable(true);
+    m_actionInvPolarity->setChecked(false);
+
     load(_fileName);
     std::cout << wav.size() << " samples loaded (" << wav.size()/fs << "s)" << endl;
 
@@ -181,6 +186,12 @@ qint64 IODSound::readData(char *data, qint64 len)
 
     unsigned char *ptr = reinterpret_cast<unsigned char *>(data);
 
+    // Polarity apparently matters in very particular cases
+    // so take it into account when playing.
+    int pol = 1;
+    if(m_actionInvPolarity->isChecked())
+        pol = -1;
+
     while(writtenbytes<len) {
 
 //        float e = wav[m_pos]*wav[m_pos];
@@ -195,7 +206,7 @@ qint64 IODSound::readData(char *data, qint64 len)
 //        cout << 20*log10(sqrt(s_play_power/s_play_power_values.size())) << endl;
 
         qint16 value;
-        if(m_pos<=m_end) value=realToPcm(wav[m_pos]);
+        if(m_pos<=m_end) value=realToPcm(pol*wav[m_pos]);
         else             value=realToPcm(0.0);
 
         qToLittleEndian<qint16>(value, ptr);

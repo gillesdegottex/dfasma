@@ -590,6 +590,10 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
             if(!main->snds[fi]->m_actionShow->isChecked())
                 continue;
 
+            int pol = 1;
+            if(main->snds[fi]->m_actionInvPolarity->isChecked())
+                pol = -1;
+
             QPen outlinePen(main->snds[fi]->color);
             outlinePen.setWidth(0);
             painter->setPen(outlinePen);
@@ -605,11 +609,11 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
             // Draw a line between each sample
             float prevx=nleft/main->getFs();
-            float y = -amplitudezoom*main->snds[fi]->wav[nleft];
+            float y = -amplitudezoom*pol*main->snds[fi]->wav[nleft];
             float prevy=y;
             // TODO prob appear with very long waveforms
             for(int n=nleft+1; n<=nright; n++){
-                y = -amplitudezoom*main->snds[fi]->wav[n];
+                y = -amplitudezoom*pol*main->snds[fi]->wav[n];
                 painter->drawLine(QLineF(prevx, prevy, n/main->getFs(), y));
 
                 prevx = n/main->getFs();
@@ -623,7 +627,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
                 qreal dy = ((samppixdensity_dotsthr-samppixdensity)/samppixdensity_dotsthr)*(1.0/20);
 
                 for(int n=nleft; n<=nright; n++)
-                    painter->drawLine(QLineF(n/main->getFs(), -amplitudezoom*main->snds[fi]->wav[n]-dy, n/main->getFs(), -amplitudezoom*main->snds[fi]->wav[n]+dy));
+                    painter->drawLine(QLineF(n/main->getFs(), -amplitudezoom*pol*main->snds[fi]->wav[n]-dy, n/main->getFs(), -amplitudezoom*pol*main->snds[fi]->wav[n]+dy));
             }
         }
 
@@ -639,6 +643,10 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
         for(unsigned int fi=0; fi<main->snds.size(); fi++){
             if(!main->snds[fi]->m_actionShow->isChecked())
                 continue;
+
+            int pol = 1;
+            if(main->snds[fi]->m_actionInvPolarity->isChecked())
+                pol = -1;
 
             QPen outlinePen(main->snds[fi]->color);
             outlinePen.setWidth(0);
@@ -662,7 +670,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
                     float maxy = -1.0;
                     float y;
                     for(int m=pn; m<=nn; m+=1){
-                        y = -amplitudezoom*main->snds[fi]->wav[m];
+                        y = -amplitudezoom*pol*main->snds[fi]->wav[m];
                         miny = std::min(miny, y);
                         maxy = std::max(maxy, y);
                     }
@@ -671,7 +679,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
                 }
                 else{
                     int m = pn;
-                    float y = -amplitudezoom*main->snds[fi]->wav[m];
+                    float y = -amplitudezoom*pol*main->snds[fi]->wav[m];
 
             //        std::cout << px << ": " << miny << " " << maxy << endl;
 

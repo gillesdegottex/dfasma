@@ -148,7 +148,7 @@ float WMainWindow::getFs(){
 unsigned int WMainWindow::getMaxWavSize(){
 
     if(!hasFilesLoaded())
-        return 44100;      // Fake a one second ghost sound
+        return 44100;      // Fake a one second ghost sound of 44.1kHz sampling rate
 
     unsigned int s = 0;
 
@@ -223,6 +223,7 @@ void WMainWindow::addFile(const QString& filepath) {
 
 //    cout << "~MainWindow::addFile" << endl;
 }
+
 void WMainWindow::showSoundContextMenu(const QPoint& pos) {
     int row = ui->listSndFiles->currentRow();
 
@@ -231,8 +232,14 @@ void WMainWindow::showSoundContextMenu(const QPoint& pos) {
     contextmenu.addAction(ui->actionCloseSelectedSound);
     contextmenu.addAction(snds[row]->m_actionShow);
     connect(snds[row]->m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setSoundShown(bool)));
-    QSize sh = contextmenu.sizeHint();
-    QPoint posglobal = mapToGlobal(pos+QPoint(0,sh.height()));
+    contextmenu.addAction(snds[row]->m_actionInvPolarity);
+    connect(snds[row]->m_actionInvPolarity, SIGNAL(toggled(bool)), m_gvWaveform, SLOT(soundsChanged()));
+    connect(snds[row]->m_actionInvPolarity, SIGNAL(toggled(bool)), m_gvSpectrum, SLOT(soundsChanged()));
+
+//    int contextmenuheight = contextmenu.sizeHint().height();
+//    int contextmenuheight = contextmenu.actioncontextmenu.height();
+    int contextmenuheight = 0;
+    QPoint posglobal = mapToGlobal(pos+QPoint(0,contextmenuheight/2));
     contextmenu.exec(posglobal);
 }
 void WMainWindow::setSoundShown(bool show){
@@ -243,6 +250,7 @@ void WMainWindow::setSoundShown(bool show){
     m_gvWaveform->soundsChanged();
     m_gvSpectrum->soundsChanged();
 }
+
 void WMainWindow::closeSelectedFile() {
 
     m_audioengine->stopPlayback();
