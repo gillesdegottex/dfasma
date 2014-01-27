@@ -378,17 +378,6 @@
     <string>Space</string>
    </property>
   </action>
-  <action name="actionShowSound">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Show</string>
-   </property>
-   <property name="toolTip">
-    <string>Show the sound in the views</string>
-   </property>
-  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

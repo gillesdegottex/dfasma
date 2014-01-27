@@ -31,12 +31,12 @@ class QGVWaveform : public QGraphicsView
 
 public:
 
-    bool first_start;
+    bool m_first_start;
 
-    WMainWindow* main;
+    WMainWindow* m_main;
 
     float selection_pressedx;
-    enum CurrentAction {CANothing, CAMoving, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight};
+    enum CurrentAction {CANothing, CAMoving, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight, CAWaveformScale};
     int currentAction;
     QRectF selection, mouseSelection;
     QGraphicsRectItem* giSelection;
@@ -46,12 +46,12 @@ public:
 
     QGraphicsLineItem* giPlayCursor;
 
-    qreal h11;
-    qreal h12;
-    qreal h21;
-    qreal h22;
+//    qreal h11;
+//    qreal h12;
+//    qreal h21;
+//    qreal h22;
 
-    float amplitudezoom;
+    qreal m_ampzoom;
 
     QGraphicsScene* m_scene;
 

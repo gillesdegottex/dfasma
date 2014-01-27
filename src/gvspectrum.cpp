@@ -763,7 +763,7 @@ void QGVSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
         for(int k=0; k<dftlen/2+1; k++){
 //            cout << 20*log10(abs(m_cfftw3->out[k])) << " ";
             float x = m_main->getFs()*k/dftlen;
-            float y = 20*log10(abs(m_main->snds[fi]->m_dft[k]));
+            float y = 20*log10(m_main->snds[fi]->m_ampscale*abs(m_main->snds[fi]->m_dft[k]));
             painter->drawLine(QLineF(prevx, -prevy, x, -y));
             prevx = x;
             prevy = y;

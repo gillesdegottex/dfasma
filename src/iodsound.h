@@ -69,6 +69,8 @@ public:
     qint64 m_pos;
     qint64 m_end;
 
+    qreal m_ampscale;
+
     // Visualization
     QAction* m_actionShow;
     QAction* m_actionInvPolarity;

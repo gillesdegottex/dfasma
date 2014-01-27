@@ -82,6 +82,7 @@ IODSound::IODSound(const QString& _fileName, QObject *parent)
     : QIODevice(parent)
     , m_pos(0)
     , m_end(0)
+    , m_ampscale(1.0)
 {
     m_actionShow = new QAction("Show", this);
     m_actionShow->setStatusTip(tr("Show the sound in the views"));
