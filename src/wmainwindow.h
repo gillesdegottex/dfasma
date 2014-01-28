@@ -45,9 +45,6 @@ class WMainWindow : public QMainWindow
 {
     Q_OBJECT
 
-    void keyPressEvent(QKeyEvent* event);
-    void keyReleaseEvent(QKeyEvent* event);
-
     void initializeSoundSystem(float fs);
 
 private slots:

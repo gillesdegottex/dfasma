@@ -40,7 +40,6 @@ using namespace std;
 #include <QIcon>
 #include <QTime>
 #include <QAction>
-#include <QStatusBar>
 
 QGVWaveform::QGVWaveform(WMainWindow* main)
     : QGraphicsView(main)
@@ -154,8 +153,6 @@ void QGVWaveform::resizeEvent(QResizeEvent* event){
 
     Q_UNUSED(event)
 
-    std::cout << "QGVWaveform::resizeEvent " << viewport()->rect().height() << " visible=" << isVisible() << endl;
-
     qreal min11 = viewport()->rect().width()/m_scene->sceneRect().width();
     qreal min22 = (viewport()->rect().height())/m_scene->sceneRect().height();
 
@@ -245,10 +242,6 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
         currentAction = CAMoving;
         setDragMode(QGraphicsView::ScrollHandDrag);
         update_cursor(-1);
-        if(m_aUnZoom->isEnabled())
-            m_main->statusBar()->showMessage("Hold the left mouse button and move the mouse to scroll the view along the waveform.");
-        else
-            m_main->statusBar()->showMessage("The unzoom is at maximum. Scrolling the view along the waveform(s) is not possible.");
     }
     else if((event->modifiers().testFlag(Qt::ControlModifier) && !event->modifiers().testFlag(Qt::ShiftModifier)) || ((event->buttons()&Qt::RightButton) && p.x()>=selection.left() && p.x()<=selection.right())){
         if(selection.width()!=0){
@@ -264,8 +257,7 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
         // When scaling the waveform
         currentAction = CAWaveformScale;
         selection_pressedx = p.y();
-        setDragMode(QGraphicsView::ScrollHandDrag);
-        cout << "When scaling the waveform " << selection_pressedx << endl;
+        setCursor(Qt::SizeVerCursor);
     }
     else if(event->buttons()&Qt::LeftButton){
         QRect selview = mapFromScene(selection).boundingRect();
@@ -306,6 +298,7 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
     if(currentAction==CAMoving) {
         // When scrolling the waveform
         update_cursor(-1);
+        QGraphicsView::mouseMoveEvent(event);
     }
     else if(currentAction==CAModifSelectionLeft){
         mouseSelection.setLeft(p.x()-selection_pressedx);
@@ -329,7 +322,6 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
     }
     else if(currentAction==CAWaveformScale){
         // When scaling the waveform
-//        cout << "y0=" << selection_pressedx << " dy=" << p.y()-selection_pressedx << endl;
         int row = m_main->ui->listSndFiles->currentRow();
         if(row>=0){
             m_main->snds[row]->m_ampscale *= pow(10, -10*(p.y()-selection_pressedx)/20.0);
@@ -338,7 +330,6 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
             if(m_main->snds[row]->m_ampscale>1e10) m_main->snds[row]->m_ampscale = 1e10;
             else if(m_main->snds[row]->m_ampscale<1e-10) m_main->snds[row]->m_ampscale = 1e-10;
 
-            cout << m_main->snds[row]->m_ampscale << endl;
             soundsChanged();
             m_main->m_gvSpectrum->soundsChanged();
         }
@@ -351,10 +342,11 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
             setCursor(Qt::SplitHCursor);
         else
             setCursor(Qt::ArrowCursor);
+
+        QGraphicsView::mouseMoveEvent(event);
     }
 
 //    std::cout << "~QGVWaveform::mouseMoveEvent" << endl;
-    QGraphicsView::mouseMoveEvent(event);
 }
 
 void QGVWaveform::mouseReleaseEvent(QMouseEvent* event){
@@ -364,23 +356,11 @@ void QGVWaveform::mouseReleaseEvent(QMouseEvent* event){
         currentAction = CANothing;
         setDragMode(QGraphicsView::NoDrag);
     }
-    else if(currentAction==CAModifSelectionLeft){
-        currentAction = CANothing;
-        setCursor(Qt::ArrowCursor);
-    }
-    else if(currentAction==CAModifSelectionRight){
-        currentAction = CANothing;
-        setCursor(Qt::ArrowCursor);
-    }
-    else if(currentAction==CAMovingSelection){
-        currentAction = CANothing;
-        setCursor(Qt::ArrowCursor);
-    }
-    else if(currentAction==CASelecting){
-        currentAction = CANothing;
-        setCursor(Qt::ArrowCursor);
-    }
-    else if(currentAction==CAWaveformScale){
+    else if(currentAction==CAModifSelectionLeft
+            || currentAction==CAModifSelectionRight
+            || currentAction==CAMovingSelection
+            || currentAction==CASelecting
+            || currentAction==CAWaveformScale){
         currentAction = CANothing;
         setCursor(Qt::ArrowCursor);
     }
@@ -396,6 +376,28 @@ void QGVWaveform::mouseReleaseEvent(QMouseEvent* event){
 
     QGraphicsView::mouseReleaseEvent(event);
 //    std::cout << "~QGVWaveform::mouseReleaseEvent " << endl;
+}
+
+void QGVWaveform::keyPressEvent(QKeyEvent* event){
+
+    if(event->key()==Qt::Key_Shift && !event->modifiers().testFlag(Qt::ControlModifier)){
+        setDragMode(QGraphicsView::ScrollHandDrag);
+        update_cursor(-1);
+    }
+    else if(event->key()==Qt::Key_Control && !event->modifiers().testFlag(Qt::ShiftModifier)){
+        setDragMode(QGraphicsView::NoDrag);
+        if(selection.width()>0)
+            setCursor(Qt::DragMoveCursor);
+    }
+    else if((event->key()==Qt::Key_Control && event->modifiers().testFlag(Qt::ShiftModifier)) || (event->key()==Qt::Key_Shift && event->modifiers().testFlag(Qt::ControlModifier))){
+        setDragMode(QGraphicsView::NoDrag);
+        setCursor(Qt::SizeVerCursor);
+    }
+}
+
+void QGVWaveform::keyReleaseEvent(QKeyEvent* event){
+    setDragMode(QGraphicsView::NoDrag);
+    setCursor(Qt::ArrowCursor);
 }
 
 void QGVWaveform::clipandsetselection(){

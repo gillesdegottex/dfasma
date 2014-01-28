@@ -104,40 +104,6 @@ void WMainWindow::execAbout(){
 //    QMessageBox::aboutQt(this, "About this software");
 }
 
-void WMainWindow::keyPressEvent(QKeyEvent* event){
-    if(event->key()==Qt::Key_Shift){
-        m_gvWaveform->setDragMode(QGraphicsView::ScrollHandDrag);
-//        m_gvWaveform->setCursor(Qt::SizeHorCursor);
-        m_gvWaveform->update_cursor(-1);
-        if(m_gvWaveform->m_aUnZoom->isEnabled()){
-            statusBar()->showMessage("Hold the left mouse button and move the mouse to scroll the view along the waveform.");
-        }
-        else
-            statusBar()->showMessage("The unzoom is at maximum. Scrolling the view along the waveform(s) is not possible.");
-    }
-    if(event->key()==Qt::Key_Control){
-        if(m_gvWaveform->selection.width()>0){
-            m_gvWaveform->setCursor(Qt::DragMoveCursor);
-            statusBar()->showMessage("Hold the left mouse button and move the mouse to slide the selection.");
-        }
-        else
-            statusBar()->showMessage("There is no selection to slide.");
-    }
-}
-
-void WMainWindow::keyReleaseEvent(QKeyEvent* event){
-    if(event->key()==Qt::Key_Shift){
-        m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
-//        m_gvWaveform->setCursor(Qt::ArrowCursor);
-        statusBar()->showMessage("");
-    }
-    if(event->key()==Qt::Key_Control){
-        if(m_gvWaveform->selection.width()>0)
-            m_gvWaveform->setCursor(Qt::ArrowCursor);
-        statusBar()->showMessage("");
-    }
-}
-
 float WMainWindow::getFs(){
     if(hasFilesLoaded())
         return snds[0]->fs;

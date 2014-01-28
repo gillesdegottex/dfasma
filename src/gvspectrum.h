@@ -87,7 +87,7 @@ public:
     QGraphicsSimpleTextItem* m_giCursorPositionYTxt;
 
     QPointF m_selection_pressedp;
-    enum CurrentAction {CANothing, CAMoving, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight, CAModifSelectionTop, CAModifSelectionBottom};
+    enum CurrentAction {CANothing, CAMoving, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight, CAModifSelectionTop, CAModifSelectionBottom, CAWaveformScale};
     int m_currentAction;
 
     QRectF m_selection, m_mouseSelection;
@@ -102,6 +102,8 @@ public:
     void mousePressEvent(QMouseEvent* event);
     void mouseMoveEvent(QMouseEvent* event);
     void mouseReleaseEvent(QMouseEvent* event);
+    void keyPressEvent(QKeyEvent* event);
+    void keyReleaseEvent(QKeyEvent* event);
 
     void update_cursor(QPointF p);
     void update_texts_dimensions();

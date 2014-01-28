@@ -408,15 +408,14 @@ void QGVSpectrum::mousePressEvent(QMouseEvent* event){
 
     QPointF p = mapToScene(event->pos());
 
-    if(event->modifiers().testFlag(Qt::ShiftModifier) || ((event->buttons()&Qt::RightButton) && (m_selection.width()==0 || (m_selection.width()!=0 && (p.x()<m_selection.left() || p.x()>m_selection.right()))))) {
+    if((event->modifiers().testFlag(Qt::ShiftModifier) && !event->modifiers().testFlag(Qt::ControlModifier)) || ((event->buttons()&Qt::RightButton) && (m_selection.width()==0 || (m_selection.width()!=0 && (p.x()<m_selection.left() || p.x()>m_selection.right()))))) {
         // When moving the spectrum's view
         m_currentAction = CAMoving;
         setDragMode(QGraphicsView::ScrollHandDrag);
         update_cursor(QPointF(-1,0));
     }
-    else if(event->modifiers().testFlag(Qt::ControlModifier) || ((event->buttons()&Qt::RightButton) && p.x()>=m_selection.left() && p.x()<=m_selection.right() && p.y()>=m_selection.top() && p.y()<=m_selection.bottom())){
+    else if((event->modifiers().testFlag(Qt::ControlModifier) && !event->modifiers().testFlag(Qt::ShiftModifier)) || ((event->buttons()&Qt::RightButton) && p.x()>=m_selection.left() && p.x()<=m_selection.right() && p.y()>=m_selection.top() && p.y()<=m_selection.bottom())){
         if(m_selection.width()>0 && m_selection.height()>0){
-            cout << "fefew2" << endl;
             // When scroling the selection
             m_currentAction = CAMovingSelection;
             m_selection_pressedp = p;
@@ -447,6 +446,12 @@ void QGVSpectrum::mousePressEvent(QMouseEvent* event){
             m_currentAction = CAModifSelectionBottom;
             m_selection_pressedp = QPointF(0, p.y()-m_selection.bottom());
         }
+        else if(event->modifiers().testFlag(Qt::ControlModifier) && event->modifiers().testFlag(Qt::ShiftModifier)){
+            // When scaling the waveform
+            m_currentAction = CAWaveformScale;
+            m_selection_pressedp = p;
+            setCursor(Qt::SizeVerCursor);
+        }
         else{
             // When selecting
             m_currentAction = CASelecting;
@@ -470,7 +475,7 @@ void QGVSpectrum::mouseMoveEvent(QMouseEvent* event){
 
     update_cursor(p);
 
-//    std::cout << "QGVWaveform::mouseMoveEvent " << p.x() << " " << p.y() << endl;
+//    std::cout << "QGVWaveform::mouseMoveEvent action=" << m_currentAction << " x=" << p.x() << " y=" << p.y() << endl;
 
     if(m_currentAction==CAMoving) {
         // When scrolling the waveform
@@ -504,6 +509,20 @@ void QGVSpectrum::mouseMoveEvent(QMouseEvent* event){
         m_mouseSelection.setBottomRight(p);
         clipandsetselection();
     }
+    else if(m_currentAction==CAWaveformScale){
+        // When scaling the waveform
+        int row = m_main->ui->listSndFiles->currentRow();
+        if(row>=0){
+            m_main->snds[row]->m_ampscale *= pow(10, -(p.y()-m_selection_pressedp.y())/20.0);
+            m_selection_pressedp = p;
+
+            if(m_main->snds[row]->m_ampscale>1e10) m_main->snds[row]->m_ampscale = 1e10;
+            else if(m_main->snds[row]->m_ampscale<1e-10) m_main->snds[row]->m_ampscale = 1e-10;
+
+            m_main->m_gvWaveform->soundsChanged();
+            soundsChanged();
+        }
+    }
     else{
         QRect selview = mapFromScene(m_selection).boundingRect();
         if(m_selection.width()>0 && m_selection.height()>0 && abs(selview.left()-event->x())<5 && event->y()>=selview.top() && event->y()<=selview.bottom())
@@ -534,7 +553,8 @@ void QGVSpectrum::mouseReleaseEvent(QMouseEvent* event){
             || m_currentAction==CAModifSelectionTop
             || m_currentAction==CAModifSelectionBottom
             || m_currentAction==CAMovingSelection
-            || m_currentAction==CASelecting){
+            || m_currentAction==CASelecting
+            || m_currentAction==CAWaveformScale){
         m_currentAction = CANothing;
         setCursor(Qt::ArrowCursor);
     }
@@ -552,6 +572,29 @@ void QGVSpectrum::mouseReleaseEvent(QMouseEvent* event){
     QGraphicsView::mouseReleaseEvent(event);
 //    std::cout << "~QGVWaveform::mouseReleaseEvent " << endl;
 }
+
+void QGVSpectrum::keyPressEvent(QKeyEvent* event){
+
+    if(event->key()==Qt::Key_Shift && !event->modifiers().testFlag(Qt::ControlModifier)){
+        setDragMode(QGraphicsView::ScrollHandDrag);
+//        update_cursor(-1);
+    }
+    else if(event->key()==Qt::Key_Control && !event->modifiers().testFlag(Qt::ShiftModifier)){
+        setDragMode(QGraphicsView::NoDrag);
+        if(m_selection.width()>0 && m_selection.height()>0)
+            setCursor(Qt::DragMoveCursor);
+    }
+    else if((event->key()==Qt::Key_Control && event->modifiers().testFlag(Qt::ShiftModifier)) || (event->key()==Qt::Key_Shift && event->modifiers().testFlag(Qt::ControlModifier))){
+        setDragMode(QGraphicsView::NoDrag);
+        setCursor(Qt::SizeVerCursor);
+    }
+}
+
+void QGVSpectrum::keyReleaseEvent(QKeyEvent* event){
+    setDragMode(QGraphicsView::NoDrag);
+    setCursor(Qt::ArrowCursor);
+}
+
 
 void QGVSpectrum::clipandsetselection(){
 

@@ -189,15 +189,15 @@ qint64 IODSound::readData(char *data, qint64 len)
 
     // Polarity apparently matters in very particular cases
     // so take it into account when playing.
-    int pol = 1;
+    qreal a = m_ampscale;
     if(m_actionInvPolarity->isChecked())
-        pol = -1;
+        a *= -1;
 
     while(writtenbytes<len) {
 
 //        float e = wav[m_pos]*wav[m_pos];
 //        s_play_power += e;
-        float e = abs(wav[m_pos]);
+        float e = abs(a*wav[m_pos]);
         s_play_power_values.push_front(e);
         while(s_play_power_values.size()/fs>0.1){
             s_play_power -= s_play_power_values.back();
@@ -207,7 +207,7 @@ qint64 IODSound::readData(char *data, qint64 len)
 //        cout << 20*log10(sqrt(s_play_power/s_play_power_values.size())) << endl;
 
         qint16 value;
-        if(m_pos<=m_end) value=realToPcm(pol*wav[m_pos]);
+        if(m_pos<=m_end) value=realToPcm(a*wav[m_pos]);
         else             value=realToPcm(0.0);
 
         qToLittleEndian<qint16>(value, ptr);
