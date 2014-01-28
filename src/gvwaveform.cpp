@@ -45,11 +45,11 @@ QGVWaveform::QGVWaveform(WMainWindow* main)
     : QGraphicsView(main)
     , m_main(main)
     , m_first_start(true)
+    , m_ampzoom(1.0)
 {
-    m_ampzoom = 1.0;
-
     m_scene = new QGraphicsScene(this);
     setScene(m_scene);
+    m_scene->setSceneRect(-1.0/m_main->getFs(), -1.05/m_ampzoom, m_main->getMaxDuration()+1.0/m_main->getFs(), 2.1/m_ampzoom);
 
     // Grid - Prepare the pens and fonts
     m_gridPen.setColor(QColor(192,192,192));
@@ -143,13 +143,16 @@ QGVWaveform::QGVWaveform(WMainWindow* main)
 }
 
 void QGVWaveform::soundsChanged(){
-    if(m_main->hasFilesLoaded())
+    if(m_main->hasFilesLoaded()){
         m_scene->setSceneRect(-1.0/m_main->getFs(), -1.05/m_ampzoom, m_main->getMaxDuration()+1.0/m_main->getFs(), 2.1/m_ampzoom);
+    }
 
     m_scene->update(this->sceneRect());
 }
 
 void QGVWaveform::resizeEvent(QResizeEvent* event){
+
+//    cout << "QGVWaveform::resizeEvent" << endl;
 
     Q_UNUSED(event)
 
@@ -396,6 +399,8 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
 }
 
 void QGVWaveform::keyReleaseEvent(QKeyEvent* event){
+    Q_UNUSED(event);
+
     setDragMode(QGraphicsView::NoDrag);
     setCursor(Qt::ArrowCursor);
 }
@@ -520,7 +525,7 @@ void QGVWaveform::sldAmplitudeChanged(int value){
     m_ampzoom = 100.0/(100-value);
 //    m_ampzoom = 1+value/50.0;
 
-    cout << "GVWaveform::sldAmplitudeChanged v=" << value << " z=" << m_ampzoom << endl;
+//    cout << "GVWaveform::sldAmplitudeChanged v=" << value << " z=" << m_ampzoom << endl;
 
     if(m_main->hasFilesLoaded()){
 
@@ -760,6 +765,9 @@ void QGVWaveform::draw_grid(QPainter* painter, const QRectF& rect){
     // Plot the grid
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+//    if(std::isnan(viewrect.width()))
+//        return;
+
     painter->setFont(m_gridFont);
     QTransform trans = transform();
 

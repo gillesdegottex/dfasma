@@ -591,6 +591,8 @@ void QGVSpectrum::keyPressEvent(QKeyEvent* event){
 }
 
 void QGVSpectrum::keyReleaseEvent(QKeyEvent* event){
+    Q_UNUSED(event);
+
     setDragMode(QGraphicsView::NoDrag);
     setCursor(Qt::ArrowCursor);
 }

@@ -46,11 +46,6 @@ public:
 
     QGraphicsLineItem* giPlayCursor;
 
-//    qreal h11;
-//    qreal h12;
-//    qreal h21;
-//    qreal h22;
-
     qreal m_ampzoom;
 
     QGraphicsScene* m_scene;
