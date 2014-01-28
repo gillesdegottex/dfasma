@@ -9,7 +9,7 @@ time and frequency. The comparison is first visual, using wavforms and spectra.
 Listening segments of the loaded files is also possible in order to allow
 perceptual comparison.
 
-It software is coded in C/C++ using the Qt library (http://qt-project.org).
+This software is coded in C/C++ using the Qt library (http://qt-project.org).
 It is stored as a GitHub project (https://github.com/gillesdegottex/dfasma).
 
 
@@ -21,7 +21,7 @@ Goals
     * Manage mono audio files (stereo files could be addressed in the future)
     * All features should run on Linux, OS X and Migrosoft operating systems.
     * Even though there are basic functionnalities to align the signals in 
-      amplitude, DFasma is basically NOT an audio file editor.
+      amplitude, this software is basically NOT an audio file editor.
 
 
 Copyright (c) 2014 Gilles Degottex <gilles.degottex@gmail.com>
