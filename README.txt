@@ -20,7 +20,8 @@ Goals
         supporting ~25 different file formats).
     * Manage mono audio files (stereo files could be addressed in the future)
     * All features should run on Linux, OS X and Migrosoft operating systems.
-    * This is NOT an audio file editor.
+    * Even though there are basic functionnalities to align the signals in 
+      amplitude, DFasma is basically NOT an audio file editor.
 
 
 Copyright (c) 2014 Gilles Degottex <gilles.degottex@gmail.com>
