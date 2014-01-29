@@ -8,5 +8,9 @@
         <file>icons/unzoomx.svg</file>
         <file>icons/settings.svg</file>
         <file>icons/about.svg</file>
+        <file>icons/selection.svg</file>
+        <file>icons/edit.svg</file>
+        <file>icons/scroll.svg</file>
+        <file>icons/selectionclear.svg</file>
     </qresource>
 </RCC>
