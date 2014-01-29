@@ -75,6 +75,8 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     ui->actionCloseSelectedSound->setIcon(style()->standardIcon(QStyle::SP_DialogCloseButton));
     ui->actionCloseSelectedSound->setEnabled(false);
     connect(ui->actionSettings, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
+    ui->actionSelectionMode->setChecked(true);
+    connectModes();
 
     // Audio engine for playing the selections
     ui->actionPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
@@ -110,7 +112,6 @@ float WMainWindow::getFs(){
     else
         return 44100.0;   // Fake a ghost sound using 44.1kHz sampling rate
 }
-
 unsigned int WMainWindow::getMaxWavSize(){
 
     if(!hasFilesLoaded())
@@ -123,15 +124,109 @@ unsigned int WMainWindow::getMaxWavSize(){
 
     return s;
 }
-
 float WMainWindow::getMaxDuration(){
 
     return getMaxWavSize()/getFs();
 }
-
 float WMainWindow::getMaxLastSampleTime(){
 
     return getMaxDuration()-1.0/getFs();
+}
+
+WMainWindow::~WMainWindow()
+{
+    delete ui;
+}
+
+void WMainWindow::keyPressEvent(QKeyEvent* event){
+
+//    cout << "QGVWaveform::keyPressEvent " << endl;
+
+    if(event->key()==Qt::Key_Shift && !event->modifiers().testFlag(Qt::ControlModifier))
+        setScrollMode(true);
+    else if(event->key()==Qt::Key_Control && !event->modifiers().testFlag(Qt::ShiftModifier))
+        setEditMode(true);
+}
+
+void WMainWindow::keyReleaseEvent(QKeyEvent* event){
+    Q_UNUSED(event);
+
+    if(event->key()==Qt::Key_Shift || event->key()==Qt::Key_Control)
+        setSelectionMode(true);
+
+    m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
+    m_gvWaveform->setCursor(Qt::ArrowCursor);
+    m_gvSpectrum->setDragMode(QGraphicsView::NoDrag);
+    m_gvSpectrum->setCursor(Qt::ArrowCursor);
+}
+
+void WMainWindow::connectModes(){
+    connect(ui->actionScrollMode, SIGNAL(toggled(bool)), this, SLOT(setScrollMode(bool)));
+    connect(ui->actionSelectionMode, SIGNAL(toggled(bool)), this, SLOT(setSelectionMode(bool)));
+    connect(ui->actionEditMode, SIGNAL(toggled(bool)), this, SLOT(setEditMode(bool)));
+}
+void WMainWindow::disconnectModes(){
+    disconnect(ui->actionScrollMode, SIGNAL(toggled(bool)), this, SLOT(setScrollMode(bool)));
+    disconnect(ui->actionSelectionMode, SIGNAL(toggled(bool)), this, SLOT(setSelectionMode(bool)));
+    disconnect(ui->actionEditMode, SIGNAL(toggled(bool)), this, SLOT(setEditMode(bool)));
+}
+
+void WMainWindow::setScrollMode(bool checked){
+    if(checked){
+        disconnectModes();
+        if(!ui->actionScrollMode->isChecked()) ui->actionScrollMode->setChecked(true);
+        if(ui->actionSelectionMode->isChecked()) ui->actionSelectionMode->setChecked(false);
+        if(ui->actionEditMode->isChecked()) ui->actionEditMode->setChecked(false);
+        connectModes();
+    }
+    else
+        setSelectionMode(true);
+}
+void WMainWindow::setSelectionMode(bool checked){
+    if(checked){
+        disconnectModes();
+        if(ui->actionScrollMode->isChecked()) ui->actionScrollMode->setChecked(false);
+        if(!ui->actionSelectionMode->isChecked()) ui->actionSelectionMode->setChecked(true);
+        if(ui->actionEditMode->isChecked()) ui->actionEditMode->setChecked(false);
+        connectModes();
+
+        m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
+        m_gvSpectrum->setDragMode(QGraphicsView::NoDrag);
+
+        QPoint cp = QCursor::pos();
+
+        // Change waveform's cursor
+        QPointF p = m_gvWaveform->mapToScene(m_gvWaveform->mapFromGlobal(cp));
+        if(p.x()>=m_gvWaveform->m_selection.left() && p.x()<=m_gvWaveform->m_selection.right())
+            m_gvWaveform->setCursor(Qt::OpenHandCursor);
+        else
+            m_gvWaveform->setCursor(Qt::CrossCursor);
+
+        // Change spectrum's cursor
+        p = m_gvSpectrum->mapToScene(m_gvSpectrum->mapFromGlobal(cp));
+        if(p.x()>=m_gvSpectrum->m_selection.left() && p.x()<=m_gvSpectrum->m_selection.right() && p.y()>=m_gvSpectrum->m_selection.top() && p.y()<=m_gvSpectrum->m_selection.bottom())
+            m_gvSpectrum->setCursor(Qt::OpenHandCursor);
+        else
+            m_gvSpectrum->setCursor(Qt::CrossCursor);
+    }
+    else
+        setSelectionMode(true);
+}
+void WMainWindow::setEditMode(bool checked){
+    if(checked){
+        disconnectModes();
+        if(ui->actionScrollMode->isChecked()) ui->actionScrollMode->setChecked(false);
+        if(ui->actionSelectionMode->isChecked()) ui->actionSelectionMode->setChecked(false);
+        if(!ui->actionEditMode->isChecked()) ui->actionEditMode->setChecked(true);
+        connectModes();
+
+        m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
+        m_gvSpectrum->setDragMode(QGraphicsView::NoDrag);
+        m_gvWaveform->setCursor(Qt::SizeVerCursor);
+        m_gvSpectrum->setCursor(Qt::SizeVerCursor);
+    }
+    else
+        setSelectionMode(true);
 }
 
 // Sound file management =======================================================
@@ -179,14 +274,16 @@ void WMainWindow::addFile(const QString& filepath) {
     ui->listSndFiles->addItem(li);
 
     ui->splitterViews->show();
-    m_gvWaveform->soundsChanged();
-    m_gvSpectrum->soundsChanged();
+    soundsChanged();
     ui->actionCloseSelectedSound->setEnabled(true);
 
     // The first sound will determine the common fs for the audio output
     if(snds.size()==1)
         initializeSoundSystem(snds[0]->fs);
 
+    if(1){
+        m_gvWaveform->fitViewToSoundsAmplitude();
+    }
 //    cout << "~MainWindow::addFile" << endl;
 }
 
@@ -199,8 +296,10 @@ void WMainWindow::showSoundContextMenu(const QPoint& pos) {
     contextmenu.addAction(snds[row]->m_actionShow);
     connect(snds[row]->m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setSoundShown(bool)));
     contextmenu.addAction(snds[row]->m_actionInvPolarity);
-    connect(snds[row]->m_actionInvPolarity, SIGNAL(toggled(bool)), m_gvWaveform, SLOT(soundsChanged()));
-    connect(snds[row]->m_actionInvPolarity, SIGNAL(toggled(bool)), m_gvSpectrum, SLOT(soundsChanged()));
+    connect(snds[row]->m_actionInvPolarity, SIGNAL(toggled(bool)), this, SLOT(soundsChanged()));
+    snds[row]->m_actionResetAmpScale->setText(QString("Reset amplitude scaling (%1dB) to original").arg(20*log10(snds[row]->m_ampscale), 0, 'g', 3));
+    contextmenu.addAction(snds[row]->m_actionResetAmpScale);
+    connect(snds[row]->m_actionResetAmpScale, SIGNAL(triggered()), this, SLOT(resetAmpScale()));
 
 //    int contextmenuheight = contextmenu.sizeHint().height();
 //    int contextmenuheight = contextmenu.actioncontextmenu.height();
@@ -213,6 +312,16 @@ void WMainWindow::setSoundShown(bool show){
     if(show)    li->setForeground(QBrush(QColor(0,0,0)));
     else        li->setForeground(QBrush(QColor(168,168,168)));
 
+    soundsChanged();
+}
+void WMainWindow::resetAmpScale(){
+    int row = ui->listSndFiles->currentRow();
+    snds[row]->m_ampscale = 1.0;
+
+    soundsChanged();
+}
+
+void WMainWindow::soundsChanged(){
     m_gvWaveform->soundsChanged();
     m_gvSpectrum->soundsChanged();
 }
@@ -238,10 +347,8 @@ void WMainWindow::closeSelectedFile() {
         IODSound::fs_common = 0;
         ui->actionCloseSelectedSound->setEnabled(false);
     }
-    else{
-        m_gvWaveform->soundsChanged();
-        m_gvSpectrum->soundsChanged();
-    }
+    else
+        soundsChanged();
 }
 
 // Audio play management =======================================================
@@ -300,17 +407,17 @@ void WMainWindow::play()
             ui->listSndFiles->setCurrentRow(fi); // Force the selection of the current file
 //            DEBUGSTRING << "MainWindow::play currentRow: " << fi << " " << snds.size() << endl;
 
-            if(m_gvWaveform->selection.width()>0){
+            if(m_gvWaveform->m_selection.width()>0){
 //                DEBUGSTRING << "MainWindow::play 1" << endl;
-                int nleft = int(m_gvWaveform->selection.left()*getFs());
-                int nright = int(m_gvWaveform->selection.right()*getFs());
+                int nleft = int(m_gvWaveform->m_selection.left()*getFs());
+                int nright = int(m_gvWaveform->m_selection.right()*getFs());
 
 //                DEBUGSTRING << "MainWindow::play 2" << endl;
                 QString txt = QString("Play selection: [%1 (%2s), %3, (%4s)]").arg(nleft).arg((nleft-1)/getFs()).arg(nright).arg((nright-1)/getFs());
                 statusBar()->showMessage(txt);
 
 //                DEBUGSTRING << "MainWindow::play 3" << endl;
-                m_audioengine->startPlayback(snds[fi], m_gvWaveform->selection.left(), m_gvWaveform->selection.right());
+                m_audioengine->startPlayback(snds[fi], m_gvWaveform->m_selection.left(), m_gvWaveform->m_selection.right());
             }
             else{
                 QString filetoplay = ui->listSndFiles->currentItem()->text();
@@ -327,7 +434,7 @@ void WMainWindow::play()
 //            DEBUGSTRING << "MainWindow::play QAudio::ActiveState" << endl;
             // If playing, just stop it
             m_audioengine->stopPlayback();
-            m_gvWaveform->giPlayCursor->hide();
+            m_gvWaveform->m_giPlayCursor->hide();
         }
     }
     else
@@ -363,9 +470,4 @@ void WMainWindow::localEnergyChanged(double e){
         ui->pbVolume->setValue(20*log10(e)); // In dB
 
     ui->pbVolume->repaint();
-}
-
-WMainWindow::~WMainWindow()
-{
-    delete ui;
 }

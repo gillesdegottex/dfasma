@@ -318,6 +318,10 @@
    <addaction name="actionOpen"/>
    <addaction name="actionCloseSelectedSound"/>
    <addaction name="separator"/>
+   <addaction name="actionScrollMode"/>
+   <addaction name="actionSelectionMode"/>
+   <addaction name="actionEditMode"/>
+   <addaction name="separator"/>
    <addaction name="actionPlay"/>
    <addaction name="separator"/>
    <addaction name="actionSettings"/>
@@ -378,9 +382,65 @@
     <string>Space</string>
    </property>
   </action>
+  <action name="actionScrollMode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../ressources.qrc">
+     <normaloff>:/icons/scroll.svg</normaloff>:/icons/scroll.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Scroll Mode</string>
+   </property>
+   <property name="toolTip">
+    <string>Enter the scroll mode (F2 or Shift key)</string>
+   </property>
+   <property name="shortcut">
+    <string>F2</string>
+   </property>
+  </action>
+  <action name="actionSelectionMode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../ressources.qrc">
+     <normaloff>:/icons/selection.svg</normaloff>:/icons/selection.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Selection Mode</string>
+   </property>
+   <property name="toolTip">
+    <string>Enter the selection mode (F3)</string>
+   </property>
+   <property name="shortcut">
+    <string>F3</string>
+   </property>
+  </action>
+  <action name="actionEditMode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../ressources.qrc">
+     <normaloff>:/icons/edit.svg</normaloff>:/icons/edit.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Edit Mode</string>
+   </property>
+   <property name="toolTip">
+    <string>Enter edit mode (F4 or Control key)</string>
+   </property>
+   <property name="shortcut">
+    <string>F4</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="../ressources.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>actionOpen</sender>

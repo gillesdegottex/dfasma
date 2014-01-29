@@ -47,6 +47,12 @@ class WMainWindow : public QMainWindow
 
     void initializeSoundSystem(float fs);
 
+    void keyPressEvent(QKeyEvent* event);
+    void keyReleaseEvent(QKeyEvent* event);
+
+    void connectModes();
+    void disconnectModes();
+
 private slots:
     void openFile();
     void closeSelectedFile();
@@ -58,7 +64,12 @@ private slots:
     void audioOutputDeviceChanged(const QAudioDeviceInfo& device);
     void execAbout();
     void showSoundContextMenu(const QPoint&);
+    void soundsChanged();
     void setSoundShown(bool show);
+    void resetAmpScale();
+    void setScrollMode(bool checked);
+    void setSelectionMode(bool checked);
+    void setEditMode(bool checked);
 
 public:
     explicit WMainWindow(QStringList sndfiles, QWidget* parent=0);

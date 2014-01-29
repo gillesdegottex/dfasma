@@ -93,7 +93,7 @@ public:
     QRectF m_selection, m_mouseSelection;
     QGraphicsRectItem* m_giSelection;
     QGraphicsSimpleTextItem* m_giSelectionTxt;
-    void clipandsetselection();
+    void selectionClipAndSet();
     void clipzoom(float& h11, float& h22);
 
     void scrollContentsBy(int dx, int dy);
@@ -102,8 +102,6 @@ public:
     void mousePressEvent(QMouseEvent* event);
     void mouseMoveEvent(QMouseEvent* event);
     void mouseReleaseEvent(QMouseEvent* event);
-    void keyPressEvent(QKeyEvent* event);
-    void keyReleaseEvent(QKeyEvent* event);
 
     void update_cursor(QPointF p);
     void update_texts_dimensions();
@@ -113,6 +111,7 @@ public:
     ~QGVSpectrum();
 
     QAction* m_aZoomOnSelection;
+    QAction* m_aSelectionClear;
     QAction* m_aZoomIn;
     QAction* m_aZoomOut;
     QAction* m_aUnZoom;
@@ -129,7 +128,8 @@ public slots:
     void computeDFTs();
     void fftResizing(int prevSize, int newSize);
 
-    void azoomonselection();
+    void selectionZoomOn();
+    void selectionClear();
     void azoomin();
     void azoomout();
     void aunzoom();

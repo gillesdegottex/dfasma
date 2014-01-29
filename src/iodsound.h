@@ -40,13 +40,14 @@ class IODSound : public QIODevice
 
     QAudioFormat m_outputaudioformat; // Temporary copy for readData
 
-    void setSamplingRate(float _fs);
+    void setSamplingRate(float _fs); // Used by implementations of load
 
 public:
     IODSound(const QString& _fileName, QObject* parent);
     static QString getAudioFileReadingDescription();
 
     std::deque<float> wav;
+    float m_wavmaxamp;
     float fs;
     static float fs_common;
     static float s_play_power;
@@ -74,6 +75,7 @@ public:
     // Visualization
     QAction* m_actionShow;
     QAction* m_actionInvPolarity;
+    QAction* m_actionResetAmpScale;
 
     ~IODSound();
 };

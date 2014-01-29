@@ -94,8 +94,16 @@ IODSound::IODSound(const QString& _fileName, QObject *parent)
     m_actionInvPolarity->setCheckable(true);
     m_actionInvPolarity->setChecked(false);
 
+    m_actionResetAmpScale = new QAction("Reset amplitude", this);
+    m_actionResetAmpScale->setStatusTip(tr("Reset the amplitude scaling to 1"));
+
     load(_fileName);
-    std::cout << wav.size() << " samples loaded (" << wav.size()/fs << "s)" << endl;
+
+    m_wavmaxamp = 0.0;
+    for(unsigned int n=0; n<wav.size(); ++n)
+        m_wavmaxamp = std::max(m_wavmaxamp, abs(wav[n]));
+
+    std::cout << wav.size() << " samples loaded (" << wav.size()/fs << "s max amplitude=" << m_wavmaxamp << ")" << endl;
 
     color = GetNextColor();
 

@@ -22,6 +22,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #define QGVWAVEFORM_H
 
 #include <QGraphicsView>
+#include <QMenu>
 
 class WMainWindow;
 
@@ -35,25 +36,28 @@ public:
 
     WMainWindow* m_main;
 
-    float selection_pressedx;
+    float m_selection_pressedx;
     enum CurrentAction {CANothing, CAMoving, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight, CAWaveformScale};
-    int currentAction;
-    QRectF selection, mouseSelection;
-    QGraphicsRectItem* giSelection;
-    QGraphicsLineItem* giCursor;
-    QGraphicsSimpleTextItem* giCursorPositionTxt;
+    int m_currentAction;
+    QRectF m_selection, m_mouseSelection;
+    QGraphicsRectItem* m_giSelection;
+    QGraphicsLineItem* m_giCursor;
+    QGraphicsSimpleTextItem* m_giCursorPositionTxt;
 //    QGraphicsItemGroup* m_yTicksLabels; // TODO Use this instead of print them individually ?
 
-    QGraphicsLineItem* giPlayCursor;
+    QGraphicsLineItem* m_giPlayCursor;
 
     qreal m_ampzoom;
 
     QGraphicsScene* m_scene;
 
     QAction* m_aZoomOnSelection;
+    QAction* m_aSelectionClear;
     QAction* m_aZoomIn;
     QAction* m_aZoomOut;
     QAction* m_aUnZoom;
+    QAction* m_aFitViewToSoundsAmplitude;
+    QMenu m_contextmenu;
 
     explicit QGVWaveform(WMainWindow* _main);
 
@@ -63,8 +67,6 @@ public:
     void mousePressEvent(QMouseEvent* event);
     void mouseMoveEvent(QMouseEvent* event);
     void mouseReleaseEvent(QMouseEvent* event);
-    void keyPressEvent(QKeyEvent* event);
-    void keyReleaseEvent(QKeyEvent* event);
 
     void drawBackground(QPainter* painter, const QRectF& rect);
 
@@ -79,12 +81,14 @@ signals:
 
 public slots:
     void soundsChanged();
-    void azoomonselection();
     void azoomin();
     void azoomout();
     void aunzoom();
     void sldAmplitudeChanged(int value);
-    void clipandsetselection();
+    void fitViewToSoundsAmplitude();
+    void selectionClipAndSet(QRectF selection);
+    void selectionClear();
+    void selectionZoomOn();
 
     void setPlayCursor(double t);
 
