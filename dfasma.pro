@@ -21,12 +21,19 @@
 #-------------------------------------------------------------------------------
 # Compilation options
 
+#CONFIG += audiofilereading_builtin # This is a minimal audio file reader which
+                                   # should be use only for portablity test purpose
 #CONFIG += audiofilereading_qt
 CONFIG += audiofilereading_libsndfile
 #CONFIG += audiofilereading_libav
 
 # Audio file reading libraries -------------------------------------------------
 
+CONFIG(audiofilereading_builtin) {
+    QMAKE_CXXFLAGS += -DAUDIOFILEREADING_BUILTIN
+    HEADERS  += external/wavfile/wavfile.h
+    SOURCES  += external/wavfile/wavfile.cpp src/iodsound_load_builtin.cpp
+}
 CONFIG(audiofilereading_qt) {
     QMAKE_CXXFLAGS += -DAUDIOFILEREADING_QT
     HEADERS  += src/iodsound_load_qt.h
