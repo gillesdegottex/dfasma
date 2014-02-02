@@ -67,6 +67,7 @@ public:
     void mousePressEvent(QMouseEvent* event);
     void mouseMoveEvent(QMouseEvent* event);
     void mouseReleaseEvent(QMouseEvent* event);
+    void keyPressEvent(QKeyEvent* event);
 
     void drawBackground(QPainter* painter, const QRectF& rect);
 

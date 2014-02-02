@@ -102,6 +102,8 @@ public:
     void mousePressEvent(QMouseEvent* event);
     void mouseMoveEvent(QMouseEvent* event);
     void mouseReleaseEvent(QMouseEvent* event);
+    void keyPressEvent(QKeyEvent* event);
+
 
     void update_cursor(QPointF p);
     void update_texts_dimensions();

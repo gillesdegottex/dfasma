@@ -142,50 +142,68 @@ void WMainWindow::keyPressEvent(QKeyEvent* event){
 
 //    cout << "QGVWaveform::keyPressEvent " << endl;
 
-    if(event->key()==Qt::Key_Shift && !event->modifiers().testFlag(Qt::ControlModifier))
-        setScrollMode(true);
-    else if(event->key()==Qt::Key_Control && !event->modifiers().testFlag(Qt::ShiftModifier))
-        setEditMode(true);
+    if(event->key()==Qt::Key_CapsLock){
+        if(ui->actionEditMode->isChecked())
+            setSelectionMode(true);
+        else
+            setEditMode(true);
+    }
+    else if(event->key()==Qt::Key_Shift){
+        if(ui->actionSelectionMode->isChecked()){
+            m_gvWaveform->setDragMode(QGraphicsView::ScrollHandDrag);
+            m_gvSpectrum->setDragMode(QGraphicsView::ScrollHandDrag);
+        }
+    }
+    else if(event->key()==Qt::Key_Control){
+        if(ui->actionSelectionMode->isChecked()){
+            m_gvWaveform->setCursor(Qt::OpenHandCursor);
+            m_gvSpectrum->setCursor(Qt::OpenHandCursor);
+        }
+    }
 }
 
 void WMainWindow::keyReleaseEvent(QKeyEvent* event){
     Q_UNUSED(event);
 
-    if(event->key()==Qt::Key_Shift || event->key()==Qt::Key_Control)
-        setSelectionMode(true);
+//    if(event->key()==Qt::Key_Shift || event->key()==Qt::Key_Control)
+//        setSelectionMode(true);
 
-    m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
-    m_gvWaveform->setCursor(Qt::ArrowCursor);
-    m_gvSpectrum->setDragMode(QGraphicsView::NoDrag);
-    m_gvSpectrum->setCursor(Qt::ArrowCursor);
+    if(event->key()==Qt::Key_Shift){
+        if(ui->actionSelectionMode->isChecked()){
+            m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
+            m_gvWaveform->setCursor(Qt::CrossCursor);
+            m_gvSpectrum->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrum->setCursor(Qt::CrossCursor);
+        }
+        else {
+
+        }
+    }
+    if(event->key()==Qt::Key_Control){
+        if(ui->actionSelectionMode->isChecked()){
+            m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
+            m_gvWaveform->setCursor(Qt::CrossCursor);
+            m_gvSpectrum->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrum->setCursor(Qt::CrossCursor);
+        }
+        else {
+
+        }
+    }
 }
 
 void WMainWindow::connectModes(){
-    connect(ui->actionScrollMode, SIGNAL(toggled(bool)), this, SLOT(setScrollMode(bool)));
     connect(ui->actionSelectionMode, SIGNAL(toggled(bool)), this, SLOT(setSelectionMode(bool)));
     connect(ui->actionEditMode, SIGNAL(toggled(bool)), this, SLOT(setEditMode(bool)));
 }
 void WMainWindow::disconnectModes(){
-    disconnect(ui->actionScrollMode, SIGNAL(toggled(bool)), this, SLOT(setScrollMode(bool)));
     disconnect(ui->actionSelectionMode, SIGNAL(toggled(bool)), this, SLOT(setSelectionMode(bool)));
     disconnect(ui->actionEditMode, SIGNAL(toggled(bool)), this, SLOT(setEditMode(bool)));
 }
 
-void WMainWindow::setScrollMode(bool checked){
-    if(checked){
-        disconnectModes();
-        if(!ui->actionScrollMode->isChecked()) ui->actionScrollMode->setChecked(true);
-        if(ui->actionSelectionMode->isChecked()) ui->actionSelectionMode->setChecked(false);
-        if(ui->actionEditMode->isChecked()) ui->actionEditMode->setChecked(false);
-        connectModes();
-    }
-    else
-        setSelectionMode(true);
-}
 void WMainWindow::setSelectionMode(bool checked){
     if(checked){
         disconnectModes();
-        if(ui->actionScrollMode->isChecked()) ui->actionScrollMode->setChecked(false);
         if(!ui->actionSelectionMode->isChecked()) ui->actionSelectionMode->setChecked(true);
         if(ui->actionEditMode->isChecked()) ui->actionEditMode->setChecked(false);
         connectModes();
@@ -215,7 +233,6 @@ void WMainWindow::setSelectionMode(bool checked){
 void WMainWindow::setEditMode(bool checked){
     if(checked){
         disconnectModes();
-        if(ui->actionScrollMode->isChecked()) ui->actionScrollMode->setChecked(false);
         if(ui->actionSelectionMode->isChecked()) ui->actionSelectionMode->setChecked(false);
         if(!ui->actionEditMode->isChecked()) ui->actionEditMode->setChecked(true);
         connectModes();
@@ -281,9 +298,7 @@ void WMainWindow::addFile(const QString& filepath) {
     if(snds.size()==1)
         initializeSoundSystem(snds[0]->fs);
 
-    if(1){
-        m_gvWaveform->fitViewToSoundsAmplitude();
-    }
+    m_gvWaveform->fitViewToSoundsAmplitude();
 //    cout << "~MainWindow::addFile" << endl;
 }
 

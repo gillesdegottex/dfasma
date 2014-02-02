@@ -318,7 +318,6 @@
    <addaction name="actionOpen"/>
    <addaction name="actionCloseSelectedSound"/>
    <addaction name="separator"/>
-   <addaction name="actionScrollMode"/>
    <addaction name="actionSelectionMode"/>
    <addaction name="actionEditMode"/>
    <addaction name="separator"/>
@@ -382,24 +381,6 @@
     <string>Space</string>
    </property>
   </action>
-  <action name="actionScrollMode">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../ressources.qrc">
-     <normaloff>:/icons/scroll.svg</normaloff>:/icons/scroll.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Scroll Mode</string>
-   </property>
-   <property name="toolTip">
-    <string>Enter the scroll mode (F2 or Shift key)</string>
-   </property>
-   <property name="shortcut">
-    <string>F2</string>
-   </property>
-  </action>
   <action name="actionSelectionMode">
    <property name="checkable">
     <bool>true</bool>
@@ -430,7 +411,7 @@
     <string>Edit Mode</string>
    </property>
    <property name="toolTip">
-    <string>Enter edit mode (F4 or Control key)</string>
+    <string>Enter edit mode (F4)</string>
    </property>
    <property name="shortcut">
     <string>F4</string>

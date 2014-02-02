@@ -67,7 +67,6 @@ private slots:
     void soundsChanged();
     void setSoundShown(bool show);
     void resetAmpScale();
-    void setScrollMode(bool checked);
     void setSelectionMode(bool checked);
     void setEditMode(bool checked);
 
