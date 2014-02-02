@@ -714,6 +714,9 @@ void QGVSpectrum::selectionZoomOn(){
         float h11 = float(viewport()->rect().width())/m_selection.width();
         float h22 = float(viewport()->rect().height())/m_selection.height();
 
+        h11 *= 0.9;
+        h22 *= 0.9;
+
         clipzoom(h11, h22);
 
         QTransform trans = transform();
