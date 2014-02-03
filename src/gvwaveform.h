@@ -30,6 +30,8 @@ class QGVWaveform : public QGraphicsView
 {
     Q_OBJECT
 
+    qreal m_tmpdelay;
+
 public:
 
     bool m_first_start;
@@ -37,10 +39,11 @@ public:
     WMainWindow* m_main;
 
     float m_selection_pressedx;
-    enum CurrentAction {CANothing, CAMoving, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight, CAWaveformScale};
+    enum CurrentAction {CANothing, CAMoving, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight, CAWaveformScale, CAWaveformDelay};
     int m_currentAction;
-    QRectF m_selection, m_mouseSelection;
-    QGraphicsRectItem* m_giSelection;
+    QRectF m_mouseSelection; // The mouse selection. This one ignores the samples
+    QRectF m_selection; // The actual selection, always at exact samples time
+    QGraphicsRectItem* m_giSelection; // The selection shown, which contains the actual selection (start and end - and + 0.5 sample before and after the actual selection)
     QGraphicsLineItem* m_giCursor;
     QGraphicsSimpleTextItem* m_giCursorPositionTxt;
 //    QGraphicsItemGroup* m_yTicksLabels; // TODO Use this instead of print them individually ?

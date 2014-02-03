@@ -76,8 +76,8 @@ public:
     QGraphicsScene* m_scene;
 
     int m_winlen;
-    int m_nl;
-    int m_nr;
+    unsigned int m_nl;
+    unsigned int m_nr;
     std::vector<double> m_win;
 
 
@@ -126,7 +126,7 @@ signals:
 public slots:
     void soundsChanged();
 
-    void setSelection(double tstart, double tend);
+    void setWindowRange(double tstart, double tend);
     void computeDFTs();
     void fftResizing(int prevSize, int newSize);
 

@@ -153,6 +153,9 @@ void WMainWindow::keyPressEvent(QKeyEvent* event){
             m_gvWaveform->setDragMode(QGraphicsView::ScrollHandDrag);
             m_gvSpectrum->setDragMode(QGraphicsView::ScrollHandDrag);
         }
+        else if(ui->actionEditMode->isChecked()){
+            m_gvWaveform->setCursor(Qt::SizeHorCursor);
+        }
     }
     else if(event->key()==Qt::Key_Control){
         if(ui->actionSelectionMode->isChecked()){
@@ -165,9 +168,6 @@ void WMainWindow::keyPressEvent(QKeyEvent* event){
 void WMainWindow::keyReleaseEvent(QKeyEvent* event){
     Q_UNUSED(event);
 
-//    if(event->key()==Qt::Key_Shift || event->key()==Qt::Key_Control)
-//        setSelectionMode(true);
-
     if(event->key()==Qt::Key_Shift){
         if(ui->actionSelectionMode->isChecked()){
             m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
@@ -175,8 +175,8 @@ void WMainWindow::keyReleaseEvent(QKeyEvent* event){
             m_gvSpectrum->setDragMode(QGraphicsView::NoDrag);
             m_gvSpectrum->setCursor(Qt::CrossCursor);
         }
-        else {
-
+        else if(ui->actionEditMode->isChecked()){
+            m_gvWaveform->setCursor(Qt::SizeVerCursor);
         }
     }
     if(event->key()==Qt::Key_Control){
@@ -312,9 +312,14 @@ void WMainWindow::showSoundContextMenu(const QPoint& pos) {
     connect(snds[row]->m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setSoundShown(bool)));
     contextmenu.addAction(snds[row]->m_actionInvPolarity);
     connect(snds[row]->m_actionInvPolarity, SIGNAL(toggled(bool)), this, SLOT(soundsChanged()));
-    snds[row]->m_actionResetAmpScale->setText(QString("Reset amplitude scaling (%1dB) to original").arg(20*log10(snds[row]->m_ampscale), 0, 'g', 3));
+    snds[row]->m_actionResetAmpScale->setText(QString("Reset amplitude scaling (%1dB) to 0dB").arg(20*log10(snds[row]->m_ampscale), 0, 'g', 3));
+    snds[row]->m_actionResetAmpScale->setDisabled(snds[row]->m_ampscale==1.0);
     contextmenu.addAction(snds[row]->m_actionResetAmpScale);
     connect(snds[row]->m_actionResetAmpScale, SIGNAL(triggered()), this, SLOT(resetAmpScale()));
+    snds[row]->m_actionResetDelay->setText(QString("Reset delay (%1s) to 0s").arg(snds[row]->m_delay, 0, 'g', 3));
+    snds[row]->m_actionResetDelay->setDisabled(snds[row]->m_delay==0.0);
+    contextmenu.addAction(snds[row]->m_actionResetDelay);
+    connect(snds[row]->m_actionResetDelay, SIGNAL(triggered()), this, SLOT(resetDelay()));
 
 //    int contextmenuheight = contextmenu.sizeHint().height();
 //    int contextmenuheight = contextmenu.actioncontextmenu.height();
@@ -332,6 +337,12 @@ void WMainWindow::setSoundShown(bool show){
 void WMainWindow::resetAmpScale(){
     int row = ui->listSndFiles->currentRow();
     snds[row]->m_ampscale = 1.0;
+
+    soundsChanged();
+}
+void WMainWindow::resetDelay(){
+    int row = ui->listSndFiles->currentRow();
+    snds[row]->m_delay = 0.0;
 
     soundsChanged();
 }
@@ -424,8 +435,8 @@ void WMainWindow::play()
 
             if(m_gvWaveform->m_selection.width()>0){
 //                DEBUGSTRING << "MainWindow::play 1" << endl;
-                int nleft = int(m_gvWaveform->m_selection.left()*getFs());
-                int nright = int(m_gvWaveform->m_selection.right()*getFs());
+                int nleft = int(0.5+m_gvWaveform->m_selection.left()*getFs());
+                int nright = int(0.5+m_gvWaveform->m_selection.right()*getFs());
 
 //                DEBUGSTRING << "MainWindow::play 2" << endl;
                 QString txt = QString("Play selection: [%1 (%2s), %3, (%4s)]").arg(nleft).arg((nleft-1)/getFs()).arg(nright).arg((nright-1)/getFs());

@@ -137,7 +137,7 @@ void AudioEngine::startPlayback(IODSound* dssound, double tstart, double tend)
 //            DEBUGSTRING << "AudioEngine::startPlayback " << 1 << endl;
 //            connect(m_dssound, SIGNAL(readChannelFinished()), this, SLOT(readChannelFinished()));
 //            DEBUGSTRING << "AudioEngine::startPlayback " << 1 << endl;
-            m_tobeplayed = m_dssound->start(m_format, tstart, tend);
+            m_tobeplayed = m_dssound->setPlay(m_format, tstart, tend);
 //            DEBUGSTRING << "AudioEngine::startPlayback " << 1 << endl;
             m_audioOutput->start(m_dssound);
             m_rtinfo_timer.start();

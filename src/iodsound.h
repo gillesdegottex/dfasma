@@ -48,8 +48,8 @@ public:
 
     std::deque<float> wav;
     float m_wavmaxamp;
-    float fs;
-    static float fs_common;
+    float fs; // [Hz]
+    static float fs_common;  // [Hz]
     static float s_play_power;
     static std::deque<float> s_play_power_values;
     QColor color;
@@ -61,21 +61,23 @@ public:
     std::vector<std::complex<double> > m_dft;
 
     // QIODevice
-    double start(const QAudioFormat& format, double tstart=0.0, double tstop=0.0);
+    double setPlay(const QAudioFormat& format, double tstart=0.0, double tstop=0.0);
     void stop();
     qint64 readData(char *data, qint64 maxlen);
     qint64 writeData(const char *data, qint64 len);
 //    qint64 bytesAvailable() const;
-    qint64 m_start;
-    qint64 m_pos;
-    qint64 m_end;
+    qint64 m_start; // [sample index]
+    qint64 m_pos;   // [sample index]
+    qint64 m_end;   // [sample index]
 
-    qreal m_ampscale;
+    qreal m_ampscale; // [linear]
+    qreal m_delay;    // [s]
 
     // Visualization
     QAction* m_actionShow;
     QAction* m_actionInvPolarity;
     QAction* m_actionResetAmpScale;
+    QAction* m_actionResetDelay;
 
     ~IODSound();
 };

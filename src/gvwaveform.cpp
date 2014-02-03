@@ -43,8 +43,8 @@ using namespace std;
 
 QGVWaveform::QGVWaveform(WMainWindow* main)
     : QGraphicsView(main)
-    , m_main(main)
     , m_first_start(true)
+    , m_main(main)
     , m_ampzoom(1.0)
 {
     m_scene = new QGraphicsScene(this);
@@ -296,7 +296,7 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
                 setCursor(Qt::ClosedHandCursor);
                 m_main->ui->lblSelectionTxt->setText(QString("Selection: [%1s").arg(m_selection.left()).append(",%1s] ").arg(m_selection.right()).append("%1s").arg(m_selection.width()));
             }
-            else{
+            else if(!event->modifiers().testFlag(Qt::ControlModifier)){
                 // When selecting
                 m_currentAction = CASelecting;
                 m_selection_pressedx = p.x();
@@ -307,7 +307,18 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
             }
         }
         else if(m_main->ui->actionEditMode->isChecked()){
-                if((event->buttons()&Qt::LeftButton)){
+            if(event->modifiers().testFlag(Qt::ShiftModifier)){
+                // cout << "Scaling the waveform" << endl;
+                m_currentAction = CAWaveformDelay;
+                m_selection_pressedx = p.x();
+                int row = m_main->ui->listSndFiles->currentRow();
+                if(row>=0)
+                    m_tmpdelay = m_main->snds[row]->m_delay;
+                setCursor(Qt::SizeHorCursor);
+            }
+            else if(event->modifiers().testFlag(Qt::ControlModifier)){
+            }
+            else{
                 // cout << "Scaling the waveform" << endl;
                 m_currentAction = CAWaveformScale;
                 m_selection_pressedx = p.y();
@@ -372,6 +383,16 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
             m_main->m_gvSpectrum->soundsChanged();
         }
     }
+    else if(m_currentAction==CAWaveformDelay){
+        int row = m_main->ui->listSndFiles->currentRow();
+        if(row>=0){
+            m_tmpdelay += p.x()-m_selection_pressedx;
+            m_selection_pressedx = p.x();
+            m_main->snds[row]->m_delay = int(0.5+m_tmpdelay*m_main->getFs())/m_main->getFs();
+            soundsChanged();
+            m_main->m_gvSpectrum->soundsChanged();
+        }
+    }
     else{
         QRect selview = mapFromScene(m_selection).boundingRect();
 
@@ -393,10 +414,12 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
         }
         else if(m_main->ui->actionEditMode->isChecked()){
             if(event->modifiers().testFlag(Qt::ShiftModifier)){
+                setCursor(Qt::SizeHorCursor);
             }
             else if(event->modifiers().testFlag(Qt::ControlModifier)){
             }
             else{
+                setCursor(Qt::SizeVerCursor);
             }
         }
 
@@ -409,14 +432,7 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
 void QGVWaveform::mouseReleaseEvent(QMouseEvent* event){
 //    std::cout << "QGVWaveform::mouseReleaseEvent " << m_selection.width() << endl;
 
-    if(m_currentAction==CAMoving
-        || m_currentAction==CAModifSelectionLeft
-        || m_currentAction==CAModifSelectionRight
-        || m_currentAction==CAMovingSelection
-        || m_currentAction==CASelecting
-        || m_currentAction==CAWaveformScale){
-        m_currentAction = CANothing;
-    }
+    m_currentAction = CANothing;
 
     if(m_main->ui->actionSelectionMode->isChecked()){
         if(event->modifiers().testFlag(Qt::ShiftModifier)){
@@ -484,28 +500,33 @@ void QGVWaveform::selectionClipAndSet(QRectF selection){
 
     m_selection = selection;
 
-    if(m_selection.left()<0) m_selection.setLeft(-1.0/m_main->getFs());
-    if(m_selection.right()>m_main->getMaxLastSampleTime()) m_selection.setRight(m_main->getMaxLastSampleTime()+0.5/m_main->getFs());
-
-    // Clip selection between samples
-    m_selection.setLeft((0.5+int(m_selection.left()*m_main->getFs()))/m_main->getFs());
+    // Clip selection at samples time
+    m_selection.setLeft((int(0.5+m_selection.left()*m_main->getFs()))/m_main->getFs());
     if(selection.width()==0)
         m_selection.setRight(m_selection.left());
     else
-        m_selection.setRight((0.5+int(m_selection.right()*m_main->getFs()))/m_main->getFs());
+        m_selection.setRight((int(0.5+m_selection.right()*m_main->getFs()))/m_main->getFs());
 
-    m_aSelectionClear->setEnabled(true);
+    if(m_selection.left()<0) m_selection.setLeft(0.0);
+    if(m_selection.right()>m_main->getMaxLastSampleTime()) m_selection.setRight(m_main->getMaxLastSampleTime());
 
-    m_giSelection->setRect(m_selection.left(), -1, m_selection.width(), 2);
+    // Set the visible selection "embracing" the actual selection
+    m_giSelection->setRect(m_selection.left()-0.5/m_main->getFs(), -1, m_selection.width()+1.0/m_main->getFs(), 2);
 
     m_main->ui->lblSelectionTxt->setText(QString("Selection: [%1s").arg(m_selection.left()).append(",%1s] ").arg(m_selection.right()).append("%1s").arg(m_selection.width()));
 
-    // Spectrum
-    m_main->m_gvSpectrum->setSelection(m_selection.left(), m_selection.right());
-
     m_giSelection->show();
-    m_aZoomOnSelection->setEnabled(false);
-    m_aSelectionClear->setEnabled(false);
+    if(selection.width()>0){
+        m_aZoomOnSelection->setEnabled(true);
+        m_aSelectionClear->setEnabled(true);
+    }
+    else{
+        m_aZoomOnSelection->setEnabled(false);
+        m_aSelectionClear->setEnabled(false);
+    }
+
+    // Spectrum
+    m_main->m_gvSpectrum->setWindowRange(m_selection.left(), m_selection.right());
 
 //    cout << "~QGVWaveform::selectionClipAndSet" << endl;
 }
@@ -739,24 +760,25 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
             painter->setPen(outlinePen);
             painter->setBrush(QBrush(m_main->snds[fi]->color));
 
-            int nleft = int(rect.left()*m_main->getFs());
-            nleft = std::max(0, nleft);
+            int nleft = std::max(0, int((rect.left()-m_main->snds[fi]->m_delay)*m_main->getFs()));
 
-            int nright = int(rect.right()*m_main->getFs())+1;
-            nright = std::min(int(m_main->snds[fi]->wav.size()-1), nright);
+            int nright = std::min(int(m_main->snds[fi]->wav.size()-1), int((rect.right()-m_main->snds[fi]->m_delay)*m_main->getFs())+1);
 
             // std::cout << nleft << " " << nright << " " << m_main->snds[0]->wav.size()-1 << endl;
 
             // Draw a line between each sample
-            float prevx=nleft/m_main->getFs();
+            float prevx=nleft/m_main->getFs() + m_main->snds[fi]->m_delay;
+            float currx=0.0;
             float y = -a*m_main->snds[fi]->wav[nleft];
             float prevy=y;
+            // TODO Check bounds to avoid crash !
             // TODO prob appear with very long waveforms
             for(int n=nleft+1; n<=nright; n++){
                 y = -a*m_main->snds[fi]->wav[n];
-                painter->drawLine(QLineF(prevx, prevy, n/m_main->getFs(), y));
+                currx = n/m_main->getFs() + m_main->snds[fi]->m_delay;
+                painter->drawLine(QLineF(prevx, prevy, currx, y));
 
-                prevx = n/m_main->getFs();
+                prevx = currx;
                 prevy = y;
             }
 
@@ -766,8 +788,10 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
             if(samppixdensity<samppixdensity_dotsthr){
                 qreal dy = ((samppixdensity_dotsthr-samppixdensity)/samppixdensity_dotsthr)*(1.0/20);
 
-                for(int n=nleft; n<=nright; n++)
-                    painter->drawLine(QLineF(n/m_main->getFs(), -a*m_main->snds[fi]->wav[n]-dy, n/m_main->getFs(), -a*m_main->snds[fi]->wav[n]+dy));
+                for(int n=nleft; n<=nright; n++){
+                    currx = n/m_main->getFs() + m_main->snds[fi]->m_delay;
+                    painter->drawLine(QLineF(currx, -a*m_main->snds[fi]->wav[n]-dy, currx, -a*m_main->snds[fi]->wav[n]+dy));
+                }
             }
         }
 
@@ -801,13 +825,13 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
     //        std::cout << "t: " << pt.x() << " " << t.x() << " " << nt.x() << endl;
     //        std::cout << "ti: " << int(pt.x()*m_main->getFs()) << " " << int(t.x()*m_main->getFs()) << " " << int(nt.x()*m_main->snds[0]->fs) << endl;
 
-                int pn = std::max(0, int(0.5+pixelrect.left()*m_main->getFs()));
-                int nn = std::min(int(0.5+m_main->snds[fi]->wav.size()-1), int(0.5+pixelrect.right()*m_main->getFs()));
+                int pn = std::max(0, int(0.5+(pixelrect.left()-m_main->snds[fi]->m_delay)*m_main->getFs()));
+                int nn = std::min(int(0.5+m_main->snds[fi]->wav.size()-1), int(0.5+(pixelrect.right()-m_main->snds[fi]->m_delay)*m_main->getFs()));
 //                std::cout << pn << " " << nn << " " << nn-pn << endl;
 
                 int maxm = m_main->snds[fi]->wav.size()-1;
 
-                if(pn<=maxm){
+                if(nn>=0 && pn<=maxm){
                     float miny = 1.0;
                     float maxy = -1.0;
                     float y;

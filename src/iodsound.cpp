@@ -83,6 +83,7 @@ IODSound::IODSound(const QString& _fileName, QObject *parent)
     , m_pos(0)
     , m_end(0)
     , m_ampscale(1.0)
+    , m_delay(0.0)
 {
     m_actionShow = new QAction("Show", this);
     m_actionShow->setStatusTip(tr("Show the sound in the views"));
@@ -96,6 +97,9 @@ IODSound::IODSound(const QString& _fileName, QObject *parent)
 
     m_actionResetAmpScale = new QAction("Reset amplitude", this);
     m_actionResetAmpScale->setStatusTip(tr("Reset the amplitude scaling to 1"));
+
+    m_actionResetDelay = new QAction("Reset the delay", this);
+    m_actionResetDelay->setStatusTip(tr("Reset the delay to 0s"));
 
     load(_fileName);
 
@@ -126,7 +130,7 @@ void IODSound::setSamplingRate(float _fs){
     }
 }
 
-double IODSound::start(const QAudioFormat& format, double tstart, double tstop)
+double IODSound::setPlay(const QAudioFormat& format, double tstart, double tstop)
 {
     m_outputaudioformat = format;
 
@@ -141,13 +145,13 @@ double IODSound::start(const QAudioFormat& format, double tstart, double tstop)
 
     if(tstart==0.0 && tstop==0.0){
         m_start = 0;
-        m_pos = 0;
+        m_pos = m_start;
         m_end = wav.size()-1;
     }
     else{
-        m_start = max(0, min(int(wav.size()-1), int(tstart*fs)));
+        m_start = int(0.5+tstart*fs);
         m_pos = m_start;
-        m_end = max(0, min(int(wav.size()-1), int(tstop*fs)));
+        m_end = int(0.5+tstop*fs);
     }
 
     QIODevice::open(QIODevice::ReadOnly);
@@ -165,17 +169,6 @@ void IODSound::stop()
     m_pos = 0;
     m_end = 0;
     QIODevice::close();
-}
-
-// Assuming the output audio device has been open in 16bits ...
-// TODO Manage more output formats
-const qint16  PCMS16MaxValue     =  32767;
-const quint16 PCMS16MaxAmplitude =  32768; // because minimum is -32768
-inline qreal pcmToReal(qint16 pcm) {
-    return qreal(pcm) / PCMS16MaxAmplitude;
-}
-inline qint16 realToPcm(qreal real) {
-    return real * PCMS16MaxValue;
 }
 
 qint64 IODSound::readData(char *data, qint64 len)
@@ -201,28 +194,37 @@ qint64 IODSound::readData(char *data, qint64 len)
     if(m_actionInvPolarity->isChecked())
         a *= -1;
 
+    // Write as many bits has requested by the call
     while(writtenbytes<len) {
 
-//        float e = wav[m_pos]*wav[m_pos];
-//        s_play_power += e;
-        float e = abs(a*wav[m_pos]);
-        s_play_power_values.push_front(e);
-        while(s_play_power_values.size()/fs>0.1){
-            s_play_power -= s_play_power_values.back();
-            s_play_power_values.pop_back();
+        int depos = m_pos - int(0.5+m_delay*fs);
+        if(depos>=0 && depos<int(wav.size())){
+    //        float e = wav[m_pos]*wav[m_pos];
+    //        s_play_power += e;
+            float e = abs(a*wav[depos]);
+            s_play_power_values.push_front(e);
+            while(s_play_power_values.size()/fs>0.1){
+                s_play_power -= s_play_power_values.back();
+                s_play_power_values.pop_back();
+            }
         }
 
 //        cout << 20*log10(sqrt(s_play_power/s_play_power_values.size())) << endl;
 
         qint16 value;
-        if(m_pos<=m_end) value=realToPcm(a*wav[m_pos]);
-        else             value=realToPcm(0.0);
+        // Assuming the output audio device has been open in 16bits ...
+        // TODO Manage more output formats
+        if(depos>=0 && depos<int(wav.size()) && m_pos<=m_end)
+            value=qint16((a*wav[depos])*32767);
+        else
+            value=0;
 
         qToLittleEndian<qint16>(value, ptr);
         ptr += channelBytes;
         writtenbytes += channelBytes;
 
-        if(m_pos<m_end) m_pos++;
+        if(m_pos<m_end)
+            m_pos++;
     }
 
     s_play_power = 0;

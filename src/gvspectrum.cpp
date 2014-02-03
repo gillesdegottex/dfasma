@@ -155,7 +155,7 @@ vector<double> hamming(int n)
     return win;
 }
 
-void QGVSpectrum::setSelection(double tstart, double tend){
+void QGVSpectrum::setWindowRange(double tstart, double tend){
     if(tstart==tend) return;
 
     m_nl = std::max(0, int(0.5+tstart*m_main->getFs()));
@@ -196,10 +196,12 @@ void QGVSpectrum::computeDFTs(){
             if(m_main->snds[fi]->m_actionInvPolarity->isChecked())
                 pol = -1;
 
-            int n=0;
+            int n = 0;
+            int wn = 0;
             for(; n<m_winlen; n++){
-                if(m_nl+n < m_main->snds[fi]->wav.size())
-                    m_cfftw3->in[n] = pol*m_main->snds[fi]->wav[m_nl+n]*m_win[n];
+                wn = m_nl+n - int(0.5+m_main->snds[fi]->m_delay*m_main->getFs());
+                if(wn>=0 && wn<int(m_main->snds[fi]->wav.size()))
+                    m_cfftw3->in[n] = pol*m_main->snds[fi]->wav[wn]*m_win[n];
                 else
                     m_cfftw3->in[n] = 0.0;
             }
@@ -482,7 +484,7 @@ void QGVSpectrum::mousePressEvent(QMouseEvent* event){
     }
     else if(event->buttons()&Qt::RightButton){
         cout << "Calling context menu" << endl;
-        int contextmenuheight = 0;
+//        int contextmenuheight = 0;
 //        QPoint posglobal = mapToGlobal(mapFromScene(p)+QPoint(0,contextmenuheight/2));
 //        m_contextmenu.exec(posglobal);
     }
@@ -588,16 +590,7 @@ void QGVSpectrum::mouseReleaseEvent(QMouseEvent* event){
 
     QPointF p = mapToScene(event->pos());
 
-    if(m_currentAction==CAMoving
-            || m_currentAction==CAModifSelectionLeft
-            || m_currentAction==CAModifSelectionRight
-            || m_currentAction==CAModifSelectionTop
-            || m_currentAction==CAModifSelectionBottom
-            || m_currentAction==CAMovingSelection
-            || m_currentAction==CASelecting
-            || m_currentAction==CAWaveformScale){
-        m_currentAction = CANothing;
-    }
+    m_currentAction = CANothing;
 
     if(m_main->ui->actionSelectionMode->isChecked()){
         if(event->modifiers().testFlag(Qt::ShiftModifier)){
