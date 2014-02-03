@@ -66,7 +66,7 @@ void IODSound::load(const QString& _fileName){
 
         // Decode the data for 16 bit signed LE mono format
         const qint16 value = *reinterpret_cast<const qint16*>(buffer.constData());
-        wav.push_back(value/32768.0);
+        wav.push_back(value/32767.0);
     }
 
     delete pfile;
