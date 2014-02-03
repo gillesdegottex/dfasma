@@ -199,7 +199,7 @@ void QGVSpectrum::computeDFTs(){
             int n = 0;
             int wn = 0;
             for(; n<m_winlen; n++){
-                wn = m_nl+n - int(0.5+m_main->snds[fi]->m_delay*m_main->getFs());
+                wn = m_nl+n - m_main->snds[fi]->m_delay;
                 if(wn>=0 && wn<int(m_main->snds[fi]->wav.size()))
                     m_cfftw3->in[n] = pol*m_main->snds[fi]->wav[wn]*m_win[n];
                 else

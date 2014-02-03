@@ -316,8 +316,8 @@ void WMainWindow::showSoundContextMenu(const QPoint& pos) {
     snds[row]->m_actionResetAmpScale->setDisabled(snds[row]->m_ampscale==1.0);
     contextmenu.addAction(snds[row]->m_actionResetAmpScale);
     connect(snds[row]->m_actionResetAmpScale, SIGNAL(triggered()), this, SLOT(resetAmpScale()));
-    snds[row]->m_actionResetDelay->setText(QString("Reset delay (%1s) to 0s").arg(snds[row]->m_delay, 0, 'g', 3));
-    snds[row]->m_actionResetDelay->setDisabled(snds[row]->m_delay==0.0);
+    snds[row]->m_actionResetDelay->setText(QString("Reset delay (%1s) to 0s").arg(snds[row]->m_delay/getFs(), 0, 'g', 3));
+    snds[row]->m_actionResetDelay->setDisabled(snds[row]->m_delay==0);
     contextmenu.addAction(snds[row]->m_actionResetDelay);
     connect(snds[row]->m_actionResetDelay, SIGNAL(triggered()), this, SLOT(resetDelay()));
 
@@ -342,7 +342,7 @@ void WMainWindow::resetAmpScale(){
 }
 void WMainWindow::resetDelay(){
     int row = ui->listSndFiles->currentRow();
-    snds[row]->m_delay = 0.0;
+    snds[row]->m_delay = 0;
 
     soundsChanged();
 }

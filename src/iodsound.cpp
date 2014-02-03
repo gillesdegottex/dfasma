@@ -83,7 +83,7 @@ IODSound::IODSound(const QString& _fileName, QObject *parent)
     , m_pos(0)
     , m_end(0)
     , m_ampscale(1.0)
-    , m_delay(0.0)
+    , m_delay(0)
 {
     m_actionShow = new QAction("Show", this);
     m_actionShow->setStatusTip(tr("Show the sound in the views"));
@@ -197,7 +197,7 @@ qint64 IODSound::readData(char *data, qint64 len)
     // Write as many bits has requested by the call
     while(writtenbytes<len) {
 
-        int depos = m_pos - int(0.5+m_delay*fs);
+        int depos = m_pos - m_delay;
         if(depos>=0 && depos<int(wav.size())){
     //        float e = wav[m_pos]*wav[m_pos];
     //        s_play_power += e;

@@ -71,7 +71,7 @@ public:
     qint64 m_end;   // [sample index]
 
     qreal m_ampscale; // [linear]
-    qreal m_delay;    // [s]
+    qint64 m_delay;   // [sample index]
 
     // Visualization
     QAction* m_actionShow;
