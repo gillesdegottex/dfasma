@@ -33,24 +33,24 @@ CONFIG(audiofilereading_builtin) {
     message(Building with minimal built-in audio file reader.)
     QMAKE_CXXFLAGS += -DAUDIOFILEREADING_BUILTIN
     HEADERS  += external/wavfile/wavfile.h
-    SOURCES  += external/wavfile/wavfile.cpp src/iodsound_load_builtin.cpp
+    SOURCES  += external/wavfile/wavfile.cpp external/iodsound_load_builtin.cpp
 }
 CONFIG(audiofilereading_qt) {
     message(Building with Qt support for audio file reading.)
     QMAKE_CXXFLAGS += -DAUDIOFILEREADING_QT
-    HEADERS  += src/iodsound_load_qt.h
-    SOURCES  += src/iodsound_load_qt.cpp
+    HEADERS  += external/iodsound_load_qt.h
+    SOURCES  += external/iodsound_load_qt.cpp
 }
 CONFIG(audiofilereading_libsndfile) {
     message(Building with libsndfile support for audio file reading.)
     QMAKE_CXXFLAGS += -DAUDIOFILEREADING_LIBSNDFILE
-    SOURCES  += src/iodsound_load_libsndfile.cpp
+    SOURCES  += external/iodsound_load_libsndfile.cpp
     LIBS += -lsndfile
 }
 CONFIG(audiofilereading_libav) {
     message(Building with libav support for audio file reading.)
     QMAKE_CXXFLAGS += -DAUDIOFILEREADING_LIBAV
-    SOURCES += src/iodsound_load_libav.cpp
+    SOURCES += external/iodsound_load_libav.cpp
     LIBS += -lavformat -lavcodec -lavutil
 }
 

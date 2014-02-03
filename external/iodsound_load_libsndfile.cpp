@@ -22,7 +22,7 @@ file provided in the source code of DFasma. Another copy can be found at
  * http://www.music.columbia.edu/pipermail/music-dsp/2002-January/047060.html
  */
 
-#include "iodsound.h"
+#include "../src/iodsound.h"
 
 #include <iostream>
 using namespace std;
