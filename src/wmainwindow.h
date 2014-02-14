@@ -47,11 +47,14 @@ class WMainWindow : public QMainWindow
 
     void initializeSoundSystem(float fs);
 
-    void keyPressEvent(QKeyEvent* event);
-    void keyReleaseEvent(QKeyEvent* event);
-
     void connectModes();
     void disconnectModes();
+
+protected:
+    void keyPressEvent(QKeyEvent* event);
+    void keyReleaseEvent(QKeyEvent* event);
+    void dropEvent(QDropEvent *event);
+    void dragEnterEvent(QDragEnterEvent *event);
 
 private slots:
     void openFile();
