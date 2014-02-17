@@ -19,7 +19,6 @@ file provided in the source code of DFasma. Another copy can be found at
 */
 
 #include "iodsound.h"
-#include "external/CFFTW3.h"
 
 #include <iostream>
 #include <deque>
