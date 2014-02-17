@@ -23,7 +23,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "gvwaveform.h"
-#include "../external/CFFTW3.h"
+#include "../external/FFTwrapper.h"
 
 #include <iostream>
 using namespace std;
@@ -37,9 +37,9 @@ using namespace std;
 
 // TODO option to keep ratio between zoomx and zoomy so that zoomy is also limited
 
-FFTResizeThread::FFTResizeThread(CFFTW3* cfftw3, QObject* parent)
+FFTResizeThread::FFTResizeThread(FFTwrapper* fft, QObject* parent)
     : QThread(parent)
-    , m_cfftw3(cfftw3)
+    , m_fft(fft)
     , m_size_resizing(-1)
     , m_size_todo(-1)
 {
@@ -66,12 +66,12 @@ void FFTResizeThread::resize(int newsize) {
     if(m_mutex_resizing.tryLock()){
         // Not resizing
 
-        if(newsize==m_cfftw3->size()){
+        if(newsize==m_fft->size()){
             m_mutex_resizing.unlock();
         }
         else{
             m_size_resizing = newsize;
-            emit fftResizing(m_cfftw3->size(), m_size_resizing);
+            emit fftResizing(m_fft->size(), m_size_resizing);
             start();
         }
     }
@@ -93,11 +93,11 @@ void FFTResizeThread::run() {
 
     bool resize = true;
     do{
-        int prevSize = m_cfftw3->size();
+        int prevSize = m_fft->size();
 
 //        std::cout << "FFTResizeThread::run " << prevSize << "=>" << m_size_resizing << endl;
 
-        m_cfftw3->resize(m_size_resizing);
+        m_fft->resize(m_size_resizing);
 
 //        std::cout << "FFTResizeThread::run resize finished" << endl;
 
@@ -115,7 +115,7 @@ void FFTResizeThread::run() {
 //            m_mutex_resizing.unlock();
             m_size_resizing = -1;
             m_mutex_changingsizes.unlock();
-            emit fftResized(prevSize, m_cfftw3->size());
+            emit fftResized(prevSize, m_fft->size());
             resize = false;
         }
 
@@ -186,7 +186,7 @@ void QGVSpectrum::computeDFTs(){
 
     if(m_fftresizethread->m_mutex_resizing.tryLock()){
 
-        int dftlen = m_cfftw3->size();
+        int dftlen = m_fft->size();
 
         m_main->ui->pgbFFTResize->hide();
         m_main->ui->lblSpectrumInfoTxt->setText(QString("DFT size=%1").arg(dftlen));
@@ -201,18 +201,18 @@ void QGVSpectrum::computeDFTs(){
             for(; n<m_winlen; n++){
                 wn = m_nl+n - m_main->snds[fi]->m_delay;
                 if(wn>=0 && wn<int(m_main->snds[fi]->wav.size()))
-                    m_cfftw3->in[n] = pol*m_main->snds[fi]->wav[wn]*m_win[n];
+                    m_fft->in[n] = pol*m_main->snds[fi]->wav[wn]*m_win[n];
                 else
-                    m_cfftw3->in[n] = 0.0;
+                    m_fft->in[n] = 0.0;
             }
             for(; n<dftlen; n++)
-                m_cfftw3->in[n] = 0.0;
+                m_fft->in[n] = 0.0;
 
-            m_cfftw3->execute();
+            m_fft->execute();
 
             m_main->snds[fi]->m_dft.resize(dftlen/2+1);
             for(n=0; n<dftlen/2+1; n++)
-                m_main->snds[fi]->m_dft[n] = m_cfftw3->out[n];
+                m_main->snds[fi]->m_dft[n] = m_fft->out[n];
 
 //            std::cout << "DTF " << fi << " computed" << endl;
 
@@ -236,8 +236,8 @@ QGVSpectrum::QGVSpectrum(WMainWindow* main)
 
     m_first_start = true;
 
-    m_cfftw3 = new CFFTW3();
-    m_fftresizethread = new FFTResizeThread(m_cfftw3, this);
+    m_fft = new FFTwrapper();
+    m_fftresizethread = new FFTResizeThread(m_fft, this);
 
     // Cursor
     m_giCursorHoriz = new QGraphicsLineItem(0, -100, 0, 100);
@@ -864,7 +864,7 @@ void QGVSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
         m_minsy = prevy;
         m_maxsy = prevy;
         for(int k=0; k<dftlen/2+1; k++){
-//            cout << 20*log10(abs(m_cfftw3->out[k])) << " ";
+//            cout << 20*log10(abs(m_fft->out[k])) << " ";
             float x = m_main->getFs()*k/dftlen;
             float y = 20*log10(m_main->snds[fi]->m_ampscale*abs(m_main->snds[fi]->m_dft[k]));
             painter->drawLine(QLineF(prevx, -prevy, x, -y));
@@ -978,5 +978,5 @@ QGVSpectrum::~QGVSpectrum(){
     m_fftresizethread->m_mutex_changingsizes.lock();
     m_fftresizethread->m_mutex_changingsizes.unlock();
     delete m_fftresizethread;
-    delete m_cfftw3;
+    delete m_fft;
 }

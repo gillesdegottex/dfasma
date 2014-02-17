@@ -29,7 +29,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QThread>
 
 #include "wmainwindow.h"
-#include "../external/CFFTW3.h"
+#include "../external/FFTwrapper.h"
 
 class MainWindow;
 
@@ -37,7 +37,7 @@ class FFTResizeThread : public QThread
 {
     Q_OBJECT
 
-    CFFTW3* m_cfftw3;   // The FFT transformer
+    FFTwrapper* m_fft;   // The FFT transformer
 
     int m_size_resizing;// The size which is in preparation by FFTResizeThread
     int m_size_todo;    // The next size which has to be done by FFTResizeThread asap
@@ -49,7 +49,7 @@ signals:
     void fftResized(int prevSize, int newSize);
 
 public:
-    FFTResizeThread(CFFTW3* cfftw3, QObject* parent);
+    FFTResizeThread(FFTwrapper* fft, QObject* parent);
 
     void resize(int newsize);
 
@@ -69,7 +69,7 @@ class QGVSpectrum : public QGraphicsView
 public:
     explicit QGVSpectrum(WMainWindow* main);
 
-    CFFTW3* m_cfftw3;
+    FFTwrapper* m_fft;
     FFTResizeThread* m_fftresizethread;
 
     WMainWindow* m_main;

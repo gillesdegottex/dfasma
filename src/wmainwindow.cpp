@@ -61,7 +61,12 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     ui->setupUi(this);
 
     m_dlgSettings = new WDialogSettings(this);
-    m_dlgSettings->ui->lblAudioFileReading->setText(IODSound::getAudioFileReadingDescription());
+    m_dlgSettings->ui->lblLibraryAudioFileReading->setText(IODSound::getAudioFileReadingDescription());
+    #ifdef FFT_FFTW3
+        m_dlgSettings->ui->lblLibraryFFT->setText(QString("<a href=\"http://www.fftw.org\">FFTW</a> version 3"));
+    #elif FFT_FFTREAL
+        m_dlgSettings->ui->lblLibraryFFT->setText("<a href=\"http://ldesoras.free.fr/prod.html#src_audio\">FFTReal</a> version 2.11");
+    #endif
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(execAbout()));
 
     setAcceptDrops(true);

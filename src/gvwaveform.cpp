@@ -23,7 +23,6 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "gvspectrum.h"
-#include "../external/CFFTW3.h"
 
 #include <iostream>
 using namespace std;
@@ -797,7 +796,6 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
                 qreal dy = ((samppixdensity_dotsthr-samppixdensity)/samppixdensity_dotsthr)*(1.0/20);
 
                 for(int n=nleft; n<=nright; n++){
-
                     int wn = n - m_main->snds[fi]->m_delay;
                     if(wn>=0 && wn<int(m_main->snds[fi]->wav.size())){
                         currx = n/m_main->getFs();
