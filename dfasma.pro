@@ -21,6 +21,11 @@
 #-------------------------------------------------------------------------------
 # Compilation options
 
+DEFINES += FFT_FFTW3
+#DEFINES += FFT_FFTREAL
+
+
+# TODO move CONFIG to DEFINES
 #CONFIG += audiofilereading_builtin # This is a minimal audio file reader which
                                    # should be use only for portablity test purpose
 #CONFIG += audiofilereading_qt
@@ -56,7 +61,19 @@ CONFIG(audiofilereading_libav) {
 
 # DFT computation libraries ----------------------------------------------------
 
-LIBS += -lfftw3
+contains(DEFINES, FFT_FFTW3){
+    LIBS += -lfftw3
+}
+contains(DEFINES, FFT_FFTREAL){
+    SOURCES +=
+    HEADERS +=  external/FFTReal/FFTReal.h \
+                external/FFTReal/FFTReal.hpp \
+                external/FFTReal/def.h \
+                external/FFTReal/DynArray.h \
+                external/FFTReal/DynArray.hpp \
+                external/FFTReal/OscSinCos.h \
+                external/FFTReal/OscSinCos.hpp
+}
 
 
 # Common configurations --------------------------------------------------------
@@ -77,7 +94,7 @@ SOURCES   += src/main.cpp\
              src/gvspectrum.cpp \
              src/wdialogsettings.cpp \
              external/audioengine/audioengine.cpp \
-             external/CFFTW3.cpp
+             external/FFTwrapper.cpp
 
 HEADERS   += src/wmainwindow.h \
              src/iodsound.h \
@@ -85,7 +102,7 @@ HEADERS   += src/wmainwindow.h \
              src/gvspectrum.h \
              src/wdialogsettings.h \
              external/audioengine/audioengine.h \
-             external/CFFTW3.h
+             external/FFTwrapper.h
 
 FORMS     += src/wmainwindow.ui \
              src/wdialogsettings.ui
