@@ -509,6 +509,7 @@ void QGVWaveform::selectionClipAndSet(QRectF selection){
         m_selection.setRight((int(0.5+m_selection.right()*m_main->getFs()))/m_main->getFs());
 
     if(m_selection.left()<0) m_selection.setLeft(0.0);
+    cout << m_main->getMaxLastSampleTime() << endl;
     if(m_selection.right()>m_main->getMaxLastSampleTime()) m_selection.setRight(m_main->getMaxLastSampleTime());
 
     // Set the visible selection "embracing" the actual selection
