@@ -484,12 +484,11 @@ void QGVSpectrum::mousePressEvent(QMouseEvent* event){
                 m_currentAction = CAWaveformScale;
                 m_selection_pressedp = p;
                 setCursor(Qt::SizeVerCursor);
-                cout << "1" << endl;
             }
         }
     }
     else if(event->buttons()&Qt::RightButton){
-        cout << "Calling context menu" << endl;
+//        cout << "Calling context menu" << endl;
 //        int contextmenuheight = 0;
 //        QPoint posglobal = mapToGlobal(mapFromScene(p)+QPoint(0,contextmenuheight/2));
 //        m_contextmenu.exec(posglobal);
@@ -543,9 +542,7 @@ void QGVSpectrum::mouseMoveEvent(QMouseEvent* event){
     else if(m_currentAction==CAWaveformScale){
         // When scaling the waveform
         FTSound* currentftsound = m_main->getCurrentFTSound();
-        cout << "2" << currentftsound << endl;
         if(currentftsound){
-            cout << "3" << endl;
             currentftsound->m_ampscale *= pow(10, -(p.y()-m_selection_pressedp.y())/20.0);
             m_selection_pressedp = p;
 
@@ -912,7 +909,8 @@ void QGVSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
                     cf0 = m_main->ftfzeros[fi]->f0s[i];
             }
 
-//            cout << ct << ":" << cf0 << endl;
+            // cout << ct << ":" << cf0 << endl;
+            if(cf0<1) continue;
 
             QColor c = m_main->ftfzeros[fi]->color;
             c.setAlphaF(1.0);
