@@ -336,10 +336,6 @@ void WMainWindow::addFile(const QString& filepath) {
             ftsnds.push_back(ftsnd);
             ft = ftsnd;
 
-            ui->splitterViews->show();
-            soundsChanged();
-            ui->actionCloseFile->setEnabled(true);
-
             // The first sound will determine the common fs for the audio output
             if(ftsnds.size()==1)
                 initializeSoundSystem(ftsnds[0]->fs);
@@ -358,6 +354,9 @@ void WMainWindow::addFile(const QString& filepath) {
         ft->setIcon(QIcon(pm));
 
         ui->listSndFiles->addItem(ft);
+        soundsChanged();
+        ui->actionCloseFile->setEnabled(true);
+        ui->splitterViews->show();
     }
     catch (QString err)
     {
