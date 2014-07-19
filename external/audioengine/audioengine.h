@@ -59,7 +59,7 @@ using namespace std;
 #include <QVector>
 #include <QTimer>
 
-class IODSound;
+class FTSound;
 QT_BEGIN_NAMESPACE
 class QAudioInput;
 class QAudioOutput;
@@ -88,7 +88,7 @@ class AudioEngine : public QObject
     QAudioDeviceInfo    m_audioOutputDevice;
     QAudioOutput*       m_audioOutput;
 
-    IODSound* m_dssound; // The selected sound to play
+    FTSound* m_ftsound; // The selected sound to play
     double m_tobeplayed;
 
     bool initialize();
@@ -116,7 +116,7 @@ public:
 
 public slots:
     void setAudioOutputDevice(const QAudioDeviceInfo &device);
-    void startPlayback(IODSound* sound, double tstart=0.0, double tend=0.0);
+    void startPlayback(FTSound* sound, double tstart=0.0, double tend=0.0);
     void stopPlayback();
     void reset();
 

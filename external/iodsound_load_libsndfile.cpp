@@ -22,7 +22,7 @@ file provided in the source code of DFasma. Another copy can be found at
  * http://www.music.columbia.edu/pipermail/music-dsp/2002-January/047060.html
  */
 
-#include "../src/iodsound.h"
+#include "../src/ftsound.h"
 
 #include <iostream>
 using namespace std;
@@ -32,7 +32,7 @@ extern "C" {
 #include    <sndfile.h>
 }
 
-QString IODSound::getAudioFileReadingDescription(){
+QString FTSound::getAudioFileReadingDescription(){
 
     QString txt = QString("<p>Using <a href='http://www.mega-nerd.com/libsndfile'>libsndfile</a>");
 
@@ -83,7 +83,7 @@ QString IODSound::getAudioFileReadingDescription(){
 /* libsndfile can handle more than 6 channels but we'll restrict it to 6. */
 #define    MAX_CHANNELS    6
 
-void IODSound::load(const QString& _fileName){
+void FTSound::load(const QString& _fileName){
 
     // Load audio file
     fileName = _fileName;

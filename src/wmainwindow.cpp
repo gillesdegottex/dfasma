@@ -26,12 +26,16 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "gvwaveform.h"
 #include "gvspectrum.h"
-#include "iodsound.h"
+#include "ftsound.h"
+#include "ftfzero.h"
+#include "ftlabels.h"
+#include "../external/audioengine/audioengine.h"
 
 #include "qtextedit.h"
 
 #include <math.h>
 #include <iostream>
+#include <algorithm>
 using namespace std;
 
 #include <QToolBar>
@@ -61,7 +65,7 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     ui->setupUi(this);
 
     m_dlgSettings = new WDialogSettings(this);
-    m_dlgSettings->ui->lblLibraryAudioFileReading->setText(IODSound::getAudioFileReadingDescription());
+    m_dlgSettings->ui->lblLibraryAudioFileReading->setText(FTSound::getAudioFileReadingDescription());
     #ifdef FFT_FFTW3
         m_dlgSettings->ui->lblLibraryFFT->setText(QString("<a href=\"http://www.fftw.org\">FFTW</a> version 3"));
     #elif FFT_FFTREAL
@@ -75,16 +79,18 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 //    ui->listSndFiles->setSelectionMode(QAbstractItemView::MultiSelection); // TODO fix BUG1 below first
     ui->listSndFiles->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->listSndFiles, SIGNAL(customContextMenuRequested(const QPoint&)),
-            this, SLOT(showSoundContextMenu(const QPoint&)));
+            this, SLOT(showFileContextMenu(const QPoint&)));
 
     ui->actionAbout->setIcon(QIcon(":/icons/about.svg"));
     ui->actionSettings->setIcon(QIcon(":/icons/settings.svg"));
     ui->actionOpen->setIcon(style()->standardIcon(QStyle::SP_DialogOpenButton));
-    ui->actionCloseSelectedSound->setIcon(style()->standardIcon(QStyle::SP_DialogCloseButton));
-    ui->actionCloseSelectedSound->setEnabled(false);
+    ui->actionCloseFile->setIcon(style()->standardIcon(QStyle::SP_DialogCloseButton));
+    ui->actionCloseFile->setEnabled(false);
     connect(ui->actionSettings, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
     ui->actionSelectionMode->setChecked(true);
     connectModes();
+    connect(ui->listSndFiles, SIGNAL(itemSelectionChanged()), this, SLOT(fileSelectionChanged()));
+    addAction(ui->actionMultiShow);
 
     // Audio engine for playing the selections
     ui->actionPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
@@ -116,31 +122,47 @@ void WMainWindow::execAbout(){
 //    QMessageBox::aboutQt(this, "About this software");
 }
 
-float WMainWindow::getFs(){
-    if(hasFilesLoaded())
-        return snds[0]->fs;
+double WMainWindow::getFs(){
+    if(ftsnds.size()>0)
+        return ftsnds[0]->fs;
     else
         return 44100.0;   // Fake a ghost sound using 44.1kHz sampling rate
 }
 unsigned int WMainWindow::getMaxWavSize(){
 
-    if(!hasFilesLoaded())
+    if(ftsnds.empty())
         return 44100;      // Fake a one second ghost sound of 44.1kHz sampling rate
 
     unsigned int s = 0;
 
-    for(unsigned int fi=0; fi<snds.size(); fi++)
-        s = max(s, snds[fi]->wav.size());
+    for(unsigned int fi=0; fi<ftsnds.size(); fi++)
+        s = max(s, (unsigned int)(ftsnds[fi]->wav.size()));
 
     return s;
 }
-float WMainWindow::getMaxDuration(){
+double WMainWindow::getMaxDuration(){
 
-    return getMaxWavSize()/getFs();
+    double dur = getMaxWavSize()/getFs();
+
+    for(unsigned int fi=0; fi<ftfzeros.size(); fi++)
+        dur = std::max(dur, ftfzeros[fi]->getLastSampleTime());
+
+    for(unsigned int fi=0; fi<ftlabels.size(); fi++)
+        dur = std::max(dur, ftlabels[fi]->getLastSampleTime());
+
+    return dur;
 }
-float WMainWindow::getMaxLastSampleTime(){
+double WMainWindow::getMaxLastSampleTime(){
 
-    return getMaxDuration()-1.0/getFs();
+    double lst = getMaxDuration()-1.0/getFs();
+
+    for(unsigned int fi=0; fi<ftfzeros.size(); fi++)
+        lst = std::max(lst, ftfzeros[fi]->getLastSampleTime());
+
+    for(unsigned int fi=0; fi<ftlabels.size(); fi++)
+        lst = std::max(lst, ftlabels[fi]->getLastSampleTime());
+
+    return lst;
 }
 
 WMainWindow::~WMainWindow()
@@ -256,7 +278,7 @@ void WMainWindow::setEditMode(bool checked){
         setSelectionMode(true);
 }
 
-// Sound file management =======================================================
+// File management =======================================================
 
 void WMainWindow::openFile() {
 
@@ -272,13 +294,58 @@ void WMainWindow::openFile() {
 }
 
 void WMainWindow::addFile(const QString& filepath) {
-//    cout << "MainWindow::addFile" << endl;
+    cout << "MainWindow::addFile " << filepath.toLocal8Bit().constData() << endl;
 
-    IODSound* snd = NULL;
     try
     {
-        std::cout << filepath.toLocal8Bit().constData() << endl;
-        snd = new IODSound(filepath, this);
+        FileType* ft = NULL;
+
+        QFileInfo fileinfo(filepath);
+        if(fileinfo.suffix()=="sdif") { // TODO case insensitive
+            #ifdef SUPPORT_SDIF
+
+            if(0) { // TODO check kind of data in the file, f0
+
+                FTFZero* ftf0 = new FTFZero(filepath, this);
+                ftfzeros.push_back(ftf0);
+                ft = ftf0;
+            }
+            else if (1) { // TODO labels
+                FTLabels* ftlabel = new FTLabels(filepath, this);
+                ftlabels.push_back(ftlabel);
+                ft = ftlabel;
+            }
+            #else
+            throw QString("SDIF files support not compiled in this version.");
+            #endif
+        }
+        else {
+            FTSound* ftsnd = new FTSound(filepath, this);
+            ftsnds.push_back(ftsnd);
+            ft = ftsnd;
+
+            ui->splitterViews->show();
+            soundsChanged();
+            ui->actionCloseFile->setEnabled(true);
+
+            // The first sound will determine the common fs for the audio output
+            if(ftsnds.size()==1)
+                initializeSoundSystem(ftsnds[0]->fs);
+
+            m_gvWaveform->fitViewToSoundsAmplitude();
+        //    cout << "~MainWindow::addFile" << endl;
+        }
+
+        // Set properties common to all files
+        QFileInfo fileInfo(filepath);
+        ft->setText(fileInfo.fileName());
+        ft->setToolTip(fileInfo.absoluteFilePath());
+
+        QPixmap pm(32,32);
+        pm.fill(ft->color);
+        ft->setIcon(QIcon(pm));
+
+        ui->listSndFiles->addItem(ft);
     }
     catch (QString err)
     {
@@ -286,30 +353,6 @@ void WMainWindow::addFile(const QString& filepath) {
 
         return;
     }
-
-    snds.push_back(snd);
-
-    QFileInfo fileInfo(filepath);
-
-    QListWidgetItem* li = new QListWidgetItem(fileInfo.fileName());
-    li->setToolTip(fileInfo.absoluteFilePath());
-
-    QPixmap pm(32,32);
-    pm.fill(snd->color);
-    li->setIcon(QIcon(pm));
-
-    ui->listSndFiles->addItem(li);
-
-    ui->splitterViews->show();
-    soundsChanged();
-    ui->actionCloseSelectedSound->setEnabled(true);
-
-    // The first sound will determine the common fs for the audio output
-    if(snds.size()==1)
-        initializeSoundSystem(snds[0]->fs);
-
-    m_gvWaveform->fitViewToSoundsAmplitude();
-//    cout << "~MainWindow::addFile" << endl;
 }
 
 void WMainWindow::dropEvent(QDropEvent *event){
@@ -323,30 +366,40 @@ void WMainWindow::dragEnterEvent(QDragEnterEvent *event){
     event->acceptProposedAction();
 }
 
-void WMainWindow::showSoundContextMenu(const QPoint& pos) {
-    int row = ui->listSndFiles->currentRow();
+FTSound* WMainWindow::getCurrentFTSound() {
+    FileType* currenItem = (FileType*)(ui->listSndFiles->currentItem());
+
+    if(currenItem->type==FileType::FTSOUND)
+        return (FTSound*)currenItem;
+
+    return NULL;
+}
+
+void WMainWindow::showFileContextMenu(const QPoint& pos) {
 
     QMenu contextmenu(this);
-    contextmenu.addAction(ui->actionPlay);
-    contextmenu.addAction(ui->actionCloseSelectedSound);
-    contextmenu.addAction(snds[row]->m_actionShow);
-    connect(snds[row]->m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setSoundShown(bool)));
-    contextmenu.addAction(snds[row]->m_actionInvPolarity);
-    connect(snds[row]->m_actionInvPolarity, SIGNAL(toggled(bool)), this, SLOT(soundsChanged()));
-    snds[row]->m_actionResetAmpScale->setText(QString("Reset amplitude scaling (%1dB) to 0dB").arg(20*log10(snds[row]->m_ampscale), 0, 'g', 3));
-    snds[row]->m_actionResetAmpScale->setDisabled(snds[row]->m_ampscale==1.0);
-    contextmenu.addAction(snds[row]->m_actionResetAmpScale);
-    connect(snds[row]->m_actionResetAmpScale, SIGNAL(triggered()), this, SLOT(resetAmpScale()));
-    snds[row]->m_actionResetDelay->setText(QString("Reset delay (%1s) to 0s").arg(snds[row]->m_delay/getFs(), 0, 'g', 3));
-    snds[row]->m_actionResetDelay->setDisabled(snds[row]->m_delay==0);
-    contextmenu.addAction(snds[row]->m_actionResetDelay);
-    connect(snds[row]->m_actionResetDelay, SIGNAL(triggered()), this, SLOT(resetDelay()));
 
-//    int contextmenuheight = contextmenu.sizeHint().height();
-//    int contextmenuheight = contextmenu.actioncontextmenu.height();
-    int contextmenuheight = 0;
-    QPoint posglobal = mapToGlobal(pos+QPoint(0,contextmenuheight/2));
+    QList<QListWidgetItem*> l = ui->listSndFiles->selectedItems();
+    if(l.size()==1) {
+        FileType* currenItem = (FileType*)(ui->listSndFiles->currentItem());
+        currenItem->fillContextMenu(contextmenu, this);
+    }
+    else {
+        contextmenu.addAction(ui->actionMultiShow);
+        contextmenu.addAction(ui->actionCloseFile);
+    }
+
+    int contextmenuheight = contextmenu.sizeHint().height();
+    QPoint posglobal = mapToGlobal(pos)+QPoint(24,contextmenuheight/2);
     contextmenu.exec(posglobal);
+}
+void WMainWindow::fileSelectionChanged(){
+    ui->actionMultiShow->disconnect();
+    connect(ui->actionMultiShow, SIGNAL(triggered()), this, SLOT(soundsChanged()));
+
+    QList<QListWidgetItem*> l = ui->listSndFiles->selectedItems();
+    for(int i=0; i<l.size(); i++)
+        connect(ui->actionMultiShow, SIGNAL(triggered()), ((FileType*)l.at(i))->m_actionShow, SLOT(toggle()));
 }
 void WMainWindow::setSoundShown(bool show){
     QListWidgetItem* li = ui->listSndFiles->currentItem();
@@ -356,16 +409,20 @@ void WMainWindow::setSoundShown(bool show){
     soundsChanged();
 }
 void WMainWindow::resetAmpScale(){
-    int row = ui->listSndFiles->currentRow();
-    snds[row]->m_ampscale = 1.0;
+    FTSound* currentftsound = getCurrentFTSound();
+    if(currentftsound) {
+        currentftsound->m_ampscale = 1.0;
 
-    soundsChanged();
+        soundsChanged();
+    }
 }
 void WMainWindow::resetDelay(){
-    int row = ui->listSndFiles->currentRow();
-    snds[row]->m_delay = 0;
+    FTSound* currentftsound = getCurrentFTSound();
+    if(currentftsound) {
+        currentftsound->m_delay = 0;
 
-    soundsChanged();
+        soundsChanged();
+    }
 }
 
 void WMainWindow::soundsChanged(){
@@ -380,25 +437,33 @@ void WMainWindow::closeSelectedFile() {
     QList<QListWidgetItem*> l = ui->listSndFiles->selectedItems();
 
     for(int i=0; i<l.size(); i++){
-        int r = ui->listSndFiles->row(l.at(i));
-        cout << "Closing file: " << snds[r]->fileName.toLocal8Bit().constData() << endl;
-        delete l.at(i);
-        IODSound* snd = snds[r];
-        snds.erase(snds.begin()+r); // TODO BUG1 Works only if the selection is unique
-        delete snd;
+
+        FileType* ft = (FileType*)l.at(i);
+
+        cout << "Closing file: \"" << ft->fileName.toLocal8Bit().constData() << "\"" << endl;
+
+        delete ft; // Remove it from the listview
+
+        // Remove it from its own type-related list
+        if(ft->type==FileType::FTSOUND)
+            ftsnds.erase(std::find(ftsnds.begin(), ftsnds.end(), (FTSound*)ft));
+        else if(ft->type==FileType::FTFZERO)
+            ftfzeros.erase(std::find(ftfzeros.begin(), ftfzeros.end(), (FTFZero*)ft));
+        else if(ft->type==FileType::FTLABELS)
+            ftlabels.erase(std::find(ftlabels.begin(), ftlabels.end(), (FTLabels*)ft));
     }
 
     // If there is no more files, put the interface in a waiting-for-file state.
     if(ui->listSndFiles->count()==0){
         ui->splitterViews->hide();
-        IODSound::fs_common = 0;
-        ui->actionCloseSelectedSound->setEnabled(false);
+        FTSound::fs_common = 0;
+        ui->actionCloseFile->setEnabled(false);
     }
     else
         soundsChanged();
 }
 
-// Audio play management =======================================================
+// Audio management ============================================================
 
 void WMainWindow::initializeSoundSystem(float fs){
 
@@ -446,36 +511,34 @@ void WMainWindow::play()
 //            DEBUGSTRING << "MainWindow::play QAudio::IdleState || QAudio::StoppedState" << endl;
 
             // If stopped, play the whole signal or its selection
+            FTSound* currentftsound = getCurrentFTSound();
+            if(currentftsound) {
+                ui->actionPlay->setEnabled(false);
+    //            DEBUGSTRING << "MainWindow::play currentRow: " << fi << " " << snds.size() << endl;
 
-            ui->actionPlay->setEnabled(false);
+                if(m_gvWaveform->m_selection.width()>0){
+    //                DEBUGSTRING << "MainWindow::play 1" << endl;
+                    int nleft = int(0.5+m_gvWaveform->m_selection.left()*getFs());
+                    int nright = int(0.5+m_gvWaveform->m_selection.right()*getFs());
 
-            int fi = ui->listSndFiles->currentRow();
-            if(fi==-1) fi=0;
-            ui->listSndFiles->setCurrentRow(fi); // Force the selection of the current file
-//            DEBUGSTRING << "MainWindow::play currentRow: " << fi << " " << snds.size() << endl;
+    //                DEBUGSTRING << "MainWindow::play 2" << endl;
+                    QString txt = QString("Play selection: [%1 (%2s), %3, (%4s)]").arg(nleft).arg((nleft-1)/getFs()).arg(nright).arg((nright-1)/getFs());
+                    statusBar()->showMessage(txt);
 
-            if(m_gvWaveform->m_selection.width()>0){
-//                DEBUGSTRING << "MainWindow::play 1" << endl;
-                int nleft = int(0.5+m_gvWaveform->m_selection.left()*getFs());
-                int nright = int(0.5+m_gvWaveform->m_selection.right()*getFs());
+    //                DEBUGSTRING << "MainWindow::play 3" << endl;
+                    m_audioengine->startPlayback(currentftsound, m_gvWaveform->m_selection.left(), m_gvWaveform->m_selection.right());
+                }
+                else{
+                    QString filetoplay = currentftsound->fileName;
 
-//                DEBUGSTRING << "MainWindow::play 2" << endl;
-                QString txt = QString("Play selection: [%1 (%2s), %3, (%4s)]").arg(nleft).arg((nleft-1)/getFs()).arg(nright).arg((nright-1)/getFs());
-                statusBar()->showMessage(txt);
+                    QString txt = QString("Play full file: ")+filetoplay;
+                    statusBar()->showMessage(txt);
+    //                DEBUGSTRING << "MainWindow::play " << txt.toLocal8Bit().constData() << "'" << endl;
 
-//                DEBUGSTRING << "MainWindow::play 3" << endl;
-                m_audioengine->startPlayback(snds[fi], m_gvWaveform->m_selection.left(), m_gvWaveform->m_selection.right());
+                    m_audioengine->startPlayback(currentftsound);
+                }
+                QTimer::singleShot(250, this, SLOT(enablePlay())); // Delay the stop and re-play, in order to avoid the audio engine to crash hysterically.
             }
-            else{
-                QString filetoplay = ui->listSndFiles->currentItem()->text();
-
-                QString txt = QString("Play full file: ")+filetoplay;
-                statusBar()->showMessage(txt);
-//                DEBUGSTRING << "MainWindow::play " << txt.toLocal8Bit().constData() << "'" << endl;
-
-                m_audioengine->startPlayback(snds[fi]);
-            }
-            QTimer::singleShot(250, this, SLOT(enablePlay())); // Delay the stop and re-play, in order to avoid the audio engine to crash hysterically.
         }
         else if(m_audioengine->state()==QAudio::ActiveState){
 //            DEBUGSTRING << "MainWindow::play QAudio::ActiveState" << endl;

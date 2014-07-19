@@ -30,6 +30,10 @@ extern "C" {
 }
 #endif
 
+#ifdef SUPPORT_SDIF
+#include <sdif.h>
+#endif
+
 int main(int argc, char *argv[])
 {
     #ifdef AUDIOFILEREADING_LIBAV
@@ -38,12 +42,17 @@ int main(int argc, char *argv[])
         av_register_all();
     #endif
 
+    #ifdef SUPPORT_SDIF
+//        SdifGenInit("");// TODO Still need with easdif ?
+        // Should call on exit: SdifGenKill();
+    #endif
+
     QApplication a(argc, argv);
 
-    QStringList sndfiles = QApplication::arguments();
-    sndfiles.removeAt(0);
+    QStringList filestoload = QApplication::arguments();
+    filestoload.removeAt(0);
 
-    WMainWindow w(sndfiles);
+    WMainWindow w(filestoload);
     w.show();
 
     return a.exec();

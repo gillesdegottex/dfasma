@@ -30,6 +30,9 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::ExtendedSelection</enum>
+          </property>
           <property name="wordWrap">
            <bool>true</bool>
           </property>
@@ -304,7 +307,7 @@
      <x>0</x>
      <y>0</y>
      <width>814</width>
-     <height>25</height>
+     <height>29</height>
     </rect>
    </property>
   </widget>
@@ -316,7 +319,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionOpen"/>
-   <addaction name="actionCloseSelectedSound"/>
+   <addaction name="actionCloseFile"/>
    <addaction name="separator"/>
    <addaction name="actionSelectionMode"/>
    <addaction name="actionEditMode"/>
@@ -327,7 +330,7 @@
    <addaction name="actionAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="actionCloseSelectedSound">
+  <action name="actionCloseFile">
    <property name="text">
     <string>Close</string>
    </property>
@@ -417,6 +420,17 @@
     <string>F4</string>
    </property>
   </action>
+  <action name="actionMultiShow">
+   <property name="text">
+    <string>Show</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle show state of the selected files</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+H</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
@@ -440,7 +454,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionCloseSelectedSound</sender>
+   <sender>actionCloseFile</sender>
    <signal>triggered()</signal>
    <receiver>WMainWindow</receiver>
    <slot>closeSelectedFile()</slot>

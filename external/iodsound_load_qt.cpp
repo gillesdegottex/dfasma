@@ -27,7 +27,7 @@ using namespace std;
 
 #include "iodsound_load_qt.h"
 
-QString IODSound::getAudioFileReadingDescription(){
+QString FTSound::getAudioFileReadingDescription(){
 
     QString txt = QString("<p>Using builtin <a href='http://qt-project.org/doc/qt-5.0/qtmultimedia/audiooverview.html'>Qt audio decoder</a>");
 
@@ -187,7 +187,7 @@ void AudioDecoder::updateProgress()
 }
 
 
-void IODSound::load(const QString& _fileName){
+void FTSound::load(const QString& _fileName){
 
     // Load audio file
     fileName = _fileName;

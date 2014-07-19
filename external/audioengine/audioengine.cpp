@@ -62,7 +62,7 @@ This example has been widely adapted for the purpose of the DFasma software.
 #include <qmath.h>
 #include <qendian.h>
 
-#include "../../src/iodsound.h"
+#include "../../src/ftsound.h"
 
 const int    NotifyIntervalMs       = 100;
 
@@ -75,7 +75,7 @@ AudioEngine::AudioEngine(int fs, QObject *parent)
     , m_fs(fs)
     , m_state(QAudio::StoppedState)
     , m_audioOutput(0)
-    , m_dssound(0)
+    , m_ftsound(0)
 {
     m_rtinfo_timer.setSingleShot(false);
     m_rtinfo_timer.setInterval(1000*1/12.0);  // Ask for 24 refresh per second
@@ -116,7 +116,7 @@ bool AudioEngine::isInitialized(){
 // Public slots
 //-----------------------------------------------------------------------------
 
-void AudioEngine::startPlayback(IODSound* dssound, double tstart, double tend)
+void AudioEngine::startPlayback(FTSound* dssound, double tstart, double tend)
 {
 //    DEBUGSTRING << "AudioEngine::startPlayback" << endl;
 
@@ -133,13 +133,13 @@ void AudioEngine::startPlayback(IODSound* dssound, double tstart, double tend)
 //            DEBUGSTRING << "AudioEngine::startPlayback " << 1 << endl;
             stopPlayback();
 //            DEBUGSTRING << "AudioEngine::startPlayback " << 1 << endl;
-            m_dssound = dssound; // Select the new sound to play
+            m_ftsound = dssound; // Select the new sound to play
 //            DEBUGSTRING << "AudioEngine::startPlayback " << 1 << endl;
 //            connect(m_dssound, SIGNAL(readChannelFinished()), this, SLOT(readChannelFinished()));
 //            DEBUGSTRING << "AudioEngine::startPlayback " << 1 << endl;
-            m_tobeplayed = m_dssound->setPlay(m_format, tstart, tend);
+            m_tobeplayed = m_ftsound->setPlay(m_format, tstart, tend);
 //            DEBUGSTRING << "AudioEngine::startPlayback " << 1 << endl;
-            m_audioOutput->start(m_dssound);
+            m_audioOutput->start(m_ftsound);
             m_rtinfo_timer.start();
             m_starttime = QDateTime::currentMSecsSinceEpoch();
         }
@@ -188,18 +188,18 @@ void AudioEngine::sendRealTimeInfo(){
 //    lastt = t;
 //    std::cout << "start=" << QDateTime::fromMSecsSinceEpoch(m_starttime).toString("hh:mm:ss.zzz             ").toLocal8Bit().constData() << " curr=" << QDateTime::fromMSecsSinceEpoch(QDateTime::currentMSecsSinceEpoch()).toString("hh:mm:ss.zzz             ").toLocal8Bit().constData() << " AudioEngine::sendRealTimeInfo" << endl;
 
-    if(m_dssound){
-        double t = double(m_dssound->m_start/m_dssound->fs) + (QDateTime::currentMSecsSinceEpoch() - m_starttime)/1000.0;
+    if(m_ftsound){
+        double t = double(m_ftsound->m_start/m_ftsound->fs) + (QDateTime::currentMSecsSinceEpoch() - m_starttime)/1000.0;
 //        double t = double(m_dssound->m_start)/m_dssound->fs + m_audioOutput->processedUSecs()/1000000.0;
 
-        if(t > double(m_dssound->m_end/m_dssound->fs)){
+        if(t > double(m_ftsound->m_end/m_ftsound->fs)){
             emit playPositionChanged(-1);
             emit localEnergyChanged(0);
         }
         else{
             emit playPositionChanged(t);
-//            emit localEnergyChanged(sqrt(DSSound::s_play_power/(m_fs*0.1)));
-            emit localEnergyChanged(IODSound::s_play_power); // For max amplitude in window
+//            emit localEnergyChanged(sqrt(FTSound::s_play_power/(m_fs*0.1)));
+            emit localEnergyChanged(FTSound::s_play_power); // For max amplitude in window
         }
     }
 }

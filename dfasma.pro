@@ -21,16 +21,27 @@
 #-------------------------------------------------------------------------------
 # Compilation options
 
+# SDIF support
+
 DEFINES += FFT_FFTW3
 #DEFINES += FFT_FFTREAL
 
+CONFIG += sdifreading
 
 # TODO move CONFIG to DEFINES
-#CONFIG += audiofilereading_builtin # This is a minimal audio file reader which
-                                   # should be use only for portablity test purpose
-#CONFIG += audiofilereading_qt
 CONFIG += audiofilereading_libsndfile
+#CONFIG += audiofilereading_qt
 #CONFIG += audiofilereading_libav
+#CONFIG += audiofilereading_builtin # This is a minimal audio file reader which
+                                    # should be use only for portablity test purpose
+
+CONFIG(sdifreading) {
+    message(Building with SDIF file reader.)
+    DEFINES += SUPPORT_SDIF
+    #LIBS += /u/formes/share/lib/x86_64-Linux-rh50/libsdif.a
+    LIBS += -L/u/formes/share/lib/x86_64-Linux-rh65 -lEasdif
+    QMAKE_CXXFLAGS  += -I/u/formes/share/include
+}
 
 # Audio file reading libraries -------------------------------------------------
 
@@ -89,7 +100,10 @@ TEMPLATE = app
 
 SOURCES   += src/main.cpp\
              src/wmainwindow.cpp \
-             src/iodsound.cpp \
+             src/filetype.cpp \
+             src/ftsound.cpp \
+             src/ftfzero.cpp \
+             src/ftlabels.cpp \
              src/gvwaveform.cpp \
              src/gvspectrum.cpp \
              src/wdialogsettings.cpp \
@@ -97,7 +111,10 @@ SOURCES   += src/main.cpp\
              external/FFTwrapper.cpp
 
 HEADERS   += src/wmainwindow.h \
-             src/iodsound.h \
+             src/filetype.h \
+             src/ftsound.h \
+             src/ftfzero.h \
+             src/ftlabels.h \
              src/gvwaveform.h \
              src/gvspectrum.h \
              src/wdialogsettings.h \

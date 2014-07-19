@@ -27,19 +27,27 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QColor>
 #include <QListWidgetItem>
 #include <QThread>
+#include <QAudio>
+#include <QAudioDeviceInfo>
 #include <QTimer>
+
+#include <deque>
 
 #include "wdialogsettings.h"
 
-#include "iodsound.h"
-#include "../external/audioengine/audioengine.h"
+//#include "ftsound.h"
+class FTSound;
+class FTFZero;
+class FTLabels;
+class AudioEngine;
+//#include "ftf0.h"
+class QGVWaveform;
+class QGVSpectrum;
 
 namespace Ui {
 class WMainWindow;
 }
 
-class QGVWaveform;
-class QGVSpectrum;
 
 class WMainWindow : public QMainWindow
 {
@@ -65,14 +73,15 @@ private slots:
 
     void audioStateChanged(QAudio::State state);
     void audioOutputDeviceChanged(const QAudioDeviceInfo& device);
-    void execAbout();
-    void showSoundContextMenu(const QPoint&);
+    void showFileContextMenu(const QPoint&);
     void soundsChanged();
     void setSoundShown(bool show);
     void resetAmpScale();
     void resetDelay();
     void setSelectionMode(bool checked);
     void setEditMode(bool checked);
+    void execAbout();
+    void fileSelectionChanged();
 
 public:
     explicit WMainWindow(QStringList sndfiles, QWidget* parent=0);
@@ -82,20 +91,21 @@ public:
 
     WDialogSettings* m_dlgSettings;
 
-    std::deque<IODSound*> snds;
     void addFile(const QString& filepath);
-    inline bool hasFilesLoaded() const {return snds.size();}
-    float getFs();
+    std::deque<FTSound*> ftsnds;
+    std::deque<FTFZero*> ftfzeros;
+    std::deque<FTLabels*> ftlabels;
+    FTSound* getCurrentFTSound();
+
+    double getFs();
     unsigned int getMaxWavSize();
-    float getMaxDuration();
-    float getMaxLastSampleTime();
+    double getMaxDuration();
+    double getMaxLastSampleTime();
 
     QGVWaveform* m_gvWaveform;
     QGVSpectrum* m_gvSpectrum;
 
     AudioEngine* m_audioengine;
 };
-
-
 
 #endif // WMAINWINDOW_H

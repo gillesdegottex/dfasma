@@ -23,11 +23,11 @@ file provided in the source code of DFasma. Another copy can be found at
 
 //#include <iostream>
 
-QString IODSound::getAudioFileReadingDescription(){
+QString FTSound::getAudioFileReadingDescription(){
     return QString("<p>Using a built-in minimal WAV file reader (supports only PCM 16 bit signed LE mono format)</p>");
 }
 
-void IODSound::load(const QString& _fileName){
+void FTSound::load(const QString& _fileName){
     // Load audio file
     fileName = _fileName;
 

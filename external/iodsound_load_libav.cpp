@@ -28,7 +28,7 @@ A last solution is to wait for the war between libav and ffmpeg to be over and u
 
 */
 
-#include "iodsound.h"
+#include "ftsound.h"
 
 #include <iostream>
 using namespace std;
@@ -44,11 +44,11 @@ extern "C" {
 //#include <libavresample/avresample.h>
 }
 
-QString IODSound::getAudioFileReadingDescription(){
+QString FTSound::getAudioFileReadingDescription(){
     return QString("<p>Using <a href='https://libav.org/'>libav</a></p>");
 }
 
-void IODSound::load(const QString& _fileName){
+void FTSound::load(const QString& _fileName){
     cout << 1 << endl;
     // Load audio file
     fileName = _fileName;

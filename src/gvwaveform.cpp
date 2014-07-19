@@ -23,6 +23,8 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "gvspectrum.h"
+#include "ftsound.h"
+#include "ftlabels.h"
 
 #include <iostream>
 using namespace std;
@@ -140,7 +142,7 @@ QGVWaveform::QGVWaveform(WMainWindow* main)
     connect(m_aSelectionClear, SIGNAL(triggered()), this, SLOT(selectionClear()));
     waveformToolBar->addAction(m_aSelectionClear);
     m_main->ui->lWaveformToolBar->addWidget(waveformToolBar);
-    m_aFitViewToSoundsAmplitude = new QAction(tr("Fit view to sounds max amplitude"), this);
+    m_aFitViewToSoundsAmplitude = new QAction(tr("Fit view to max amplitude of all sounds"), this);
     m_aFitViewToSoundsAmplitude->setStatusTip(tr("Change the amplitude zoom so that to fit to the maximum of amplitude among all sounds"));
     connect(m_aFitViewToSoundsAmplitude, SIGNAL(triggered()), this, SLOT(fitViewToSoundsAmplitude()));
     m_contextmenu.addAction(m_aFitViewToSoundsAmplitude);
@@ -153,10 +155,10 @@ QGVWaveform::QGVWaveform(WMainWindow* main)
 }
 
 void QGVWaveform::fitViewToSoundsAmplitude(){
-    if(m_main->hasFilesLoaded()){
+    if(m_main->ftsnds.size()>0){
         qreal maxwavmaxamp = 0.0;
-        for(unsigned int si=0; si<m_main->snds.size(); si++)
-            maxwavmaxamp = std::max(maxwavmaxamp, m_main->snds[si]->m_ampscale*m_main->snds[si]->m_wavmaxamp);
+        for(unsigned int si=0; si<m_main->ftsnds.size(); si++)
+            maxwavmaxamp = std::max(maxwavmaxamp, m_main->ftsnds[si]->m_ampscale*m_main->ftsnds[si]->m_wavmaxamp);
 
         // Add a small margin
         maxwavmaxamp *= 1.05;
@@ -168,7 +170,7 @@ void QGVWaveform::fitViewToSoundsAmplitude(){
 }
 
 void QGVWaveform::soundsChanged(){
-    if(m_main->hasFilesLoaded()){
+    if(m_main->ftsnds.size()>0){
         m_scene->setSceneRect(-1.0/m_main->getFs(), -1.05*m_ampzoom, m_main->getMaxDuration()+1.0/m_main->getFs(), 2.1*m_ampzoom);
     }
 
@@ -310,9 +312,9 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
                 // cout << "Scaling the waveform" << endl;
                 m_currentAction = CAWaveformDelay;
                 m_selection_pressedx = p.x();
-                int row = m_main->ui->listSndFiles->currentRow();
-                if(row>=0)
-                    m_tmpdelay = m_main->snds[row]->m_delay/m_main->getFs();
+                FTSound* currentftsound = m_main->getCurrentFTSound();
+                if(currentftsound)
+                    m_tmpdelay = currentftsound->m_delay/m_main->getFs();
                 setCursor(Qt::SizeHorCursor);
             }
             else if(event->modifiers().testFlag(Qt::ControlModifier)){
@@ -326,9 +328,7 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
         }
     }
     else if(event->buttons()&Qt::RightButton){
-        // cout << "Calling context menu" << endl;
-        int contextmenuheight = 0;
-        QPoint posglobal = mapToGlobal(mapFromScene(p)+QPoint(0,contextmenuheight/2));
+        QPoint posglobal = mapToGlobal(mapFromScene(p)+QPoint(0,0));
         m_contextmenu.exec(posglobal);
     }
 
@@ -370,25 +370,25 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
     }
     else if(m_currentAction==CAWaveformScale){
         // When scaling the waveform
-        int row = m_main->ui->listSndFiles->currentRow();
-        if(row>=0){
-            m_main->snds[row]->m_ampscale *= pow(10, -10*(p.y()-m_selection_pressedx)/20.0);
+        FTSound* currentftsound = m_main->getCurrentFTSound();
+        if(currentftsound){
+            currentftsound->m_ampscale *= pow(10, -10*(p.y()-m_selection_pressedx)/20.0);
             m_selection_pressedx = p.y();
 
-            if(m_main->snds[row]->m_ampscale>1e10) m_main->snds[row]->m_ampscale = 1e10;
-            else if(m_main->snds[row]->m_ampscale<1e-10) m_main->snds[row]->m_ampscale = 1e-10;
+            if(currentftsound->m_ampscale>1e10) currentftsound->m_ampscale = 1e10;
+            else if(currentftsound->m_ampscale<1e-10) currentftsound->m_ampscale = 1e-10;
 
             soundsChanged();
             m_main->m_gvSpectrum->soundsChanged();
         }
     }
     else if(m_currentAction==CAWaveformDelay){
-        int row = m_main->ui->listSndFiles->currentRow();
-        if(row>=0){
+        FTSound* currentftsound = m_main->getCurrentFTSound();
+        if(currentftsound){
             m_tmpdelay += p.x()-m_selection_pressedx;
             m_selection_pressedx = p.x();
-            m_main->snds[row]->m_delay = int(0.5+m_tmpdelay*m_main->getFs());
-            if(m_tmpdelay<0) m_main->snds[row]->m_delay--;
+            currentftsound->m_delay = int(0.5+m_tmpdelay*m_main->getFs());
+            if(m_tmpdelay<0) currentftsound->m_delay--;
 
             soundsChanged();
             m_main->m_gvSpectrum->soundsChanged();
@@ -623,7 +623,7 @@ void QGVWaveform::sldAmplitudeChanged(int value){
 
 //    cout << "GVWaveform::sldAmplitudeChanged v=" << value << " z=" << m_ampzoom << endl;
 
-    if(m_main->hasFilesLoaded()){
+    if(m_main->ftsnds.size()>0){
 
         m_scene->setSceneRect(-1.0/m_main->getFs(), -1.05*m_ampzoom, m_main->getMaxDuration()+1.0/m_main->getFs(), 2.1*m_ampzoom);
 
@@ -734,10 +734,10 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 //    cout << "drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
     // TODO move to constructor
-    QPen outlinePen(m_main->snds[0]->color);
+    QPen outlinePen(m_main->ftsnds[0]->color);
     outlinePen.setWidth(0);
     painter->setPen(outlinePen);
-    painter->setBrush(QBrush(m_main->snds[0]->color));
+    painter->setBrush(QBrush(m_main->ftsnds[0]->color));
 
 //    QRectF viewrect = mapToScene(QRect(QPoint(0,0), QSize(viewport()->rect().width(), viewport()->rect().height()))).boundingRect();
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
@@ -748,18 +748,18 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
     if(samppixdensity<10){
 //        std::cout << "Full resolution" << endl;
 
-        for(unsigned int fi=0; fi<m_main->snds.size(); fi++){
-            if(!m_main->snds[fi]->m_actionShow->isChecked())
+        for(size_t fi=0; fi<m_main->ftsnds.size(); fi++){
+            if(!m_main->ftsnds[fi]->m_actionShow->isChecked())
                 continue;
 
-            float a = m_main->snds[fi]->m_ampscale;
-            if(m_main->snds[fi]->m_actionInvPolarity->isChecked())
+            float a = m_main->ftsnds[fi]->m_ampscale;
+            if(m_main->ftsnds[fi]->m_actionInvPolarity->isChecked())
                 a *=-1.0;
 
-            QPen outlinePen(m_main->snds[fi]->color);
+            QPen outlinePen(m_main->ftsnds[fi]->color);
             outlinePen.setWidth(0);
             painter->setPen(outlinePen);
-            painter->setBrush(QBrush(m_main->snds[fi]->color));
+            painter->setBrush(QBrush(m_main->ftsnds[fi]->color));
 
             int nleft = int(rect.left()*m_main->getFs());
             int nright = int(rect.right()*m_main->getFs())+1;
@@ -767,19 +767,19 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
             // std::cout << nleft << " " << nright << " " << m_main->snds[0]->wav.size()-1 << endl;
 
             // Draw a line between each sample
-            float prevx=nleft/m_main->getFs() + m_main->snds[fi]->m_delay/m_main->getFs();
+            float prevx=nleft/m_main->getFs() + m_main->ftsnds[fi]->m_delay/m_main->getFs();
             float currx=0.0;
             float y;
-            if(nleft>=0 && nleft<int(m_main->snds[fi]->wav.size()))
-                y = -a*m_main->snds[fi]->wav[nleft];
+            if(nleft>=0 && nleft<int(m_main->ftsnds[fi]->wav.size()))
+                y = -a*m_main->ftsnds[fi]->wav[nleft];
             else
                 y = 0.0;
             float prevy=y;
             // TODO prob appear with very long waveforms
             for(int n=nleft+1; n<=nright; n++){
-                int wn = n - m_main->snds[fi]->m_delay;
-                if(wn>=0 && wn<int(m_main->snds[fi]->wav.size()))
-                    y = -a*m_main->snds[fi]->wav[wn];
+                int wn = n - m_main->ftsnds[fi]->m_delay;
+                if(wn>=0 && wn<int(m_main->ftsnds[fi]->wav.size()))
+                    y = -a*m_main->ftsnds[fi]->wav[wn];
                 else
                     y = 0.0;
                 currx = n/m_main->getFs();
@@ -796,10 +796,10 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
                 qreal dy = ((samppixdensity_dotsthr-samppixdensity)/samppixdensity_dotsthr)*(1.0/20);
 
                 for(int n=nleft; n<=nright; n++){
-                    int wn = n - m_main->snds[fi]->m_delay;
-                    if(wn>=0 && wn<int(m_main->snds[fi]->wav.size())){
+                    int wn = n - m_main->ftsnds[fi]->m_delay;
+                    if(wn>=0 && wn<int(m_main->ftsnds[fi]->wav.size())){
                         currx = n/m_main->getFs();
-                        y = -a*m_main->snds[fi]->wav[wn];
+                        y = -a*m_main->ftsnds[fi]->wav[wn];
                         painter->drawLine(QLineF(currx, y-dy, currx, y+dy));
                     }
                 }
@@ -815,18 +815,18 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
         QRectF updateRect = mapFromScene(rect).boundingRect();
 
-        for(unsigned int fi=0; fi<m_main->snds.size(); fi++){
-            if(!m_main->snds[fi]->m_actionShow->isChecked())
+        for(size_t fi=0; fi<m_main->ftsnds.size(); fi++){
+            if(!m_main->ftsnds[fi]->m_actionShow->isChecked())
                 continue;
 
-            float a = m_main->snds[fi]->m_ampscale;
-            if(m_main->snds[fi]->m_actionInvPolarity->isChecked())
+            float a = m_main->ftsnds[fi]->m_ampscale;
+            if(m_main->ftsnds[fi]->m_actionInvPolarity->isChecked())
                 a *=-1.0;
 
-            QPen outlinePen(m_main->snds[fi]->color);
+            QPen outlinePen(m_main->ftsnds[fi]->color);
             outlinePen.setWidth(0);
             painter->setPen(outlinePen);
-            painter->setBrush(QBrush(m_main->snds[fi]->color));
+            painter->setBrush(QBrush(m_main->ftsnds[fi]->color));
 
 //            float prevx=0;
 //            float prevy=0;
@@ -836,18 +836,18 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
     //        std::cout << "t: " << pt.x() << " " << t.x() << " " << nt.x() << endl;
     //        std::cout << "ti: " << int(pt.x()*m_main->getFs()) << " " << int(t.x()*m_main->getFs()) << " " << int(nt.x()*m_main->snds[0]->fs) << endl;
 
-                int pn = std::max(qint64(0), qint64(0.5+pixelrect.left()*m_main->getFs())-m_main->snds[fi]->m_delay);
-                int nn = std::min(qint64(0.5+m_main->snds[fi]->wav.size()-1), qint64(0.5+pixelrect.right()*m_main->getFs())-m_main->snds[fi]->m_delay);
+                int pn = std::max(qint64(0), qint64(0.5+pixelrect.left()*m_main->getFs())-m_main->ftsnds[fi]->m_delay);
+                int nn = std::min(qint64(0.5+m_main->ftsnds[fi]->wav.size()-1), qint64(0.5+pixelrect.right()*m_main->getFs())-m_main->ftsnds[fi]->m_delay);
 //                std::cout << pn << " " << nn << " " << nn-pn << endl;
 
-                int maxm = m_main->snds[fi]->wav.size()-1;
+                int maxm = m_main->ftsnds[fi]->wav.size()-1;
 
                 if(nn>=0 && pn<=maxm){
                     float miny = 1.0;
                     float maxy = -1.0;
                     float y;
                     for(int m=pn; m<=nn && m<=maxm; m++){
-                        y = -a*m_main->snds[fi]->wav[m];
+                        y = -a*m_main->ftsnds[fi]->wav[m];
                         miny = std::min(miny, y);
                         maxy = std::max(maxy, y);
                     }
@@ -868,6 +868,34 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
         // Tell that the waveform is simplified
         m_main->ui->lblInfoTxt->setText("Quick plot using simplified waveform");
+    }
+
+    // Plot labels
+    QTransform trans = transform();
+    for(size_t fi=0; fi<m_main->ftlabels.size(); fi++){
+        if(!m_main->ftlabels[fi]->m_actionShow->isChecked())
+            continue;
+
+        QPen outlinePen(m_main->ftlabels[fi]->color);
+        outlinePen.setWidth(0);
+        painter->setPen(outlinePen);
+        painter->setBrush(QBrush(m_main->ftlabels[fi]->color));
+
+//        cout << m_main->ftlabels[fi]->starts.size() << " " << m_main->ftlabels[fi]->ends.size() << endl;
+
+        for(size_t li=0; li<m_main->ftlabels[fi]->starts.size(); li++){
+            // TODO plot only labels which can be seen
+            double start = m_main->ftlabels[fi]->starts[li];
+            double end = m_main->ftlabels[fi]->ends[li];
+            painter->drawLine(QLineF(start, -1.0, start, 1.0));
+            painter->drawLine(QLineF(end, -1.0, end, 1.0));
+
+            painter->save();
+            painter->translate(QPointF(start+2.0/trans.m11(), viewrect.top()));
+            painter->scale(1.0/trans.m11(), 1.0/trans.m22());
+            painter->drawStaticText(QPointF(0, 0), QStaticText(m_main->ftlabels[fi]->labels[li]));
+            painter->restore();
+        }
     }
 }
 
@@ -898,7 +926,7 @@ void QGVWaveform::draw_grid(QPainter* painter, const QRectF& rect){
         else fi = int(f);
         lstep = pow(10.0, fi+1);
         int m=1;
-        while(int(float(viewrect.height())/lstep)<4){
+        while(int(float(viewrect.height())/lstep)<4){ // TODO use log2
             lstep /= 2;
             m++;
         }
