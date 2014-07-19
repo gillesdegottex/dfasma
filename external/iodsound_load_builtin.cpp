@@ -18,7 +18,7 @@ file provided in the source code of DFasma. Another copy can be found at
 <http://www.gnu.org/licenses/>.
 */
 
-#include "iodsound.h"
+#include "../src/ftsound.h"
 #include "../external/wavfile/wavfile.h"
 
 //#include <iostream>

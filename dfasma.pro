@@ -18,27 +18,37 @@
 # file provided in the source code of DFasma. Another copy can be found at
 # <http://www.gnu.org/licenses/>.
 
-#-------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Compilation options
 
-DEFINES += FFT_FFTW3
-#DEFINES += FFT_FFTREAL
+# For the Discrete Fast Fourier Transform
+# Chose among: fft_fftw3, fft_fftreal
+CONFIG += fft_fftw3
 
-CONFIG += sdifreading
 
-# TODO move CONFIG to DEFINES
+# For the audio file support
+# Chose among: audiofilereading_libsndfile, audiofilereading_qt, audiofilereading_libav, audiofilereading_builtin
 CONFIG += audiofilereading_libsndfile
-#CONFIG += audiofilereading_qt
-#CONFIG += audiofilereading_libav
-#CONFIG += audiofilereading_builtin # This is a minimal audio file reader which
-                                    # should be use only for portablity test purpose
+
+# Additional file format support
+#CONFIG += sdifreading
+
+
+# The most cross-platform/portable/compatible compilation settings
+# (comment all the above and uncomment below)
+#CONFIG += fft_fftreal
+#CONFIG += audiofilereading_builtin
+
+
+# (there should be no reason to modify the following) --------------------------
+# SDIF file library ------------------------------------------------------------
 
 CONFIG(sdifreading) {
     message(Building with SDIF file reader.)
     DEFINES += SUPPORT_SDIF
-    #LIBS += /u/formes/share/lib/x86_64-Linux-rh50/libsdif.a
-    LIBS += -L/u/formes/share/lib/x86_64-Linux-rh65 -lEasdif
-    QMAKE_CXXFLAGS  += -I/u/formes/share/include
+    #LIBS += /usr/local/lib/libEasdif_static.a
+    LIBS += -lEasdif
+    #QMAKE_CXXFLAGS  += -I/u/formes/share/include
 }
 
 # Audio file reading libraries -------------------------------------------------
@@ -70,11 +80,12 @@ CONFIG(audiofilereading_libav) {
 
 # DFT computation libraries ----------------------------------------------------
 
-contains(DEFINES, FFT_FFTW3){
+CONFIG(fft_fftw3){
+    QMAKE_CXXFLAGS += -DFFT_FFTW3
     LIBS += -lfftw3
 }
-contains(DEFINES, FFT_FFTREAL){
-    SOURCES +=
+CONFIG(fft_fftreal){
+    QMAKE_CXXFLAGS += -DFFT_FFTREAL
     HEADERS +=  external/FFTReal/FFTReal.h \
                 external/FFTReal/FFTReal.hpp \
                 external/FFTReal/def.h \
