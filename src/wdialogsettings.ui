@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>453</width>
+    <height>319</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -113,7 +113,7 @@ p, li { white-space: pre-wrap; }
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_2">
+     <widget class="QWidget" name="tabLibraries">
       <attribute name="title">
        <string>Libraries</string>
       </attribute>
@@ -134,25 +134,7 @@ p, li { white-space: pre-wrap; }
         <widget class="QTextBrowser" name="lblLibraryAudioFileReading"/>
        </item>
        <item>
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Library for computing Fast Fourier Transform (FFT):&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="lblLibraryFFT">
-         <property name="text">
-          <string>&lt;FFT lib&gt;</string>
-         </property>
-        </widget>
+        <layout class="QVBoxLayout" name="vlLibraries"/>
        </item>
       </layout>
      </widget>

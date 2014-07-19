@@ -54,6 +54,10 @@ using namespace std;
 #include <QMessageBox>
 #include <QMimeData>
 
+#ifdef SUPPORT_SDIF
+#include <easdif/easdif.h>
+#endif
+
 WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::WMainWindow)
@@ -66,11 +70,19 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 
     m_dlgSettings = new WDialogSettings(this);
     m_dlgSettings->ui->lblLibraryAudioFileReading->setText(FTSound::getAudioFileReadingDescription());
+
     #ifdef FFT_FFTW3
-        m_dlgSettings->ui->lblLibraryFFT->setText(QString("<a href=\"http://www.fftw.org\">FFTW</a> version 3"));
+        m_dlgSettings->ui->vlLibraries->addWidget(new QLabel("<i>Library for the Fast Fourier Transform (FFT):</i> <a href=\"http://www.fftw.org\">FFTW</a> version 3"));
     #elif FFT_FFTREAL
-        m_dlgSettings->ui->lblLibraryFFT->setText("<a href=\"http://ldesoras.free.fr/prod.html#src_audio\">FFTReal</a> version 2.11");
+        m_dlgSettings->ui->vlLibraries->addWidget(new QLabel("<i>Library for the Fast Fourier Transform (FFT):</i> <a href=\"http://ldesoras.free.fr/prod.html#src_audio\">FFTReal</a> version 2.11"));
     #endif
+
+    #ifdef SUPPORT_SDIF
+        m_dlgSettings->ui->vlLibraries->addWidget(new QLabel("<i>Support SDIF format:</i> <a href=\"http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/\">Easdif</a> version "+QString(EASDIF_VERSION_STRING)));
+    #else
+        m_dlgSettings->ui->vlLibraries->addWidget(new QLabel("<i>No SDIF format support</i>"));
+    #endif
+
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(execAbout()));
 
     setAcceptDrops(true);
