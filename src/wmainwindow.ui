@@ -307,7 +307,7 @@
      <x>0</x>
      <y>0</y>
      <width>814</width>
-     <height>29</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>
@@ -422,7 +422,7 @@
   </action>
   <action name="actionMultiShow">
    <property name="text">
-    <string>Show</string>
+    <string>Toggle show state</string>
    </property>
    <property name="toolTip">
     <string>Toggle show state of the selected files</string>

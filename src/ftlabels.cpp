@@ -36,7 +36,6 @@ FTLabels::FTLabels(const QString& _fileName, QObject *parent)
 {
 #ifdef SUPPORT_SDIF
     // TODO load .lab files
-    EasdifInit();
 
     SDIFEntity readentity;
 
@@ -101,24 +100,18 @@ FTLabels::FTLabels(const QString& _fileName, QObject *parent)
     }
     catch(SDIFUnDefined& e) {
         e.ErrorMessage();
-        EasdifEnd();
         throw QString("SDIF: ")+e.what();
     }
     catch(Easdif::SDIFException&e) {
         e.ErrorMessage();
-        EasdifEnd();
         throw QString("SDIF: ")+e.what();
     }
     catch(std::exception &e) {
-        EasdifEnd();
         throw QString("SDIF: ")+e.what();
     }
     catch(QString &e) {
-        EasdifEnd();
         throw QString("SDIF: ")+e;
     }
-
-    EasdifEnd();
 
     // Add the last ending time, if it was not specified in the SDIF file
     if(ends.size() < starts.size()){
@@ -134,7 +127,7 @@ double FTLabels::getLastSampleTime() const {
     if(ends.empty())
         return 0.0;
     else
-        return *(ends.end());
+        return *((ends.end()-1));
 }
 
 FTLabels::~FTLabels() {

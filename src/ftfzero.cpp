@@ -37,7 +37,6 @@ FTFZero::FTFZero(const QString& _fileName, QObject *parent)
     // TODO load text files
 
 #ifdef SUPPORT_SDIF
-    EasdifInit();
 
     SDIFEntity readentity;
 
@@ -73,6 +72,7 @@ FTFZero::FTFZero(const QString& _fileName, QObject *parent)
 
                 ts.push_back(t);
                 f0s.push_back(tmpMatrix.GetDouble(0, 0));
+//                cout << "VALUES " << *(ts.end()) << ":" << *(f0s.end()) << endl;
 
 //                /* if you want to access to the data : an example, if we want
 //                 to multiply with 2 the last column of a matrix : */
@@ -96,24 +96,18 @@ FTFZero::FTFZero(const QString& _fileName, QObject *parent)
     }
     catch(SDIFUnDefined& e) {
         e.ErrorMessage();
-        EasdifEnd();
         throw QString("SDIF: ")+e.what();
     }
     catch(Easdif::SDIFException&e) {
         e.ErrorMessage();
-        EasdifEnd();
         throw QString("SDIF: ")+e.what();
     }
     catch(std::exception &e) {
-        EasdifEnd();
         throw QString("SDIF: ")+e.what();
     }
     catch(QString &e) {
-        EasdifEnd();
         throw QString("SDIF: ")+e;
     }
-
-    EasdifEnd();
 #endif
 }
 
@@ -121,7 +115,7 @@ double FTFZero::getLastSampleTime() const {
     if(ts.empty())
         return 0.0;
     else
-        return *(ts.end());
+        return *((ts.end()-1));
 }
 
 FTFZero::~FTFZero() {

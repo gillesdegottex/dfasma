@@ -313,22 +313,24 @@ void WMainWindow::addFile(const QString& filepath) {
         FileType* ft = NULL;
 
         QFileInfo fileinfo(filepath);
-        if(fileinfo.suffix()=="sdif") { // TODO case insensitive
+        if(fileinfo.suffix().compare("sdif", Qt::CaseInsensitive)==0) {
             #ifdef SUPPORT_SDIF
+            // The following check doesnt work for some files which can be loaded
+            //if(!SdifCheckFileFormat(filepath.toLocal8Bit()))
+            //    throw QString("This file looks like an SDIF file, but it does not contain SDIF data.");
 
-            if(0) { // TODO check kind of data in the file, f0
-
+            if(FileType::SDIF_hasFrame(filepath, "1FQ0")) {
                 FTFZero* ftf0 = new FTFZero(filepath, this);
                 ftfzeros.push_back(ftf0);
                 ft = ftf0;
             }
-            else if (1) { // TODO labels
+            else if (FileType::SDIF_hasFrame(filepath, "1MRK")) {
                 FTLabels* ftlabel = new FTLabels(filepath, this);
                 ftlabels.push_back(ftlabel);
                 ft = ftlabel;
             }
             #else
-            throw QString("SDIF files support not compiled in this version.");
+            throw QString("Support of SDIF files not compiled in this version.");
             #endif
         }
         else {
@@ -360,7 +362,7 @@ void WMainWindow::addFile(const QString& filepath) {
     }
     catch (QString err)
     {
-        QMessageBox::warning(this, "Failed to load file ...", "The audio waveform in the following file can't be loaded:\n"+filepath+"'\nReason:\n"+err);
+        QMessageBox::warning(this, "Failed to load file ...", "Data from the following file can't be loaded:\n"+filepath+"'\n\nReason:\n"+err);
 
         return;
     }

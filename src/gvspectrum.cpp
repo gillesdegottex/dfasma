@@ -162,13 +162,13 @@ void QGVSpectrum::setWindowRange(double tstart, double tend){
     if(tstart==tend) return;
 
     m_nl = std::max(0, int(0.5+tstart*m_main->getFs()));
-    m_nr = std::min(int(m_main->getMaxWavSize())-1, int(0.5+tend*m_main->getFs()));
+    m_nr = int(0.5+std::min(m_main->getMaxLastSampleTime(),tend)*m_main->getFs());
     if(m_nl==m_nr) return;
 
     m_winlen = m_nr-m_nl+1;
     if(m_winlen<2) return;
 
-    m_win = hann(m_winlen); // Allow blackman, no-sidelob-window
+    m_win = hann(m_winlen); // Allow choice with blackman, no-sidelob-window, etc.
     double winsum = 0.0;
     for(int n=0; n<m_winlen; n++)
         winsum += m_win[n];
@@ -180,6 +180,8 @@ void QGVSpectrum::setWindowRange(double tstart, double tend){
     m_fftresizethread->resize(dftlen);
 
     computeDFTs();
+
+    m_scene->invalidate();
 }
 
 void QGVSpectrum::computeDFTs(){

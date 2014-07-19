@@ -31,7 +31,7 @@ extern "C" {
 #endif
 
 #ifdef SUPPORT_SDIF
-#include <sdif.h>
+#include <easdif/easdif.h>
 #endif
 
 int main(int argc, char *argv[])
@@ -43,7 +43,8 @@ int main(int argc, char *argv[])
     #endif
 
     #ifdef SUPPORT_SDIF
-//        SdifGenInit("");// TODO Still need with easdif ?
+        Easdif::EasdifInit();
+        // TODO EasdifEnd();
         // Should call on exit: SdifGenKill();
     #endif
 

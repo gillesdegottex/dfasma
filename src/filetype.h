@@ -45,6 +45,10 @@ public:
     QAction* m_actionShow;
 
     ~FileType();
+
+    #ifdef SUPPORT_SDIF
+    static bool SDIF_hasFrame(const QString& filename, const QString& framesignature);
+    #endif
 };
 
 #endif // FILETYPE_H
