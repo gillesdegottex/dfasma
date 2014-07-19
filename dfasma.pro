@@ -21,8 +21,6 @@
 #-------------------------------------------------------------------------------
 # Compilation options
 
-# SDIF support
-
 DEFINES += FFT_FFTW3
 #DEFINES += FFT_FFTREAL
 
