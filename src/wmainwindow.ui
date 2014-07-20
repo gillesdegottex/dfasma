@@ -307,7 +307,7 @@
      <x>0</x>
      <y>0</y>
      <width>814</width>
-     <height>25</height>
+     <height>34</height>
     </rect>
    </property>
   </widget>
@@ -429,6 +429,17 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+H</string>
+   </property>
+  </action>
+  <action name="actionPlayFiltered">
+   <property name="text">
+    <string>Play filtered</string>
+   </property>
+   <property name="toolTip">
+    <string>Play the sound filtered according to the spectral selection</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Space</string>
    </property>
   </action>
  </widget>

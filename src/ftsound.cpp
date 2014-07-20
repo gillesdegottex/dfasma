@@ -27,17 +27,21 @@ using namespace std;
 #include <qmath.h>
 #include <qendian.h>
 #include <QMenu>
+#include <QMessageBox>
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 
+#include "../external/mkfilter/mkfilter.h"
 
-float FTSound::fs_common = 0; // Initially, fs is undefined
-float FTSound::s_play_power = 0;
-std::deque<float> FTSound::s_play_power_values;
+
+double FTSound::fs_common = 0; // Initially, fs is undefined
+double FTSound::s_play_power = 0;
+std::deque<double> FTSound::s_play_power_values;
 
 FTSound::FTSound(const QString& _fileName, QObject *parent)
     : QIODevice(parent)
     , FileType(FTSOUND, _fileName, this)
+    , wavtoplay(&wav)
     , m_pos(0)
     , m_end(0)
     , m_ampscale(1.0)
@@ -88,7 +92,7 @@ double FTSound::getLastSampleTime() const {
     return (wav.size()-1)/fs;
 }
 
-void FTSound::setSamplingRate(float _fs){
+void FTSound::setSamplingRate(double _fs){
 
     fs = _fs;
 
@@ -104,29 +108,86 @@ void FTSound::setSamplingRate(float _fs){
     }
 }
 
-double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop)
+double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop, double fstart, double fstop)
 {
-    m_outputaudioformat = format;
-
-    s_play_power = 0;
-    s_play_power_values.clear();
-
     if(tstart>tstop){
         double tmp = tstop;
         tstop = tstart;
         tstart = tmp;
     }
+    if(fstart>fstop){
+        double tmp = fstop;
+        fstop = fstart;
+        fstart = tmp;
+    }
+
+    // Fix frequency cutoffs
+    // Cannot ensure the numerical stability for very small cutoff
+    // Thus, force clip the desired values
+    if(fstart<10) fstart=0;
+    if(fstart>fs/2-10) fstart=fs/2;
+    if(fstop<10) fstop=0;
+    if(fstop>fs/2-10) fstop=fs/2;
+
+    bool doLowPass = fstop>0.0 && fstop<fs/2;
+    bool doHighPass = fstart>0.0 && fstart<fs/2;
+
+    if ((fstart<fstop) && (doLowPass || doHighPass)) {
+        try{
+            wavfiltered = wav;
+
+            std::vector<double> num, den;
+            if (doLowPass) {
+                mkfilter::make_butterworth_filter(4, fstop/fs, true, num, den);
+                // mkfilter::make_chebyshev_filter(8, fstop/fs, -1, true, num, den);
+
+//                cout << "LP-filtering (cutoff=" << fstop << " num0=" << num[0] << " size=" << wavfiltered.size() << ")" << endl;
+                mkfilter::filtfilt(wavfiltered, num, den, wavfiltered);
+            }
+
+            if (doHighPass) {
+                std::vector<double> num, den;
+                mkfilter::make_butterworth_filter(4, fstart/fs, false, num, den);
+                // mkfilter::make_chebyshev_filter(8, fstart/fs, -1, true, num, den);
+
+//                cout << "HP-filtering (cutoff=" << fstart << " num0=" << num[0] << " size=" << wavfiltered.size() << ")" << endl;
+                mkfilter::filtfilt(wavfiltered, num, den, wavfiltered);
+            }
+
+            // It seems the filtering went well, we can use the filtered sound
+            wavtoplay = &wavfiltered;
+        }
+        catch(QString err){
+            QMessageBox::warning(NULL, "Problem when filtering the sound to play", QString("The sound cannot be filtered as given by the selection in the spectrum view.\n\nReason:\n")+err+QString("\n\nPlaying the non-filtered sound ..."));
+            // cout << err.toLocal8Bit().constData() << endl; // TODO Message
+            wavtoplay = &wav;
+        }
+    }
+    else
+        wavtoplay = &wav;
+
+
+    m_outputaudioformat = format;
+
+    s_play_power = 0;
+    s_play_power_values.clear();
 
     if(tstart==0.0 && tstop==0.0){
         m_start = 0;
         m_pos = m_start;
-        m_end = wav.size()-1;
+        m_end = wavtoplay->size()-1;
     }
     else{
         m_start = int(0.5+tstart*fs);
         m_pos = m_start;
         m_end = int(0.5+tstop*fs);
     }
+
+    if(m_start<0) m_start=0;
+    if(m_start>wavtoplay->size()-1) m_start=wavtoplay->size()-1;
+
+    if(m_end<0) m_end=0;
+    if(m_end>wavtoplay->size()-1) m_end=wavtoplay->size()-1;
 
     QIODevice::open(QIODevice::ReadOnly);
 
@@ -172,10 +233,10 @@ qint64 FTSound::readData(char *data, qint64 len)
     while(writtenbytes<len) {
 
         int depos = m_pos - m_delay;
-        if(depos>=0 && depos<int(wav.size())){
-    //        float e = wav[m_pos]*wav[m_pos];
+        if(depos>=0 && depos<int(wavtoplay->size())){
+    //        double e = (*wavtoplay)[m_pos]*(*wavtoplay)[m_pos];
     //        s_play_power += e;
-            float e = abs(a*wav[depos]);
+            double e = abs(a*(*wavtoplay)[depos]);
             s_play_power_values.push_front(e);
             while(s_play_power_values.size()/fs>0.1){
                 s_play_power -= s_play_power_values.back();
@@ -188,8 +249,8 @@ qint64 FTSound::readData(char *data, qint64 len)
         qint16 value;
         // Assuming the output audio device has been open in 16bits ...
         // TODO Manage more output formats
-        if(depos>=0 && depos<int(wav.size()) && m_pos<=m_end)
-            value=qint16((a*wav[depos])*32767);
+        if(depos>=0 && depos<int(wavtoplay->size()) && m_pos<=m_end)
+            value=qint16((a*(*wavtoplay)[depos])*32767);
         else
             value=0;
 
@@ -233,6 +294,7 @@ FTSound::~FTSound(){
 
     delete m_actionShow;
 }
+
 
 //qint64 DSSound::bytesAvailable() const
 //{

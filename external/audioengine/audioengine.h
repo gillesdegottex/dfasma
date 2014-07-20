@@ -116,7 +116,7 @@ public:
 
 public slots:
     void setAudioOutputDevice(const QAudioDeviceInfo &device);
-    void startPlayback(FTSound* sound, double tstart=0.0, double tend=0.0);
+    void startPlayback(FTSound* sound, double tstart=0.0, double tstop=0.0, double fstart=0.0, double fstop=0.0);
     void stopPlayback();
     void reset();
 

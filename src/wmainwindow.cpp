@@ -103,11 +103,13 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     connectModes();
     connect(ui->listSndFiles, SIGNAL(itemSelectionChanged()), this, SLOT(fileSelectionChanged()));
     addAction(ui->actionMultiShow);
+    addAction(ui->actionPlayFiltered);
 
     // Audio engine for playing the selections
     ui->actionPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
     ui->actionPlay->setEnabled(false);
     connect(ui->actionPlay, SIGNAL(triggered()), this, SLOT(play()));
+    connect(ui->actionPlayFiltered, SIGNAL(triggered()), this, SLOT(play()));
 
     m_gvWaveform = new QGVWaveform(this);
     ui->lWaveformGraphicsView->addWidget(m_gvWaveform);
@@ -516,45 +518,42 @@ void WMainWindow::audioOutputDeviceChanged(const QAudioDeviceInfo& device){
 
 void WMainWindow::play()
 {
-//    DEBUGSTRING << "MainWindow::play state=" << m_audioengine->state() << "(" << QAudio::StoppedState << ")" << endl;
-
     if(m_audioengine && m_audioengine->isInitialized()){
 
         if(m_audioengine->state()==QAudio::IdleState || m_audioengine->state()==QAudio::StoppedState){
-//            DEBUGSTRING << "MainWindow::play QAudio::IdleState || QAudio::StoppedState" << endl;
+        // DEBUGSTRING << "MainWindow::play QAudio::IdleState || QAudio::StoppedState" << endl;
 
             // If stopped, play the whole signal or its selection
             FTSound* currentftsound = getCurrentFTSound();
             if(currentftsound) {
                 ui->actionPlay->setEnabled(false);
-    //            DEBUGSTRING << "MainWindow::play currentRow: " << fi << " " << snds.size() << endl;
 
+                double tstart = 0.0;
+                double tstop = 0.0;
                 if(m_gvWaveform->m_selection.width()>0){
-    //                DEBUGSTRING << "MainWindow::play 1" << endl;
-                    int nleft = int(0.5+m_gvWaveform->m_selection.left()*getFs());
-                    int nright = int(0.5+m_gvWaveform->m_selection.right()*getFs());
-
-    //                DEBUGSTRING << "MainWindow::play 2" << endl;
-                    QString txt = QString("Play selection: [%1 (%2s), %3, (%4s)]").arg(nleft).arg((nleft-1)/getFs()).arg(nright).arg((nright-1)/getFs());
-                    statusBar()->showMessage(txt);
-
-    //                DEBUGSTRING << "MainWindow::play 3" << endl;
-                    m_audioengine->startPlayback(currentftsound, m_gvWaveform->m_selection.left(), m_gvWaveform->m_selection.right());
+                    tstart = m_gvWaveform->m_selection.left();
+                    tstop = m_gvWaveform->m_selection.right();
                 }
-                else{
-                    QString filetoplay = currentftsound->fileName;
 
-                    QString txt = QString("Play full file: ")+filetoplay;
-                    statusBar()->showMessage(txt);
-    //                DEBUGSTRING << "MainWindow::play " << txt.toLocal8Bit().constData() << "'" << endl;
-
-                    m_audioengine->startPlayback(currentftsound);
+                double fstart = 0.0;
+                double fstop = 0.0;
+                if(QApplication::keyboardModifiers().testFlag(Qt::ControlModifier) &&
+                    m_gvSpectrum->m_selection.width()>0){
+                    fstart = m_gvSpectrum->m_selection.left();
+                    fstop = m_gvSpectrum->m_selection.right();
                 }
-                QTimer::singleShot(250, this, SLOT(enablePlay())); // Delay the stop and re-play, in order to avoid the audio engine to crash hysterically.
+
+                QString txt = QString("Play ")+currentftsound->fileName+QString(": [%1s, %2s]x[%3Hz, %4Hz]").arg(m_gvWaveform->m_selection.left()).arg(m_gvWaveform->m_selection.right()).arg(fstart).arg(fstop);
+                statusBar()->showMessage(txt);
+
+                m_audioengine->startPlayback(currentftsound, tstart, tstop, fstart, fstop);
+
+                // Delay the stop and re-play,
+                // in order to avoid the audio engine to crash hysterically.
+                QTimer::singleShot(250, this, SLOT(enablePlay()));
             }
         }
         else if(m_audioengine->state()==QAudio::ActiveState){
-//            DEBUGSTRING << "MainWindow::play QAudio::ActiveState" << endl;
             // If playing, just stop it
             m_audioengine->stopPlayback();
             m_gvWaveform->m_giPlayCursor->hide();
@@ -563,7 +562,6 @@ void WMainWindow::play()
     else
         statusBar()->showMessage("The engine is not ready for playing. Missing available sound device ?");
 
-//    DEBUGSTRING << "~MainWindow::play " << m_audioengine->state() << endl;
 }
 
 void WMainWindow::enablePlay(){

@@ -116,7 +116,7 @@ bool AudioEngine::isInitialized(){
 // Public slots
 //-----------------------------------------------------------------------------
 
-void AudioEngine::startPlayback(FTSound* dssound, double tstart, double tend)
+void AudioEngine::startPlayback(FTSound* dssound, double tstart, double tstop, double fstart, double fstop)
 {
 //    DEBUGSTRING << "AudioEngine::startPlayback" << endl;
 
@@ -137,7 +137,7 @@ void AudioEngine::startPlayback(FTSound* dssound, double tstart, double tend)
 //            DEBUGSTRING << "AudioEngine::startPlayback " << 1 << endl;
 //            connect(m_dssound, SIGNAL(readChannelFinished()), this, SLOT(readChannelFinished()));
 //            DEBUGSTRING << "AudioEngine::startPlayback " << 1 << endl;
-            m_tobeplayed = m_ftsound->setPlay(m_format, tstart, tend);
+            m_tobeplayed = m_ftsound->setPlay(m_format, tstart, tstop, fstart, fstop);
 //            DEBUGSTRING << "AudioEngine::startPlayback " << 1 << endl;
             m_audioOutput->start(m_ftsound);
             m_rtinfo_timer.start();

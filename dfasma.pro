@@ -25,13 +25,14 @@
 # Chose among: fft_fftw3, fft_fftreal
 CONFIG += fft_fftw3
 
-
 # For the audio file support
-# Chose among: audiofilereading_libsndfile, audiofilereading_qt, audiofilereading_libav, audiofilereading_builtin
+# Chose among: audiofilereading_libsndfile, audiofilereading_qt,
+#              audiofilereading_libav, audiofilereading_builtin
 CONFIG += audiofilereading_libsndfile
 
 # Additional file format support
-#CONFIG += sdifreading
+# SDIF (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
+CONFIG += sdifreading
 
 
 # The most cross-platform/portable/compatible compilation settings
@@ -40,7 +41,10 @@ CONFIG += audiofilereading_libsndfile
 #CONFIG += audiofilereading_builtin
 
 
-# (there should be no reason to modify the following) --------------------------
+
+
+# (modify the following at your own risks !) -----------------------------------
+
 # SDIF file library ------------------------------------------------------------
 
 CONFIG(sdifreading) {
@@ -111,6 +115,7 @@ SOURCES   += src/main.cpp\
              src/wmainwindow.cpp \
              src/filetype.cpp \
              src/ftsound.cpp \
+             external/mkfilter/mkfilter.cpp \
              src/ftfzero.cpp \
              src/ftlabels.cpp \
              src/gvwaveform.cpp \

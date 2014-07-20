@@ -15,7 +15,7 @@ void make_butterworth_filter(int _order, double _alpha, bool isLowPass, std::vec
 
 void make_chebyshev_filter(int _order, double _alpha, double chebrip, bool isLowPass, std::vector<double>& num, std::vector<double>& den);
 
-void filtfilt(const std::deque<float>& wav, const std::vector<double>& num, const std::vector<double>& den, std::deque<float>& filteredwav);
+void filtfilt(const std::deque<double>& wav, const std::vector<double>& num, const std::vector<double>& den, std::deque<double>& filteredwav);
 
 }
 

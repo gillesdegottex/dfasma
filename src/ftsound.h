@@ -42,19 +42,21 @@ class FTSound : public QIODevice, public FileType
 
     QAudioFormat m_outputaudioformat; // Temporary copy for readData
 
-    void setSamplingRate(float _fs); // Used by implementations of load
+    void setSamplingRate(double _fs); // Used by implementations of load
 
 public:
     FTSound(const QString& _fileName, QObject* parent);
     static QString getAudioFileReadingDescription();
 
-    std::deque<float> wav;
-    float m_wavmaxamp;
-    float fs; // [Hz]
-    static float fs_common;  // [Hz]
-    static float s_play_power;
-    static std::deque<float> s_play_power_values;
-    float getDuration() const {return wav.size()/fs;}
+    std::deque<double> wav;
+    std::deque<double> wavfiltered;
+    std::deque<double>* wavtoplay;
+    double m_wavmaxamp;
+    double fs; // [Hz]
+    static double fs_common;  // [Hz]
+    static double s_play_power;
+    static std::deque<double> s_play_power_values;
+    double getDuration() const {return wav.size()/fs;}
     virtual double getLastSampleTime() const;
     virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
 
@@ -62,7 +64,7 @@ public:
     std::vector<std::complex<double> > m_dft;
 
     // QIODevice
-    double setPlay(const QAudioFormat& format, double tstart=0.0, double tstop=0.0);
+    double setPlay(const QAudioFormat& format, double tstart=0.0, double tstop=0.0, double fstart=0.0, double fstop=0.0);
     void stop();
     qint64 readData(char *data, qint64 maxlen);
     qint64 writeData(const char *data, qint64 len);

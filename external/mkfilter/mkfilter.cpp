@@ -170,8 +170,6 @@ static double xcoeffs[MAXPZ+1], ycoeffs[MAXPZ+1];
 
 
 static void choosepole(complex);
-void compute_z_blt();
-static complex blt(complex);
 static void compute_z_mzt();
 static void compute_notch(), compute_apres();
 static complex reflect(complex);
@@ -225,40 +223,40 @@ static c_complex bessel_poles[] =
 void checkoptions()
   { bool optsok = true;
     if(!(onebit(options & (opt_be | opt_bu | opt_ch | opt_re | opt_pi))))
-      throw QString("must specify exactly one of -Be, -Bu, -Ch, -Re, -Pi");
+      throw QString("MKFILTER: must specify exactly one of -Be, -Bu, -Ch, -Re, -Pi");
     if (options & opt_re)
       { if(!((onebit(options & (opt_bp | opt_bs | opt_ap)))))
         throw QString("must specify exactly one of -Bp, -Bs, -Ap with -Re");
     if (options & (opt_lp | opt_hp | opt_o | opt_p | opt_w | opt_z))
-      throw QString("can't use -Lp, -Hp, -o, -p, -w, -z with -Re");
+      throw QString("MKFILTER: can't use -Lp, -Hp, -o, -p, -w, -z with -Re");
       }
     else if (options & opt_pi)
       { if (options & (opt_lp | opt_hp | opt_bp | opt_bs | opt_ap))
-      throw QString("-Lp, -Hp, -Bp, -Bs, -Ap illegal in conjunction with -Pi");
+      throw QString("MKFILTER: -Lp, -Hp, -Bp, -Bs, -Ap illegal in conjunction with -Pi");
     if(!((options & opt_o) && (order == 1)))
-        throw QString("-Pi implies -o 1");
+        throw QString("MKFILTER: -Pi implies -o 1");
       }
     else
       { if(!(onebit(options & (opt_lp | opt_hp | opt_bp | opt_bs))))
-      throw QString("must specify exactly one of -Lp, -Hp, -Bp, -Bs");
+      throw QString("MKFILTER: must specify exactly one of -Lp, -Hp, -Bp, -Bs");
     if (options & opt_ap)
-        throw QString("-Ap implies -Re");
+        throw QString("MKFILTER: -Ap implies -Re");
     if (options & opt_o)
       { if(!(order >= 1 && order <= MAXORDER))
             throw QString("MKFILTER: order must be in range 1 .. ")+QString(MAXORDER);
         if (options & opt_p)
           { uint m = (1 << order) - 1; // "order" bits set
         if ((polemask & ~m) != 0)
-          throw QString("order=")+QString(order)+QString(", so args to -p must be in range 0 .. ")+QString(order-1);
+          throw QString("MKFILTER: order=")+QString(order)+QString(", so args to -p must be in range 0 .. ")+QString(order-1);
           }
       }
     else
-        throw QString("must specify -o");
+        throw QString("MKFILTER: must specify -o");
       }
     if(!(options & opt_a))
-        throw QString("must specify -a");
+        throw QString("MKFILTER: must specify -a");
     if(!(optsok))
-        throw QString("Filter design options not consistent");
+        throw QString("MKFILTER: Filter design options not consistent");
   }
 
 void setdefaults() {
@@ -373,17 +371,17 @@ void normalize()		// called for trad, not for -Re or -Pi
       }
   }
 
+static complex blt(complex pz)
+  { return (2.0 + pz) / (2.0 - pz);
+  }
+
 void compute_z_blt() // given S-plane poles & zeros, compute Z-plane poles & zeros, by bilinear transform
   { int i;
     zplane.numpoles = splane.numpoles;
     zplane.numzeros = splane.numzeros;
     for (i=0; i < zplane.numpoles; i++) zplane.poles[i] = blt(splane.poles[i]);
     for (i=0; i < zplane.numzeros; i++) zplane.zeros[i] = blt(splane.zeros[i]);
-    while (zplane.numzeros < zplane.numpoles) zplane.zeros[zplane.numzeros++] = -1.0; // why -1 ??
-  }
-
-static complex blt(complex pz)
-  { return (2.0 + pz) / (2.0 - pz);
+    while (zplane.numzeros < zplane.numpoles) zplane.zeros[zplane.numzeros++] = -1.0;
   }
 
 static void compute_z_mzt() // given S-plane poles & zeros, compute Z-plane poles & zeros, by matched z-transform
@@ -508,13 +506,13 @@ static void printcoeffs(const char *pz, int npz, double coeffs[]) {
         cout << coeffs[i] << endl;
 }
 
-void copycoefs(std::vector<double>& num, std::vector<double>& den) {
+void copycoefs(std::vector<double>& num, std::vector<double>& den, double& G) {
     complex gain = (options & opt_pi) ? hf_gain :
                (options & opt_lp) ? dc_gain :
                (options & opt_hp) ? hf_gain :
                (options & (opt_bp | opt_ap)) ? fc_gain :
                (options & opt_bs) ? csqrt(dc_gain * hf_gain) : complex(1.0);
-    double G  = hypot(gain);
+    G  = hypot(gain);
 //    cout << "G=" << gain.re << "+j*" << gain.im << endl;
 
     num.resize(zplane.numzeros+1);
@@ -534,7 +532,7 @@ void mkfilter::make_butterworth_filter(int _order, double _alpha, bool isLowPass
     order = _order;
     raw_alpha1 = _alpha;
 
-    options |= opt_bu|opt_a|opt_o|opt_l;
+    options = opt_bu|opt_a|opt_o|opt_l;
 
     if (isLowPass)  options |= opt_lp;
     else            options |= opt_hp;
@@ -545,16 +543,33 @@ void mkfilter::make_butterworth_filter(int _order, double _alpha, bool isLowPass
     prewarp();
     normalize();
 
-    // Plot s-roots
-    for (int i=0; i < splane.numpoles; i++)
-        cout << "P" << i << ": " << splane.poles[i].re << "+j*" << splane.poles[i].im << endl;
-
-    for (int i=0; i < splane.numzeros; i++)
-        cout << "Z" << i << ": " << splane.zeros[i].re << "+j*" << splane.zeros[i].im << endl;
+//    // Plot s-roots
+//    for (int i=0; i < splane.numpoles; i++)
+//        cout << "SP" << i << ": " << splane.poles[i].re << "+j*" << splane.poles[i].im << endl;
+//    for (int i=0; i < splane.numzeros; i++)
+//        cout << "SZ" << i << ": " << splane.zeros[i].re << "+j*" << splane.zeros[i].im << endl;
 
     compute_z_blt();
+
+//    // Plot z-roots
+//    for (int i=0; i < zplane.numpoles; i++)
+//        cout << "ZP" << i << ": " << zplane.poles[i].re << "+j*" << zplane.poles[i].im << endl;
+//    for (int i=0; i < zplane.numzeros; i++)
+//        cout << "ZZ" << i << ": " << zplane.zeros[i].re << "+j*" << zplane.zeros[i].im << endl;
+
+    // TODO Split here in biquads in order to manage orders higher than 19
+
     expandpoly();
-    copycoefs(num, den);
+
+    double gain;
+    copycoefs(num, den, gain);
+
+//    // Plot coefs
+//    cout << "gain=" << gain << endl;
+//    for (int i=0; i < zplane.numpoles+1; i++)
+//        cout << "xcoeffs[" << i << "]=" << xcoeffs[i] << endl;
+//    for (int i=0; i < zplane.numzeros; i++)
+//        cout << "ycoeffs[" << i << "]=" << ycoeffs[i] << endl;
 }
 
 void mkfilter::make_chebyshev_filter(int _order, double _alpha, double _chebrip, bool isLowPass, std::vector<double>& num, std::vector<double>& den) {
@@ -562,7 +577,7 @@ void mkfilter::make_chebyshev_filter(int _order, double _alpha, double _chebrip,
     order = _order;
     raw_alpha1 = _alpha;
 
-    options |= opt_ch|opt_a|opt_o|opt_l;
+    options = opt_ch|opt_a|opt_o|opt_l;
     chebrip = _chebrip;
 
     if (isLowPass)  options |= opt_lp;
@@ -575,11 +590,12 @@ void mkfilter::make_chebyshev_filter(int _order, double _alpha, double _chebrip,
     normalize();
     compute_z_blt();
     expandpoly();
-    copycoefs(num, den);
+    double gain;
+    copycoefs(num, den, gain);
 }
 
 // filtfilt using Direct Form II
-void mkfilter::filtfilt(const std::deque<float>& wav, const std::vector<double>& num, const std::vector<double>& den, std::deque<float>& filteredwav)
+void mkfilter::filtfilt(const std::deque<double>& wav, const std::vector<double>& num, const std::vector<double>& den, std::deque<double>& filteredwav)
 {
     filteredwav.resize(wav.size());
 
@@ -619,6 +635,8 @@ void mkfilter::filtfilt(const std::deque<float>& wav, const std::vector<double>&
             f += num[k] * delays[k];
 
         filteredwav[n] = f;
+
+        if(f!=f) throw QString("filter is numerically unstable");
     }
 }
 
