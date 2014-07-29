@@ -35,8 +35,8 @@ using namespace std;
 
 
 double FTSound::fs_common = 0; // Initially, fs is undefined
-double FTSound::s_play_power = 0;
-std::deque<double> FTSound::s_play_power_values;
+WAVTYPE FTSound::s_play_power = 0;
+std::deque<WAVTYPE> FTSound::s_play_power_values;
 
 FTSound::FTSound(const QString& _fileName, QObject *parent)
     : QIODevice(parent)
@@ -142,7 +142,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
                 // mkfilter::make_chebyshev_filter(8, fstop/fs, -1, true, num, den);
 
 //                cout << "LP-filtering (cutoff=" << fstop << " num0=" << num[0] << " size=" << wavfiltered.size() << ")" << endl;
-                mkfilter::filtfilt(wavfiltered, num, den, wavfiltered);
+                mkfilter::filtfilt<WAVTYPE>(wavfiltered, num, den, wavfiltered);
             }
 
             if (doHighPass) {
@@ -151,7 +151,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
                 // mkfilter::make_chebyshev_filter(8, fstart/fs, -1, true, num, den);
 
 //                cout << "HP-filtering (cutoff=" << fstart << " num0=" << num[0] << " size=" << wavfiltered.size() << ")" << endl;
-                mkfilter::filtfilt(wavfiltered, num, den, wavfiltered);
+                mkfilter::filtfilt<WAVTYPE>(wavfiltered, num, den, wavfiltered);
             }
 
             // It seems the filtering went well, we can use the filtered sound
@@ -159,7 +159,6 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
         }
         catch(QString err){
             QMessageBox::warning(NULL, "Problem when filtering the sound to play", QString("The sound cannot be filtered as given by the selection in the spectrum view.\n\nReason:\n")+err+QString("\n\nPlaying the non-filtered sound ..."));
-            // cout << err.toLocal8Bit().constData() << endl; // TODO Message
             wavtoplay = &wav;
         }
     }
@@ -234,9 +233,9 @@ qint64 FTSound::readData(char *data, qint64 len)
 
         int depos = m_pos - m_delay;
         if(depos>=0 && depos<int(wavtoplay->size())){
-    //        double e = (*wavtoplay)[m_pos]*(*wavtoplay)[m_pos];
+    //        WAVTYPE e = (*wavtoplay)[m_pos]*(*wavtoplay)[m_pos];
     //        s_play_power += e;
-            double e = abs(a*(*wavtoplay)[depos]);
+            WAVTYPE e = abs(a*(*wavtoplay)[depos]);
             s_play_power_values.push_front(e);
             while(s_play_power_values.size()/fs>0.1){
                 s_play_power -= s_play_power_values.back();
