@@ -28,8 +28,9 @@
 CONFIG += fft_fftw3
 
 # For the audio file support
-# Chose among: audiofilereading_libsndfile, audiofilereading_qt,
-#              audiofilereading_libav, audiofilereading_builtin
+# Chose among: audiofilereading_libsndfile, audiofilereading_libsox,
+#              audiofilereading_qt, audiofilereading_libav,
+#              audiofilereading_builtin
 CONFIG += audiofilereading_libsndfile
 
 # Additional file format support
@@ -42,7 +43,7 @@ CONFIG += sdifreading
 #CONFIG += audiofilereading_builtin
 
 
-# SDK Installation specific options
+# OS specific options
 QMAKE_MAC_SDK = macosx10.6
 
 # (modify the following at your own risks !) -----------------------------------
@@ -76,6 +77,12 @@ CONFIG(audiofilereading_libsndfile) {
     QMAKE_CXXFLAGS += -DAUDIOFILEREADING_LIBSNDFILE
     SOURCES  += external/iodsound_load_libsndfile.cpp
     LIBS += -lsndfile
+}
+CONFIG(audiofilereading_libsox) {
+    message(Building with libsox support for audio file reading.)
+    QMAKE_CXXFLAGS += -DAUDIOFILEREADING_LIBSOX
+    SOURCES  += external/iodsound_load_libsox.cpp
+    LIBS += -lsox
 }
 CONFIG(audiofilereading_libav) {
     message(Building with libav support for audio file reading.)
