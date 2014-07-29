@@ -110,6 +110,8 @@ void FTSound::setSamplingRate(double _fs){
 
 double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop, double fstart, double fstop)
 {
+    WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->setText("PLAYYYYYYING");
+
     if(tstart>tstop){
         double tmp = tstop;
         tstop = tstart;
@@ -141,8 +143,17 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
                 mkfilter::make_butterworth_filter(4, fstop/fs, true, num, den);
                 // mkfilter::make_chebyshev_filter(8, fstop/fs, -1, true, num, den);
 
-//                cout << "LP-filtering (cutoff=" << fstop << " num0=" << num[0] << " size=" << wavfiltered.size() << ")" << endl;
+                WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->setText(QString("Low-pass filtering (cutoff=")+QString::number(fstop)+"Hz)");
+                WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->show();
+                WMainWindow::sm_mainwindow->m_globalWaitingBar->setMinimum(0);
+                WMainWindow::sm_mainwindow->m_globalWaitingBar->setMaximum(0);
+                WMainWindow::sm_mainwindow->m_globalWaitingBar->show();
+                WMainWindow::sm_mainwindow->ui->statusBar->repaint();
+                cout << "LP-filtering (cutoff=" << fstop << " num0=" << num[0] << " size=" << wavfiltered.size() << ")" << endl;
                 mkfilter::filtfilt<WAVTYPE>(wavfiltered, num, den, wavfiltered);
+                cout << "done" << endl;
+                WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->hide();
+                WMainWindow::sm_mainwindow->m_globalWaitingBar->hide();
             }
 
             if (doHighPass) {
@@ -150,8 +161,17 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
                 mkfilter::make_butterworth_filter(4, fstart/fs, false, num, den);
                 // mkfilter::make_chebyshev_filter(8, fstart/fs, -1, true, num, den);
 
-//                cout << "HP-filtering (cutoff=" << fstart << " num0=" << num[0] << " size=" << wavfiltered.size() << ")" << endl;
+                WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->setText(QString("High-pass filtering (cutoff=")+QString::number(fstart)+"Hz)");
+                WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->show();
+                WMainWindow::sm_mainwindow->m_globalWaitingBar->setMinimum(0);
+                WMainWindow::sm_mainwindow->m_globalWaitingBar->setMaximum(0);
+                WMainWindow::sm_mainwindow->m_globalWaitingBar->show();
+                WMainWindow::sm_mainwindow->ui->statusBar->repaint();
+                cout << "HP-filtering (cutoff=" << fstart << " num0=" << num[0] << " size=" << wavfiltered.size() << ")" << endl;
                 mkfilter::filtfilt<WAVTYPE>(wavfiltered, num, den, wavfiltered);
+                cout << "done" << endl;
+                WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->hide();
+                WMainWindow::sm_mainwindow->m_globalWaitingBar->hide();
             }
 
             // It seems the filtering went well, we can use the filtered sound
