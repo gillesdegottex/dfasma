@@ -41,6 +41,7 @@ using namespace std;
 #include <QIcon>
 #include <QTime>
 #include <QAction>
+#include <QScrollBar>
 
 QGVWaveform::QGVWaveform(WMainWindow* main)
     : QGraphicsView(main)
@@ -230,34 +231,40 @@ void QGVWaveform::wheelEvent(QWheelEvent* event){
 
 //    std::cout << "QGVWaveform::wheelEvent " << numDegrees.y() << endl;
 
-    QTransform trans = transform();
-    float h11 = trans.m11();
-
-    h11 += 0.01*h11*numDegrees.y();
-
-    m_aZoomOnSelection->setEnabled(m_selection.width()>0);
-    m_aZoomOut->setEnabled(true);
-    m_aZoomIn->setEnabled(true);
-    m_aUnZoom->setEnabled(true);
-
-    qreal min11 = viewport()->rect().width()/(10*1.0/m_main->getFs());
-    if(h11>=min11){
-        h11=min11;
-        m_aZoomIn->setEnabled(false);
+    if(event->modifiers().testFlag(Qt::ShiftModifier)){
+        QScrollBar* sb = horizontalScrollBar();
+        sb->setValue(sb->value()-numDegrees.y());
     }
+    else {
+        QTransform trans = transform();
+        float h11 = trans.m11();
 
-    qreal max11 = viewport()->rect().width()/m_main->getMaxDuration();
-    if(h11<=max11){
-        h11=max11;
-        m_aZoomOut->setEnabled(false);
-        m_aUnZoom->setEnabled(false);
+        h11 += 0.01*h11*numDegrees.y();
+
+        m_aZoomOnSelection->setEnabled(m_selection.width()>0);
+        m_aZoomOut->setEnabled(true);
+        m_aZoomIn->setEnabled(true);
+        m_aUnZoom->setEnabled(true);
+
+        qreal min11 = viewport()->rect().width()/(10*1.0/m_main->getFs());
+        if(h11>=min11){
+            h11=min11;
+            m_aZoomIn->setEnabled(false);
+        }
+
+        qreal max11 = viewport()->rect().width()/m_main->getMaxDuration();
+        if(h11<=max11){
+            h11=max11;
+            m_aZoomOut->setEnabled(false);
+            m_aUnZoom->setEnabled(false);
+        }
+
+        setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+        setTransform(QTransform(h11, trans.m12(), trans.m21(), trans.m22(), 0, 0));
+
+        QPointF p = mapToScene(QPoint(event->x(),0));
+        update_cursor(p.x());
     }
-
-    setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-    setTransform(QTransform(h11, trans.m12(), trans.m21(), trans.m22(), 0, 0));
-
-    QPointF p = mapToScene(QPoint(event->x(),0));
-    update_cursor(p.x());
 
 //    std::cout << "~QGVWaveform::wheelEvent" << endl;
 }
@@ -669,15 +676,15 @@ void QGVWaveform::update_cursor(float x){
     }
 }
 
-/*class QTimeTracker : public QTime {
+class QTimeTracker2 : public QTime {
 public:
-    QTimeTracker(){
+    QTimeTracker2(){
     }
 
     std::deque<int> past_elapsed;
 
-    int getAveragedElapsed(){
-        int m = 0;
+    float getAveragedElapsed(){
+        float m = 0;
         for(unsigned int i=0; i<past_elapsed.size(); i++){
             m += past_elapsed[i];
         }
@@ -686,47 +693,25 @@ public:
 
     void storeElapsed(){
         past_elapsed.push_back(elapsed());
+        if (past_elapsed.size()>10000)
+            past_elapsed.pop_front();
         restart();
     }
 };
 
-class QTimeTracker2 : public QTime {
-public:
-    QTimeTracker2(){
-        start();
-    }
-
-    std::deque<int> past_elapsed;
-
-    int getAveragedElapsed(){
-        int m = 0;
-        for(unsigned int i=0; i<past_elapsed.size(); i++){
-            m += past_elapsed[i];
-        }
-        return m / past_elapsed.size();
-    }
-
-    void storeElapsed(){
-        past_elapsed.push_back(elapsed());
-        restart();
-    }
-};*/
-
 void QGVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
 
 //    static QTimeTracker2 time_tracker;
-//    time_tracker.storeElapsed();
-//    std::cout << time_tracker.past_elapsed.back() << endl;
-
-//    static QTimeTracker time_tracker;
 //    time_tracker.restart();
+
+//    m_scene->invalidate();
 
     draw_grid(painter, rect);
     draw_waveform(painter, rect);
 
 //    time_tracker.storeElapsed();
 
-//    std::cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGraphicsView::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << " avg elapsed:" << time_tracker.getAveragedElapsed() << "(" << time_tracker.past_elapsed.back() << ")" << endl;
+//    std::cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGraphicsView::drawBackground [" << rect.left() << "," << rect.right() << "]x[" << rect.top() << "," << rect.bottom() << "] avg=" << time_tracker.getAveragedElapsed() << "(" << time_tracker.past_elapsed.size() << ") last=" << time_tracker.past_elapsed.back() << endl;
 }
 
 void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
@@ -734,25 +719,24 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 //    cout << "drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
     // TODO move to constructor
-    QPen outlinePen(m_main->ftsnds[0]->color);
-    outlinePen.setWidth(0);
-    painter->setPen(outlinePen);
-    painter->setBrush(QBrush(m_main->ftsnds[0]->color));
+//    QPen outlinePen(m_main->ftsnds[0]->color);
+//    outlinePen.setWidth(0);
+//    painter->setPen(outlinePen);
+//    painter->setBrush(QBrush(m_main->ftsnds[0]->color));
 
 //    QRectF viewrect = mapToScene(QRect(QPoint(0,0), QSize(viewport()->rect().width(), viewport()->rect().height()))).boundingRect();
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
-    float samppixdensity = (viewrect.right()-viewrect.left())*m_main->getFs()/viewport()->rect().width();
+    double samppixdensity = (viewrect.right()-viewrect.left())*m_main->getFs()/viewport()->rect().width();
 
 //    samppixdensity=3;
-    if(samppixdensity<10){
-//        std::cout << "Full resolution" << endl;
+    if(samppixdensity<10){ // Full resolution
 
         for(size_t fi=0; fi<m_main->ftsnds.size(); fi++){
             if(!m_main->ftsnds[fi]->m_actionShow->isChecked())
                 continue;
 
-            float a = m_main->ftsnds[fi]->m_ampscale;
+            WAVTYPE a = m_main->ftsnds[fi]->m_ampscale;
             if(m_main->ftsnds[fi]->m_actionInvPolarity->isChecked())
                 a *=-1.0;
 
@@ -763,34 +747,39 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
             int nleft = int(rect.left()*m_main->getFs());
             int nright = int(rect.right()*m_main->getFs())+1;
+//            int nleft = int(0);
+//            int nright = int(m_main->ftsnds[fi]->wav.size())+1;
 
             // std::cout << nleft << " " << nright << " " << m_main->snds[0]->wav.size()-1 << endl;
 
-            // Draw a line between each sample
-            float prevx=nleft/m_main->getFs() + m_main->ftsnds[fi]->m_delay/m_main->getFs();
-            float currx=0.0;
-            float y;
+            // Draw a line between each sample value
+            WAVTYPE dt = WAVTYPE(1)/m_main->getFs();
+            WAVTYPE prevx = WAVTYPE(nleft)/m_main->getFs() + WAVTYPE(m_main->ftsnds[fi]->m_delay)/m_main->getFs();
+            WAVTYPE currx = WAVTYPE(nleft+1)/m_main->getFs();
+            WAVTYPE y;
             if(nleft>=0 && nleft<int(m_main->ftsnds[fi]->wav.size()))
                 y = -a*m_main->ftsnds[fi]->wav[nleft];
             else
                 y = 0.0;
-            float prevy=y;
+            WAVTYPE prevy = y;
             // TODO prob appear with very long waveforms
-            for(int n=nleft+1; n<=nright; n++){
-                int wn = n - m_main->ftsnds[fi]->m_delay;
+            int wn = nleft+1 - m_main->ftsnds[fi]->m_delay;
+            for(int n=nleft+1; n<=nright; ++n){
                 if(wn>=0 && wn<int(m_main->ftsnds[fi]->wav.size()))
                     y = -a*m_main->ftsnds[fi]->wav[wn];
                 else
                     y = 0.0;
-                currx = n/m_main->getFs();
+
                 painter->drawLine(QLineF(prevx, prevy, currx, y));
 
+                wn++;
                 prevx = currx;
+                currx += dt;
                 prevy = y;
             }
 
-            // When resolution is big enough, draw the ticks marks at each sample
-            float samppixdensity_dotsthr = 0.125;
+            // When resolution is big enough, draw the tick marks at each sample
+            double samppixdensity_dotsthr = 0.125;
     //        std::cout << samppixdensity << endl;
             if(samppixdensity<samppixdensity_dotsthr){
                 qreal dy = ((samppixdensity_dotsthr-samppixdensity)/samppixdensity_dotsthr)*(1.0/20);
@@ -808,8 +797,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
         m_main->ui->lblInfoTxt->setText("Full resolution waveform plot");
     }
-    else
-    {
+    else {
         // Plot only one line per pixel, in order to improve computational efficiency
 //        std::cout << "Compressed resolution" << endl;
 
