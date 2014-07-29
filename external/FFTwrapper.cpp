@@ -34,8 +34,10 @@ FFTwrapper::FFTwrapper(bool forward)
     m_forward = forward;
 
     #ifdef FFT_FFTW3
-        m_fftw3_out = m_fftw3_in = NULL;
+        m_fftw3_out = NULL;
+        m_fftw3_in = NULL;
         m_fftw3_plan = NULL;
+        fftw_set_timelimit(1.0);
     #elif FFT_FFTREAL
         m_fftreal_out = NULL;
         m_fftreal_fft = NULL;
@@ -69,8 +71,8 @@ void FFTwrapper::resize(int n)
         delete[] m_fftreal_out;
         m_fftreal_out = NULL;
 
-        m_fftreal_fft = new ffft::FFTReal<double>(m_size);
-        m_fftreal_out = new double[m_size];
+        m_fftreal_fft = new ffft::FFTReal<FFTTYPE>(m_size);
+        m_fftreal_out = new FFTTYPE[m_size];
     #endif
 
     in.resize(m_size);
@@ -83,7 +85,7 @@ void FFTwrapper::execute()
     execute(in, out);
 }
 
-void FFTwrapper::execute(const vector<double>& in, vector<std::complex<double> >& out)
+void FFTwrapper::execute(const vector<FFTTYPE>& in, vector<std::complex<FFTTYPE> >& out)
 {
 //    std::cout << "FFTwrapper::execute " << m_size << endl;
 

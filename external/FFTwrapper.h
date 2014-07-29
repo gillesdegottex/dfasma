@@ -21,6 +21,8 @@ file provided in the source code of DFasma. Another copy can be found at
 #ifndef _fftwrapper_h_
 #define _fftwrapper_h_
 
+#define FFTTYPE double
+
 #include <complex>
 #include <vector>
 #include <deque>
@@ -39,8 +41,8 @@ class FFTwrapper
     fftw_plan m_fftw3_plan;
     fftw_complex *m_fftw3_in, *m_fftw3_out;
 #elif FFT_FFTREAL
-    ffft::FFTReal<double> *m_fftreal_fft;
-    double* m_fftreal_out;
+    ffft::FFTReal<FFTTYPE> *m_fftreal_fft;
+    FFTTYPE* m_fftreal_out;
 #endif
 
 public:
@@ -50,10 +52,10 @@ public:
 
 	int size(){return m_size;}
 
-	std::vector<double> in;
-	std::vector<std::complex<double> > out;
+    std::vector<FFTTYPE> in;
+    std::vector<std::complex<FFTTYPE> > out;
 
-	void execute(const std::vector<double>& in, std::vector<std::complex<double> >& out);
+    void execute(const std::vector<FFTTYPE>& in, std::vector<std::complex<FFTTYPE> >& out);
 	void execute();
 
     ~FFTwrapper();
