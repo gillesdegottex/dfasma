@@ -32,6 +32,8 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "filetype.h"
 
+#define WAVTYPE double
+
 class CFFTW3;
 
 class FTSound : public QIODevice, public FileType
@@ -48,20 +50,20 @@ public:
     FTSound(const QString& _fileName, QObject* parent);
     static QString getAudioFileReadingDescription();
 
-    std::deque<double> wav;
-    std::deque<double> wavfiltered;
-    std::deque<double>* wavtoplay;
-    double m_wavmaxamp;
-    double fs; // [Hz]
-    static double fs_common;  // [Hz]
-    static double s_play_power;
-    static std::deque<double> s_play_power_values;
+    std::vector<WAVTYPE> wav;
+    std::vector<WAVTYPE> wavfiltered;
+    std::vector<WAVTYPE>* wavtoplay;
+    WAVTYPE m_wavmaxamp;
+    double fs; // [Hz] Sampling frequency of this specific wav file
+    static double fs_common;  // [Hz] Sampling frequency of the sound player
+    static WAVTYPE s_play_power;
+    static std::deque<WAVTYPE> s_play_power_values;
     double getDuration() const {return wav.size()/fs;}
     virtual double getLastSampleTime() const;
     virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
 
     // Spectrum
-    std::vector<std::complex<double> > m_dft;
+    std::vector<std::complex<WAVTYPE> > m_dft;
 
     // QIODevice
     double setPlay(const QAudioFormat& format, double tstart=0.0, double tstop=0.0, double fstart=0.0, double fstop=0.0);
