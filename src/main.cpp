@@ -28,6 +28,11 @@ extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavutil/avutil.h>
 }
+#elif AUDIOFILEREADING_LIBSOX
+extern "C" {
+#include <sox.h>
+#include <assert.h>
+}
 #endif
 
 #ifdef SUPPORT_SDIF
@@ -40,12 +45,15 @@ int main(int argc, char *argv[])
         // This call is necessarily done once in your app to initialize
         // libavformat to register all the muxers, demuxers and protocols.
         av_register_all();
+    #elif AUDIOFILEREADING_LIBSOX
+        assert(sox_init() == SOX_SUCCESS);
+        // TODO sox_quit();
     #endif
+
 
     #ifdef SUPPORT_SDIF
         Easdif::EasdifInit();
         // TODO EasdifEnd();
-        // Should call on exit: SdifGenKill();
     #endif
 
     QApplication a(argc, argv);
