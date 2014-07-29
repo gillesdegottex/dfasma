@@ -30,12 +30,14 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "ftfzero.h"
 #include "ftlabels.h"
 #include "../external/audioengine/audioengine.h"
+#include "../external/FFTwrapper.h"
 
 #include "qtextedit.h"
 
 #include <math.h>
 #include <iostream>
 #include <algorithm>
+#include <limits>
 using namespace std;
 
 #include <QToolBar>
@@ -58,6 +60,8 @@ using namespace std;
 #include <easdif/easdif.h>
 #endif
 
+WMainWindow* WMainWindow::sm_mainwindow = NULL;
+
 WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::WMainWindow)
@@ -68,22 +72,45 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 {
     ui->setupUi(this);
 
+    sm_mainwindow = this;
+
     m_dlgSettings = new WDialogSettings(this);
     m_dlgSettings->ui->lblLibraryAudioFileReading->setText(FTSound::getAudioFileReadingDescription());
 
-    #ifdef FFT_FFTW3
-        m_dlgSettings->ui->vlLibraries->addWidget(new QLabel("<i>Library for the Fast Fourier Transform (FFT):</i> <a href=\"http://www.fftw.org\">FFTW</a> version 3"));
-    #elif FFT_FFTREAL
-        m_dlgSettings->ui->vlLibraries->addWidget(new QLabel("<i>Library for the Fast Fourier Transform (FFT):</i> <a href=\"http://ldesoras.free.fr/prod.html#src_audio\">FFTReal</a> version 2.11"));
-    #endif
-
+    QString sdifinfostr = "";
     #ifdef SUPPORT_SDIF
-        m_dlgSettings->ui->vlLibraries->addWidget(new QLabel("<i>Support SDIF format:</i> <a href=\"http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/\">Easdif</a> version "+QString(EASDIF_VERSION_STRING)));
+        sdifinfostr = "<br/><i>SDIF file format:</i> <a href=\"http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/\">Easdif</a> version "+QString(EASDIF_VERSION_STRING);
     #else
-        m_dlgSettings->ui->vlLibraries->addWidget(new QLabel("<i>No SDIF format support</i>"));
+        sdifinfostr = "<br/><i>No support for SDIF file format</i>"));
     #endif
+    m_dlgSettings->ui->vlLibraries->addWidget(new QLabel(sdifinfostr));
+
+    QString fftinfostr = "";
+    fftinfostr += "<br/><i>Fast Fourier Transform (FFT):</i> ";
+    #ifdef FFT_FFTW3
+        fftinfostr += "<a href=\"http://www.fftw.org\">FFTW</a> version 3";
+    #elif FFT_FFTREAL
+        fftinfostr += "<a href=\"http://ldesoras.free.fr/prod.html#src_audio\">FFTReal</a> version 2.11";
+    #endif
+    fftinfostr += " ("+QString::number(sizeof(FFTTYPE)*8)+"bits; smallest: "+QString::number(20*log10(std::numeric_limits<FFTTYPE>::min()))+"dB)";
+    fftinfostr += "</p>";
+    m_dlgSettings->ui->vlLibraries->addWidget(new QLabel(fftinfostr));
 
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(execAbout()));
+
+    m_globalWaitingBarLabel = new QLabel(ui->statusBar);
+    m_globalWaitingBarLabel->setAlignment(Qt::AlignRight);
+    ui->statusBar->setStyleSheet("QStatusBar::item { border: 0px solid black }; ");
+    m_globalWaitingBarLabel->setMaximumSize(500, 18);
+    m_globalWaitingBarLabel->setText("<waiting bar info text>");
+    ui->statusBar->addPermanentWidget(m_globalWaitingBarLabel);
+    m_globalWaitingBar = new QProgressBar(ui->statusBar);
+    m_globalWaitingBar->setAlignment(Qt::AlignRight);
+    m_globalWaitingBar->setMaximumSize(100, 14);
+    m_globalWaitingBar->setValue(50);
+    ui->statusBar->addPermanentWidget(m_globalWaitingBar);
+    m_globalWaitingBarLabel->hide();
+    m_globalWaitingBar->hide();
 
     setAcceptDrops(true);
     ui->listSndFiles->setAcceptDrops(true);
