@@ -126,7 +126,7 @@ p, li { white-space: pre-wrap; }
           </font>
          </property>
          <property name="text">
-          <string>Library for reading audio files:</string>
+          <string>Audio file reading:</string>
          </property>
         </widget>
        </item>
