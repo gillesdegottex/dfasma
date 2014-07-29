@@ -43,6 +43,9 @@ class AudioEngine;
 //#include "ftf0.h"
 class QGVWaveform;
 class QGVSpectrum;
+class QHBoxLayout;
+class QProgressBar;
+class QLabel;
 
 namespace Ui {
 class WMainWindow;
@@ -88,8 +91,14 @@ public:
     ~WMainWindow();
 
     Ui::WMainWindow* ui;
+    static WMainWindow* sm_mainwindow;
 
     WDialogSettings* m_dlgSettings;
+
+    // Waiting bar for operations blocking the main window
+    // (The DFT resizing is NOT blocking because in a separate thread)
+    QLabel* m_globalWaitingBarLabel;
+    QProgressBar* m_globalWaitingBar;
 
     void addFile(const QString& filepath);
     std::deque<FTSound*> ftsnds;
