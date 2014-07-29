@@ -88,7 +88,6 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     setAcceptDrops(true);
     ui->listSndFiles->setAcceptDrops(true);
     ui->listSndFiles->setSelectionRectVisible(false);
-//    ui->listSndFiles->setSelectionMode(QAbstractItemView::MultiSelection); // TODO fix BUG1 below first
     ui->listSndFiles->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->listSndFiles, SIGNAL(customContextMenuRequested(const QPoint&)),
             this, SLOT(showFileContextMenu(const QPoint&)));
@@ -124,9 +123,11 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 }
 
 void WMainWindow::execAbout(){
+    QString curdate = QString(__DATE__)+" at "+__TIME__;
     QMessageBox::about(this, "About this software", "\
     <h1>DFasma</h1>\
-    version master\
+    Version master\
+    (compiled on "+curdate+")\
     <p>Copyright (&copy;) 2014 Gilles Degottex <a href='mailto:gilles.degottex@gmail.com'>&lt;gilles.degottex@gmail.com&gt;</a></p>\
     <br/><p><i>DFasma</i> is an open-source software whose main purpose is to compare waveforms in time and spectral domains.</p>\
     <p>It is coded in C++/<a href='http://qt-project.org'>Qt</a> under the <a href='http://www.gnu.org/licenses/gpl.html'>GPL (v3) License</a>.\
@@ -188,13 +189,7 @@ void WMainWindow::keyPressEvent(QKeyEvent* event){
 
 //    cout << "QGVWaveform::keyPressEvent " << endl;
 
-    if(event->key()==Qt::Key_CapsLock){
-        if(ui->actionEditMode->isChecked())
-            setSelectionMode(true);
-        else
-            setEditMode(true);
-    }
-    else if(event->key()==Qt::Key_Shift){
+    if(event->key()==Qt::Key_Shift){
         if(ui->actionSelectionMode->isChecked()){
             m_gvWaveform->setDragMode(QGraphicsView::ScrollHandDrag);
             m_gvSpectrum->setDragMode(QGraphicsView::ScrollHandDrag);
