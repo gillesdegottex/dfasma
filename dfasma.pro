@@ -20,6 +20,8 @@
 
 # ------------------------------------------------------------------------------
 # Compilation options
+# (except for fft_fftreal and audiofilereading_builtin, all the other
+#  options request linking with external libraries)
 
 # For the Discrete Fast Fourier Transform
 # Chose among: fft_fftw3, fft_fftreal
@@ -31,9 +33,8 @@ CONFIG += fft_fftw3
 CONFIG += audiofilereading_libsndfile
 
 # Additional file format support
-# SDIF (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
+# SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
 CONFIG += sdifreading
-
 
 # The most cross-platform/portable/compatible compilation settings
 # (comment all the above and uncomment below)
@@ -41,7 +42,8 @@ CONFIG += sdifreading
 #CONFIG += audiofilereading_builtin
 
 
-
+# SDK Installation specific options
+QMAKE_MAC_SDK = macosx10.6
 
 # (modify the following at your own risks !) -----------------------------------
 
