@@ -79,6 +79,7 @@ public:
     unsigned int m_nl;
     unsigned int m_nr;
     std::vector<double> m_win;
+    std::vector<FFTTYPE> m_filterresponse;
 
 
     QGraphicsLineItem* m_giCursorHoriz;

@@ -11,7 +11,7 @@ namespace mkfilter {
 
 static QString version = "4.6";
 
-void make_butterworth_filter(int _order, double _alpha, bool isLowPass, std::vector<double>& num, std::vector<double>& den);
+void make_butterworth_filter(int _order, double _alpha, bool isLowPass, std::vector<double>& num, std::vector<double>& den, std::vector<double>* response=NULL, int dftlen=0);
 
 void make_chebyshev_filter(int _order, double _alpha, double chebrip, bool isLowPass, std::vector<double>& num, std::vector<double>& den);
 

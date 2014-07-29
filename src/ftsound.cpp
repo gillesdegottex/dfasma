@@ -21,6 +21,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "ftsound.h"
 
 #include <iostream>
+#include <limits>
 #include <deque>
 using namespace std;
 
@@ -30,6 +31,7 @@ using namespace std;
 #include <QMessageBox>
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
+#include "gvspectrum.h"
 
 #include "../external/mkfilter/mkfilter.h"
 
@@ -138,10 +140,19 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
         try{
             wavfiltered = wav;
 
-            std::vector<double> num, den;
+            int responsedftlen = 4096;
+            WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse = std::vector<FFTTYPE>(responsedftlen/2+1,1.0);
             if (doLowPass) {
-                mkfilter::make_butterworth_filter(4, fstop/fs, true, num, den);
+                std::vector<double> num, den;
+                std::vector<double> filterresponse;
+                mkfilter::make_butterworth_filter(4, fstop/fs, true, num, den, &filterresponse, responsedftlen);
                 // mkfilter::make_chebyshev_filter(8, fstop/fs, -1, true, num, den);
+
+                for(size_t k=0; k<filterresponse.size(); k++){
+                    if(filterresponse[k] < 2*std::numeric_limits<FFTTYPE>::min())
+                        filterresponse[k] = std::numeric_limits<FFTTYPE>::min();
+                    WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse[k] *= filterresponse[k];
+                }
 
                 WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->setText(QString("Low-pass filtering (cutoff=")+QString::number(fstop)+"Hz)");
                 WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->show();
@@ -151,15 +162,21 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
                 WMainWindow::sm_mainwindow->ui->statusBar->repaint();
                 cout << "LP-filtering (cutoff=" << fstop << " num0=" << num[0] << " size=" << wavfiltered.size() << ")" << endl;
                 mkfilter::filtfilt<WAVTYPE>(wavfiltered, num, den, wavfiltered);
-                cout << "done" << endl;
                 WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->hide();
                 WMainWindow::sm_mainwindow->m_globalWaitingBar->hide();
             }
 
             if (doHighPass) {
                 std::vector<double> num, den;
-                mkfilter::make_butterworth_filter(4, fstart/fs, false, num, den);
+                std::vector<double> filterresponse;
+                mkfilter::make_butterworth_filter(4, fstart/fs, false, num, den, &filterresponse, responsedftlen);
                 // mkfilter::make_chebyshev_filter(8, fstart/fs, -1, true, num, den);
+
+                for(size_t k=0; k<filterresponse.size(); k++){
+                    if(filterresponse[k] < 2*std::numeric_limits<FFTTYPE>::min())
+                        filterresponse[k] = std::numeric_limits<FFTTYPE>::min();
+                    WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse[k] *= filterresponse[k];
+                }
 
                 WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->setText(QString("High-pass filtering (cutoff=")+QString::number(fstart)+"Hz)");
                 WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->show();
@@ -169,10 +186,13 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
                 WMainWindow::sm_mainwindow->ui->statusBar->repaint();
                 cout << "HP-filtering (cutoff=" << fstart << " num0=" << num[0] << " size=" << wavfiltered.size() << ")" << endl;
                 mkfilter::filtfilt<WAVTYPE>(wavfiltered, num, den, wavfiltered);
-                cout << "done" << endl;
                 WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->hide();
                 WMainWindow::sm_mainwindow->m_globalWaitingBar->hide();
             }
+
+            for(size_t k=0; k<WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse.size(); k++)
+                WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse[k] = 20*log10(WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse[k]);
+            WMainWindow::sm_mainwindow->m_gvSpectrum->m_scene->invalidate();
 
             // It seems the filtering went well, we can use the filtered sound
             wavtoplay = &wavfiltered;
@@ -182,8 +202,11 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
             wavtoplay = &wav;
         }
     }
-    else
+    else {
+        WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse.resize(0);
+        WMainWindow::sm_mainwindow->m_gvSpectrum->m_scene->invalidate();
         wavtoplay = &wav;
+    }
 
 
     m_outputaudioformat = format;

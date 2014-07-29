@@ -863,14 +863,12 @@ void QGVSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
         painter->setPen(outlinePen);
         painter->setBrush(QBrush(m_main->ftsnds[fi]->color));
 
-//        cout << "QGVSpectrum::drawBackground [" << endl;
         int dftlen = (m_main->ftsnds[fi]->m_dft.size()-1)*2;
         float prevx = 0;
         float prevy = 20*log10(abs(m_main->ftsnds[fi]->m_dft[0]));
         m_minsy = prevy;
         m_maxsy = prevy;
         for(int k=0; k<dftlen/2+1; k++){
-//            cout << 20*log10(abs(m_fft->out[k])) << " ";
             float x = m_main->getFs()*k/dftlen;
             float y = 20*log10(m_main->ftsnds[fi]->m_ampscale*abs(m_main->ftsnds[fi]->m_dft[k]));
             painter->drawLine(QLineF(prevx, -prevy, x, -y));
@@ -879,9 +877,32 @@ void QGVSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
             m_minsy = std::min(m_minsy, y);
             m_maxsy = std::max(m_maxsy, y);
         }
-//        cout << "]" << endl;
     }
 
+    // Draw the filter response
+    if(m_filterresponse.size()>0) {
+        QPen outlinePen(QColor(0,0,0));
+        outlinePen.setWidth(0);
+        painter->setPen(outlinePen);
+
+        int dftlen = (m_filterresponse.size()-1)*2;
+        float prevx = 0;
+        float prevy = m_filterresponse[0];
+        m_minsy = prevy;
+        m_maxsy = prevy;
+        for(int k=0; k<dftlen/2+1; k++){
+            float x = m_main->getFs()*k/dftlen;
+            float y = m_filterresponse[k];
+            painter->drawLine(QLineF(prevx, -prevy, x, -y));
+            prevx = x;
+            prevy = y;
+            m_minsy = std::min(m_minsy, y);
+            m_maxsy = std::max(m_maxsy, y);
+        }
+    }
+
+
+    // Draw the fundamental frequency grid
     if(!m_main->ftfzeros.empty()) {
 
         for(size_t fi=0; fi<m_main->ftfzeros.size(); fi++){

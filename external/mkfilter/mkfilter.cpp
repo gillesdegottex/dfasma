@@ -415,23 +415,28 @@ static complex reflect(complex z)
 static void compute_bpres()
   { // compute Z-plane pole & zero positions for bandpass resonator
     zplane.numpoles = zplane.numzeros = 2;
-    zplane.zeros[0] = 1.0; zplane.zeros[1] = -1.0;
+    zplane.zeros[0] = 1.0;
+    zplane.zeros[1] = -1.0;
     double theta = TWOPI * raw_alpha1; // where we want the peak to be
     if (infq)
       { // oscillator
     complex zp = expj(theta);
-    zplane.poles[0] = zp; zplane.poles[1] = cconj(zp);
+    zplane.poles[0] = zp;
+    zplane.poles[1] = cconj(zp);
       }
     else
       { // must iterate to find exact pole positions
-    complex topcoeffs[MAXPZ+1]; expand(zplane.zeros, zplane.numzeros, topcoeffs);
+    complex topcoeffs[MAXPZ+1];
+    expand(zplane.zeros, zplane.numzeros, topcoeffs);
     double r = exp(-theta / (2.0 * qfactor));
     double thm = theta, th1 = 0.0, th2 = PI;
     bool cvg = false;
     for (int i=0; i < 50 && !cvg; i++)
       { complex zp = r * expj(thm);
-        zplane.poles[0] = zp; zplane.poles[1] = cconj(zp);
-        complex botcoeffs[MAXPZ+1]; expand(zplane.poles, zplane.numpoles, botcoeffs);
+        zplane.poles[0] = zp;
+        zplane.poles[1] = cconj(zp);
+        complex botcoeffs[MAXPZ+1];
+        expand(zplane.poles, zplane.numpoles, botcoeffs);
         complex g = evaluate(topcoeffs, zplane.numzeros, botcoeffs, zplane.numpoles, expj(theta));
         double phi = g.im / g.re; // approx to atan2
         if (phi > 0.0) th2 = thm; else th1 = thm;
@@ -527,7 +532,7 @@ void copycoefs(std::vector<double>& num, std::vector<double>& den, double& G) {
 
 // C++ interface to the above functions ----------------------------------------
 
-void mkfilter::make_butterworth_filter(int _order, double _alpha, bool isLowPass, std::vector<double>& num, std::vector<double>& den) {
+void mkfilter::make_butterworth_filter(int _order, double _alpha, bool isLowPass, std::vector<double>& num, std::vector<double>& den, std::vector<double>* response, int dftlen) {
 
     order = _order;
     raw_alpha1 = _alpha;
@@ -564,6 +569,22 @@ void mkfilter::make_butterworth_filter(int _order, double _alpha, bool isLowPass
     double gain;
     copycoefs(num, den, gain);
 
+    // Compute the frequency response if asked
+    if(response!=NULL){
+
+        complex topcoeffs[MAXPZ+1], botcoeffs[MAXPZ+1];
+        expand(zplane.zeros, zplane.numzeros, topcoeffs);
+        expand(zplane.poles, zplane.numpoles, botcoeffs);
+
+        response->resize(dftlen/2+1);
+
+        double theta;
+        for(unsigned int k=0; k<=dftlen/2; k++) {
+            theta = (TWOPI*k)/dftlen;
+            (*response)[k] = (1.0/gain)*hypot(evaluate(topcoeffs, zplane.numzeros, botcoeffs, zplane.numpoles, expj(theta)));
+        }
+    }
+
 //    // Plot coefs
 //    cout << "gain=" << gain << endl;
 //    for (int i=0; i < zplane.numpoles+1; i++)
@@ -593,4 +614,3 @@ void mkfilter::make_chebyshev_filter(int _order, double _alpha, double _chebrip,
     double gain;
     copycoefs(num, den, gain);
 }
-
