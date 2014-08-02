@@ -151,16 +151,33 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 
 void WMainWindow::execAbout(){
     QString curdate = QString(__DATE__)+" at "+__TIME__;
-    QMessageBox::about(this, "About this software", "\
+    QString txt = "\
     <h1>DFasma</h1>\
     Version master\
-    (compiled on "+curdate+")\
-    <p>Copyright (&copy;) 2014 Gilles Degottex <a href='mailto:gilles.degottex@gmail.com'>&lt;gilles.degottex@gmail.com&gt;</a></p>\
-    <br/><p><i>DFasma</i> is an open-source software whose main purpose is to compare waveforms in time and spectral domains.</p>\
+    (compiled on "+curdate+")";
+
+    txt += "<h4>Purpose</h4>";
+    txt += "<p><i>DFasma</i> is an open-source software whose main purpose is to compare waveforms in time and spectral domains. Even though there are a few scaling functionalities, DFasma is basically <u>not</u> a sound editor.</p>";
+    txt += "<p>Its purpose and design are inspired by the <i>Xspect</i> software developed at <a href='http://www.ircam.fr'>Ircam</a>.</p>";
+
+//    txt += "<br/>";
+
+    txt += "<h4>Legal</h4>\
+            <p>Copyright (&copy;) 2014 Gilles Degottex <a href='mailto:gilles.degottex@gmail.com'>&lt;gilles.degottex@gmail.com&gt;</a></p>\
     <p>It is coded in C++/<a href='http://qt-project.org'>Qt</a> under the <a href='http://www.gnu.org/licenses/gpl.html'>GPL (v3) License</a>.\
-    <br/>The source code is hosted on <a href='https://github.com/gillesdegottex/dfasma'>GitHub</a>.</p>\
-    <p>Its purpose and design are inspired by the <i>Xspect</i> software developed at <a href='http://www.ircam.fr'>Ircam</a>.</p>\
-    <br/><p>Any contribution of any sort is very welcome and will be rewarded by your name in this about box, in addition to a pint of your favorite <a href='http://wildsidevancouver.com/wp-content/uploads/2013/07/beer.jpg'>beer</a> during the next signal processing <a href='http://www.obsessedwithsports.com/wp-content/uploads/2013/03/revenge-of-the-nerds-sloan-conference.png'>conference</a>!</p>");
+    <br/>The source code is hosted on <a href='https://github.com/gillesdegottex/dfasma'>GitHub</a>.</p>";
+
+
+//    txt += "<h4>Credits</h4>\
+//            Most open-source softwares are infeasible without indirect contributions provided through libraries, open code, etc.\
+//            Keeping in mind that none of the following geeks could be taken as responsible of DFasma\'s bugs and improper behaviors, it seems necessary to thanks them. Thus, thanks to :<br/>\
+//            FFTW3\'team \
+//            ";
+
+    txt += "<p>Any contribution of any sort is very welcome and will be rewarded by your name in this about box, in addition to a pint of your favorite beer during the next signal processing <a href='http://www.obsessedwithsports.com/wp-content/uploads/2013/03/revenge-of-the-nerds-sloan-conference.png'>conference</a>!</p>";
+
+    QMessageBox::about(this, "About this software", txt);
+
 //    QMessageBox::aboutQt(this, "About this software");
 }
 
