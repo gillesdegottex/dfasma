@@ -205,8 +205,8 @@ void QGVSpectrum::computeDFTs(){
             int wn = 0;
             for(; n<m_winlen; n++){
                 wn = m_nl+n - m_main->ftsnds[fi]->m_delay;
-                if(wn>=0 && wn<int(m_main->ftsnds[fi]->wav.size()))
-                    m_fft->in[n] = pol*m_main->ftsnds[fi]->wav[wn]*m_win[n];
+                if(wn>=0 && wn<int(m_main->ftsnds[fi]->wavtoplay->size()))
+                    m_fft->in[n] = pol*(*(m_main->ftsnds[fi]->wavtoplay))[wn]*m_win[n];
                 else
                     m_fft->in[n] = 0.0;
             }
