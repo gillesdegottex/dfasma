@@ -21,6 +21,8 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "wdialogsettings.h"
 #include "ui_wdialogsettings.h"
 
+#include "ftsound.h"
+
 WDialogSettings::WDialogSettings(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::WDialogSettings)
@@ -30,6 +32,12 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     setWindowIcon(QIcon(":/icons/settings.svg"));
     setWindowIconText("Settings");
     setWindowTitle("Settings");
+
+    connect(ui->ckPlayAddWindows, SIGNAL(toggled(bool)), this, SLOT(setckPlayAddWindows(bool)));
+}
+
+void WDialogSettings::setckPlayAddWindows(bool add) {
+    FTSound::sm_playwin_use = add;
 }
 
 WDialogSettings::~WDialogSettings()

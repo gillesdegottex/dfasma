@@ -36,6 +36,11 @@ public:
     ~WDialogSettings();
     
     Ui::WDialogSettings *ui;
+
+public slots:
+    void setckPlayAddWindows(bool add);
+
+
 private:
 };
 
