@@ -32,11 +32,12 @@ using namespace std;
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "gvspectrum.h"
+#include "gvwaveform.h"
 
 #include "../external/mkfilter/mkfilter.h"
 
 
-double FTSound::fs_common = 0; // Initially, fs is undefined
+double FTSound::fs_common = 0; // Initially, fs is undefined TODO put in wmainwindow
 WAVTYPE FTSound::s_play_power = 0;
 std::deque<WAVTYPE> FTSound::s_play_power_values;
 
@@ -112,107 +113,17 @@ void FTSound::setSamplingRate(double _fs){
 
 double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop, double fstart, double fstop)
 {
-    WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->setText("PLAYYYYYYING");
+    m_outputaudioformat = format;
 
+    s_play_power = 0;
+    s_play_power_values.clear();
+
+    // Fix and make time selection
     if(tstart>tstop){
         double tmp = tstop;
         tstop = tstart;
         tstart = tmp;
     }
-    if(fstart>fstop){
-        double tmp = fstop;
-        fstop = fstart;
-        fstart = tmp;
-    }
-
-    // Fix frequency cutoffs
-    // Cannot ensure the numerical stability for very small cutoff
-    // Thus, force clip the desired values
-    if(fstart<10) fstart=0;
-    if(fstart>fs/2-10) fstart=fs/2;
-    if(fstop<10) fstop=0;
-    if(fstop>fs/2-10) fstop=fs/2;
-
-    bool doLowPass = fstop>0.0 && fstop<fs/2;
-    bool doHighPass = fstart>0.0 && fstart<fs/2;
-
-    if ((fstart<fstop) && (doLowPass || doHighPass)) {
-        try{
-            wavfiltered = wav;
-
-            int responsedftlen = 4096;
-            WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse = std::vector<FFTTYPE>(responsedftlen/2+1,1.0);
-            if (doLowPass) {
-                std::vector<double> num, den;
-                std::vector<double> filterresponse;
-                mkfilter::make_butterworth_filter(4, fstop/fs, true, num, den, &filterresponse, responsedftlen);
-                // mkfilter::make_chebyshev_filter(8, fstop/fs, -1, true, num, den);
-
-                for(size_t k=0; k<filterresponse.size(); k++){
-                    if(filterresponse[k] < 2*std::numeric_limits<FFTTYPE>::min())
-                        filterresponse[k] = std::numeric_limits<FFTTYPE>::min();
-                    WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse[k] *= filterresponse[k];
-                }
-
-                WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->setText(QString("Low-pass filtering (cutoff=")+QString::number(fstop)+"Hz)");
-                WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->show();
-                WMainWindow::sm_mainwindow->m_globalWaitingBar->setMinimum(0);
-                WMainWindow::sm_mainwindow->m_globalWaitingBar->setMaximum(0);
-                WMainWindow::sm_mainwindow->m_globalWaitingBar->show();
-                WMainWindow::sm_mainwindow->ui->statusBar->repaint();
-                cout << "LP-filtering (cutoff=" << fstop << " num0=" << num[0] << " size=" << wavfiltered.size() << ")" << endl;
-                mkfilter::filtfilt<WAVTYPE>(wavfiltered, num, den, wavfiltered);
-                WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->hide();
-                WMainWindow::sm_mainwindow->m_globalWaitingBar->hide();
-            }
-
-            if (doHighPass) {
-                std::vector<double> num, den;
-                std::vector<double> filterresponse;
-                mkfilter::make_butterworth_filter(4, fstart/fs, false, num, den, &filterresponse, responsedftlen);
-                // mkfilter::make_chebyshev_filter(8, fstart/fs, -1, true, num, den);
-
-                for(size_t k=0; k<filterresponse.size(); k++){
-                    if(filterresponse[k] < 2*std::numeric_limits<FFTTYPE>::min())
-                        filterresponse[k] = std::numeric_limits<FFTTYPE>::min();
-                    WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse[k] *= filterresponse[k];
-                }
-
-                WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->setText(QString("High-pass filtering (cutoff=")+QString::number(fstart)+"Hz)");
-                WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->show();
-                WMainWindow::sm_mainwindow->m_globalWaitingBar->setMinimum(0);
-                WMainWindow::sm_mainwindow->m_globalWaitingBar->setMaximum(0);
-                WMainWindow::sm_mainwindow->m_globalWaitingBar->show();
-                WMainWindow::sm_mainwindow->ui->statusBar->repaint();
-                cout << "HP-filtering (cutoff=" << fstart << " num0=" << num[0] << " size=" << wavfiltered.size() << ")" << endl;
-                mkfilter::filtfilt<WAVTYPE>(wavfiltered, num, den, wavfiltered);
-                WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->hide();
-                WMainWindow::sm_mainwindow->m_globalWaitingBar->hide();
-            }
-
-            for(size_t k=0; k<WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse.size(); k++)
-                WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse[k] = 20*log10(WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse[k]);
-            WMainWindow::sm_mainwindow->m_gvSpectrum->m_scene->invalidate();
-
-            // It seems the filtering went well, we can use the filtered sound
-            wavtoplay = &wavfiltered;
-        }
-        catch(QString err){
-            QMessageBox::warning(NULL, "Problem when filtering the sound to play", QString("The sound cannot be filtered as given by the selection in the spectrum view.\n\nReason:\n")+err+QString("\n\nPlaying the non-filtered sound ..."));
-            wavtoplay = &wav;
-        }
-    }
-    else {
-        WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse.resize(0);
-        WMainWindow::sm_mainwindow->m_gvSpectrum->m_scene->invalidate();
-        wavtoplay = &wav;
-    }
-
-
-    m_outputaudioformat = format;
-
-    s_play_power = 0;
-    s_play_power_values.clear();
 
     if(tstart==0.0 && tstop==0.0){
         m_start = 0;
@@ -230,6 +141,113 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
 
     if(m_end<0) m_end=0;
     if(m_end>wavtoplay->size()-1) m_end=wavtoplay->size()-1;
+
+
+    // Fix frequency cutoffs
+    if(fstart>fstop){
+        double tmp = fstop;
+        fstop = fstart;
+        fstart = tmp;
+    }
+
+    // Cannot ensure the numerical stability for very small cutoff
+    // Thus, clip the given values
+    if(fstart<10) fstart=0;
+    if(fstart>fs/2-10) fstart=fs/2;
+    if(fstop<10) fstop=0;
+    if(fstop>fs/2-10) fstop=fs/2;
+
+    bool doLowPass = fstop>0.0 && fstop<fs/2;
+    bool doHighPass = fstart>0.0 && fstart<fs/2;
+
+    if ((fstart<fstop) && (doLowPass || doHighPass)) {
+        try{
+            wavfiltered = wav;
+
+            int responsedftlen = 2048;
+            int butterworth_order = 32;
+            WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse = std::vector<FFTTYPE>(responsedftlen/2+1,1.0);
+            std::vector< std::vector<double> > num, den;
+            std::vector<double> filterresponse;
+
+            if (doLowPass) {
+                mkfilter::make_butterworth_filter_biquad(butterworth_order, fstop/fs, true, num, den, &filterresponse, responsedftlen);
+
+                for(size_t k=0; k<filterresponse.size(); k++){
+                    if(filterresponse[k] < 2*std::numeric_limits<FFTTYPE>::min())
+                        filterresponse[k] = std::numeric_limits<FFTTYPE>::min();
+                    WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse[k] *= filterresponse[k];
+                }
+
+                WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->setText(QString("Low-pass filtering (cutoff=")+QString::number(fstop)+"Hz)");
+                WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->show();
+                WMainWindow::sm_mainwindow->m_globalWaitingBar->setMinimum(0);
+                WMainWindow::sm_mainwindow->m_globalWaitingBar->setMaximum(0);
+                WMainWindow::sm_mainwindow->m_globalWaitingBar->show();
+                WMainWindow::sm_mainwindow->ui->statusBar->repaint();
+
+                cout << "LP-filtering (cutoff=" << fstop << ", size=" << wavfiltered.size() << ")" << endl;
+                for(size_t bi=0; bi<num.size(); bi++)
+                    mkfilter::filtfilt<WAVTYPE>(wavfiltered, num[bi], den[bi], wavfiltered, m_start, m_end);
+
+                WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->hide();
+                WMainWindow::sm_mainwindow->m_globalWaitingBar->hide();
+            }
+
+            if (doHighPass) {
+                mkfilter::make_butterworth_filter_biquad(butterworth_order, fstart/fs, false, num, den, &filterresponse, responsedftlen);
+
+                for(size_t k=0; k<filterresponse.size(); k++){
+                    if(filterresponse[k] < 2*std::numeric_limits<FFTTYPE>::min())
+                        filterresponse[k] = std::numeric_limits<FFTTYPE>::min();
+                    WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse[k] *= filterresponse[k];
+                }
+
+                WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->setText(QString("High-pass filtering (cutoff=")+QString::number(fstart)+"Hz)");
+                WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->show();
+                WMainWindow::sm_mainwindow->m_globalWaitingBar->setMinimum(0);
+                WMainWindow::sm_mainwindow->m_globalWaitingBar->setMaximum(0);
+                WMainWindow::sm_mainwindow->m_globalWaitingBar->show();
+                WMainWindow::sm_mainwindow->ui->statusBar->repaint();
+
+                cout << "HP-filtering (cutoff=" << fstart << ", size=" << wavfiltered.size() << ")" << endl;
+                for(size_t bi=0; bi<num.size(); bi++)
+                    mkfilter::filtfilt<WAVTYPE>(wavfiltered, num[bi], den[bi], wavfiltered, m_start, m_end);
+
+                WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->hide();
+                WMainWindow::sm_mainwindow->m_globalWaitingBar->hide();
+            }
+
+            for(size_t k=0; k<WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse.size(); k++)
+                WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse[k] = 20*log10(WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse[k]);
+            WMainWindow::sm_mainwindow->m_gvSpectrum->m_scene->invalidate();
+
+            // It seems the filtering went well, we can use the filtered sound
+            wavtoplay = &wavfiltered;
+
+//            for(size_t n=0; n<wav.size(); n++)
+//                wav[n] = wavfiltered[n];
+            WMainWindow::sm_mainwindow->m_gvWaveform->m_scene->invalidate();
+            WMainWindow::sm_mainwindow->m_gvSpectrum->computeDFTs();
+            WMainWindow::sm_mainwindow->m_gvSpectrum->m_scene->invalidate();
+        }
+        catch(QString err){
+            QMessageBox::warning(NULL, "Problem when filtering the sound to be played", QString("The sound cannot be filtered as given by the selection in the spectrum view.\n\nReason:\n")+err);
+//            wavtoplay = &wav;
+            throw QString("Problem when filtering the sound to be played");
+        }
+    }
+    else {
+        WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse.resize(0);
+        WMainWindow::sm_mainwindow->m_gvSpectrum->m_scene->invalidate();
+        bool dofrefresh = wavtoplay != &wav;
+        wavtoplay = &wav;
+        if (dofrefresh) {
+            WMainWindow::sm_mainwindow->m_gvWaveform->m_scene->invalidate();
+            WMainWindow::sm_mainwindow->m_gvSpectrum->computeDFTs();
+            WMainWindow::sm_mainwindow->m_gvSpectrum->m_scene->invalidate();
+        }
+    }
 
     QIODevice::open(QIODevice::ReadOnly);
 
