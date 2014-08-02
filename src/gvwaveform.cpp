@@ -676,28 +676,28 @@ void QGVWaveform::update_cursor(float x){
     }
 }
 
-class QTimeTracker2 : public QTime {
-public:
-    QTimeTracker2(){
-    }
+//class QTimeTracker2 : public QTime {
+//public:
+//    QTimeTracker2(){
+//    }
 
-    std::deque<int> past_elapsed;
+//    std::deque<int> past_elapsed;
 
-    float getAveragedElapsed(){
-        float m = 0;
-        for(unsigned int i=0; i<past_elapsed.size(); i++){
-            m += past_elapsed[i];
-        }
-        return m / past_elapsed.size();
-    }
+//    float getAveragedElapsed(){
+//        float m = 0;
+//        for(unsigned int i=0; i<past_elapsed.size(); i++){
+//            m += past_elapsed[i];
+//        }
+//        return m / past_elapsed.size();
+//    }
 
-    void storeElapsed(){
-        past_elapsed.push_back(elapsed());
-        if (past_elapsed.size()>10000)
-            past_elapsed.pop_front();
-        restart();
-    }
-};
+//    void storeElapsed(){
+//        past_elapsed.push_back(elapsed());
+//        if (past_elapsed.size()>10000)
+//            past_elapsed.pop_front();
+//        restart();
+//    }
+//};
 
 void QGVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
 
@@ -748,25 +748,25 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
             int nleft = int(rect.left()*m_main->getFs());
             int nright = int(rect.right()*m_main->getFs())+1;
 //            int nleft = int(0);
-//            int nright = int(m_main->ftsnds[fi]->wav.size())+1;
+//            int nright = int(m_main->ftsnds[fi]->wavtoplay.size())+1;
 
-            // std::cout << nleft << " " << nright << " " << m_main->snds[0]->wav.size()-1 << endl;
+            // std::cout << nleft << " " << nright << " " << m_main->snds[0]->wavtoplay.size()-1 << endl;
 
             // Draw a line between each sample value
             WAVTYPE dt = WAVTYPE(1)/m_main->getFs();
             WAVTYPE prevx = WAVTYPE(nleft)/m_main->getFs() + WAVTYPE(m_main->ftsnds[fi]->m_delay)/m_main->getFs();
             WAVTYPE currx = WAVTYPE(nleft+1)/m_main->getFs();
             WAVTYPE y;
-            if(nleft>=0 && nleft<int(m_main->ftsnds[fi]->wav.size()))
-                y = -a*m_main->ftsnds[fi]->wav[nleft];
+            if(nleft>=0 && nleft<int(m_main->ftsnds[fi]->wavtoplay->size()))
+                y = -a*(*(m_main->ftsnds[fi]->wavtoplay))[nleft];
             else
                 y = 0.0;
             WAVTYPE prevy = y;
             // TODO prob appear with very long waveforms
             int wn = nleft+1 - m_main->ftsnds[fi]->m_delay;
             for(int n=nleft+1; n<=nright; ++n){
-                if(wn>=0 && wn<int(m_main->ftsnds[fi]->wav.size()))
-                    y = -a*m_main->ftsnds[fi]->wav[wn];
+                if(wn>=0 && wn<int(m_main->ftsnds[fi]->wavtoplay->size()))
+                    y = -a*(*(m_main->ftsnds[fi]->wavtoplay))[wn];
                 else
                     y = 0.0;
 
@@ -786,9 +786,9 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
                 for(int n=nleft; n<=nright; n++){
                     int wn = n - m_main->ftsnds[fi]->m_delay;
-                    if(wn>=0 && wn<int(m_main->ftsnds[fi]->wav.size())){
+                    if(wn>=0 && wn<int(m_main->ftsnds[fi]->wavtoplay->size())){
                         currx = n/m_main->getFs();
-                        y = -a*m_main->ftsnds[fi]->wav[wn];
+                        y = -a*(*(m_main->ftsnds[fi]->wavtoplay))[wn];
                         painter->drawLine(QLineF(currx, y-dy, currx, y+dy));
                     }
                 }
@@ -825,17 +825,17 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
     //        std::cout << "ti: " << int(pt.x()*m_main->getFs()) << " " << int(t.x()*m_main->getFs()) << " " << int(nt.x()*m_main->snds[0]->fs) << endl;
 
                 int pn = std::max(qint64(0), qint64(0.5+pixelrect.left()*m_main->getFs())-m_main->ftsnds[fi]->m_delay);
-                int nn = std::min(qint64(0.5+m_main->ftsnds[fi]->wav.size()-1), qint64(0.5+pixelrect.right()*m_main->getFs())-m_main->ftsnds[fi]->m_delay);
+                int nn = std::min(qint64(0.5+m_main->ftsnds[fi]->wavtoplay->size()-1), qint64(0.5+pixelrect.right()*m_main->getFs())-m_main->ftsnds[fi]->m_delay);
 //                std::cout << pn << " " << nn << " " << nn-pn << endl;
 
-                int maxm = m_main->ftsnds[fi]->wav.size()-1;
+                int maxm = m_main->ftsnds[fi]->wavtoplay->size()-1;
 
                 if(nn>=0 && pn<=maxm){
                     float miny = 1.0;
                     float maxy = -1.0;
                     float y;
                     for(int m=pn; m<=nn && m<=maxm; m++){
-                        y = -a*m_main->ftsnds[fi]->wav[m];
+                        y = -a*(*(m_main->ftsnds[fi]->wavtoplay))[m];
                         miny = std::min(miny, y);
                         maxy = std::max(maxy, y);
                     }
@@ -844,7 +844,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
                 }
 
 //                int m = pn;
-//                float y = -a*m_main->snds[fi]->wav[m];
+//                float y = -a*m_main->snds[fi]->wavtoplay[m];
 
 //        //        std::cout << px << ": " << miny << " " << maxy << endl;
 
