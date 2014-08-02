@@ -207,8 +207,7 @@ double WMainWindow::getMaxLastSampleTime(){
     return lst;
 }
 
-WMainWindow::~WMainWindow()
-{
+WMainWindow::~WMainWindow() {
     delete ui;
 }
 
@@ -548,7 +547,6 @@ void WMainWindow::play()
             // If stopped, play the whole signal or its selection
             FTSound* currentftsound = getCurrentFTSound();
             if(currentftsound) {
-                ui->actionPlay->setEnabled(false);
 
                 double tstart = 0.0;
                 double tstop = 0.0;
@@ -565,14 +563,21 @@ void WMainWindow::play()
                     fstop = m_gvSpectrum->m_selection.right();
                 }
 
-                QString txt = QString("Play ")+currentftsound->fileName+QString(": [%1s, %2s]x[%3Hz, %4Hz]").arg(m_gvWaveform->m_selection.left()).arg(m_gvWaveform->m_selection.right()).arg(fstart).arg(fstop);
-                statusBar()->showMessage(txt);
+                try {
+                    m_audioengine->startPlayback(currentftsound, tstart, tstop, fstart, fstop);
 
-                m_audioengine->startPlayback(currentftsound, tstart, tstop, fstart, fstop);
+                    QString txt = QString("Play ")+currentftsound->fileName+QString(": [%1s, %2s]x[%3Hz, %4Hz]").arg(m_gvWaveform->m_selection.left()).arg(m_gvWaveform->m_selection.right()).arg(fstart).arg(fstop);
+                    statusBar()->showMessage(txt);
 
-                // Delay the stop and re-play,
-                // in order to avoid the audio engine to crash hysterically.
-                QTimer::singleShot(250, this, SLOT(enablePlay()));
+                    ui->actionPlay->setEnabled(false);
+
+                    // Delay the stop and re-play,
+                    // in order to avoid the audio engine to crash hysterically.
+                    QTimer::singleShot(250, this, SLOT(enablePlay()));
+                }
+                catch(QString err) {
+                    statusBar()->showMessage("Error during playback: "+err);
+                }
             }
         }
         else if(m_audioengine->state()==QAudio::ActiveState){
@@ -583,7 +588,6 @@ void WMainWindow::play()
     }
     else
         statusBar()->showMessage("The engine is not ready for playing. Missing available sound device ?");
-
 }
 
 void WMainWindow::enablePlay(){
