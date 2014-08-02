@@ -8,6 +8,8 @@
 //using namespace mkfilter;
 
 #include <math.h>
+#include <iostream>
+#include <QString>
 
 typedef unsigned int uint;
 #undef	PI
@@ -19,26 +21,20 @@ typedef unsigned int uint;
 #define MAXPZ	    512	    /* .ge. 2*MAXORDER, to allow for doubling of poles in BP filter;
                    high values needed for FIR filters */
 
-#include <iostream>
-using namespace std;
-#include <QString>
+inline bool seq(char *s1, char *s2) {
+    return strcmp(s1,s2) == 0;
+}
 
+inline bool onebit(uint m) {
+    return (m != 0) && ((m & (m-1)) == 0);
+}
 
+// Microsoft C++ does not define
+inline double asinh(double x) {
+    return log(x + sqrt(1.0 + x*x));
+}
 
-inline double sqr(double x)	    { return x*x;			       }
-inline bool seq(char *s1, char *s2) { return strcmp(s1,s2) == 0;	       }
-inline bool onebit(uint m)	    { return (m != 0) && ((m & (m-1)) == 0);     }
-
-inline double asinh(double x)
-  { /* Microsoft C++ does not define */
-    return log(x + sqrt(1.0 + sqr(x)));
-  }
-
-inline double fix(double x)
-  { /* nearest integer */
-    return (x >= 0.0) ? floor(0.5+x) : -floor(0.5-x);
-  }
-
+// TODO Use STD for the below ? ------------------------------------------------
 
 struct c_complex
   { double re, im;
@@ -52,7 +48,7 @@ struct complex
   };
 
 extern complex csqrt(complex), cexp(complex), expj(double);	    /* from complex.C */
-extern complex evaluate(complex[], int, complex[], int, complex);   /* from complex.C */
+//extern complex evaluate(complex[], int, complex[], int, complex);   /* from complex.C */
 
 inline double hypot(complex z) { return ::hypot(z.im, z.re); }
 inline double atan2(complex z) { return ::atan2(z.im, z.re); }
@@ -103,14 +99,10 @@ inline complex sqr(complex z)
   { return z*z;
   }
 
-
-static complex eval(complex[], int, complex);
-static double Xsqrt(double);
-
-
-complex evaluate(complex topco[], int nz, complex botco[], int np, complex z)
-  { /* evaluate response, substituting for z */
-    return eval(topco, nz, z) / eval(botco, np, z);
+static double Xsqrt(double x)
+  { /* because of deficiencies in hypot on Sparc, it's possible for arg of Xsqrt to be small and -ve,
+       which logically it can't be (since r >= |x.re|).	 Take it as 0. */
+    return (x >= 0.0) ? sqrt(x) : 0.0;
   }
 
 static complex eval(complex coeffs[], int npz, complex z)
@@ -120,18 +112,17 @@ static complex eval(complex coeffs[], int npz, complex z)
     return sum;
   }
 
+complex evaluate(complex topco[], int nz, complex botco[], int np, complex z)
+  { /* evaluate response, substituting for z */
+    return eval(topco, nz, z) / eval(botco, np, z);
+  }
+
 complex csqrt(complex x)
   { double r = hypot(x);
     complex z = complex(Xsqrt(0.5 * (r + x.re)),
             Xsqrt(0.5 * (r - x.re)));
     if (x.im < 0.0) z.im = -z.im;
     return z;
-  }
-
-static double Xsqrt(double x)
-  { /* because of deficiencies in hypot on Sparc, it's possible for arg of Xsqrt to be small and -ve,
-       which logically it can't be (since r >= |x.re|).	 Take it as 0. */
-    return (x >= 0.0) ? sqrt(x) : 0.0;
   }
 
 complex cexp(complex z)
@@ -153,31 +144,7 @@ complex operator / (complex z1, complex z2)
             ((z1.im * z2.re) - (z1.re * z2.im)) / mag);
   }
 
-struct pzrep
-  { complex poles[MAXPZ], zeros[MAXPZ];
-    int numpoles, numzeros;
-  };
-
-static pzrep splane, zplane;
-static int order;
-static double raw_alpha1, raw_alpha2, raw_alphaz;
-static complex dc_gain, fc_gain, hf_gain;
-static uint options;
-static double warped_alpha1, warped_alpha2, chebrip, qfactor;
-static bool infq;
-static uint polemask;
-static double xcoeffs[MAXPZ+1], ycoeffs[MAXPZ+1];
-
-
-static void choosepole(complex);
-static void compute_z_mzt();
-static void compute_notch(), compute_apres();
-static complex reflect(complex);
-static void compute_bpres(), add_extra_zero();
-static void expand(complex[], int, complex[]);
-static void multin(complex, int, complex[]);
-static void printcoeffs(const char*, int, double[]);
-
+// TODO Use the STD for the above ?
 
 #define opt_be 0x00001	/* -Be		Bessel characteristic	       */
 #define opt_bu 0x00002	/* -Bu		Butterworth characteristic     */
@@ -199,6 +166,53 @@ static void printcoeffs(const char*, int, double[]);
 #define opt_z  0x08000	/* -z		use matched z-transform	       */
 #define opt_Z  0x10000	/* -Z		additional zero		       */
 
+// multiply factor (z-w) into coeffs
+static void multin(const complex w, int npz, complex coeffs[]) {
+    complex nw = -w;
+    for (int i = npz; i >= 1; i--)
+        coeffs[i] = (nw * coeffs[i]) + coeffs[i-1];
+    coeffs[0] = nw * coeffs[0];
+}
+
+// compute product of poles or zeros as a polynomial of z
+static void expand(const complex pz[], int npz, complex coeffs[]) {
+    int i;
+    coeffs[0] = 1.0;
+    for (i=0; i < npz; i++)
+        coeffs[i+1] = 0.0;
+    for (i=0; i < npz; i++)
+        multin(pz[i], npz, coeffs);
+    // check computed coeffs of z^k are all real
+    for (i=0; i < npz+1; i++) {
+        if (fabs(coeffs[i].im) > EPS)
+            throw QString("MKFILTER: coeff of z^")+QString::number(i)+QString(" is not real (")+QString::number(coeffs[i].im)+QString("; poles/zeros are not complex conjugates");
+    }
+}
+
+inline complex blt(complex pz) {
+    return (2.0 + pz) / (2.0 - pz);
+}
+
+inline complex reflect(complex z)
+  { double r = hypot(z);
+    return z / sqr(r);
+  }
+
+// Below is not Scope-safe -----------------------------------------------------
+
+struct pzrep
+  { complex poles[MAXPZ], zeros[MAXPZ];
+    int numpoles, numzeros;
+  };
+
+static uint options;
+static int order;
+static double raw_alpha1, raw_alpha2;
+static uint polemask;
+
+static pzrep splane;
+static double warped_alpha1, warped_alpha2, chebrip, qfactor;
+static bool infq;
 
 static c_complex bessel_poles[] =
   { // table produced by /usr/fisher/bessel --	N.B. only one member of each C.Conj. pair is listed
@@ -220,8 +234,8 @@ static c_complex bessel_poles[] =
   };
 
 
-void checkoptions()
-  { bool optsok = true;
+void checkoptions(uint& options, int& order, uint& polemask, double& raw_alpha1, double& raw_alpha2) {
+    bool optsok = true;
     if(!(onebit(options & (opt_be | opt_bu | opt_ch | opt_re | opt_pi))))
       throw QString("MKFILTER: must specify exactly one of -Be, -Bu, -Ch, -Re, -Pi");
     if (options & opt_re)
@@ -257,12 +271,19 @@ void checkoptions()
         throw QString("MKFILTER: must specify -a");
     if(!(optsok))
         throw QString("MKFILTER: Filter design options not consistent");
-  }
 
-void setdefaults() {
+    // setdefaults()
     if(!(options & opt_p)) polemask = ~0; // use all poles
     if(!(options & (opt_bp | opt_bs))) raw_alpha2 = raw_alpha1;
-  }
+}
+
+inline void choosepole(complex z) {
+    if (z.re < 0.0) {
+        if (polemask & 1)
+            splane.poles[splane.numpoles++] = z;
+        polemask >>= 1;
+    }
+}
 
 void compute_s() // compute S-plane poles for prototype LP filter
   { splane.numpoles = 0;
@@ -299,13 +320,6 @@ void compute_s() // compute S-plane poles for prototype LP filter
       }
   }
 
-static void choosepole(complex z)
-  { if (z.re < 0.0)
-      { if (polemask & 1) splane.poles[splane.numpoles++] = z;
-    polemask >>= 1;
-      }
-  }
-
 void prewarp()
   { // for bilinear transform, perform pre-warp on alpha values
     if (options & (opt_w | opt_z))
@@ -318,8 +332,9 @@ void prewarp()
       }
   }
 
-void normalize()		// called for trad, not for -Re or -Pi
-  {
+// called for trad, not for -Re or -Pi
+void normalize() {
+
     double w1 = TWOPI * warped_alpha1;
     double w2 = TWOPI * warped_alpha2;
     // transform prototype into appropriate filter type (lp/hp/bp/bs)
@@ -368,52 +383,11 @@ void normalize()		// called for trad, not for -Re or -Pi
         splane.numzeros = splane.numpoles;
         break;
       }
-      }
-  }
+    }
+}
 
-static complex blt(complex pz)
-  { return (2.0 + pz) / (2.0 - pz);
-  }
-
-void compute_z_blt() // given S-plane poles & zeros, compute Z-plane poles & zeros, by bilinear transform
-  { int i;
-    zplane.numpoles = splane.numpoles;
-    zplane.numzeros = splane.numzeros;
-    for (i=0; i < zplane.numpoles; i++) zplane.poles[i] = blt(splane.poles[i]);
-    for (i=0; i < zplane.numzeros; i++) zplane.zeros[i] = blt(splane.zeros[i]);
-    while (zplane.numzeros < zplane.numpoles) zplane.zeros[zplane.numzeros++] = -1.0;
-  }
-
-static void compute_z_mzt() // given S-plane poles & zeros, compute Z-plane poles & zeros, by matched z-transform
-  { int i;
-    zplane.numpoles = splane.numpoles;
-    zplane.numzeros = splane.numzeros;
-    for (i=0; i < zplane.numpoles; i++) zplane.poles[i] = cexp(splane.poles[i]);
-    for (i=0; i < zplane.numzeros; i++) zplane.zeros[i] = cexp(splane.zeros[i]);
-  }
-
-static void compute_notch()
-  { // compute Z-plane pole & zero positions for bandstop resonator (notch filter)
-    compute_bpres();		// iterate to place poles
-    double theta = TWOPI * raw_alpha1;
-    complex zz = expj(theta);	// place zeros exactly
-    zplane.zeros[0] = zz; zplane.zeros[1] = cconj(zz);
-  }
-
-static void compute_apres()
-  { // compute Z-plane pole & zero positions for allpass resonator
-    compute_bpres();		// iterate to place poles
-    zplane.zeros[0] = reflect(zplane.poles[0]);
-    zplane.zeros[1] = reflect(zplane.poles[1]);
-  }
-
-static complex reflect(complex z)
-  { double r = hypot(z);
-    return z / sqr(r);
-  }
-
-static void compute_bpres()
-  { // compute Z-plane pole & zero positions for bandpass resonator
+// compute Z-plane pole & zero positions for bandpass resonator
+void compute_bpres(pzrep& zplane) {
     zplane.numpoles = zplane.numzeros = 2;
     zplane.zeros[0] = 1.0;
     zplane.zeros[1] = -1.0;
@@ -448,87 +422,81 @@ static void compute_bpres()
       }
   }
 
-static void add_extra_zero()
-  { if (zplane.numzeros+2 > MAXPZ)
-      throw QString("MKFILTER: too many zeros; can't do -Z");
-    double theta = TWOPI * raw_alphaz;
-    complex zz = expj(theta);
-    zplane.zeros[zplane.numzeros++] = zz;
-    zplane.zeros[zplane.numzeros++] = cconj(zz);
-    while (zplane.numpoles < zplane.numzeros) zplane.poles[zplane.numpoles++] = 0.0;	 // ensure causality
-  }
+// compute Z-plane pole & zero positions for bandstop resonator (notch filter)
+void compute_notch(pzrep& zplane) {
+    compute_bpres(zplane);		// iterate to place poles
+    double theta = TWOPI * raw_alpha1;
+    complex zz = expj(theta);	// place zeros exactly
+    zplane.zeros[0] = zz; zplane.zeros[1] = cconj(zz);
+}
 
-void expandpoly() // given Z-plane poles & zeros, compute top & bot polynomials in Z, and then recurrence relation
-  { complex topcoeffs[MAXPZ+1], botcoeffs[MAXPZ+1]; int i;
-    expand(zplane.zeros, zplane.numzeros, topcoeffs);
-    expand(zplane.poles, zplane.numpoles, botcoeffs);
-    dc_gain = evaluate(topcoeffs, zplane.numzeros, botcoeffs, zplane.numpoles, 1.0);
+// compute Z-plane pole & zero positions for allpass resonator
+void compute_apres(pzrep& zplane) {
+    compute_bpres(zplane);		// iterate to place poles
+    zplane.zeros[0] = reflect(zplane.poles[0]);
+    zplane.zeros[1] = reflect(zplane.poles[1]);
+}
+
+// Scope-safe below ------------------------------------------------------------
+
+// given S-plane poles & zeros, compute Z-plane poles & zeros, by matched z-transform
+void compute_z_mzt(const pzrep& splane2, pzrep& zplane2) {
+    zplane2.numpoles = splane2.numpoles;
+    zplane2.numzeros = splane2.numzeros;
+    for (int i=0; i < zplane2.numpoles; i++) zplane2.poles[i] = cexp(splane2.poles[i]);
+    for (int i=0; i < zplane2.numzeros; i++) zplane2.zeros[i] = cexp(splane2.zeros[i]);
+}
+
+// given S-plane poles & zeros, compute Z-plane poles & zeros, by bilinear transform
+void compute_z_blt(const pzrep& splane2, pzrep& zplane2){
+    zplane2.numpoles = splane2.numpoles;
+    zplane2.numzeros = splane2.numzeros;
+    for (int i=0; i < zplane2.numpoles; i++)
+        zplane2.poles[i] = blt(splane2.poles[i]);
+    for (int i=0; i < zplane2.numzeros; i++)
+        zplane2.zeros[i] = blt(splane2.zeros[i]);
+    while (zplane2.numzeros < zplane2.numpoles)
+        zplane2.zeros[zplane2.numzeros++] = -1.0;
+}
+
+void expandpoly3(const pzrep& zplane2, uint options2, double raw_alpha1, double raw_alpha2, std::vector<double>& num, std::vector<double>& den, double& G) // given Z-plane poles & zeros, compute top & bot polynomials in Z, and then recurrence relation
+{
+    complex topcoeffs[MAXPZ+1], botcoeffs[MAXPZ+1];
+
+    expand(zplane2.zeros, zplane2.numzeros, topcoeffs);
+    expand(zplane2.poles, zplane2.numpoles, botcoeffs);
+
+    // Get gain
+    // TODO Simplify below
+    complex dc_gain = evaluate(topcoeffs, zplane2.numzeros, botcoeffs, zplane2.numpoles, 1.0);
     double theta = TWOPI * 0.5 * (raw_alpha1 + raw_alpha2); // "jwT" for centre freq.
-    fc_gain = evaluate(topcoeffs, zplane.numzeros, botcoeffs, zplane.numpoles, expj(theta));
-    hf_gain = evaluate(topcoeffs, zplane.numzeros, botcoeffs, zplane.numpoles, -1.0);
-    for (i = 0; i <= zplane.numzeros; i++) xcoeffs[i] = +(topcoeffs[i].re / botcoeffs[zplane.numpoles].re);
-    for (i = 0; i <= zplane.numpoles; i++) ycoeffs[i] = -(botcoeffs[i].re / botcoeffs[zplane.numpoles].re);
-  }
+    complex fc_gain = evaluate(topcoeffs, zplane2.numzeros, botcoeffs, zplane2.numpoles, expj(theta));
+    complex hf_gain = evaluate(topcoeffs, zplane2.numzeros, botcoeffs, zplane2.numpoles, -1.0);
 
-// compute product of poles or zeros as a polynomial of z
-static void expand(complex pz[], int npz, complex coeffs[]) {
-    int i;
-    coeffs[0] = 1.0;
-    for (i=0; i < npz; i++)
-        coeffs[i+1] = 0.0;
-    for (i=0; i < npz; i++)
-        multin(pz[i], npz, coeffs);
-    // check computed coeffs of z^k are all real
-    for (i=0; i < npz+1; i++) {
-        if (fabs(coeffs[i].im) > EPS)
-            throw QString("MKFILTER: coeff of z^")+QString::number(i)+QString(" is not real (")+QString::number(coeffs[i].im)+QString("; poles/zeros are not complex conjugates");
-    }
-}
-
-// multiply factor (z-w) into coeffs
-static void multin(complex w, int npz, complex coeffs[]) {
-    complex nw = -w;
-    for (int i = npz; i >= 1; i--)
-        coeffs[i] = (nw * coeffs[i]) + coeffs[i-1];
-    coeffs[0] = nw * coeffs[0];
-}
-
-void printfiltercoefs() {
-    complex gain = (options & opt_pi) ? hf_gain :
-               (options & opt_lp) ? dc_gain :
-               (options & opt_hp) ? hf_gain :
-               (options & (opt_bp | opt_ap)) ? fc_gain :
-               (options & opt_bs) ? csqrt(dc_gain * hf_gain) : complex(1.0);
-    cout << "gain=" << gain.re << "," << gain.im << endl;
-    cout << "G  = " << hypot(gain) << endl;
-    printcoeffs("NZ", zplane.numzeros, xcoeffs);
-    printcoeffs("NP", zplane.numpoles, ycoeffs);
-}
-
-static void printcoeffs(const char *pz, int npz, double coeffs[]) {
-    cout << pz << "=" << npz << endl;
-    for (int i = 0; i <= npz; i++)
-        cout << coeffs[i] << endl;
-}
-
-void copycoefs(std::vector<double>& num, std::vector<double>& den, double& G) {
-    complex gain = (options & opt_pi) ? hf_gain :
-               (options & opt_lp) ? dc_gain :
-               (options & opt_hp) ? hf_gain :
-               (options & (opt_bp | opt_ap)) ? fc_gain :
-               (options & opt_bs) ? csqrt(dc_gain * hf_gain) : complex(1.0);
+    complex gain = (options2 & opt_pi) ? hf_gain :
+               (options2 & opt_lp) ? dc_gain :
+               (options2 & opt_hp) ? hf_gain :
+               (options2 & (opt_bp | opt_ap)) ? fc_gain :
+               (options2 & opt_bs) ? csqrt(dc_gain * hf_gain) : complex(1.0);
     G  = hypot(gain);
-//    cout << "G=" << gain.re << "+j*" << gain.im << endl;
 
-    num.resize(zplane.numzeros+1);
-    for (int i = 0; i <= zplane.numzeros; i++)
-        num[i] = xcoeffs[i]/G;
+    // Get numerator(with gain) and denominator
+    std::vector<double> xcoeffs2(zplane2.numzeros+1);
+    std::vector<double> ycoeffs2(zplane2.numpoles+1);
 
-    den.resize(zplane.numpoles+1);
-    for (int i = 0; i <= zplane.numpoles; i++)
-        den[i] = ycoeffs[zplane.numpoles-i];
+    for (int i = 0; i <= zplane2.numzeros; i++)
+        xcoeffs2[i] = +(topcoeffs[i].re / botcoeffs[zplane2.numpoles].re);
+    for (int i = 0; i <= zplane2.numpoles; i++)
+        ycoeffs2[i] = -(botcoeffs[i].re / botcoeffs[zplane2.numpoles].re);
+
+    num.resize(zplane2.numzeros+1);
+    for (int i = 0; i <= zplane2.numzeros; i++)
+        num[i] = xcoeffs2[i]/G;
+
+    den.resize(zplane2.numpoles+1);
+    for (int i = 0; i <= zplane2.numpoles; i++)
+        den[i] = ycoeffs2[zplane2.numpoles-i];
 }
-
 
 // C++ interface to the above functions ----------------------------------------
 
@@ -542,8 +510,8 @@ void mkfilter::make_butterworth_filter(int _order, double _alpha, bool isLowPass
     if (isLowPass)  options |= opt_lp;
     else            options |= opt_hp;
 
-    checkoptions();
-    setdefaults();
+    checkoptions(options, order, polemask, raw_alpha1, raw_alpha2);
+
     compute_s();
     prewarp();
     normalize();
@@ -554,23 +522,14 @@ void mkfilter::make_butterworth_filter(int _order, double _alpha, bool isLowPass
 //    for (int i=0; i < splane.numzeros; i++)
 //        cout << "SZ" << i << ": " << splane.zeros[i].re << "+j*" << splane.zeros[i].im << endl;
 
-    compute_z_blt();
-
-//    // Plot z-roots
-//    for (int i=0; i < zplane.numpoles; i++)
-//        cout << "ZP" << i << ": " << zplane.poles[i].re << "+j*" << zplane.poles[i].im << endl;
-//    for (int i=0; i < zplane.numzeros; i++)
-//        cout << "ZZ" << i << ": " << zplane.zeros[i].re << "+j*" << zplane.zeros[i].im << endl;
-
-    // TODO Split here in biquads in order to manage orders higher than 19
-
-    expandpoly();
+    pzrep zplane;
+    compute_z_blt(splane, zplane);
 
     double gain;
-    copycoefs(num, den, gain);
+    expandpoly3(zplane, options, raw_alpha1, raw_alpha2, num, den, gain);
 
     // Compute the frequency response if asked
-    if(response!=NULL){
+    if(response!=NULL) {
 
         complex topcoeffs[MAXPZ+1], botcoeffs[MAXPZ+1];
         expand(zplane.zeros, zplane.numzeros, topcoeffs);
@@ -579,7 +538,7 @@ void mkfilter::make_butterworth_filter(int _order, double _alpha, bool isLowPass
         response->resize(dftlen/2+1);
 
         double theta;
-        for(unsigned int k=0; k<=dftlen/2; k++) {
+        for(int k=0; k<=dftlen/2; k++) {
             theta = (TWOPI*k)/dftlen;
             (*response)[k] = (1.0/gain)*hypot(evaluate(topcoeffs, zplane.numzeros, botcoeffs, zplane.numpoles, expj(theta)));
         }
@@ -593,6 +552,95 @@ void mkfilter::make_butterworth_filter(int _order, double _alpha, bool isLowPass
 //        cout << "ycoeffs[" << i << "]=" << ycoeffs[i] << endl;
 }
 
+void printpoleszeros(pzrep zplane) {
+    for (int i=0; i < zplane.numpoles; i++)
+        std::cout << "ZP" << i << ": " << zplane.poles[i].re << "+j*" << zplane.poles[i].im << std::endl;
+    for (int i=0; i < zplane.numzeros; i++)
+        std::cout << "ZZ" << i << ": " << zplane.zeros[i].re << "+j*" << zplane.zeros[i].im << std::endl;
+}
+
+void mkfilter::make_butterworth_filter_biquad(int _order, double _alpha, bool isLowPass, std::vector< std::vector<double> >& num, std::vector<std::vector<double> >& den, std::vector<double>* response, int dftlen) {
+
+    order = _order;
+    raw_alpha1 = _alpha;
+
+    options = opt_bu|opt_a|opt_o|opt_l;
+
+    if (isLowPass)  options |= opt_lp;
+    else            options |= opt_hp;
+
+    checkoptions(options, order, polemask, raw_alpha1, raw_alpha2);
+
+    compute_s();
+    prewarp();
+    normalize();
+
+//    // Plot s-roots
+//    for (int i=0; i < splane.numpoles; i++)
+//        cout << "SP" << i << ": " << splane.poles[i].re << "+j*" << splane.poles[i].im << endl;
+//    for (int i=0; i < splane.numzeros; i++)
+//        cout << "SZ" << i << ": " << splane.zeros[i].re << "+j*" << splane.zeros[i].im << endl;
+
+    pzrep zplane;
+    compute_z_blt(splane, zplane);
+
+    if(response)
+        (*response) = std::vector<double>(dftlen/2+1, 1.0);
+
+    // Plot z-roots
+//    std::cout << "Original" << std::endl;
+//    printpoleszeros(zplane);
+
+    int ii=0;
+    while(ii<zplane.numpoles) {
+        std::vector<complex> biqp;
+        std::vector<complex> biqz;
+
+        pzrep biq;
+        biq.numpoles = 0;
+        biq.numzeros = 0;
+
+        if(zplane.numpoles-ii==3) {
+            throw QString("TODO triquad")+QString(__FILE__)+":"+QString(__LINE__);
+        }
+        else {
+            // Take 1 pole and 1 zero
+            biq.poles[biq.numpoles++] = zplane.poles[ii];
+            biq.poles[biq.numpoles++] = cconj(zplane.poles[ii]);
+
+            biq.zeros[biq.numzeros++] = zplane.zeros[ii];
+            biq.zeros[biq.numzeros++] = cconj(zplane.zeros[ii]);
+        }
+
+//        std::cout << "Biquad: " << ii << std::endl;
+//        printpoleszeros(biq);
+
+        double gain;
+        std::vector<double> subnum;
+        std::vector<double> subden;
+        expandpoly3(biq, options, raw_alpha1, raw_alpha2, subnum, subden, gain);
+        num.push_back(subnum);
+        den.push_back(subden);
+
+        // Compute the frequency response if asked
+        if(response) {
+            complex topcoeffs[MAXPZ+1], botcoeffs[MAXPZ+1];
+            expand(biq.zeros, biq.numzeros, topcoeffs);
+            expand(biq.poles, biq.numpoles, botcoeffs);
+
+            double theta;
+            for(int k=0; k<=dftlen/2; k++) {
+                theta = (TWOPI*k)/dftlen;
+                (*response)[k] *= (1.0/gain)*hypot(evaluate(topcoeffs, biq.numzeros, botcoeffs, biq.numpoles, expj(theta)));
+            }
+        }
+
+
+        ii += biq.numpoles;
+    }
+}
+
+
 void mkfilter::make_chebyshev_filter(int _order, double _alpha, double _chebrip, bool isLowPass, std::vector<double>& num, std::vector<double>& den) {
 
     order = _order;
@@ -604,13 +652,15 @@ void mkfilter::make_chebyshev_filter(int _order, double _alpha, double _chebrip,
     if (isLowPass)  options |= opt_lp;
     else            options |= opt_hp;
 
-    checkoptions();
-    setdefaults();
+    checkoptions(options, order, polemask, raw_alpha1, raw_alpha2);
+
     compute_s();
     prewarp();
     normalize();
-    compute_z_blt();
-    expandpoly();
+
+    pzrep zplane;
+    compute_z_blt(splane, zplane);
+
     double gain;
-    copycoefs(num, den, gain);
+    expandpoly3(zplane, options, raw_alpha1, raw_alpha2, num, den, gain);
 }
