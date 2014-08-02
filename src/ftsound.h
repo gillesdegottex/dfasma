@@ -47,6 +47,7 @@ class FTSound : public QIODevice, public FileType
     void setSamplingRate(double _fs); // Used by implementations of load
 
 public:
+
     FTSound(const QString& _fileName, QObject* parent);
     static QString getAudioFileReadingDescription();
 
@@ -56,11 +57,12 @@ public:
     WAVTYPE m_wavmaxamp;
     double fs; // [Hz] Sampling frequency of this specific wav file
     static double fs_common;  // [Hz] Sampling frequency of the sound player
-    static WAVTYPE s_play_power;
-    static std::deque<WAVTYPE> s_play_power_values;
     double getDuration() const {return wav.size()/fs;}
     virtual double getLastSampleTime() const;
     virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
+
+    qreal m_ampscale; // [linear]
+    qint64 m_delay;   // [sample index]
 
     // Spectrum
     std::vector<std::complex<WAVTYPE> > m_dft;
@@ -75,8 +77,11 @@ public:
     qint64 m_pos;   // [sample index]
     qint64 m_end;   // [sample index]
 
-    qreal m_ampscale; // [linear]
-    qint64 m_delay;   // [sample index]
+    static WAVTYPE s_play_power;
+    static std::deque<WAVTYPE> s_play_power_values;
+    static bool sm_playwin_use;
+    static std::vector<WAVTYPE> sm_playwin;
+    qint64 m_playwinpos;// [sample index] position in the pre and post windows
 
     // Visualization
     QAction* m_actionInvPolarity;

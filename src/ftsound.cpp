@@ -36,19 +36,35 @@ using namespace std;
 
 #include "../external/mkfilter/mkfilter.h"
 
+#include "ui_wdialogsettings.h"
+
+bool FTSound::sm_playwin_use = false;
+std::vector<WAVTYPE> FTSound::sm_playwin;
 
 double FTSound::fs_common = 0; // Initially, fs is undefined TODO put in wmainwindow
 WAVTYPE FTSound::s_play_power = 0;
 std::deque<WAVTYPE> FTSound::s_play_power_values;
 
+inline std::vector<double> hann(int n) // To put somewhere in common with other sig proc stuffs
+{
+    std::vector<double> win(n);
+
+    for(size_t n=0; n<win.size(); n++)
+        win[n] = (1-cos(2.0*M_PI*n/(win.size()-1))) / (win.size()-1);
+
+    return win;
+}
+
 FTSound::FTSound(const QString& _fileName, QObject *parent)
     : QIODevice(parent)
     , FileType(FTSOUND, _fileName, this)
     , wavtoplay(&wav)
-    , m_pos(0)
-    , m_end(0)
     , m_ampscale(1.0)
     , m_delay(0)
+    , m_start(0)
+    , m_pos(0)
+    , m_end(0)
+    , m_playwinpos(0)
 {
     m_actionInvPolarity = new QAction("Inverse polarity", this);
     m_actionInvPolarity->setStatusTip(tr("Inverse the polarity of the sound"));
@@ -66,6 +82,13 @@ FTSound::FTSound(const QString& _fileName, QObject *parent)
     m_wavmaxamp = 0.0;
     for(unsigned int n=0; n<wav.size(); ++n)
         m_wavmaxamp = std::max(m_wavmaxamp, abs(wav[n]));
+
+    if(sm_playwin.size()==0) {
+        sm_playwin = hann(2*int(0.100*fs/2)+1); // Use 50ms half-windows on each side
+        double winmax = sm_playwin[(sm_playwin.size()-1)/2];
+        for(size_t n=0; n<sm_playwin.size(); n++)
+            sm_playwin[n] /= winmax;
+    }
 
     std::cout << wav.size() << " samples loaded (" << wav.size()/fs << "s max amplitude=" << m_wavmaxamp << ")" << endl;
 
@@ -117,6 +140,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
 
     s_play_power = 0;
     s_play_power_values.clear();
+    m_playwinpos = 0;
 
     // Fix and make time selection
     if(tstart>tstop){
@@ -262,21 +286,15 @@ void FTSound::stop()
     m_start = 0;
     m_pos = 0;
     m_end = 0;
+    m_playwinpos = 0;
     QIODevice::close();
 }
 
-qint64 FTSound::readData(char *data, qint64 len)
+qint64 FTSound::readData(char *data, qint64 askedlen)
 {
-//    std::cout << "DSSound::readData requested=" << len << endl;
+//    std::cout << "DSSound::readData requested=" << askedlen << endl;
 
     qint64 writtenbytes = 0; // [bytes]
-
-/*    while (len - writtenbytes > 0) {
-        const qint64 chunk = qMin((m_buffer.size() - m_pos), len - writtenbytes);
-        memcpy(data + writtenbytes, m_buffer.constData() + m_pos, chunk);
-        m_pos = (m_pos + chunk) % m_buffer.size();
-        writtenbytes += chunk;
-    }*/
 
     const int channelBytes = m_outputaudioformat.sampleSize() / 8;
 
@@ -284,41 +302,46 @@ qint64 FTSound::readData(char *data, qint64 len)
 
     // Polarity apparently matters in very particular cases
     // so take it into account when playing.
-    qreal a = m_ampscale;
+    double gain = m_ampscale;
     if(m_actionInvPolarity->isChecked())
-        a *= -1;
+        gain *= -1;
 
     // Write as many bits has requested by the call
-    while(writtenbytes<len) {
+    while(writtenbytes<askedlen) {
+        qint16 value = 0;
 
-        int depos = m_pos - m_delay;
-        if(depos>=0 && depos<int(wavtoplay->size())){
-    //        WAVTYPE e = (*wavtoplay)[m_pos]*(*wavtoplay)[m_pos];
-    //        s_play_power += e;
-            WAVTYPE e = abs(a*(*wavtoplay)[depos]);
-            s_play_power_values.push_front(e);
-            while(s_play_power_values.size()/fs>0.1){
-                s_play_power -= s_play_power_values.back();
-                s_play_power_values.pop_back();
-            }
+        if(sm_playwin_use && (m_playwinpos<(sm_playwin.size()-1)/2)) {
+            value = qint16((gain*(*wavtoplay)[m_start]*sm_playwin[m_playwinpos++])*32767);
         }
+        else if(sm_playwin_use && (m_pos>m_end) && m_playwinpos<sm_playwin.size()-1) {
+            value = qint16((gain*(*wavtoplay)[m_end]*sm_playwin[1+m_playwinpos++])*32767);
+        }
+        else if (m_pos<=m_end) {
+            int depos = m_pos - m_delay;
+            if(depos>=0 && depos<int((*wavtoplay).size())){
+        //        WAVTYPE e = samples[m_pos]*samples[m_pos];
+        //        s_play_power += e;
+                WAVTYPE e = abs(gain*(*wavtoplay)[depos]);
+                s_play_power_values.push_front(e);
+                while(s_play_power_values.size()/fs>0.1){
+                    s_play_power -= s_play_power_values.back();
+                    s_play_power_values.pop_back();
+                }
+            }
 
-//        cout << 20*log10(sqrt(s_play_power/s_play_power_values.size())) << endl;
+        //        cout << 20*log10(sqrt(s_play_power/s_play_power_values.size())) << endl;
 
-        qint16 value;
-        // Assuming the output audio device has been open in 16bits ...
-        // TODO Manage more output formats
-        if(depos>=0 && depos<int(wavtoplay->size()) && m_pos<=m_end)
-            value=qint16((a*(*wavtoplay)[depos])*32767);
-        else
-            value=0;
+            // Assuming the output audio device has been open in 16bits ...
+            // TODO Manage more output formats
+            if(depos>=0 && depos<int((*wavtoplay).size()) && m_pos<=m_end)
+                value=qint16((gain*(*wavtoplay)[depos])*32767);
+
+            m_pos++;
+        }
 
         qToLittleEndian<qint16>(value, ptr);
         ptr += channelBytes;
         writtenbytes += channelBytes;
-
-        if(m_pos<m_end)
-            m_pos++;
     }
 
     s_play_power = 0;
@@ -338,12 +361,12 @@ qint64 FTSound::readData(char *data, qint64 len)
     }
 }
 
-qint64 FTSound::writeData(const char *data, qint64 len){
+qint64 FTSound::writeData(const char *data, qint64 askedlen){
 
     Q_UNUSED(data)
-    Q_UNUSED(len)
+    Q_UNUSED(askedlen)
 
-    std::cerr << "DSSound::writeData: There is no reason to call this function.";
+    throw QString("DSSound::writeData: There is no reason to call this function.");
 
     return 0;
 }
