@@ -164,8 +164,8 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
         try{
             wavfiltered = wav;
 
-            int responsedftlen = 2048;
-            int butterworth_order = 32;
+            int responsedftlen = 2048; // to options
+            int butterworth_order = 32; // to options
             WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse = std::vector<FFTTYPE>(responsedftlen/2+1,1.0);
             std::vector< std::vector<double> > num, den;
             std::vector<double> filterresponse;
@@ -218,15 +218,14 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
                 WMainWindow::sm_mainwindow->m_globalWaitingBar->hide();
             }
 
+            // Convert to dB and multiply by 2 bcs of the filtfilt
             for(size_t k=0; k<WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse.size(); k++)
-                WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse[k] = 20*log10(WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse[k]);
+                WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse[k] = 2*20*log10(WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse[k]);
             WMainWindow::sm_mainwindow->m_gvSpectrum->m_scene->invalidate();
 
             // It seems the filtering went well, we can use the filtered sound
             wavtoplay = &wavfiltered;
 
-//            for(size_t n=0; n<wav.size(); n++)
-//                wav[n] = wavfiltered[n];
             WMainWindow::sm_mainwindow->m_gvWaveform->m_scene->invalidate();
             WMainWindow::sm_mainwindow->m_gvSpectrum->computeDFTs();
             WMainWindow::sm_mainwindow->m_gvSpectrum->m_scene->invalidate();
