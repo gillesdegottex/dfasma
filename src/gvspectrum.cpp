@@ -39,6 +39,7 @@ using namespace std;
 #include <QGraphicsLineItem>
 #include <QStaticText>
 #include <QDebug>
+#include <QTime>
 
 // TODO option to keep ratio between zoomx and zoomy so that zoomy is also limited
 
@@ -224,7 +225,7 @@ QGVSpectrum::QGVSpectrum(WMainWindow* main)
 
     m_sbDFTOverSampFactor = new QSpinBox(&m_contextmenu);
     m_sbDFTOverSampFactor->setMinimum(0);
-    m_sbDFTOverSampFactor->setValue(1);
+    m_sbDFTOverSampFactor->setValue(2);
     m_sbDFTOverSampFactor->hide(); // TODO Add somewhere
 //    m_contextmenu.addAction("Properties");
 
@@ -788,15 +789,16 @@ void QGVSpectrum::update_cursor(QPointF p){
         m_giCursorPositionYTxt->hide();
     }
     else {
+        QTransform trans = transform();
+
         QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
         m_giCursorHoriz->show();
-        m_giCursorHoriz->setLine(0, p.y(), m_main->getFs()/2.0, p.y());
+        m_giCursorHoriz->setLine(viewrect.right()-50/trans.m11(), p.y(), m_main->getFs()/2.0, p.y());
         m_giCursorVert->show();
-        m_giCursorVert->setLine(p.x(), -10000, p.x(), 10000);
+        m_giCursorVert->setLine(p.x(), viewrect.top(), p.x(), viewrect.top()+18/trans.m22());
         m_giCursorPositionXTxt->show();
         m_giCursorPositionYTxt->show();
 
-        QTransform trans = transform();
         QTransform txttrans;
         txttrans.scale(1.0/trans.m11(),1.0/trans.m22());
         m_giCursorPositionXTxt->setTransform(txttrans);
@@ -809,11 +811,7 @@ void QGVSpectrum::update_cursor(QPointF p){
         m_giCursorPositionXTxt->setPos(x, viewrect.top());
 
         m_giCursorPositionYTxt->setText(QString("%1dB").arg(-p.y()));
-        br = m_giCursorPositionYTxt->boundingRect();
         m_giCursorPositionYTxt->setPos(viewrect.right()-br.width()/trans.m11(), p.y()-br.height()/trans.m22());
-
-        QRectF r = QRectF(viewrect.left(), viewrect.top(), 5*14/trans.m11(), viewrect.height());
-        m_scene->invalidate(r);
     }
 }
 
@@ -826,7 +824,7 @@ void QGVSpectrum::fftResizing(int prevSize, int newSize){
 
 void QGVSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
 
-//    cout << "drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
+//    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
     // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
 
@@ -890,7 +888,7 @@ void QGVSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
     }
 
 
-    // Draw the fundamental frequency grid
+    // Draw the f0 grids
     if(!m_main->ftfzeros.empty()) {
 
         for(size_t fi=0; fi<m_main->ftfzeros.size(); fi++){
