@@ -35,6 +35,7 @@ using namespace std;
 #include <QWheelEvent>
 #include <QToolBar>
 #include <QAction>
+#include <QSpinBox>
 #include <QGraphicsLineItem>
 #include <QStaticText>
 #include <QDebug>
@@ -148,7 +149,7 @@ void QGVSpectrum::setWindowRange(double tstart, double tend){
     for(int n=0; n<m_winlen; n++)
         m_win[n] /= winsum;
 
-    int dftlen = pow(2, int(log2(float(m_winlen)))+2);
+    int dftlen = pow(2, std::ceil(log2(float(m_winlen)))+m_sbDFTOverSampFactor->value());
 
     m_fftresizethread->resize(dftlen);
 
@@ -209,10 +210,15 @@ QGVSpectrum::QGVSpectrum(WMainWindow* main)
     : m_main(main)
     , m_winlen(0)
 {
+    m_first_start = true;
+
     m_scene = new QGraphicsScene(this);
     setScene(m_scene);
 
-    m_first_start = true;
+    m_sbDFTOverSampFactor = new QSpinBox(&m_contextmenu);
+    m_sbDFTOverSampFactor->setMinimum(0);
+    m_sbDFTOverSampFactor->setValue(1);
+//    m_contextmenu.addAction("Properties");
 
     m_fft = new FFTwrapper();
     m_fftresizethread = new FFTResizeThread(m_fft, this);
@@ -461,10 +467,8 @@ void QGVSpectrum::mousePressEvent(QMouseEvent* event){
         }
     }
     else if(event->buttons()&Qt::RightButton){
-//        cout << "Calling context menu" << endl;
-//        int contextmenuheight = 0;
-//        QPoint posglobal = mapToGlobal(mapFromScene(p)+QPoint(0,contextmenuheight/2));
-//        m_contextmenu.exec(posglobal);
+        QPoint posglobal = mapToGlobal(mapFromScene(p)+QPoint(0,0));
+        m_contextmenu.exec(posglobal);
     }
 
     QGraphicsView::mousePressEvent(event);

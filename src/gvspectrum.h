@@ -27,11 +27,13 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QGraphicsView>
 #include <QMutex>
 #include <QThread>
+#include <QMenu>
 
 #include "wmainwindow.h"
 #include "../external/FFTwrapper.h"
 
 class MainWindow;
+class QSpinBox;
 
 class FFTResizeThread : public QThread
 {
@@ -74,6 +76,9 @@ public:
 
     WMainWindow* m_main;
     QGraphicsScene* m_scene;
+
+    QMenu m_contextmenu;
+    QSpinBox* m_sbDFTOverSampFactor;
 
     int m_winlen;
     unsigned int m_nl;
