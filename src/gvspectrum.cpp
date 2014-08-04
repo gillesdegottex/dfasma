@@ -804,7 +804,7 @@ void QGVSpectrum::update_cursor(QPointF p){
         m_giCursorPositionXTxt->setTransform(txttrans);
         m_giCursorPositionYTxt->setTransform(txttrans);
         QRectF br = m_giCursorPositionXTxt->boundingRect();
-        qreal x = p.x();
+        qreal x = p.x()+1/trans.m11();
         x = min(x, viewrect.right()-br.width()/trans.m11());
 
         m_giCursorPositionXTxt->setText(QString("%1Hz").arg(p.x()));
@@ -856,7 +856,9 @@ void QGVSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
         m_maxsy = prevy;
         double a = m_main->ftsnds[fi]->m_ampscale;
         std::complex<WAVTYPE>* data = m_main->ftsnds[fi]->m_dft.data();
-        for(int k=0; k<dftlen/2+1; k++){
+        int kmin = std::max(0, int(dftlen*rect.left()/m_main->getFs()));
+        int kmax = std::min(dftlen/2+1, int(dftlen*rect.right()/m_main->getFs()));
+        for(int k=kmin; k<kmax; k++){
             double x = m_main->getFs()*k/dftlen;
             double y = 20*log10(a*abs(*(data+k)));
             painter->drawLine(QLineF(prevx, -prevy, x, -y));
