@@ -33,6 +33,7 @@ using namespace std;
 #include "ui_wmainwindow.h"
 #include "gvspectrum.h"
 #include "gvwaveform.h"
+#include "sigproc.h"
 
 #include "../external/mkfilter/mkfilter.h"
 
@@ -44,16 +45,6 @@ std::vector<WAVTYPE> FTSound::sm_playwin;
 double FTSound::fs_common = 0; // Initially, fs is undefined TODO put in wmainwindow
 WAVTYPE FTSound::s_play_power = 0;
 std::deque<WAVTYPE> FTSound::s_play_power_values;
-
-inline std::vector<double> hann(int n) // To put somewhere in common with other sig proc stuffs
-{
-    std::vector<double> win(n);
-
-    for(size_t n=0; n<win.size(); n++)
-        win[n] = (1-cos(2.0*M_PI*n/(win.size()-1))) / (win.size()-1);
-
-    return win;
-}
 
 FTSound::FTSound(const QString& _fileName, QObject *parent)
     : QIODevice(parent)
@@ -84,7 +75,7 @@ FTSound::FTSound(const QString& _fileName, QObject *parent)
         m_wavmaxamp = std::max(m_wavmaxamp, abs(wav[n]));
 
     if(sm_playwin.size()==0) {
-        sm_playwin = hann(2*int(0.100*fs/2)+1); // Use 50ms half-windows on each side
+        sm_playwin = sigproc::hann(2*int(0.100*fs/2)+1); // Use 50ms half-windows on each side
         double winmax = sm_playwin[(sm_playwin.size()-1)/2];
         for(size_t n=0; n<sm_playwin.size(); n++)
             sm_playwin[n] /= winmax;
@@ -188,8 +179,8 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
         try{
             wavfiltered = wav;
 
-            int responsedftlen = 2048; // to options
-            int butterworth_order = 32; // to options
+            int responsedftlen = 2048; // TODO to options
+            int butterworth_order = 32; // TODO to options
             WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse = std::vector<FFTTYPE>(responsedftlen/2+1,1.0);
             std::vector< std::vector<double> > num, den;
             std::vector<double> filterresponse;
@@ -212,7 +203,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
 
                 cout << "LP-filtering (cutoff=" << fstop << ", size=" << wavfiltered.size() << ")" << endl;
                 for(size_t bi=0; bi<num.size(); bi++)
-                    mkfilter::filtfilt<WAVTYPE>(wavfiltered, num[bi], den[bi], wavfiltered, m_start, m_end);
+                    sigproc::filtfilt<WAVTYPE>(wavfiltered, num[bi], den[bi], wavfiltered, m_start, m_end);
 
                 WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->hide();
                 WMainWindow::sm_mainwindow->m_globalWaitingBar->hide();
@@ -236,7 +227,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
 
                 cout << "HP-filtering (cutoff=" << fstart << ", size=" << wavfiltered.size() << ")" << endl;
                 for(size_t bi=0; bi<num.size(); bi++)
-                    mkfilter::filtfilt<WAVTYPE>(wavfiltered, num[bi], den[bi], wavfiltered, m_start, m_end);
+                    sigproc::filtfilt<WAVTYPE>(wavfiltered, num[bi], den[bi], wavfiltered, m_start, m_end);
 
                 WMainWindow::sm_mainwindow->m_globalWaitingBarLabel->hide();
                 WMainWindow::sm_mainwindow->m_globalWaitingBar->hide();

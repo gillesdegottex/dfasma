@@ -134,6 +134,7 @@ SOURCES   += src/main.cpp\
              external/FFTwrapper.cpp
 
 HEADERS   += src/wmainwindow.h \
+             src/sigproc.h \
              src/filetype.h \
              src/ftsound.h \
              src/ftfzero.h \

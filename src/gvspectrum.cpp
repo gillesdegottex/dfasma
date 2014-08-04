@@ -26,6 +26,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "ftsound.h"
 #include "ftfzero.h"
 #include "../external/FFTwrapper.h"
+#include "sigproc.h"
 
 #include <iostream>
 #include <algorithm>
@@ -130,34 +131,6 @@ void FFTResizeThread::run() {
 }
 
 
-static const double Pi = 2*acos(0);
-
-vector<double> hann(int n)
-{
-    vector<double> win(n);
-
-    for(size_t n=0; n<win.size(); n++)
-        win[n] = (1-cos(2*Pi*n/(win.size()-1))) / (win.size()-1);
-
-    return win;
-}
-
-vector<double> hamming(int n)
-{
-    vector<double> win(n);
-
-    double s = 0.0;
-    for(size_t n=0; n<win.size(); n++)
-    {
-        win[n] = (0.54-0.46*cos(2*Pi*n/(win.size()-1)));
-        s += win[n];
-    }
-    for(size_t n=0; n<win.size(); n++)
-        win[n] /= s;
-
-    return win;
-}
-
 void QGVSpectrum::setWindowRange(double tstart, double tend){
     if(tstart==tend) return;
 
@@ -168,7 +141,7 @@ void QGVSpectrum::setWindowRange(double tstart, double tend){
     m_winlen = m_nr-m_nl+1;
     if(m_winlen<2) return;
 
-    m_win = hann(m_winlen); // Allow choice with blackman, no-sidelob-window, etc.
+    m_win = sigproc::hann(m_winlen); // Allow choice with blackman, no-sidelob-window, etc.
     double winsum = 0.0;
     for(int n=0; n<m_winlen; n++)
         winsum += m_win[n];
