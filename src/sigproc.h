@@ -23,8 +23,32 @@ file provided in the source code of DFasma. Another copy can be found at
 #define SIGPROC_H
 
 #include <vector>
+#include <limits>
 
 namespace sigproc {
+
+// Interpolate value given time vector and data vector
+template<typename DataType, typename ContainerTimes, typename ContainerData>
+inline DataType nearest(const ContainerTimes& ts, const ContainerData& data, double t, const DataType& defvalue) {
+
+    DataType d = defvalue;
+
+    if(t <= ts.front())
+        d = data.front();
+    else if(t >= ts.back())
+        d = data.back();
+    else {
+        typename ContainerTimes::const_iterator it = std::lower_bound(ts.begin(), ts.end(), t);
+
+        size_t i = std::distance(ts.begin(), it);
+
+        if(i<data.size())
+            d = data[i];
+    }
+
+    return d;
+}
+
 
 inline std::vector<double> hann(int n) // To put somewhere in common with other sig proc stuffs
 {

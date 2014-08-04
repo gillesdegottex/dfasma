@@ -903,7 +903,7 @@ void QGVSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
             painter->setBrush(QBrush(m_main->ftfzeros[fi]->color));
 
             double ct = 0.5*(m_nl+m_nr)/m_main->getFs();
-            double cf0 = sigproc::interp<double>(m_main->ftfzeros[fi]->ts, m_main->ftfzeros[fi]->f0s, ct, -1.0);
+            double cf0 = sigproc::nearest<double>(m_main->ftfzeros[fi]->ts, m_main->ftfzeros[fi]->f0s, ct, -1.0);
 
             // cout << ct << ":" << cf0 << endl;
             if(cf0==-1) continue;
