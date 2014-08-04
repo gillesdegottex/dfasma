@@ -215,9 +215,17 @@ QGVSpectrum::QGVSpectrum(WMainWindow* main)
     m_scene = new QGraphicsScene(this);
     setScene(m_scene);
 
+    m_aShowGrid = new QAction(tr("Show &grid"), this);
+    m_aShowGrid->setStatusTip(tr("Show &grid"));
+    m_aShowGrid->setCheckable(true);
+    m_aShowGrid->setChecked(true);
+    connect(m_aShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
+    m_contextmenu.addAction(m_aShowGrid);
+
     m_sbDFTOverSampFactor = new QSpinBox(&m_contextmenu);
     m_sbDFTOverSampFactor->setMinimum(0);
     m_sbDFTOverSampFactor->setValue(1);
+    m_sbDFTOverSampFactor->hide(); // TODO Add somewhere
 //    m_contextmenu.addAction("Properties");
 
     m_fft = new FFTwrapper();
@@ -820,10 +828,11 @@ void QGVSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
 
 //    cout << "drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
-    QGraphicsView::drawBackground(painter, rect);
+    // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
 
     // Draw grid
-    draw_grid(painter, rect);
+    if(m_aShowGrid->isChecked())
+        draw_grid(painter, rect);
 
     // Draw spectrum
     for(unsigned int fi=0; fi<m_main->ftsnds.size(); fi++){
@@ -894,23 +903,10 @@ void QGVSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
             painter->setBrush(QBrush(m_main->ftfzeros[fi]->color));
 
             double ct = 0.5*(m_nl+m_nr)/m_main->getFs();
-            double cf0 = -1.0;
-
-            if(ct <= m_main->ftfzeros[fi]->ts.front())
-                cf0 = m_main->ftfzeros[fi]->f0s.front();
-            else if(ct >= m_main->ftfzeros[fi]->ts.back())
-                cf0 = m_main->ftfzeros[fi]->f0s.back();
-            else {
-                std::deque<double>::iterator it = std::lower_bound(m_main->ftfzeros[fi]->ts.begin(), m_main->ftfzeros[fi]->ts.end(), ct);
-
-                size_t i = std::distance(m_main->ftfzeros[fi]->ts.begin(), it);
-
-                if(i<m_main->ftfzeros[fi]->f0s.size())
-                    cf0 = m_main->ftfzeros[fi]->f0s[i];
-            }
+            double cf0 = sigproc::interp<double>(m_main->ftfzeros[fi]->ts, m_main->ftfzeros[fi]->f0s, ct, -1.0);
 
             // cout << ct << ":" << cf0 << endl;
-            if(cf0<1) continue;
+            if(cf0==-1) continue;
 
             QColor c = m_main->ftfzeros[fi]->color;
             c.setAlphaF(1.0);
