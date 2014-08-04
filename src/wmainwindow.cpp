@@ -372,11 +372,13 @@ void WMainWindow::addFile(const QString& filepath) {
                 ftlabels.push_back(ftlabel);
                 ft = ftlabel;
             }
+            else
+                throw QString("Unsupported SDIF data.");
             #else
             throw QString("Support of SDIF files not compiled in this version.");
             #endif
         }
-        else {
+        else { // Assume it is an audio file
             FTSound* ftsnd = new FTSound(filepath, this);
             ftsnds.push_back(ftsnd);
             ft = ftsnd;
