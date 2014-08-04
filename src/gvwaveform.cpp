@@ -679,7 +679,7 @@ void QGVWaveform::update_cursor(float x){
         x = min(x, float(viewrect.right()-br.width()/trans.m11()));
 //        if(x+br.width()/trans.m11()>viewrect.right())
 //            x = x - br.width()/trans.m11();
-        m_giCursorPositionTxt->setPos(x, -1*m_ampzoom);
+        m_giCursorPositionTxt->setPos(x+1/trans.m11(), -1.05*m_ampzoom);
     }
 }
 
@@ -737,6 +737,8 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
     double samppixdensity = (viewrect.right()-viewrect.left())*m_main->getFs()/viewport()->rect().width();
+
+//    cout << "samppixdensity=" << samppixdensity << endl;
 
 //    samppixdensity=3;
     if(samppixdensity<10){ // Full resolution
@@ -813,7 +815,9 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
         // Plot only one line per pixel, in order to improve computational efficiency
 //        std::cout << "Compressed resolution" << endl;
 
-        QRectF updateRect = mapFromScene(rect).boundingRect();
+//        cout << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
+//        QRectF updateRect = mapFromScene(rect).boundingRect();
+//        cout << updateRect.left() << " " << updateRect.right() << " " << updateRect.top() << " " << updateRect.bottom() << endl;
 
         for(size_t fi=0; fi<m_main->ftsnds.size(); fi++){
             if(!m_main->ftsnds[fi]->m_actionShow->isChecked())
@@ -828,41 +832,31 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
             painter->setPen(outlinePen);
             painter->setBrush(QBrush(m_main->ftsnds[fi]->color));
 
-//            float prevx=0;
-//            float prevy=0;
-            for(int px=updateRect.left(); px<updateRect.right(); px+=1){
-                QRectF pixelrect = mapToScene(QRect(QPoint(px,0), QSize(1, 1))).boundingRect();
+            double pixelstep = viewrect.width()/viewport()->rect().width();
+//            cout << "pixelstep=" << pixelstep << endl;
+            int maxm = m_main->ftsnds[fi]->wavtoplay->size()-1;
+            for(double x=rect.left(); x<=rect.right(); x+=pixelstep) {
 
-    //        std::cout << "t: " << pt.x() << " " << t.x() << " " << nt.x() << endl;
-    //        std::cout << "ti: " << int(pt.x()*m_main->getFs()) << " " << int(t.x()*m_main->getFs()) << " " << int(nt.x()*m_main->snds[0]->fs) << endl;
-
-                int pn = std::max(qint64(0), qint64(0.5+pixelrect.left()*m_main->getFs())-m_main->ftsnds[fi]->m_delay);
-                int nn = std::min(qint64(0.5+m_main->ftsnds[fi]->wavtoplay->size()-1), qint64(0.5+pixelrect.right()*m_main->getFs())-m_main->ftsnds[fi]->m_delay);
+                int pn = std::max(qint64(0), qint64(0.5+m_main->getFs()*(x-m_main->ftsnds[fi]->m_delay)));
+                int nn = std::min(qint64(0.5+m_main->ftsnds[fi]->wavtoplay->size()-1), qint64(0.5+m_main->getFs()*((x+pixelstep)-m_main->ftsnds[fi]->m_delay)));
 //                std::cout << pn << " " << nn << " " << nn-pn << endl;
 
-                int maxm = m_main->ftsnds[fi]->wavtoplay->size()-1;
-
                 if(nn>=0 && pn<=maxm){
-                    float miny = 1.0;
-                    float maxy = -1.0;
-                    float y;
+                    WAVTYPE miny = 1.0;
+                    WAVTYPE maxy = -1.0;
+                    WAVTYPE y;
+                    WAVTYPE* data = m_main->ftsnds[fi]->wavtoplay->data()+pn;
                     for(int m=pn; m<=nn && m<=maxm; m++){
-                        y = -a*(*(m_main->ftsnds[fi]->wavtoplay))[m];
+                        y = *data;
                         miny = std::min(miny, y);
                         maxy = std::max(maxy, y);
+                        data++;
                     }
-                    // TODO Don't like the resulting line style
-                    painter->drawRect(QRectF(pixelrect.left(), miny, pixelrect.width()/10.0, maxy-miny));
+                    miny *= -a;
+                    maxy *= -a;
+//                    painter->drawRect(QRectF(x, miny, pixelstep, maxy-miny));
+                    painter->drawLine(QLineF(x, miny, x+pixelstep, maxy));
                 }
-
-//                int m = pn;
-//                float y = -a*m_main->snds[fi]->wavtoplay[m];
-
-//        //        std::cout << px << ": " << miny << " " << maxy << endl;
-
-//                painter->drawLine(QLineF(prevx, prevy, pixelrect.left(), y));
-//                prevx = pixelrect.left();
-//                prevy = y;
             }
         }
 
