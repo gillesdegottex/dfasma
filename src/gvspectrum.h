@@ -125,8 +125,8 @@ public:
     QAction* m_aZoomOut;
     QAction* m_aUnZoom;
 
-    float m_minsy;
-    float m_maxsy;
+    double m_minsy;
+    double m_maxsy;
 
 signals:
     

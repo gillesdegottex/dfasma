@@ -824,7 +824,7 @@ void QGVSpectrum::fftResizing(int prevSize, int newSize){
 
 void QGVSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
 
-//    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
+//    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVSpectrum::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
     // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
 
@@ -850,13 +850,15 @@ void QGVSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
         painter->setBrush(QBrush(m_main->ftsnds[fi]->color));
 
         int dftlen = (m_main->ftsnds[fi]->m_dft.size()-1)*2;
-        float prevx = 0;
-        float prevy = 20*log10(abs(m_main->ftsnds[fi]->m_dft[0]));
+        double prevx = 0;
+        double prevy = 20*log10(abs(m_main->ftsnds[fi]->m_dft[0]));
         m_minsy = prevy;
         m_maxsy = prevy;
+        double a = m_main->ftsnds[fi]->m_ampscale;
+        std::complex<WAVTYPE>* data = m_main->ftsnds[fi]->m_dft.data();
         for(int k=0; k<dftlen/2+1; k++){
-            float x = m_main->getFs()*k/dftlen;
-            float y = 20*log10(m_main->ftsnds[fi]->m_ampscale*abs(m_main->ftsnds[fi]->m_dft[k]));
+            double x = m_main->getFs()*k/dftlen;
+            double y = 20*log10(a*abs(*(data+k)));
             painter->drawLine(QLineF(prevx, -prevy, x, -y));
             prevx = x;
             prevy = y;
@@ -872,13 +874,13 @@ void QGVSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
         painter->setPen(outlinePen);
 
         int dftlen = (m_filterresponse.size()-1)*2;
-        float prevx = 0;
-        float prevy = m_filterresponse[0];
+        double prevx = 0;
+        double prevy = m_filterresponse[0];
         m_minsy = prevy;
         m_maxsy = prevy;
         for(int k=0; k<dftlen/2+1; k++){
-            float x = m_main->getFs()*k/dftlen;
-            float y = m_filterresponse[k];
+            double x = m_main->getFs()*k/dftlen;
+            double y = m_filterresponse[k];
             painter->drawLine(QLineF(prevx, -prevy, x, -y));
             prevx = x;
             prevy = y;
@@ -922,7 +924,7 @@ void QGVSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
         }
     }
 
-//    cout << "~drawBackground" << endl;
+//    cout << "QGVSpectrum::~drawBackground" << endl;
 }
 
 void QGVSpectrum::draw_grid(QPainter* painter, const QRectF& rect){

@@ -770,12 +770,15 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
                 y = -a*(*(m_main->ftsnds[fi]->wavtoplay))[nleft];
             else
                 y = 0.0;
+
             WAVTYPE prevy = y;
             // TODO prob appear with very long waveforms
             int wn = nleft+1 - m_main->ftsnds[fi]->m_delay;
+            int wnmax = m_main->ftsnds[fi]->wavtoplay->size();
+            WAVTYPE* data = m_main->ftsnds[fi]->wavtoplay->data();
             for(int n=nleft+1; n<=nright; ++n){
-                if(wn>=0 && wn<int(m_main->ftsnds[fi]->wavtoplay->size()))
-                    y = -a*(*(m_main->ftsnds[fi]->wavtoplay))[wn];
+                if(wn>=0 && wn<wnmax)
+                    y = -a*(*(data+wn));
                 else
                     y = 0.0;
 
