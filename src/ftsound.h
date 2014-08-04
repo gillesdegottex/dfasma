@@ -34,6 +34,9 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #define WAVTYPE double
 
+#define BUTTERRESPONSEDFTLEN 2048
+
+
 class CFFTW3;
 
 class FTSound : public QIODevice, public FileType
@@ -49,14 +52,16 @@ class FTSound : public QIODevice, public FileType
 public:
 
     FTSound(const QString& _fileName, QObject* parent);
+    static double fs_common;  // [Hz] Sampling frequency of the sound player
     static QString getAudioFileReadingDescription();
+    static void setAvoidClicksWindowDuration(double halfduration);
+    static std::vector<WAVTYPE> sm_avoidclickswindow;
 
     std::vector<WAVTYPE> wav;
     std::vector<WAVTYPE> wavfiltered;
     std::vector<WAVTYPE>* wavtoplay;
     WAVTYPE m_wavmaxamp;
     double fs; // [Hz] Sampling frequency of this specific wav file
-    static double fs_common;  // [Hz] Sampling frequency of the sound player
     double getDuration() const {return wav.size()/fs;}
     virtual double getLastSampleTime() const;
     virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
@@ -76,12 +81,11 @@ public:
     qint64 m_start; // [sample index]
     qint64 m_pos;   // [sample index]
     qint64 m_end;   // [sample index]
+    qint64 m_avoidclickswinpos;// [sample index] position in the pre and post windows
 
     static WAVTYPE s_play_power;
     static std::deque<WAVTYPE> s_play_power_values;
     static bool sm_playwin_use;
-    static std::vector<WAVTYPE> sm_playwin;
-    qint64 m_playwinpos;// [sample index] position in the pre and post windows
 
     // Visualization
     QAction* m_actionInvPolarity;

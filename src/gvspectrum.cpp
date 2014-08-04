@@ -519,8 +519,10 @@ void QGVSpectrum::mouseMoveEvent(QMouseEvent* event){
             currentftsound->m_ampscale *= pow(10, -(p.y()-m_selection_pressedp.y())/20.0);
             m_selection_pressedp = p;
 
-            if(currentftsound->m_ampscale>1e10) currentftsound->m_ampscale = 1e10;
-            else if(currentftsound->m_ampscale<1e-10) currentftsound->m_ampscale = 1e-10;
+            if(currentftsound->m_ampscale>1e10)
+                currentftsound->m_ampscale = 1e10;
+            else if(currentftsound->m_ampscale<1e-10)
+                currentftsound->m_ampscale = 1e-10;
 
             m_main->m_gvWaveform->soundsChanged();
             soundsChanged();

@@ -21,6 +21,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "wdialogsettings.h"
 #include "ui_wdialogsettings.h"
 
+#include <iostream>
 #include "ftsound.h"
 
 WDialogSettings::WDialogSettings(QWidget *parent) :
@@ -33,14 +34,28 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     setWindowIconText("Settings");
     setWindowTitle("Settings");
 
-    connect(ui->ckPlayAddWindows, SIGNAL(toggled(bool)), this, SLOT(setckPlayAddWindows(bool)));
+    connect(ui->ckAvoidClicksAddWindows, SIGNAL(toggled(bool)), this, SLOT(setCKAvoidClicksAddWindows(bool)));
+    connect(ui->sbButterworthOrder, SIGNAL(valueChanged(int)), this, SLOT(setSBButterworthOrderChangeValue(int)));
+    connect(ui->sbAvoidClicksWindowDuration, SIGNAL(valueChanged(double)), this, SLOT(setSBAvoidClicksWindowDuration(double)));
 }
 
-void WDialogSettings::setckPlayAddWindows(bool add) {
+void WDialogSettings::setSBButterworthOrderChangeValue(int order) {
+    if(order%2==1)
+        ui->sbButterworthOrder->setValue(order+1);
+}
+
+void WDialogSettings::setCKAvoidClicksAddWindows(bool add) {
     FTSound::sm_playwin_use = add;
+    ui->sbAvoidClicksWindowDuration->setEnabled(add);
+    ui->lblAvoidClicksWindowDurationLabel->setEnabled(add);
+
+    FTSound::setAvoidClicksWindowDuration(ui->sbAvoidClicksWindowDuration->value());
 }
 
-WDialogSettings::~WDialogSettings()
-{
+void WDialogSettings::setSBAvoidClicksWindowDuration(double halfduration) {
+    FTSound::setAvoidClicksWindowDuration(halfduration);
+}
+
+WDialogSettings::~WDialogSettings() {
     delete ui;
 }

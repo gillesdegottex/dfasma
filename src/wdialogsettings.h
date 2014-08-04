@@ -38,8 +38,10 @@ public:
     Ui::WDialogSettings *ui;
 
 public slots:
-    void setckPlayAddWindows(bool add);
+    void setCKAvoidClicksAddWindows(bool add);
+    void setSBAvoidClicksWindowDuration(double halfduration);
 
+    void setSBButterworthOrderChangeValue(int order);
 
 private:
 };

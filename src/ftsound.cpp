@@ -40,7 +40,7 @@ using namespace std;
 #include "ui_wdialogsettings.h"
 
 bool FTSound::sm_playwin_use = false;
-std::vector<WAVTYPE> FTSound::sm_playwin;
+std::vector<WAVTYPE> FTSound::sm_avoidclickswindow;
 
 double FTSound::fs_common = 0; // Initially, fs is undefined TODO put in wmainwindow
 WAVTYPE FTSound::s_play_power = 0;
@@ -55,7 +55,7 @@ FTSound::FTSound(const QString& _fileName, QObject *parent)
     , m_start(0)
     , m_pos(0)
     , m_end(0)
-    , m_playwinpos(0)
+    , m_avoidclickswinpos(0)
 {
     m_actionInvPolarity = new QAction("Inverse polarity", this);
     m_actionInvPolarity->setStatusTip(tr("Inverse the polarity of the sound"));
@@ -74,16 +74,19 @@ FTSound::FTSound(const QString& _fileName, QObject *parent)
     for(unsigned int n=0; n<wav.size(); ++n)
         m_wavmaxamp = std::max(m_wavmaxamp, abs(wav[n]));
 
-    if(sm_playwin.size()==0) {
-        sm_playwin = sigproc::hann(2*int(0.100*fs/2)+1); // Use 50ms half-windows on each side
-        double winmax = sm_playwin[(sm_playwin.size()-1)/2];
-        for(size_t n=0; n<sm_playwin.size(); n++)
-            sm_playwin[n] /= winmax;
-    }
+    if(sm_avoidclickswindow.size()==0)
+        FTSound::setAvoidClicksWindowDuration(WMainWindow::sm_mainwindow->m_dlgSettings->ui->sbAvoidClicksWindowDuration->value());
 
     std::cout << wav.size() << " samples loaded (" << wav.size()/fs << "s max amplitude=" << m_wavmaxamp << ")" << endl;
 
 //    QIODevice::open(QIODevice::ReadOnly);
+}
+
+void FTSound::setAvoidClicksWindowDuration(double halfduration) {
+    sm_avoidclickswindow = sigproc::hann(2*int(2*halfduration*fs_common/2)+1); // Use 50ms half-windows on each side
+    double winmax = sm_avoidclickswindow[(sm_avoidclickswindow.size()-1)/2];
+    for(size_t n=0; n<sm_avoidclickswindow.size(); n++)
+        sm_avoidclickswindow[n] /= winmax;
 }
 
 void FTSound::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
@@ -114,9 +117,10 @@ void FTSound::setSamplingRate(double _fs){
     fs = _fs;
 
     // Check if fs is the same for all files
-    if(fs_common==0){
+    if(fs_common==0) {
         // The system has no defined sampling rate
         fs_common = fs;
+        FTSound::setAvoidClicksWindowDuration(WMainWindow::sm_mainwindow->m_dlgSettings->ui->sbAvoidClicksWindowDuration->value());
     }
     else {
         // Check if fs is the same as that of the other files
@@ -131,7 +135,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
 
     s_play_power = 0;
     s_play_power_values.clear();
-    m_playwinpos = 0;
+    m_avoidclickswinpos = 0;
 
     // Fix and make time selection
     if(tstart>tstop){
@@ -179,14 +183,13 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
         try{
             wavfiltered = wav;
 
-            int responsedftlen = 2048; // TODO to options
-            int butterworth_order = 32; // TODO to options
-            WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse = std::vector<FFTTYPE>(responsedftlen/2+1,1.0);
+            int butterworth_order = WMainWindow::sm_mainwindow->m_dlgSettings->ui->sbButterworthOrder->value();
+            WMainWindow::sm_mainwindow->m_gvSpectrum->m_filterresponse = std::vector<FFTTYPE>(BUTTERRESPONSEDFTLEN/2+1,1.0);
             std::vector< std::vector<double> > num, den;
             std::vector<double> filterresponse;
 
             if (doLowPass) {
-                mkfilter::make_butterworth_filter_biquad(butterworth_order, fstop/fs, true, num, den, &filterresponse, responsedftlen);
+                mkfilter::make_butterworth_filter_biquad(butterworth_order, fstop/fs, true, num, den, &filterresponse, BUTTERRESPONSEDFTLEN);
 
                 for(size_t k=0; k<filterresponse.size(); k++){
                     if(filterresponse[k] < 2*std::numeric_limits<FFTTYPE>::min())
@@ -210,7 +213,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
             }
 
             if (doHighPass) {
-                mkfilter::make_butterworth_filter_biquad(butterworth_order, fstart/fs, false, num, den, &filterresponse, responsedftlen);
+                mkfilter::make_butterworth_filter_biquad(butterworth_order, fstart/fs, false, num, den, &filterresponse, BUTTERRESPONSEDFTLEN);
 
                 for(size_t k=0; k<filterresponse.size(); k++){
                     if(filterresponse[k] < 2*std::numeric_limits<FFTTYPE>::min())
@@ -277,7 +280,7 @@ void FTSound::stop()
     m_start = 0;
     m_pos = 0;
     m_end = 0;
-    m_playwinpos = 0;
+    m_avoidclickswinpos = 0;
     QIODevice::close();
 }
 
@@ -301,11 +304,11 @@ qint64 FTSound::readData(char *data, qint64 askedlen)
     while(writtenbytes<askedlen) {
         qint16 value = 0;
 
-        if(sm_playwin_use && (m_playwinpos<(sm_playwin.size()-1)/2)) {
-            value = qint16((gain*(*wavtoplay)[m_start]*sm_playwin[m_playwinpos++])*32767);
+        if(sm_playwin_use && (m_avoidclickswinpos<(sm_avoidclickswindow.size()-1)/2)) {
+            value = qint16((gain*(*wavtoplay)[m_start]*sm_avoidclickswindow[m_avoidclickswinpos++])*32767);
         }
-        else if(sm_playwin_use && (m_pos>m_end) && m_playwinpos<sm_playwin.size()-1) {
-            value = qint16((gain*(*wavtoplay)[m_end]*sm_playwin[1+m_playwinpos++])*32767);
+        else if(sm_playwin_use && (m_pos>m_end) && m_avoidclickswinpos<sm_avoidclickswindow.size()-1) {
+            value = qint16((gain*(*wavtoplay)[m_end]*sm_avoidclickswindow[1+m_avoidclickswinpos++])*32767);
         }
         else if (m_pos<=m_end) {
             int depos = m_pos - m_delay;

@@ -21,6 +21,8 @@ file provided in the source code of DFasma. Another copy can be found at
 #ifndef WMAINWINDOW_H
 #define WMAINWINDOW_H
 
+#include <deque>
+
 #include <QMainWindow>
 #include <QGraphicsView>
 #include <QGraphicsScene>
@@ -31,16 +33,12 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QAudioDeviceInfo>
 #include <QTimer>
 
-#include <deque>
-
 #include "wdialogsettings.h"
 
-//#include "ftsound.h"
 class FTSound;
 class FTFZero;
 class FTLabels;
 class AudioEngine;
-//#include "ftf0.h"
 class QGVWaveform;
 class QGVSpectrum;
 class QHBoxLayout;

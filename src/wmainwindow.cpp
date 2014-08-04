@@ -168,11 +168,14 @@ void WMainWindow::execAbout(){
     <br/>The source code is hosted on <a href='https://github.com/gillesdegottex/dfasma'>GitHub</a>.</p>";
 
 
-//    txt += "<h4>Credits</h4>\
-//            Most open-source softwares are infeasible without indirect contributions provided through libraries, open code, etc.\
-//            Keeping in mind that none of the following geeks could be taken as responsible of DFasma\'s bugs and improper behaviors, it seems necessary to thanks them. Thus, thanks to :<br/>\
-//            FFTW3\'team \
-//            ";
+    txt += "<h4>Credits</h4>\
+            Most open-source softwares are infeasible without indirect contributions provided through libraries, open code, etc.\
+            Keeping in mind that none of the following geeks could be taken as responsible of DFasma\'s bugs or improper behaviors, it seems necessary to thanks them:<br/>\
+            - A.J. Fisher for the butterworth filter design<br/>\
+            - Laurent de Soras for the FFTReal<br/>\
+            - FFTW3\'s team<br/>\
+            - Qt\'s team<br/>\
+            ";
 
     txt += "<p>Any contribution of any sort is very welcome and will be rewarded by your name in this about box, in addition to a pint of your favorite beer during the next signal processing <a href='http://www.obsessedwithsports.com/wp-content/uploads/2013/03/revenge-of-the-nerds-sloan-conference.png'>conference</a>!</p>";
 
