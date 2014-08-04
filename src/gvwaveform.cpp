@@ -60,6 +60,13 @@ QGVWaveform::QGVWaveform(WMainWindow* main)
     m_gridFontPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
     m_gridFont.setPointSize(8);
 
+    m_aShowGrid = new QAction(tr("Show &grid"), this);
+    m_aShowGrid->setStatusTip(tr("Show &grid"));
+    m_aShowGrid->setCheckable(true);
+    m_aShowGrid->setChecked(true);
+    connect(m_aShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
+    m_contextmenu.addAction(m_aShowGrid);
+
     // Mouse Cursor
     m_giCursor = new QGraphicsLineItem(0, -1, 0, 1);
     QPen cursorPen(QColor(64, 64, 64));
@@ -706,7 +713,9 @@ void QGVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
 
 //    m_scene->invalidate();
 
-    draw_grid(painter, rect);
+    if(m_aShowGrid->isChecked())
+        draw_grid(painter, rect);
+
     draw_waveform(painter, rect);
 
 //    time_tracker.storeElapsed();
