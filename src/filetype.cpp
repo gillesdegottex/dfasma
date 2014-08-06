@@ -79,14 +79,14 @@ QColor GetNextColor(){
     return color;
 }
 
-FileType::FileType(FILETYPE _type, const QString& _fileName, QObject * child)
+FileType::FileType(FILETYPE _type, const QString& _fileName, QObject * parent)
     : type(_type)
     , fileName(_fileName)
     , color(GetNextColor())
 {
 //    cout << "FileType::FileType: " << _fileName.toLocal8Bit().constData() << endl;
 
-    m_actionShow = new QAction("Show", child);
+    m_actionShow = new QAction("Show", parent);
     m_actionShow->setStatusTip("Show the sound in the views");
 //    m_actionShow->setShortcut(QKeySequence(Qt::CTRL+Qt::Key_H));
     m_actionShow->setCheckable(true);

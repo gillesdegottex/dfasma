@@ -34,6 +34,8 @@ using namespace Easdif;
 FTLabels::FTLabels(const QString& _fileName, QObject *parent)
     : FileType(FTLABELS, _fileName, this)
 {
+    Q_UNUSED(parent)
+
 #ifdef SUPPORT_SDIF
     // TODO load .lab files
 
