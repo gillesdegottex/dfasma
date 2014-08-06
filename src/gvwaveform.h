@@ -36,8 +36,6 @@ public:
 
     bool m_first_start;
 
-    WMainWindow* m_main;
-
     float m_selection_pressedx;
     enum CurrentAction {CANothing, CAMoving, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight, CAWaveformScale, CAWaveformDelay};
     int m_currentAction;
@@ -63,7 +61,7 @@ public:
     QAction* m_aFitViewToSoundsAmplitude;
     QMenu m_contextmenu;
 
-    explicit QGVWaveform(WMainWindow* _main);
+    explicit QGVWaveform(WMainWindow* parent);
 
     void scrollContentsBy(int dx, int dy);
     void wheelEvent(QWheelEvent* event);

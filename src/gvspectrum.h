@@ -66,15 +66,15 @@ class QGVSpectrum : public QGraphicsView
 {
     Q_OBJECT
 
-    bool m_first_start;
+    double m_minsy;
+    double m_maxsy;
 
 public:
-    explicit QGVSpectrum(WMainWindow* main);
+    explicit QGVSpectrum(WMainWindow* parent);
 
     FFTwrapper* m_fft;
     FFTResizeThread* m_fftresizethread;
 
-    WMainWindow* m_main;
     QGraphicsScene* m_scene;
 
     QMenu m_contextmenu;
@@ -124,9 +124,6 @@ public:
     QAction* m_aZoomIn;
     QAction* m_aZoomOut;
     QAction* m_aUnZoom;
-
-    double m_minsy;
-    double m_maxsy;
 
 signals:
     

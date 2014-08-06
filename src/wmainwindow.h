@@ -55,6 +55,8 @@ class WMainWindow : public QMainWindow
 {
     Q_OBJECT
 
+    static WMainWindow* sm_mainwindow;
+
     void initializeSoundSystem(float fs);
 
     void connectModes();
@@ -90,7 +92,7 @@ public:
     ~WMainWindow();
 
     Ui::WMainWindow* ui;
-    static WMainWindow* sm_mainwindow;
+    inline static WMainWindow* getMW() {return sm_mainwindow;}
 
     WDialogSettings* m_dlgSettings;
     void settingsSave();
