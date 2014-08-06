@@ -71,7 +71,7 @@ void WDialogSettings::settingsSave() {
     settings.setValue("playback/sbButterworthOrder", ui->sbButterworthOrder->value());
     settings.setValue("playback/ckAvoidClicksAddWindows", ui->ckAvoidClicksAddWindows->isChecked());
     settings.setValue("playback/sbAvoidClicksWindowDuration", ui->sbAvoidClicksWindowDuration->value());
-    WMainWindow::sm_mainwindow->settingsSave();
+    WMainWindow::getMW()->settingsSave();
 }
 void WDialogSettings::settingsClear() {
     QSettings settings;

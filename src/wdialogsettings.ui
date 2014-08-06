@@ -60,49 +60,6 @@
          </property>
         </spacer>
        </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_5">
-         <item>
-          <spacer name="horizontalSpacer">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="btnSettingsSave">
-           <property name="toolTip">
-            <string>Save current settings (general settings and all views' settings)</string>
-           </property>
-           <property name="statusTip">
-            <string>Save current settings (general settings and all views' settings)</string>
-           </property>
-           <property name="text">
-            <string>Save settings</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="btnSettingsClear">
-           <property name="toolTip">
-            <string>Reset settings to factory values (general settings and all views' settings)</string>
-           </property>
-           <property name="statusTip">
-            <string>Reset settings to factory values (general settings and all views' settings)</string>
-           </property>
-           <property name="text">
-            <string>Reset settings</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tabAudioEngine">
@@ -298,14 +255,57 @@ p, li { white-space: pre-wrap; }
     </widget>
    </item>
    <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <item>
+      <widget class="QPushButton" name="btnSettingsSave">
+       <property name="toolTip">
+        <string>Save current settings (general settings and all views' settings)</string>
+       </property>
+       <property name="statusTip">
+        <string>Save current settings (general settings and all views' settings)</string>
+       </property>
+       <property name="text">
+        <string>Save settings</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnSettingsClear">
+       <property name="toolTip">
+        <string>Reset settings to factory values (general settings and all views' settings)</string>
+       </property>
+       <property name="statusTip">
+        <string>Reset settings to factory values (general settings and all views' settings)</string>
+       </property>
+       <property name="text">
+        <string>Reset settings</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QDialogButtonBox" name="buttonBox">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="standardButtons">
+        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
