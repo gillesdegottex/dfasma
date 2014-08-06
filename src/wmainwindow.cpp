@@ -149,6 +149,12 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
         addFile(sndfiles[f]);
 }
 
+void WMainWindow::settingsSave() {
+    QSettings settings;
+    settings.setValue("qgvwaveform/m_aShowGrid", m_gvWaveform->m_aShowGrid->isChecked());
+    settings.setValue("qgvspectrum/m_aShowGrid", m_gvSpectrum->m_aShowGrid->isChecked());
+}
+
 void WMainWindow::execAbout(){
     QString curdate = QString(__DATE__)+" at "+__TIME__;
     QString txt = "\

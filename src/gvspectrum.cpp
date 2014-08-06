@@ -219,7 +219,8 @@ QGVSpectrum::QGVSpectrum(WMainWindow* main)
     m_aShowGrid = new QAction(tr("Show &grid"), this);
     m_aShowGrid->setStatusTip(tr("Show &grid"));
     m_aShowGrid->setCheckable(true);
-    m_aShowGrid->setChecked(true);
+    QSettings settings;
+    m_aShowGrid->setChecked(settings.value("qgvspectrum/m_aShowGrid", true).toBool());
     connect(m_aShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
     m_contextmenu.addAction(m_aShowGrid);
 

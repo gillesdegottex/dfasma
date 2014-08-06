@@ -58,6 +58,10 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
 
+    QCoreApplication::setOrganizationName("DFasma");
+    QCoreApplication::setOrganizationDomain("gillesdegottex.eu");
+    QCoreApplication::setApplicationName("DFasma");
+
     QStringList filestoload = QApplication::arguments();
     filestoload.removeAt(0);
 

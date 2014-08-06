@@ -22,7 +22,11 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "ui_wdialogsettings.h"
 
 #include <iostream>
+#include <QSettings>
+#include <QMessageBox>
+
 #include "ftsound.h"
+#include "wmainwindow.h"
 
 WDialogSettings::WDialogSettings(QWidget *parent) :
     QDialog(parent),
@@ -37,6 +41,13 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     connect(ui->ckAvoidClicksAddWindows, SIGNAL(toggled(bool)), this, SLOT(setCKAvoidClicksAddWindows(bool)));
     connect(ui->sbButterworthOrder, SIGNAL(valueChanged(int)), this, SLOT(setSBButterworthOrderChangeValue(int)));
     connect(ui->sbAvoidClicksWindowDuration, SIGNAL(valueChanged(double)), this, SLOT(setSBAvoidClicksWindowDuration(double)));
+    connect(ui->btnSettingsSave, SIGNAL(clicked()), this, SLOT(settingsSave()));
+    connect(ui->btnSettingsClear, SIGNAL(clicked()), this, SLOT(settingsClear()));
+
+    QSettings settings;
+    ui->sbButterworthOrder->setValue(settings.value("playback/sbButterworthOrder", 32).toInt());
+    ui->ckAvoidClicksAddWindows->setChecked(settings.value("playback/ckAvoidClicksAddWindows", false).toBool());
+    ui->sbAvoidClicksWindowDuration->setValue(settings.value("playback/sbAvoidClicksWindowDuration", 0.050).toDouble());
 }
 
 void WDialogSettings::setSBButterworthOrderChangeValue(int order) {
@@ -46,14 +57,26 @@ void WDialogSettings::setSBButterworthOrderChangeValue(int order) {
 
 void WDialogSettings::setCKAvoidClicksAddWindows(bool add) {
     FTSound::sm_playwin_use = add;
+    FTSound::setAvoidClicksWindowDuration(ui->sbAvoidClicksWindowDuration->value());
     ui->sbAvoidClicksWindowDuration->setEnabled(add);
     ui->lblAvoidClicksWindowDurationLabel->setEnabled(add);
-
-    FTSound::setAvoidClicksWindowDuration(ui->sbAvoidClicksWindowDuration->value());
 }
 
 void WDialogSettings::setSBAvoidClicksWindowDuration(double halfduration) {
     FTSound::setAvoidClicksWindowDuration(halfduration);
+}
+
+void WDialogSettings::settingsSave() {
+    QSettings settings;
+    settings.setValue("playback/sbButterworthOrder", ui->sbButterworthOrder->value());
+    settings.setValue("playback/ckAvoidClicksAddWindows", ui->ckAvoidClicksAddWindows->isChecked());
+    settings.setValue("playback/sbAvoidClicksWindowDuration", ui->sbAvoidClicksWindowDuration->value());
+    WMainWindow::sm_mainwindow->settingsSave();
+}
+void WDialogSettings::settingsClear() {
+    QSettings settings;
+    settings.clear();
+    QMessageBox::about(this, "Reset factory settings", "<p>The settings have been reset to their original values.</p><p>Please restart DFasma</p>");
 }
 
 WDialogSettings::~WDialogSettings() {

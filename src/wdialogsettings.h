@@ -43,6 +43,9 @@ public slots:
 
     void setSBButterworthOrderChangeValue(int order);
 
+    void settingsSave();
+    void settingsClear();
+
 private:
 };
 

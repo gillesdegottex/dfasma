@@ -32,6 +32,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QAudio>
 #include <QAudioDeviceInfo>
 #include <QTimer>
+#include <QSettings>
 
 #include "wdialogsettings.h"
 
@@ -92,6 +93,7 @@ public:
     static WMainWindow* sm_mainwindow;
 
     WDialogSettings* m_dlgSettings;
+    void settingsSave();
 
     // Waiting bar for operations blocking the main window
     // (The DFT resizing is NOT blocking because in a separate thread)
