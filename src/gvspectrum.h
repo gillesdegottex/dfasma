@@ -100,7 +100,7 @@ public:
     QGraphicsRectItem* m_giSelection;
     QGraphicsSimpleTextItem* m_giSelectionTxt;
     void selectionClipAndSet();
-    void clipzoom(float& h11, float& h22);
+    void clipzoom(qreal& h11, qreal& h22);
 
     void scrollContentsBy(int dx, int dy);
     void wheelEvent(QWheelEvent* event);
@@ -110,9 +110,9 @@ public:
     void mouseReleaseEvent(QMouseEvent* event);
     void keyPressEvent(QKeyEvent* event);
 
-
-    void update_cursor(QPointF p);
     void update_texts_dimensions();
+    void fixView();
+    void update_cursor(QPointF p);
     void drawBackground(QPainter* painter, const QRectF& rect);
     void draw_grid(QPainter* painter, const QRectF& rect);
 

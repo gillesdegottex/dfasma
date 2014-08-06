@@ -205,8 +205,8 @@ void QGVSpectrum::computeDFTs(){
             m_scene->invalidate();
         }
 
-        m_minsy = 20*log10(m_minsy);
-        m_maxsy = 20*log10(m_maxsy);
+        m_minsy = 20*log10(m_minsy)-3;
+        m_maxsy = 20*log10(m_maxsy)+3;
 
         m_fftresizethread->m_mutex_resizing.unlock();
     }
@@ -343,6 +343,32 @@ void QGVSpectrum::soundsChanged(){
     m_scene->update(this->sceneRect());
 }
 
+
+void QGVSpectrum::fixView() {
+//    cout << "QGVSpectrum::fixview" << endl;
+//    cout << m_scene->sceneRect().width() << " " << m_scene->sceneRect().height() << endl;
+
+    QTransform trans = transform();
+    qreal h11 = trans.m11();
+    qreal h22 = trans.m22();
+
+    qreal min11 = viewport()->rect().width()/m_scene->sceneRect().width();
+    qreal min22 = viewport()->rect().height()/m_scene->sceneRect().height();
+    qreal max11 = viewport()->rect().width()/pow(10, -20); // Clip the zoom because the plot can't be infinitely precise
+    qreal max22 = viewport()->rect().height()/pow(10, -20);// Clip the zoom because the plot can't be infinitely precise
+    if(h11<min11) h11=min11;
+    if(h11>max11) h11=max11;
+    if(h22<min22) h22=min22;
+    if(h22>max22) h22=max22;
+
+    setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+    setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
+
+    update_texts_dimensions();
+
+//    cout << "QGVSpectrum::~fixview" << endl;
+}
+
 void QGVSpectrum::resizeEvent(QResizeEvent* event){
 
 //    cout << "QGVSpectrum::resizeEvent" << endl;
@@ -364,8 +390,7 @@ void QGVSpectrum::resizeEvent(QResizeEvent* event){
 //    cout << "fixed viewrect: " << viewrect.left() << " " << viewrect.right() << " " << viewrect.top() << " " << viewrect.bottom() << endl;
 
     fitInView(viewrect);
-
-    update_texts_dimensions();
+    fixView();
     update_cursor(QPointF(-1,0));
 
 //    cout << "QGVSpectrum::~resizeEvent" << endl;
@@ -395,19 +420,16 @@ void QGVSpectrum::wheelEvent(QWheelEvent* event){
 //    std::cout << "QGVWaveform::wheelEvent " << numDegrees.y() << endl;
 
     QTransform trans = transform();
-    float h11 = trans.m11();
-    float h22 = trans.m22();
+    qreal h11 = trans.m11();
+    qreal h22 = trans.m22();
     h11 += 0.01*h11*numDegrees.y();
     h22 += 0.01*h22*numDegrees.y();
-
-    clipzoom(h11, h22);
-
     setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
     setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
+    fixView();
 
     QPointF p = mapToScene(event->pos());
     update_cursor(p);
-    update_texts_dimensions();
 
     m_aUnZoom->setEnabled(true);
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
@@ -697,21 +719,16 @@ void QGVSpectrum::update_texts_dimensions(){
 void QGVSpectrum::selectionZoomOn(){
 
     if(m_selection.width()>0 && m_selection.height()>0){
-
-        centerOn(m_selection.center());
-
-        float h11 = float(viewport()->rect().width())/m_selection.width();
-        float h22 = float(viewport()->rect().height())/m_selection.height();
-
+        qreal h11 = float(viewport()->rect().width())/m_selection.width();
+        qreal h22 = float(viewport()->rect().height())/m_selection.height();
         h11 *= 0.9;
         h22 *= 0.9;
-
-        clipzoom(h11, h22);
-
         QTransform trans = transform();
+        centerOn(m_selection.center());
         setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
 
-        update_texts_dimensions();
+        fixView();
+        update_cursor(QPointF(-1,0));
 
         m_aZoomOnSelection->setEnabled(false);
         m_aUnZoom->setEnabled(true);
@@ -720,16 +737,14 @@ void QGVSpectrum::selectionZoomOn(){
 
 void QGVSpectrum::azoomin(){
     QTransform trans = transform();
-    float h11 = trans.m11();
-    float h22 = trans.m22();
+    qreal h11 = trans.m11();
+    qreal h22 = trans.m22();
     h11 *= 1.5;
     h22 *= 1.5;
-
-    clipzoom(h11, h22);
-
     setTransformationAnchor(QGraphicsView::AnchorViewCenter);
     setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
 
+    fixView();
     update_cursor(QPointF(-1,0));
 
     m_aUnZoom->setEnabled(true);
@@ -737,18 +752,15 @@ void QGVSpectrum::azoomin(){
 }
 void QGVSpectrum::azoomout(){
     QTransform trans = transform();
-    float h11 = trans.m11();
-    float h22 = trans.m22();
+    qreal h11 = trans.m11();
+    qreal h22 = trans.m22();
     h11 /= 1.5;
     h22 /= 1.5;
-
-    clipzoom(h11, h22);
-
     setTransformationAnchor(QGraphicsView::AnchorViewCenter);
     setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
 
+    fixView();
     update_cursor(QPointF(-1,0));
-    update_texts_dimensions();
 
     m_aUnZoom->setEnabled(true);
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
@@ -756,32 +768,12 @@ void QGVSpectrum::azoomout(){
 void QGVSpectrum::aunzoom(){
 
     fitInView(QRectF(0.0, -m_maxsy, WMainWindow::getMW()->getFs()/2, -(m_minsy-m_maxsy)));
+    fixView();
 
-    float h11 = float(viewport()->rect().width())/(WMainWindow::getMW()->getFs()/2);
-    float h22 = float(viewport()->rect().height())/((m_maxsy-m_minsy));
-    clipzoom(h11, h22);
-    setTransformationAnchor(QGraphicsView::AnchorViewCenter);
-    QTransform trans = transform();
-    setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
-
-//    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-//    cout << "viewrect: " << viewrect.left() << " " << viewrect.right() << " " << viewrect.top() << " " << viewrect.bottom() << endl;
-
-    update_texts_dimensions();
+    update_cursor(QPointF(-1,0));
 
 //    m_aUnZoom->setEnabled(false);
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
-}
-
-void QGVSpectrum::clipzoom(float& h11, float& h22){
-    qreal min11 = viewport()->rect().width()/m_scene->sceneRect().width();
-    qreal min22 = viewport()->rect().height()/m_scene->sceneRect().height();
-    qreal max11 = viewport()->rect().width()/pow(10, -20); // Clip the zoom because the plot can't be infinitely precise
-    qreal max22 = viewport()->rect().height()/pow(10, -20);// Clip the zoom because the plot can't be infinitely precise
-    if(h11<min11) h11=min11;
-    if(h11>max11) h11=max11;
-    if(h22<min22) h22=min22;
-    if(h22>max22) h22=max22;
 }
 
 void QGVSpectrum::update_cursor(QPointF p){
@@ -809,11 +801,11 @@ void QGVSpectrum::update_cursor(QPointF p){
         QRectF br = m_giCursorPositionXTxt->boundingRect();
         qreal x = p.x()+1/trans.m11();
         x = min(x, viewrect.right()-br.width()/trans.m11());
-
         m_giCursorPositionXTxt->setText(QString("%1Hz").arg(p.x()));
         m_giCursorPositionXTxt->setPos(x, viewrect.top());
 
         m_giCursorPositionYTxt->setText(QString("%1dB").arg(-p.y()));
+        br = m_giCursorPositionYTxt->boundingRect();
         m_giCursorPositionYTxt->setPos(viewrect.right()-br.width()/trans.m11(), p.y()-br.height()/trans.m22());
     }
 }
@@ -858,8 +850,8 @@ void QGVSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
         double a = WMainWindow::getMW()->ftsnds[fi]->m_ampscale;
         std::complex<WAVTYPE>* data = WMainWindow::getMW()->ftsnds[fi]->m_dft.data();
         int kmin = std::max(0, int(dftlen*rect.left()/WMainWindow::getMW()->getFs()));
-        int kmax = std::min(dftlen/2+1, int(dftlen*rect.right()/WMainWindow::getMW()->getFs()));
-        for(int k=kmin; k<kmax; k++){
+        int kmax = std::min(dftlen/2+1, int(1+dftlen*rect.right()/WMainWindow::getMW()->getFs()));
+        for(int k=kmin; k<=kmax; k++){
             double x = WMainWindow::getMW()->getFs()*k/dftlen;
             double y = 20*log10(a*abs(*(data+k)));
             painter->drawLine(QLineF(prevx, -prevy, x, -y));
