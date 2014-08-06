@@ -407,6 +407,7 @@ void QGVSpectrum::wheelEvent(QWheelEvent* event){
 
     QPointF p = mapToScene(event->pos());
     update_cursor(p);
+    update_texts_dimensions();
 
     m_aUnZoom->setEnabled(true);
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
