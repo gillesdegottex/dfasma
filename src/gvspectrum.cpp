@@ -222,7 +222,7 @@ QGVSpectrum::QGVSpectrum(WMainWindow* parent)
     m_scene = new QGraphicsScene(this);
     setScene(m_scene);
     m_scene->setSceneRect(0.0, -10, WMainWindow::getMW()->getFs()/2, 225);
-    m_minsy = -225;
+    m_minsy = -215;
     m_maxsy = 10;
 
     m_aShowGrid = new QAction(tr("Show &grid"), this);
@@ -747,14 +747,24 @@ void QGVSpectrum::azoomout(){
     setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
 
     update_cursor(QPointF(-1,0));
+    update_texts_dimensions();
 
     m_aUnZoom->setEnabled(true);
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
 }
 void QGVSpectrum::aunzoom(){
 
-    QRect scenerect(1000, -m_maxsy-3, WMainWindow::getMW()->getFs()/2, -(m_minsy-m_maxsy-6));
-    fitInView(scenerect);
+    fitInView(QRectF(0.0, -m_maxsy, WMainWindow::getMW()->getFs()/2, -(m_minsy-m_maxsy)));
+
+    float h11 = float(viewport()->rect().width())/(WMainWindow::getMW()->getFs()/2);
+    float h22 = float(viewport()->rect().height())/((m_maxsy-m_minsy));
+    clipzoom(h11, h22);
+    setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+    QTransform trans = transform();
+    setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
+
+//    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+//    cout << "viewrect: " << viewrect.left() << " " << viewrect.right() << " " << viewrect.top() << " " << viewrect.bottom() << endl;
 
     update_texts_dimensions();
 
