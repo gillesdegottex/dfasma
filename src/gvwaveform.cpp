@@ -796,14 +796,17 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
             // std::cout << nleft << " " << nright << " " << WMainWindow::getMW()->snds[0]->wavtoplay.size()-1 << endl;
 
             // Draw a line between each sample value
-            WAVTYPE dt = WAVTYPE(1)/WMainWindow::getMW()->getFs();
-            WAVTYPE prevx = WAVTYPE(nleft)/WMainWindow::getMW()->getFs() + WAVTYPE(WMainWindow::getMW()->ftsnds[fi]->m_delay)/WMainWindow::getMW()->getFs();
-            WAVTYPE currx = WAVTYPE(nleft+1)/WMainWindow::getMW()->getFs();
+            double fs = WMainWindow::getMW()->getFs();
+            WAVTYPE dt = WAVTYPE(1)/fs;
+            WAVTYPE prevx = WAVTYPE(nleft)/fs;
+            WAVTYPE currx = prevx;
             WAVTYPE y;
             if(nleft>=0 && nleft<int(WMainWindow::getMW()->ftsnds[fi]->wavtoplay->size()))
                 y = -a*(*(WMainWindow::getMW()->ftsnds[fi]->wavtoplay))[nleft];
             else
                 y = 0.0;
+
+//            cout << prevx << endl;
 
             WAVTYPE prevy = y;
             // TODO prob appear with very long waveforms
@@ -811,6 +814,8 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
             int wnmax = WMainWindow::getMW()->ftsnds[fi]->wavtoplay->size();
             WAVTYPE* data = WMainWindow::getMW()->ftsnds[fi]->wavtoplay->data();
             for(int n=nleft+1; n<=nright; ++n){
+                currx = prevx + dt;
+
                 if(wn>=0 && wn<wnmax)
                     y = -a*(*(data+wn));
                 else
@@ -820,7 +825,6 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
                 wn++;
                 prevx = currx;
-                currx += dt;
                 prevy = y;
             }
 
@@ -894,6 +898,31 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
         // Tell that the waveform is simplified
         WMainWindow::getMW()->ui->lblInfoTxt->setText("Quick plot using simplified waveform");
+    }
+
+    // Plot the window
+    if(WMainWindow::getMW()->m_gvSpectrum->m_win.size()>0) {
+        QPen outlinePen(QColor(192,192,192));
+        outlinePen.setWidth(0);
+        painter->setPen(outlinePen);
+        painter->setBrush(QBrush(QColor(192,192,192)));
+
+        double winmax = 0.0;
+        for(size_t n=0; n<WMainWindow::getMW()->m_gvSpectrum->m_win.size(); n++)
+            winmax = std::max(winmax, WMainWindow::getMW()->m_gvSpectrum->m_win[n]);
+
+        winmax = m_ampzoom/winmax;
+
+        double prevx = m_selection.left();
+        double prevy = WMainWindow::getMW()->m_gvSpectrum->m_win[0];
+        for(size_t n=1; n<WMainWindow::getMW()->m_gvSpectrum->m_win.size(); n++) {
+            double x = m_selection.left() + n/WMainWindow::getMW()->getFs();
+            double y = WMainWindow::getMW()->m_gvSpectrum->m_win[n];
+            y *= winmax;
+            painter->drawLine(QLineF(prevx, -prevy, x, -y));
+            prevx = x;
+            prevy = y;
+        }
     }
 
     // Plot labels
