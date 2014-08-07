@@ -69,6 +69,8 @@ class QGVSpectrum : public QGraphicsView
     double m_minsy;
     double m_maxsy;
 
+    QRectF removeHiddenMargin(const QRectF& sceneRect);
+
 public:
     explicit QGVSpectrum(WMainWindow* parent);
 
@@ -93,7 +95,9 @@ public:
     QGraphicsSimpleTextItem* m_giCursorPositionYTxt;
 
     QPointF m_selection_pressedp;
-    enum CurrentAction {CANothing, CAMoving, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight, CAModifSelectionTop, CAModifSelectionBottom, CAWaveformScale};
+    QPointF m_pressed_mouseinviewport;
+    QRectF m_pressed_viewrect;
+    enum CurrentAction {CANothing, CAMoving, CAZooming, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight, CAModifSelectionTop, CAModifSelectionBottom, CAWaveformScale};
     int m_currentAction;
 
     QRectF m_selection, m_mouseSelection;

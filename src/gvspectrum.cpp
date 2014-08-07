@@ -378,20 +378,15 @@ void QGVSpectrum::resizeEvent(QResizeEvent* event){
     if(viewrect.width()==0 && viewrect.height()==0)
         viewrect = m_scene->sceneRect();
 
-//    cout << "old viewrect: " << viewrect.left() << " " << viewrect.right() << " " << viewrect.top() << " " << viewrect.bottom() << endl;
-
-//    cout << "scene rect: " << m_scene->sceneRect().left() << " " << m_scene->sceneRect().right() << " " << m_scene->sceneRect().top() << " " << m_scene->sceneRect().bottom() << endl;
-
     if(viewrect.left()<m_scene->sceneRect().left()) viewrect.setLeft(m_scene->sceneRect().left());
     if(viewrect.right()>m_scene->sceneRect().right()) viewrect.setRight(m_scene->sceneRect().right());
     if(viewrect.top()<m_scene->sceneRect().top()) viewrect.setTop(m_scene->sceneRect().top());
     if(viewrect.bottom()>m_scene->sceneRect().bottom()) viewrect.setBottom(m_scene->sceneRect().bottom());
 
-//    cout << "fixed viewrect: " << viewrect.left() << " " << viewrect.right() << " " << viewrect.top() << " " << viewrect.bottom() << endl;
-
-    fitInView(viewrect);
+    fitInView(removeHiddenMargin(viewrect));
     fixView();
     update_cursor(QPointF(-1,0));
+    m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
 
 //    cout << "QGVSpectrum::~resizeEvent" << endl;
 }
@@ -489,7 +484,7 @@ void QGVSpectrum::mousePressEvent(QMouseEvent* event){
         }
         else if(WMainWindow::getMW()->ui->actionEditMode->isChecked()){
             if(event->modifiers().testFlag(Qt::ShiftModifier)){
-                // TODO
+//                 TODO
             }
             else{
                 // When scaling the waveform
@@ -499,13 +494,31 @@ void QGVSpectrum::mousePressEvent(QMouseEvent* event){
             }
         }
     }
-    else if(event->buttons()&Qt::RightButton){
-        QPoint posglobal = mapToGlobal(mapFromScene(p)+QPoint(0,0));
-        m_contextmenu.exec(posglobal);
+    else if(event->buttons()&Qt::RightButton) {
+        if (event->modifiers().testFlag(Qt::ControlModifier)) {
+            setCursor(Qt::CrossCursor);
+            m_currentAction = CAZooming;
+            m_selection_pressedp = p;
+            m_pressed_mouseinviewport = mapFromScene(p);
+            m_pressed_viewrect = mapToScene(viewport()->rect()).boundingRect();
+        }
+        else {
+            QPoint posglobal = mapToGlobal(mapFromScene(p)+QPoint(0,0));
+            m_contextmenu.exec(posglobal);
+        }
     }
 
     QGraphicsView::mousePressEvent(event);
 //    std::cout << "~QGVWaveform::mousePressEvent " << p.x() << endl;
+}
+
+// Remove hard coded margin (Bug 11945)
+// See: https://bugreports.qt-project.org/browse/QTBUG-11945
+QRectF QGVSpectrum::removeHiddenMargin(const QRectF& sceneRect){
+    const int bugMargin = 2;
+    const double mx = sceneRect.width()/viewport()->size().width()*bugMargin;
+    const double my = sceneRect.height()/viewport()->size().height()*bugMargin;
+    return sceneRect.adjusted(mx, my, -mx, -my);
 }
 
 void QGVSpectrum::mouseMoveEvent(QMouseEvent* event){
@@ -520,6 +533,28 @@ void QGVSpectrum::mouseMoveEvent(QMouseEvent* event){
     if(m_currentAction==CAMoving) {
         // When scrolling the waveform
         update_cursor(QPointF(-1,0));
+    }
+    else if(m_currentAction==CAZooming) {
+        double dx = -(event->pos()-m_pressed_mouseinviewport).x()/100.0;
+        double dy = (event->pos()-m_pressed_mouseinviewport).y()/100.0;
+
+        QRectF newrect = m_pressed_viewrect;
+
+        newrect.setLeft(m_selection_pressedp.x()-(m_selection_pressedp.x()-m_pressed_viewrect.left())*exp(dx));
+        newrect.setRight(m_selection_pressedp.x()+(m_pressed_viewrect.right()-m_selection_pressedp.x())*exp(dx));
+
+        newrect.setTop(m_selection_pressedp.y()-(m_selection_pressedp.y()-m_pressed_viewrect.top())*exp(dy));
+        newrect.setBottom(m_selection_pressedp.y()+(m_pressed_viewrect.bottom()-m_selection_pressedp.y())*exp(dy));
+
+        fitInView(removeHiddenMargin(newrect));
+
+        fixView();
+
+        QPointF p = mapToScene(event->pos());
+        update_cursor(p);
+
+        m_aUnZoom->setEnabled(true);
+        m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
     }
     else if(m_currentAction==CAModifSelectionLeft){
         m_mouseSelection.setLeft(p.x()-m_selection_pressedp.x());
@@ -708,7 +743,6 @@ void QGVSpectrum::update_texts_dimensions(){
     // Cursor
     m_giCursorPositionXTxt->setTransform(txttrans);
     m_giCursorPositionYTxt->setTransform(txttrans);
-//    m_giCursorPositionXTxt->setPos(p.x()+12*trans.m11(), p.y()+12*trans.m22());
 
     // Selection
     QRectF br = m_giSelectionTxt->boundingRect();
@@ -719,17 +753,14 @@ void QGVSpectrum::update_texts_dimensions(){
 void QGVSpectrum::selectionZoomOn(){
 
     if(m_selection.width()>0 && m_selection.height()>0){
-        qreal h11 = float(viewport()->rect().width())/m_selection.width();
-        qreal h22 = float(viewport()->rect().height())/m_selection.height();
-        h11 *= 0.9;
-        h22 *= 0.9;
-        QTransform trans = transform();
-        centerOn(m_selection.center());
-        setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
-
+        QRectF zoomonrect = m_selection;
+        QRectF adj = mapToScene(QRect(0,0,10,10)).boundingRect();
+        cout << adj.width() << " " << adj.height() << endl;
+        zoomonrect.adjust(-adj.width(), -adj.height(), adj.width(), adj.height());
+        fitInView(zoomonrect);
         fixView();
-        update_cursor(QPointF(-1,0));
 
+        update_cursor(QPointF(-1,0));
         m_aZoomOnSelection->setEnabled(false);
         m_aUnZoom->setEnabled(true);
     }
@@ -743,10 +774,9 @@ void QGVSpectrum::azoomin(){
     h22 *= 1.5;
     setTransformationAnchor(QGraphicsView::AnchorViewCenter);
     setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
-
     fixView();
-    update_cursor(QPointF(-1,0));
 
+    update_cursor(QPointF(-1,0));
     m_aUnZoom->setEnabled(true);
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
 }
@@ -758,21 +788,19 @@ void QGVSpectrum::azoomout(){
     h22 /= 1.5;
     setTransformationAnchor(QGraphicsView::AnchorViewCenter);
     setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
-
     fixView();
-    update_cursor(QPointF(-1,0));
 
+    update_cursor(QPointF(-1,0));
     m_aUnZoom->setEnabled(true);
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
 }
 void QGVSpectrum::aunzoom(){
 
-    fitInView(QRectF(0.0, -m_maxsy, WMainWindow::getMW()->getFs()/2, -(m_minsy-m_maxsy)));
+    fitInView(removeHiddenMargin(QRectF(0.0, -m_maxsy, WMainWindow::getMW()->getFs()/2, -(m_minsy-m_maxsy))));
     fixView();
 
     update_cursor(QPointF(-1,0));
-
-//    m_aUnZoom->setEnabled(false);
+    m_aUnZoom->setEnabled(false);
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
 }
 

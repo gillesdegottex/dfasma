@@ -327,12 +327,30 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
         }
     }
     else if(event->buttons()&Qt::RightButton){
-        QPoint posglobal = mapToGlobal(mapFromScene(p)+QPoint(0,0));
-        m_contextmenu.exec(posglobal);
+        if (event->modifiers().testFlag(Qt::ControlModifier)) {
+            setCursor(Qt::CrossCursor);
+            m_currentAction = CAZooming;
+            m_selection_pressedx = p.x();
+            m_pressed_mouseinviewport = mapFromScene(p);
+            m_pressed_scenerect = mapToScene(viewport()->rect()).boundingRect();
+        }
+        else {
+            QPoint posglobal = mapToGlobal(event->pos()+QPoint(0,0));
+            m_contextmenu.exec(posglobal);
+        }
     }
 
     QGraphicsView::mousePressEvent(event);
 //    std::cout << "~QGVWaveform::mousePressEvent " << p.x() << endl;
+}
+
+// Remove hard coded margin (Bug 11945)
+// See: https://bugreports.qt-project.org/browse/QTBUG-11945
+QRectF QGVWaveform::removeHiddenMargin(const QRectF& sceneRect){
+    const int bugMargin = 2;
+    const double mx = sceneRect.width()/viewport()->size().width()*bugMargin;
+    const double my = sceneRect.height()/viewport()->size().height()*bugMargin;
+    return sceneRect.adjusted(mx, my, -mx, -my);
 }
 
 void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
@@ -346,6 +364,30 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
         // When scrolling the waveform
         update_cursor(-1);
         QGraphicsView::mouseMoveEvent(event);
+    }
+    else if(m_currentAction==CAZooming) {
+        double dx = -(event->pos()-m_pressed_mouseinviewport).x()/100.0;
+
+        QRectF newrect = m_pressed_scenerect;
+
+        if(newrect.width()*exp(dx)<(10*1.0/WMainWindow::getMW()->getFs()))
+            dx = log((10*1.0/WMainWindow::getMW()->getFs())/newrect.width());
+
+        newrect.setLeft(m_selection_pressedx-(m_selection_pressedx-m_pressed_scenerect.left())*exp(dx));
+        newrect.setRight(m_selection_pressedx+(m_pressed_scenerect.right()-m_selection_pressedx)*exp(dx));
+
+        if(newrect.left()<m_scene->sceneRect().left())
+            newrect.setLeft(m_scene->sceneRect().left());
+        if(newrect.right()>m_scene->sceneRect().right())
+            newrect.setRight(m_scene->sceneRect().right());
+
+        fitInView(removeHiddenMargin(newrect));
+
+        QPointF p = mapToScene(event->pos());
+        update_cursor(p.x());
+
+        m_aUnZoom->setEnabled(true);
+        m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
     }
     else if(m_currentAction==CAModifSelectionLeft){
         m_mouseSelection.setLeft(p.x()-m_selection_pressedx);
