@@ -87,6 +87,7 @@ public:
 signals:
 
 public slots:
+    void settingsSave();
     void soundsChanged();
     void azoomin();
     void azoomout();

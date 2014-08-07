@@ -150,9 +150,8 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 }
 
 void WMainWindow::settingsSave() {
-    QSettings settings;
-    settings.setValue("qgvwaveform/m_aShowGrid", m_gvWaveform->m_aShowGrid->isChecked());
-    settings.setValue("qgvspectrum/m_aShowGrid", m_gvSpectrum->m_aShowGrid->isChecked());
+    m_gvSpectrum->settingsSave();
+    m_gvWaveform->settingsSave();
 }
 
 void WMainWindow::execAbout(){

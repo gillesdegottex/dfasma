@@ -160,6 +160,11 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     update_cursor(-1);
 }
 
+void QGVWaveform::settingsSave() {
+    QSettings settings;
+    settings.setValue("qgvwaveform/m_aShowGrid", m_aShowGrid->isChecked());
+}
+
 void QGVWaveform::fitViewToSoundsAmplitude(){
     if(WMainWindow::getMW()->ftsnds.size()>0){
         qreal maxwavmaxamp = 0.0;
@@ -199,7 +204,7 @@ void QGVWaveform::resizeEvent(QResizeEvent* event){
 
 //    cout << "fixed viewrect: " << viewrect.left() << " " << viewrect.right() << " " << viewrect.top() << " " << viewrect.bottom() << endl;
 
-    fitInView(viewrect);
+    fitInView(removeHiddenMargin(viewrect));
 
     update_cursor(-1);
 

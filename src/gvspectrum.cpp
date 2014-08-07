@@ -22,6 +22,8 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
+#include "gvspectrumwdialogsettings.h"
+#include "ui_gvspectrumwdialogsettings.h"
 #include "gvwaveform.h"
 #include "ftsound.h"
 #include "ftfzero.h"
@@ -141,16 +143,24 @@ void QGVSpectrum::setWindowRange(double tstart, double tend){
     if(m_nl==m_nr) return;
 
     m_winlen = m_nr-m_nl+1;
+
+    updateDFTSettings();
+}
+
+void QGVSpectrum::updateDFTSettings(){
+
+    updateSceneRect();
+
     if(m_winlen<2) return;
 
-    m_win = sigproc::hann(m_winlen); // Allow choice with blackman, no-sidelob-window, etc.
+    m_win = sigproc::hann(m_winlen);
     double winsum = 0.0;
     for(int n=0; n<m_winlen; n++)
         winsum += m_win[n];
     for(int n=0; n<m_winlen; n++)
         m_win[n] /= winsum;
 
-    int dftlen = pow(2, std::ceil(log2(float(m_winlen)))+m_sbDFTOverSampFactor->value());
+    int dftlen = pow(2, std::ceil(log2(float(m_winlen)))+m_dlgSettings->ui->sbSpectrumOversamplingFactor->value());
 
     m_fftresizethread->resize(dftlen);
 
@@ -207,6 +217,10 @@ void QGVSpectrum::computeDFTs(){
 
         m_minsy = 20*log10(m_minsy)-3;
         m_maxsy = 20*log10(m_maxsy)+3;
+        if(m_minsy<m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value())
+            m_minsy=m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value();
+        if(m_maxsy>m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value())
+            m_maxsy=m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value();
 
         m_fftresizethread->m_mutex_resizing.unlock();
     }
@@ -219,25 +233,22 @@ QGVSpectrum::QGVSpectrum(WMainWindow* parent)
     : QGraphicsView(parent)
     , m_winlen(0)
 {
+    m_dlgSettings = new GVSpectrumWDialogSettings(this);
+
     m_scene = new QGraphicsScene(this);
     setScene(m_scene);
-    m_scene->setSceneRect(0.0, -10, WMainWindow::getMW()->getFs()/2, 225);
-    m_minsy = -215;
-    m_maxsy = 10;
+
+    // Load the settings
+    QSettings settings;
+    m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->setValue(settings.value("qgvspectrum/sbSpectrumAmplitudeRangeMin", -215).toInt());
+    m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->setValue(settings.value("qgvspectrum/sbSpectrumAmplitudeRangeMax", 10).toInt());
+    m_dlgSettings->ui->sbSpectrumOversamplingFactor->setValue(settings.value("qgvspectrum/sbSpectrumOversamplingFactor", 1).toInt());
 
     m_aShowGrid = new QAction(tr("Show &grid"), this);
     m_aShowGrid->setStatusTip(tr("Show &grid"));
     m_aShowGrid->setCheckable(true);
-    QSettings settings;
     m_aShowGrid->setChecked(settings.value("qgvspectrum/m_aShowGrid", true).toBool());
     connect(m_aShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
-    m_contextmenu.addAction(m_aShowGrid);
-
-    m_sbDFTOverSampFactor = new QSpinBox(&m_contextmenu);
-    m_sbDFTOverSampFactor->setMinimum(0);
-    m_sbDFTOverSampFactor->setValue(2);
-    m_sbDFTOverSampFactor->hide(); // TODO Add somewhere
-//    m_contextmenu.addAction("Properties");
 
     m_fft = new FFTwrapper();
     m_fftresizethread = new FFTResizeThread(m_fft, this);
@@ -333,16 +344,47 @@ QGVSpectrum::QGVSpectrum(WMainWindow* parent)
 
     connect(m_fftresizethread, SIGNAL(fftResized(int,int)), this, SLOT(computeDFTs()));
     connect(m_fftresizethread, SIGNAL(fftResizing(int,int)), this, SLOT(fftResizing(int,int)));
+
+    m_minsy = -std::numeric_limits<double>::infinity();
+    m_maxsy = std::numeric_limits<double>::infinity();
+    updateSceneRect();
+
+    // Build the context menu
+    m_contextmenu.addAction(m_aShowGrid);
+    m_contextmenu.addSeparator();
+    m_aShowProperties = new QAction(tr("&Properties"), this);
+    m_aShowProperties->setStatusTip(tr("Open the properties configuration panel of the spectrum view"));
+    m_contextmenu.addAction(m_aShowProperties);
+    connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
+    connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(updateSceneRect()));
+    connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(updateDFTSettings()));
+}
+
+void QGVSpectrum::settingsSave() {
+    QSettings settings;
+    settings.setValue("qgvspectrum/m_aShowGrid", m_aShowGrid->isChecked());
+    settings.setValue("qgvspectrum/sbSpectrumOversamplingFactor", m_dlgSettings->ui->sbSpectrumOversamplingFactor->value());
+    settings.setValue("qgvspectrum/sbSpectrumAmplitudeRangeMin", m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value());
+    settings.setValue("qgvspectrum/sbSpectrumAmplitudeRangeMax", m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value());
+}
+
+void QGVSpectrum::updateSceneRect() {
+    m_scene->setSceneRect(0.0, -m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value(), WMainWindow::getMW()->getFs()/2, (m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value()-m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value()));
+
+    if(m_minsy<m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value())
+        m_minsy=m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value();
+    if(m_maxsy>m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value())
+        m_maxsy=m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value();
+
+    fixView();
 }
 
 void QGVSpectrum::soundsChanged(){
     if(WMainWindow::getMW()->ftsnds.size()>0){
-        m_scene->setSceneRect(0.0, -10, WMainWindow::getMW()->getFs()/2, 225);
         computeDFTs();
     }
-    m_scene->update(this->sceneRect());
+    m_scene->update();
 }
-
 
 void QGVSpectrum::fixView() {
 //    cout << "QGVSpectrum::fixview" << endl;

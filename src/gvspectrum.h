@@ -30,8 +30,10 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QMenu>
 
 #include "wmainwindow.h"
-#include "../external/FFTwrapper.h"
 
+#include "external/FFTwrapper.h"
+
+class GVSpectrumWDialogSettings;
 class MainWindow;
 class QSpinBox;
 
@@ -74,20 +76,20 @@ class QGVSpectrum : public QGraphicsView
 public:
     explicit QGVSpectrum(WMainWindow* parent);
 
+    GVSpectrumWDialogSettings* m_dlgSettings;
+
     FFTwrapper* m_fft;
     FFTResizeThread* m_fftresizethread;
 
     QGraphicsScene* m_scene;
 
     QMenu m_contextmenu;
-    QSpinBox* m_sbDFTOverSampFactor;
 
     int m_winlen;
     unsigned int m_nl;
     unsigned int m_nr;
-    std::vector<double> m_win;
+    std::vector<FFTTYPE> m_win;
     std::vector<FFTTYPE> m_filterresponse;
-
 
     QGraphicsLineItem* m_giCursorHoriz;
     QGraphicsLineItem* m_giCursorVert;
@@ -128,13 +130,17 @@ public:
     QAction* m_aZoomIn;
     QAction* m_aZoomOut;
     QAction* m_aUnZoom;
+    QAction* m_aShowProperties;
 
 signals:
     
 public slots:
+    void settingsSave();
     void soundsChanged();
 
     void setWindowRange(double tstart, double tend);
+    void updateSceneRect();
+    void updateDFTSettings();
     void computeDFTs();
     void fftResizing(int prevSize, int newSize);
 

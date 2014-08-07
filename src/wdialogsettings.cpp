@@ -76,7 +76,7 @@ void WDialogSettings::settingsSave() {
 void WDialogSettings::settingsClear() {
     QSettings settings;
     settings.clear();
-    QMessageBox::about(this, "Reset factory settings", "<p>The settings have been reset to their original values.</p><p>Please restart DFasma</p>");
+    QMessageBox::information(this, "Reset factory settings", "<p>The settings have been reset to their original values.</p><p>Please restart DFasma</p>");
 }
 
 WDialogSettings::~WDialogSettings() {

@@ -87,6 +87,9 @@ private slots:
     void execAbout();
     void fileSelectionChanged();
 
+public slots:
+    void settingsSave();
+
 public:
     explicit WMainWindow(QStringList sndfiles, QWidget* parent=0);
     ~WMainWindow();
@@ -95,7 +98,6 @@ public:
     inline static WMainWindow* getMW() {return sm_mainwindow;}
 
     WDialogSettings* m_dlgSettings;
-    void settingsSave();
 
     // Waiting bar for operations blocking the main window
     // (The DFT resizing is NOT blocking because in a separate thread)
