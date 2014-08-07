@@ -793,11 +793,10 @@ void QGVSpectrum::update_texts_dimensions(){
 }
 
 void QGVSpectrum::selectionZoomOn(){
-
     if(m_selection.width()>0 && m_selection.height()>0){
         QRectF zoomonrect = m_selection;
         QRectF adj = mapToScene(QRect(0,0,10,10)).boundingRect();
-        cout << adj.width() << " " << adj.height() << endl;
+//        cout << adj.width() << " " << adj.height() << endl;
         zoomonrect.adjust(-adj.width(), -adj.height(), adj.width(), adj.height());
         fitInView(zoomonrect);
         fixView();
