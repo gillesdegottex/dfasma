@@ -147,7 +147,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
     if(tstart==0.0 && tstop==0.0){
         m_start = 0;
         m_pos = m_start;
-        m_end = wavtoplay->size()-1;
+        m_end = wav.size()-1;
     }
     else{
         m_start = int(0.5+tstart*fs);
@@ -156,10 +156,10 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
     }
 
     if(m_start<0) m_start=0;
-    if(m_start>wavtoplay->size()-1) m_start=wavtoplay->size()-1;
+    if(m_start>wav.size()-1) m_start=wav.size()-1;
 
     if(m_end<0) m_end=0;
-    if(m_end>wavtoplay->size()-1) m_end=wavtoplay->size()-1;
+    if(m_end>wav.size()-1) m_end=wav.size()-1;
 
 
     // Fix frequency cutoffs
@@ -229,6 +229,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
                 WMainWindow::getMW()->ui->statusBar->repaint();
 
                 cout << "HP-filtering (cutoff=" << fstart << ", size=" << wavfiltered.size() << ")" << endl;
+
                 for(size_t bi=0; bi<num.size(); bi++)
                     sigproc::filtfilt<WAVTYPE>(wavfiltered, num[bi], den[bi], wavfiltered, m_start, m_end);
 
