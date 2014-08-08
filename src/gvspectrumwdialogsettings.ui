@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>466</width>
-    <height>152</height>
+    <width>467</width>
+    <height>223</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -154,6 +154,45 @@
          <string>Hamming</string>
         </property>
        </item>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Maximum time spent when resizing the FFT</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QDoubleSpinBox" name="sbFFTW3ResizingMaxTimeSpent">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="suffix">
+        <string>s</string>
+       </property>
+       <property name="decimals">
+        <number>1</number>
+       </property>
+       <property name="singleStep">
+        <double>0.100000000000000</double>
+       </property>
+       <property name="value">
+        <double>1.000000000000000</double>
+       </property>
       </widget>
      </item>
     </layout>
