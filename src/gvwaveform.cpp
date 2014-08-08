@@ -51,17 +51,17 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     setScene(m_scene);
     m_scene->setSceneRect(-1.0/WMainWindow::getMW()->getFs(), -1.05*m_ampzoom, WMainWindow::getMW()->getMaxDuration()+1.0/WMainWindow::getMW()->getFs(), 2.1*m_ampzoom);
 
+    QSettings settings;
+
     // Grid - Prepare the pens and fonts
     m_gridPen.setColor(QColor(192,192,192));
     m_gridPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
     m_gridFontPen.setColor(QColor(128,128,128));
     m_gridFontPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
     m_gridFont.setPointSize(8);
-
     m_aShowGrid = new QAction(tr("Show &grid"), this);
     m_aShowGrid->setStatusTip(tr("Show &grid"));
     m_aShowGrid->setCheckable(true);
-    QSettings settings;
     m_aShowGrid->setChecked(settings.value("qgvwaveform/m_aShowGrid", true).toBool());
     connect(m_aShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
     m_contextmenu.addAction(m_aShowGrid);
@@ -83,16 +83,39 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_currentAction = CANothing;
     m_giSelection = new QGraphicsRectItem();
     m_giSelection->hide();
-    QPen selectionPen(QColor(64, 64, 64));
+    QPen selectionPen(QColor(32, 32, 32));
     selectionPen.setWidth(0);
     QBrush selectionBrush(QColor(192, 192, 192));
     m_giSelection->setPen(selectionPen);
     m_giSelection->setBrush(selectionBrush);
-    m_giSelection->setOpacity(0.5);
+    m_giSelection->setOpacity(0.25);
     m_mouseSelection = QRectF(0, -1, 0, 2);
     m_selection = m_mouseSelection;
     m_scene->addItem(m_giSelection);
     WMainWindow::getMW()->ui->lblSelectionTxt->setText("No selection");
+    m_giFilteredSelection = new QGraphicsRectItem();
+    m_giFilteredSelection->hide();
+    QPen filteredSelectionPen(QColor(192, 192, 192));
+    filteredSelectionPen.setWidth(0);
+    m_giFilteredSelection->setPen(filteredSelectionPen);
+    QBrush filteredSelectionBrush(QColor(200, 200, 200));
+    m_giFilteredSelection->setBrush(filteredSelectionBrush);
+    m_giFilteredSelection->setOpacity(0.25);
+    m_scene->addItem(m_giFilteredSelection);
+
+    // Window
+    m_giWindow = new QGraphicsPathItem();
+    QPen pen(QColor(0,0,0));
+    pen.setWidth(0);
+    m_giWindow->setPen(pen);
+    m_giWindow->setOpacity(0.25);
+    m_scene->addItem(m_giWindow);
+    m_aShowWindow = new QAction(tr("Show window"), this);
+    m_aShowWindow->setStatusTip(tr("Show window"));
+    m_aShowWindow->setCheckable(true);
+    m_aShowWindow->setChecked(settings.value("qgvwaveform/m_aShowWindow", true).toBool());
+    connect(m_aShowWindow, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
+    m_contextmenu.addAction(m_aShowWindow);
 
     // Play Cursor
     m_giPlayCursor = new QGraphicsLineItem(0, -1, 0, 1);
@@ -148,7 +171,7 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     connect(m_aSelectionClear, SIGNAL(triggered()), this, SLOT(selectionClear()));
     waveformToolBar->addAction(m_aSelectionClear);
     WMainWindow::getMW()->ui->lWaveformToolBar->addWidget(waveformToolBar);
-    m_aFitViewToSoundsAmplitude = new QAction(tr("Fit view to max amplitude of all sounds"), this);
+    m_aFitViewToSoundsAmplitude = new QAction(tr("Fit the view's amplitude to the max value"), this);
     m_aFitViewToSoundsAmplitude->setStatusTip(tr("Change the amplitude zoom so that to fit to the maximum of amplitude among all sounds"));
     connect(m_aFitViewToSoundsAmplitude, SIGNAL(triggered()), this, SLOT(fitViewToSoundsAmplitude()));
     m_contextmenu.addAction(m_aFitViewToSoundsAmplitude);
@@ -481,6 +504,13 @@ void QGVWaveform::mouseReleaseEvent(QMouseEvent* event){
 
     m_currentAction = CANothing;
 
+    // Order the selection to avoid negative width
+    if(m_mouseSelection.right()<m_mouseSelection.left()){
+        float tmp = m_mouseSelection.left();
+        m_mouseSelection.setLeft(m_mouseSelection.right());
+        m_mouseSelection.setRight(tmp);
+    }
+
     if(WMainWindow::getMW()->ui->actionSelectionMode->isChecked()){
         if(event->modifiers().testFlag(Qt::ShiftModifier)){
             setCursor(Qt::OpenHandCursor);
@@ -533,10 +563,8 @@ void QGVWaveform::selectionClear(){
 }
 
 void QGVWaveform::selectionClipAndSet(QRectF selection){
-//    cout << "QGVWaveform::selectionClipAndSet " << selection.width() << endl;
 
-//    if(mouseSelection.left()<-1.0/WMainWindow::getMW()->getFs()) mouseSelection.setLeft(-1.0/WMainWindow::getMW()->getFs());
-//    if(mouseSelection.right()>WMainWindow::getMW()->getMaxDuration()) mouseSelection.setRight(WMainWindow::getMW()->getMaxDuration());
+    double fs = WMainWindow::getMW()->getFs();
 
     // Order the selection to avoid negative width
     if(selection.right()<selection.left()){
@@ -545,25 +573,28 @@ void QGVWaveform::selectionClipAndSet(QRectF selection){
         selection.setRight(tmp);
     }
 
+    size_t prevwinlen = WMainWindow::getMW()->m_gvSpectrum->m_win.size();
     m_selection = selection;
 
-    // Clip selection at samples time
-    m_selection.setLeft((int(0.5+m_selection.left()*WMainWindow::getMW()->getFs()))/WMainWindow::getMW()->getFs());
+    // Clip selection at exact samples time
+    m_selection.setLeft((int(0.5+m_selection.left()*fs))/fs);
     if(selection.width()==0)
         m_selection.setRight(m_selection.left());
     else
-        m_selection.setRight((int(0.5+m_selection.right()*WMainWindow::getMW()->getFs()))/WMainWindow::getMW()->getFs());
+        m_selection.setRight((int(0.5+m_selection.right()*fs))/fs);
 
     if(m_selection.left()<0) m_selection.setLeft(0.0);
+    if(m_selection.left()>WMainWindow::getMW()->getMaxLastSampleTime()-1.0/fs) m_selection.setLeft(WMainWindow::getMW()->getMaxLastSampleTime()-1.0/fs);
+    if(m_selection.right()<1.0/fs) m_selection.setRight(1.0/fs);
     if(m_selection.right()>WMainWindow::getMW()->getMaxLastSampleTime()) m_selection.setRight(WMainWindow::getMW()->getMaxLastSampleTime());
 
-    // Set the visible selection "embracing" the actual selection
-    m_giSelection->setRect(m_selection.left()-0.5/WMainWindow::getMW()->getFs(), -1, m_selection.width()+1.0/WMainWindow::getMW()->getFs(), 2);
+    // Set the visible selection encompassing the actual selection
+    m_giSelection->setRect(m_selection.left()-0.5/fs, -1, m_selection.width()+1.0/fs, 2);
 
     WMainWindow::getMW()->ui->lblSelectionTxt->setText(QString("Selection: [%1s").arg(m_selection.left()).append(",%1s] ").arg(m_selection.right()).append("%1s").arg(m_selection.width()));
 
     m_giSelection->show();
-    if(selection.width()>0){
+    if(m_selection.width()>0){
         m_aZoomOnSelection->setEnabled(true);
         m_aSelectionClear->setEnabled(true);
     }
@@ -572,10 +603,38 @@ void QGVWaveform::selectionClipAndSet(QRectF selection){
         m_aSelectionClear->setEnabled(false);
     }
 
+    // The selection's width can vary up to eps, even when it is only shifted
+
     // Spectrum
     WMainWindow::getMW()->m_gvSpectrum->setWindowRange(m_selection.left(), m_selection.right());
 
-//    cout << "~QGVWaveform::selectionClipAndSet" << endl;
+    // Update the visible window
+    if(WMainWindow::getMW()->m_gvSpectrum->m_win.size() != prevwinlen) {
+
+        qreal winmax = 0.0;
+        for(size_t n=0; n<WMainWindow::getMW()->m_gvSpectrum->m_win.size(); n++)
+            winmax = std::max(winmax, WMainWindow::getMW()->m_gvSpectrum->m_win[n]);
+
+        winmax = m_ampzoom/winmax;
+
+        QPainterPath path;
+
+        qreal prevx = 0;
+        qreal prevy = WMainWindow::getMW()->m_gvSpectrum->m_win[0];
+        path.moveTo(QPointF(prevx, -prevy));
+        for(size_t n=1; n<WMainWindow::getMW()->m_gvSpectrum->m_win.size(); n++) {
+            qreal x = n/fs;
+            qreal y = WMainWindow::getMW()->m_gvSpectrum->m_win[n];
+            y *= winmax;
+            path.lineTo(QPointF(x, -y));
+            prevx = x;
+            prevy = y;
+        }
+
+        m_giWindow->setPath(path);
+    }
+    m_giWindow->setPos(QPointF(m_selection.left(), 0));
+    m_giWindow->show();
 }
 
 void QGVWaveform::selectionZoomOn(){
@@ -587,10 +646,14 @@ void QGVWaveform::selectionZoomOn(){
 
         h11 *= 0.9;
 
+        qreal min11 = viewport()->rect().width()/(10*1.0/WMainWindow::getMW()->getFs());
+        if(h11>=min11)
+            h11=min11;
+
         setTransformationAnchor(QGraphicsView::AnchorViewCenter);
         setTransform(QTransform(h11, trans.m12(), trans.m21(), trans.m22(), 0, 0));
 
-        m_aZoomIn->setEnabled(true);
+        m_aZoomIn->setEnabled(h11<min11);
         m_aZoomOut->setEnabled(true);
         m_aUnZoom->setEnabled(true);
 
@@ -750,6 +813,8 @@ void QGVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
 
     draw_waveform(painter, rect);
 
+    m_giWindow->setVisible(m_aShowWindow->isChecked() && m_selection.width()>0.0);
+
 //    time_tracker.storeElapsed();
 
 //    std::cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGraphicsView::drawBackground [" << rect.left() << "," << rect.right() << "]x[" << rect.top() << "," << rect.bottom() << "] avg=" << time_tracker.getAveragedElapsed() << "(" << time_tracker.past_elapsed.size() << ") last=" << time_tracker.past_elapsed.back() << endl;
@@ -757,22 +822,13 @@ void QGVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
 
 void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
-//    cout << "drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
+    double fs = WMainWindow::getMW()->getFs();
 
-    // TODO move to constructor
-//    QPen outlinePen(WMainWindow::getMW()->ftsnds[0]->color);
-//    outlinePen.setWidth(0);
-//    painter->setPen(outlinePen);
-//    painter->setBrush(QBrush(WMainWindow::getMW()->ftsnds[0]->color));
-
-//    QRectF viewrect = mapToScene(QRect(QPoint(0,0), QSize(viewport()->rect().width(), viewport()->rect().height()))).boundingRect();
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
-    double samppixdensity = (viewrect.right()-viewrect.left())*WMainWindow::getMW()->getFs()/viewport()->rect().width();
+    double samppixdensity = (viewrect.right()-viewrect.left())*fs/viewport()->rect().width();
 
-//    cout << "samppixdensity=" << samppixdensity << endl;
-
-//    samppixdensity=3;
+//    samppixdensity=0.01;
     if(samppixdensity<10){ // Full resolution
 
         for(size_t fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++){
@@ -783,66 +839,53 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
             if(WMainWindow::getMW()->ftsnds[fi]->m_actionInvPolarity->isChecked())
                 a *=-1.0;
 
-            QPen outlinePen(WMainWindow::getMW()->ftsnds[fi]->color);
-            outlinePen.setWidth(0);
-            painter->setPen(outlinePen);
-            painter->setBrush(QBrush(WMainWindow::getMW()->ftsnds[fi]->color));
+            QPen wavpen(WMainWindow::getMW()->ftsnds[fi]->color);
+            wavpen.setWidth(0);
+            painter->setPen(wavpen);
 
-            int nleft = int(rect.left()*WMainWindow::getMW()->getFs());
-            int nright = int(rect.right()*WMainWindow::getMW()->getFs())+1;
-//            int nleft = int(0);
-//            int nright = int(WMainWindow::getMW()->ftsnds[fi]->wavtoplay.size())+1;
-
-            // std::cout << nleft << " " << nright << " " << WMainWindow::getMW()->snds[0]->wavtoplay.size()-1 << endl;
+            int delay = WMainWindow::getMW()->ftsnds[fi]->m_delay;
+            int nleft = int((rect.left())*fs)-delay;
+            int nright = int((rect.right())*fs)+1-delay;
+            nleft = std::max(nleft, -delay);
+            nleft = std::max(nleft, 0);
+            nleft = std::min(nleft, int(WMainWindow::getMW()->ftsnds[fi]->wav.size()-1)-delay);
+            nleft = std::min(nleft, int(WMainWindow::getMW()->ftsnds[fi]->wav.size()-1));
+            nright = std::max(nright, -delay);
+            nright = std::max(nright, 0);
+            nright = std::min(nright, int(WMainWindow::getMW()->ftsnds[fi]->wav.size()-1)-delay);
+            nright = std::min(nright, int(WMainWindow::getMW()->ftsnds[fi]->wav.size()-1));
 
             // Draw a line between each sample value
-            double fs = WMainWindow::getMW()->getFs();
-            WAVTYPE dt = WAVTYPE(1)/fs;
-            WAVTYPE prevx = WAVTYPE(nleft)/fs;
-            WAVTYPE currx = prevx;
-            WAVTYPE y;
-            if(nleft>=0 && nleft<int(WMainWindow::getMW()->ftsnds[fi]->wavtoplay->size()))
-                y = -a*(*(WMainWindow::getMW()->ftsnds[fi]->wavtoplay))[nleft];
-            else
-                y = 0.0;
-
-//            cout << prevx << endl;
-
-            WAVTYPE prevy = y;
-            // TODO prob appear with very long waveforms
-            int wn = nleft+1 - WMainWindow::getMW()->ftsnds[fi]->m_delay;
-            int wnmax = WMainWindow::getMW()->ftsnds[fi]->wavtoplay->size();
+            WAVTYPE dt = 1.0/fs;
+            WAVTYPE prevx = (nleft+delay)*dt;
+            a *= -1;
             WAVTYPE* data = WMainWindow::getMW()->ftsnds[fi]->wavtoplay->data();
-            for(int n=nleft+1; n<=nright; ++n){
-                currx = prevx + dt;
+            WAVTYPE prevy = a*(*(data+nleft));
 
-                if(wn>=0 && wn<wnmax)
-                    y = -a*(*(data+wn));
-                else
-                    y = 0.0;
+            WAVTYPE x, y;
+            for(int n=nleft; n<=nright; ++n){
+                x = (n+delay)*dt;
+                y = a*(*(data+n));
 
-                painter->drawLine(QLineF(prevx, prevy, currx, y));
+                painter->drawLine(QLineF(prevx, prevy, x, y));
 
-                wn++;
-                prevx = currx;
+                prevx = x;
                 prevy = y;
             }
 
-            // When resolution is big enough, draw the tick marks at each sample
+            // When resolution is big enough, draw tick marks at each sample
             double samppixdensity_dotsthr = 0.125;
-    //        std::cout << samppixdensity << endl;
             if(samppixdensity<samppixdensity_dotsthr){
-                qreal dy = ((samppixdensity_dotsthr-samppixdensity)/samppixdensity_dotsthr)*(1.0/20);
+                qreal markhalfheight = ((samppixdensity_dotsthr-samppixdensity)/samppixdensity_dotsthr)*(1.0/20);
 
                 for(int n=nleft; n<=nright; n++){
-                    int wn = n - WMainWindow::getMW()->ftsnds[fi]->m_delay;
-                    if(wn>=0 && wn<int(WMainWindow::getMW()->ftsnds[fi]->wavtoplay->size())){
-                        currx = n/WMainWindow::getMW()->getFs();
-                        y = -a*(*(WMainWindow::getMW()->ftsnds[fi]->wavtoplay))[wn];
-                        painter->drawLine(QLineF(currx, y-dy, currx, y+dy));
-                    }
+                    x = (n+delay)*dt;
+                    y = a*(*(data+n));
+                    painter->drawLine(QLineF(x, y-markhalfheight, x, y+markhalfheight));
                 }
             }
+
+            painter->drawLine(QLineF(double(WMainWindow::getMW()->ftsnds[fi]->wav.size()-1)/fs, -1.0, double(WMainWindow::getMW()->ftsnds[fi]->wav.size()-1)/fs, 1.0));
         }
 
         WMainWindow::getMW()->ui->lblInfoTxt->setText("Full resolution waveform plot");
@@ -873,8 +916,8 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
             int maxm = WMainWindow::getMW()->ftsnds[fi]->wavtoplay->size()-1;
             for(double x=rect.left(); x<=rect.right(); x+=pixelstep) {
 
-                int pn = std::max(qint64(0), qint64(0.5+WMainWindow::getMW()->getFs()*(x-WMainWindow::getMW()->ftsnds[fi]->m_delay)));
-                int nn = std::min(qint64(0.5+WMainWindow::getMW()->ftsnds[fi]->wavtoplay->size()-1), qint64(0.5+WMainWindow::getMW()->getFs()*((x+pixelstep)-WMainWindow::getMW()->ftsnds[fi]->m_delay)));
+                int pn = std::max(qint64(0), qint64(0.5+fs*(x-WMainWindow::getMW()->ftsnds[fi]->m_delay)));
+                int nn = std::min(qint64(0.5+WMainWindow::getMW()->ftsnds[fi]->wavtoplay->size()-1), qint64(0.5+fs*((x+pixelstep)-WMainWindow::getMW()->ftsnds[fi]->m_delay)));
 //                std::cout << pn << " " << nn << " " << nn-pn << endl;
 
                 if(nn>=0 && pn<=maxm){
@@ -900,32 +943,9 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
         WMainWindow::getMW()->ui->lblInfoTxt->setText("Quick plot using simplified waveform");
     }
 
-    // Plot the window
-    if(WMainWindow::getMW()->m_gvSpectrum->m_win.size()>0) {
-        QPen outlinePen(QColor(192,192,192));
-        outlinePen.setWidth(0);
-        painter->setPen(outlinePen);
-        painter->setBrush(QBrush(QColor(192,192,192)));
-
-        double winmax = 0.0;
-        for(size_t n=0; n<WMainWindow::getMW()->m_gvSpectrum->m_win.size(); n++)
-            winmax = std::max(winmax, WMainWindow::getMW()->m_gvSpectrum->m_win[n]);
-
-        winmax = m_ampzoom/winmax;
-
-        double prevx = m_selection.left();
-        double prevy = WMainWindow::getMW()->m_gvSpectrum->m_win[0];
-        for(size_t n=1; n<WMainWindow::getMW()->m_gvSpectrum->m_win.size(); n++) {
-            double x = m_selection.left() + n/WMainWindow::getMW()->getFs();
-            double y = WMainWindow::getMW()->m_gvSpectrum->m_win[n];
-            y *= winmax;
-            painter->drawLine(QLineF(prevx, -prevy, x, -y));
-            prevx = x;
-            prevy = y;
-        }
-    }
 
     // Plot labels
+    // TODO Make it a QGraphicItem
     QTransform trans = transform();
     for(size_t fi=0; fi<WMainWindow::getMW()->ftlabels.size(); fi++){
         if(!WMainWindow::getMW()->ftlabels[fi]->m_actionShow->isChecked())

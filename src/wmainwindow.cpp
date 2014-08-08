@@ -176,9 +176,12 @@ void WMainWindow::execAbout(){
     txt += "<h4>Credits</h4>\
             Most open-source softwares are infeasible without indirect contributions provided through libraries, open code, etc.\
             Keeping in mind that none of the following geeks could be taken as responsible of DFasma\'s bugs or improper behaviors, it seems necessary to thanks them:<br/>\
-            - A.J. Fisher for the butterworth filter design<br/>\
+            - A. J. Fisher for the Butterworth\'s filter design<br/>\
             - Laurent de Soras for the FFTReal<br/>\
             - FFTW3\'s team<br/>\
+            - Erik de Castro Lopo for the libsndfile library<br/>\
+            - SOX\'s team for the audio file library<br/>\
+            - Ircam\'s team for the SDIF format library<br/>\
             - Qt\'s team<br/>\
             ";
 
@@ -595,6 +598,17 @@ void WMainWindow::play()
 
                     QString txt = QString("Play ")+currentftsound->fileName+QString(": [%1s, %2s]x[%3Hz, %4Hz]").arg(m_gvWaveform->m_selection.left()).arg(m_gvWaveform->m_selection.right()).arg(fstart).arg(fstop);
                     statusBar()->showMessage(txt);
+
+                    if(fstart!=0.0 || fstop!=0.0) {
+                        if(m_gvWaveform->m_giSelection->rect().width()>0)
+                            m_gvWaveform->m_giFilteredSelection->setRect(m_gvWaveform->m_giSelection->rect());
+                        else
+                            m_gvWaveform->m_giFilteredSelection->setRect(-0.5/getFs(), -1.0, currentftsound->getLastSampleTime()+1.0/getFs(), 2.0);
+                        m_gvWaveform->m_giFilteredSelection->show();
+                    }
+                    else {
+                        m_gvWaveform->m_giFilteredSelection->hide();
+                    }
 
                     ui->actionPlay->setEnabled(false);
 

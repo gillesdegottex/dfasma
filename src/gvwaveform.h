@@ -45,18 +45,21 @@ public:
     int m_currentAction;
     QRectF m_mouseSelection; // The mouse selection. This one ignores the samples
     QRectF m_selection; // The actual selection, always at exact samples time
-    QGraphicsRectItem* m_giSelection; // The selection shown, which contains the actual selection (start and end - and + 0.5 sample before and after the actual selection)
+    QGraphicsRectItem* m_giSelection; // The shown selection, which contains the actual selection (start and end - and + 0.5 sample before and after the actual selection)
     QGraphicsLineItem* m_giCursor;
     QGraphicsSimpleTextItem* m_giCursorPositionTxt;
 //    QGraphicsItemGroup* m_yTicksLabels; // TODO Use this instead of print them individually ?
-
     QGraphicsLineItem* m_giPlayCursor;
+    QGraphicsRectItem* m_giFilteredSelection;
+
+    QGraphicsPathItem* m_giWindow;
 
     qreal m_ampzoom;
 
     QGraphicsScene* m_scene;
 
     QAction* m_aShowGrid;
+    QAction* m_aShowWindow;
     QAction* m_aZoomOnSelection;
     QAction* m_aSelectionClear;
     QAction* m_aZoomIn;
