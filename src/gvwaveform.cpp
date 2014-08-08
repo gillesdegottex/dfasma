@@ -893,6 +893,8 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
     else {
         // Plot only one line per pixel, in order to reduce computation time
 
+        painter->setWorldMatrixEnabled(false); // Work in pixel coordinates
+
         for(size_t fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++){
             if(!WMainWindow::getMW()->ftsnds[fi]->m_actionShow->isChecked())
                 continue;
@@ -907,8 +909,6 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
             QRect pixrect = mapFromScene(rect).boundingRect();
             QRect fullpixrect = mapFromScene(viewrect).boundingRect();
-
-            painter->setWorldMatrixEnabled(false); // Work in pixel coordinates
 
             double s2p = -a*fullpixrect.height()/viewrect.height(); // Scene to pixel
             double p2s = viewrect.width()/fullpixrect.width(); // Pixel to scene
@@ -938,6 +938,8 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
                 }
             }
         }
+
+        painter->setWorldMatrixEnabled(true); // Go back to scene coordinates
 
         // Tell that the waveform is simplified
         WMainWindow::getMW()->ui->lblInfoTxt->setText("Quick plot using simplified waveform");
