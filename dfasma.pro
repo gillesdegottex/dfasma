@@ -29,8 +29,8 @@ CONFIG += fft_fftw3
 
 # For the audio file support
 # Chose among: audiofilereading_libsndfile, audiofilereading_libsox,
-#              audiofilereading_qt, audiofilereading_libav,
-#              audiofilereading_builtin
+#              audiofilereading_libav,
+#              audiofilereading_qt, audiofilereading_builtin
 CONFIG += audiofilereading_libsndfile
 
 # Additional file format support
@@ -129,6 +129,7 @@ SOURCES   += src/main.cpp\
              src/ftlabels.cpp \
              src/gvwaveform.cpp \
              src/gvspectrum.cpp \
+             src/gvspectrumwdialogsettings.cpp \
              src/wdialogsettings.cpp \
              external/audioengine/audioengine.cpp \
              external/FFTwrapper.cpp
@@ -141,11 +142,13 @@ HEADERS   += src/wmainwindow.h \
              src/ftlabels.h \
              src/gvwaveform.h \
              src/gvspectrum.h \
+             src/gvspectrumwdialogsettings.h \
              src/wdialogsettings.h \
              external/audioengine/audioengine.h \
              external/FFTwrapper.h
 
 FORMS     += src/wmainwindow.ui \
-             src/wdialogsettings.ui
+             src/wdialogsettings.ui \
+             src/gvspectrumwdialogsettings.ui
 
 RESOURCES += ressources.qrc
