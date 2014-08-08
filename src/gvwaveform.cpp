@@ -891,50 +891,50 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
         WMainWindow::getMW()->ui->lblInfoTxt->setText("Full resolution waveform plot");
     }
     else {
-        // Plot only one line per pixel, in order to improve computational efficiency
-//        std::cout << "Compressed resolution" << endl;
-
-//        cout << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
-//        QRectF updateRect = mapFromScene(rect).boundingRect();
-//        cout << updateRect.left() << " " << updateRect.right() << " " << updateRect.top() << " " << updateRect.bottom() << endl;
+        // Plot only one line per pixel, in order to reduce computation time
 
         for(size_t fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++){
             if(!WMainWindow::getMW()->ftsnds[fi]->m_actionShow->isChecked())
                 continue;
 
-            float a = WMainWindow::getMW()->ftsnds[fi]->m_ampscale;
+            double a = WMainWindow::getMW()->ftsnds[fi]->m_ampscale;
             if(WMainWindow::getMW()->ftsnds[fi]->m_actionInvPolarity->isChecked())
                 a *=-1.0;
 
             QPen outlinePen(WMainWindow::getMW()->ftsnds[fi]->color);
             outlinePen.setWidth(0);
             painter->setPen(outlinePen);
-            painter->setBrush(QBrush(WMainWindow::getMW()->ftsnds[fi]->color));
 
-            double pixelstep = viewrect.width()/viewport()->rect().width();
-//            cout << "pixelstep=" << pixelstep << endl;
-            int maxm = WMainWindow::getMW()->ftsnds[fi]->wavtoplay->size()-1;
-            for(double x=rect.left(); x<=rect.right(); x+=pixelstep) {
+            QRect pixrect = mapFromScene(rect).boundingRect();
+            QRect fullpixrect = mapFromScene(viewrect).boundingRect();
 
-                int pn = std::max(qint64(0), qint64(0.5+fs*(x-WMainWindow::getMW()->ftsnds[fi]->m_delay)));
-                int nn = std::min(qint64(0.5+WMainWindow::getMW()->ftsnds[fi]->wavtoplay->size()-1), qint64(0.5+fs*((x+pixelstep)-WMainWindow::getMW()->ftsnds[fi]->m_delay)));
-//                std::cout << pn << " " << nn << " " << nn-pn << endl;
+            painter->setWorldMatrixEnabled(false); // Work in pixel coordinates
 
-                if(nn>=0 && pn<=maxm){
-                    WAVTYPE miny = 1.0;
-                    WAVTYPE maxy = -1.0;
+            double s2p = -a*fullpixrect.height()/viewrect.height(); // Scene to pixel
+            double p2s = viewrect.width()/fullpixrect.width(); // Pixel to scene
+            double yzero = fullpixrect.height()/2;
+
+            WAVTYPE* yp = WMainWindow::getMW()->ftsnds[fi]->wavtoplay->data();
+
+            for(int i=pixrect.left(); i<=pixrect.right(); i++) {
+
+                int ns = int(fs*(viewrect.left()+i*p2s))-WMainWindow::getMW()->ftsnds[fi]->m_delay;
+                int ne = int(fs*(viewrect.left()+(i+1)*p2s))-WMainWindow::getMW()->ftsnds[fi]->m_delay;
+
+                if(ns>=0 && ne<int(WMainWindow::getMW()->ftsnds[fi]->wav.size())) {
+                    WAVTYPE ymin = 1.0;
+                    WAVTYPE ymax = -1.0;
+                    WAVTYPE* ypp = yp+ns;
                     WAVTYPE y;
-                    WAVTYPE* data = WMainWindow::getMW()->ftsnds[fi]->wavtoplay->data()+pn;
-                    for(int m=pn; m<=nn && m<=maxm; m++){
-                        y = *data;
-                        miny = std::min(miny, y);
-                        maxy = std::max(maxy, y);
-                        data++;
+                    for(int n=ns; n<=ne; n++) {
+                        y = *ypp;
+                        ymin = std::min(ymin, y);
+                        ymax = std::max(ymax, y);
+                        ypp++;
                     }
-                    miny *= -a;
-                    maxy *= -a;
-//                    painter->drawRect(QRectF(x, miny, pixelstep, maxy-miny));
-                    painter->drawLine(QLineF(x, miny, x+pixelstep, maxy));
+                    ymin *= s2p;
+                    ymax *= s2p;
+                    painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
                 }
             }
         }
@@ -945,7 +945,6 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
 
     // Plot labels
-    // TODO Make it a QGraphicItem
     QTransform trans = transform();
     for(size_t fi=0; fi<WMainWindow::getMW()->ftlabels.size(); fi++){
         if(!WMainWindow::getMW()->ftlabels[fi]->m_actionShow->isChecked())
