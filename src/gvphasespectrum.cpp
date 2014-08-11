@@ -238,19 +238,24 @@ void QGVPhaseSpectrum::viewSet(QRectF viewrect) {
 }
 
 void QGVPhaseSpectrum::viewChangesRequested() {
-//    cout << "QGVPhaseSpectrum::viewChangesRequested 1" << endl;
+//    cout << "QGVPhaseSpectrum::viewChangesRequested" << endl;
 
     viewFixAndRefresh();
 
     if(WMainWindow::getMW()->m_gvSpectrum) {
         QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+
         QRectF curspecvrect = WMainWindow::getMW()->m_gvSpectrum->mapToScene(WMainWindow::getMW()->m_gvSpectrum->viewport()->rect()).boundingRect();
         curspecvrect.setLeft(viewrect.left());
         curspecvrect.setRight(viewrect.right());
         WMainWindow::getMW()->m_gvSpectrum->viewSet(curspecvrect);
+
+        QPointF p = WMainWindow::getMW()->m_gvSpectrum->mapToScene(WMainWindow::getMW()->m_gvSpectrum->viewport()->rect()).boundingRect().center();
+        p.setX(viewrect.center().x());
+        WMainWindow::getMW()->m_gvSpectrum->centerOn(p);
     }
 
-//    cout << "QGVPhaseSpectrum::~viewChangesRequested 3" << endl;
+//    cout << "QGVPhaseSpectrum::~viewChangesRequested" << endl;
 }
 
 void QGVPhaseSpectrum::resizeEvent(QResizeEvent* event) {
@@ -285,6 +290,8 @@ void QGVPhaseSpectrum::resizeEvent(QResizeEvent* event) {
 
 void QGVPhaseSpectrum::scrollContentsBy(int dx, int dy){
 
+//    cout << "dx=" << dx << " dy=" << dy << endl;
+
     // Ensure the y ticks labels will be redrawn
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
     QTransform trans = transform();
@@ -298,6 +305,16 @@ void QGVPhaseSpectrum::scrollContentsBy(int dx, int dy){
     cursorUpdate(QPointF(-1,0));
 
     QGraphicsView::scrollContentsBy(dx, dy);
+
+    if(WMainWindow::getMW()->m_gvSpectrum) {
+        viewrect = mapToScene(viewport()->rect()).boundingRect();
+
+        QPointF p = WMainWindow::getMW()->m_gvSpectrum->mapToScene(WMainWindow::getMW()->m_gvSpectrum->viewport()->rect()).boundingRect().center();
+        p.setX(viewrect.center().x());
+        WMainWindow::getMW()->m_gvSpectrum->centerOn(p);
+
+//        cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVPhaseSpectrum::scrollContentsBy " << viewrect.left() << " " << viewrect.right() << " " << viewrect.top() << " " << viewrect.bottom() << " center=" << viewrect.center().x() << endl;
+    }
 }
 
 void QGVPhaseSpectrum::wheelEvent(QWheelEvent* event) {
@@ -410,7 +427,7 @@ void QGVPhaseSpectrum::mouseMoveEvent(QMouseEvent* event){
     if(m_currentAction==CAMoving) {
         // When scrolling the view around the scene
         viewChangesRequested();
-        cursorUpdate(QPointF(-1,0));
+        cursorUpdate(QPointF(-1,0));        
     }
     else if(m_currentAction==CAZooming) {
         double dx = -(event->pos()-m_pressed_mouseinviewport).x()/100.0;

@@ -151,6 +151,11 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->setValue(settings.value("qgvamplitudespectrum/sbSpectrumAmplitudeRangeMax", 10).toInt());
     m_dlgSettings->ui->sbSpectrumOversamplingFactor->setValue(settings.value("qgvamplitudespectrum/sbSpectrumOversamplingFactor", 1).toInt());
 
+    m_aShowProperties = new QAction(tr("&Properties"), this);
+    m_aShowProperties->setStatusTip(tr("Open the properties configuration panel of the spectrum view"));
+    m_aShowProperties->setIcon(QIcon(":/icons/settings.svg"));
+
+
     m_aShowGrid = new QAction(tr("Show &grid"), this);
     m_aShowGrid->setStatusTip(tr("Show &grid"));
     m_aShowGrid->setCheckable(true);
@@ -208,26 +213,22 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_aZoomIn->setStatusTip(tr("Zoom In"));
     m_aZoomIn->setShortcut(Qt::Key_Plus);
     m_aZoomIn->setIcon(QIcon(":/icons/zoomin.svg"));
-    m_toolBar->addAction(m_aZoomIn);
     connect(m_aZoomIn, SIGNAL(triggered()), this, SLOT(azoomin()));
     m_aZoomOut = new QAction(tr("Zoom Out"), this);;
     m_aZoomOut->setStatusTip(tr("Zoom Out"));
     m_aZoomOut->setShortcut(Qt::Key_Minus);
     m_aZoomOut->setIcon(QIcon(":/icons/zoomout.svg"));
-    m_toolBar->addAction(m_aZoomOut);
     connect(m_aZoomOut, SIGNAL(triggered()), this, SLOT(azoomout()));
     m_aUnZoom = new QAction(tr("Un-Zoom"), this);
     m_aUnZoom->setStatusTip(tr("Un-Zoom"));
     m_aUnZoom->setShortcut(Qt::Key_Z);
     m_aUnZoom->setIcon(QIcon(":/icons/unzoomxy.svg"));
-    m_toolBar->addAction(m_aUnZoom);
     connect(m_aUnZoom, SIGNAL(triggered()), this, SLOT(aunzoom()));
     m_aZoomOnSelection = new QAction(tr("&Zoom on selection"), this);
     m_aZoomOnSelection->setStatusTip(tr("Zoom on selection"));
     m_aZoomOnSelection->setEnabled(false);
     m_aZoomOnSelection->setShortcut(Qt::Key_S);
     m_aZoomOnSelection->setIcon(QIcon(":/icons/zoomselectionxy.svg"));
-    m_toolBar->addAction(m_aZoomOnSelection);
     connect(m_aZoomOnSelection, SIGNAL(triggered()), this, SLOT(selectionZoomOn()));
 
     m_aSelectionClear = new QAction(tr("Clear selection"), this);
@@ -236,7 +237,6 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_aSelectionClear->setIcon(selectionclearicon);
     m_aSelectionClear->setEnabled(false);
     connect(m_aSelectionClear, SIGNAL(triggered()), this, SLOT(selectionClear()));
-    m_toolBar->addAction(m_aSelectionClear);
 
     WMainWindow::getMW()->ui->lSpectrumToolBar->addWidget(m_toolBar);
     WMainWindow::getMW()->ui->lblSpectrumSelectionTxt->setText("No selection");
@@ -256,12 +256,17 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_maxsy = std::numeric_limits<double>::infinity();
     updateSceneRect();
 
+    // Fill the toolbar
+    m_toolBar->addAction(m_aShowProperties);
+    m_toolBar->addAction(m_aZoomIn);
+    m_toolBar->addAction(m_aZoomOut);
+    m_toolBar->addAction(m_aUnZoom);
+    m_toolBar->addAction(m_aZoomOnSelection);
+    m_toolBar->addAction(m_aSelectionClear);
+
     // Build the context menu
     m_contextmenu.addAction(m_aShowGrid);
     m_contextmenu.addSeparator();
-    m_aShowProperties = new QAction(tr("&Properties"), this);
-    m_aShowProperties->setStatusTip(tr("Open the properties configuration panel of the spectrum view"));
-    m_contextmenu.addAction(m_aShowProperties);
     connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
     connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(updateSceneRect()));
     connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(updateDFTSettings()));
@@ -393,9 +398,8 @@ void QGVAmplitudeSpectrum::updateSceneRect() {
 }
 
 void QGVAmplitudeSpectrum::soundsChanged(){
-    if(WMainWindow::getMW()->ftsnds.size()>0){
+    if(WMainWindow::getMW()->ftsnds.size()>0)
         computeDFTs();
-    }
     m_scene->update();
 }
 
@@ -460,6 +464,10 @@ void QGVAmplitudeSpectrum::viewChangesRequested() {
         currect.setLeft(viewrect.left());
         currect.setRight(viewrect.right());
         WMainWindow::getMW()->m_gvPhaseSpectrum->viewSet(currect);
+
+        QPointF p = WMainWindow::getMW()->m_gvPhaseSpectrum->mapToScene(WMainWindow::getMW()->m_gvPhaseSpectrum->viewport()->rect()).boundingRect().center();
+        p.setX(viewrect.center().x());
+        WMainWindow::getMW()->m_gvPhaseSpectrum->centerOn(p);
     }
 
 //    cout << "QGVAmplitudeSpectrum::~viewChangesRequested" << endl;
@@ -901,8 +909,10 @@ void QGVAmplitudeSpectrum::viewUpdateTexts() {
 void QGVAmplitudeSpectrum::selectionZoomOn(){
     if(m_selection.width()>0 && m_selection.height()>0){
         QRectF zoomonrect = m_selection;
-        QRectF adj = mapToScene(QRect(0,0,10,10)).boundingRect();
-        zoomonrect.adjust(-adj.width(), -adj.height(), adj.width(), adj.height());
+        QTransform trans = transform();
+//        QRectF adj = mapToScene(QRect(0,0,10,10)).boundingRect();
+//        QRectF adj = QRectF(0,0,10,10);
+        zoomonrect.adjust(-10/trans.m11(), -10/trans.m22(), 10/trans.m11(), 10/trans.m22());
         fitInView(removeHiddenMargin(zoomonrect));
         viewChangesRequested();
 
