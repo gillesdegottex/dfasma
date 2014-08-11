@@ -131,13 +131,11 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     setMouseTracking(true);
 
     // Build actions
-    QToolBar* waveformToolBar = new QToolBar(this);
     m_aZoomIn = new QAction(tr("Zoom In"), this);
     m_aZoomIn->setStatusTip(tr("Zoom In"));
     m_aZoomIn->setShortcut(Qt::Key_Plus);
     QIcon zoominicon(":/icons/zoomin.svg");
     m_aZoomIn->setIcon(zoominicon);
-    waveformToolBar->addAction(m_aZoomIn);
     connect(m_aZoomIn, SIGNAL(triggered()), this, SLOT(azoomin()));
     m_aZoomOut = new QAction(tr("Zoom Out"), this);
     m_aZoomOut->setStatusTip(tr("Zoom Out"));
@@ -145,7 +143,6 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     QIcon zoomouticon(":/icons/zoomout.svg");
     m_aZoomOut->setIcon(zoomouticon);   
     m_aZoomOut->setEnabled(false);
-    waveformToolBar->addAction(m_aZoomOut);
     connect(m_aZoomOut, SIGNAL(triggered()), this, SLOT(azoomout()));
     m_aUnZoom = new QAction(tr("Un-Zoom"), this);
     m_aUnZoom->setStatusTip(tr("Un-Zoom"));
@@ -153,7 +150,6 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     QIcon unzoomicon(":/icons/unzoomx.svg");
     m_aUnZoom->setIcon(unzoomicon);
     m_aUnZoom->setEnabled(false);
-    waveformToolBar->addAction(m_aUnZoom);
     connect(m_aUnZoom, SIGNAL(triggered()), this, SLOT(aunzoom()));
     m_aZoomOnSelection = new QAction(tr("&Zoom on selection"), this);
     m_aZoomOnSelection->setStatusTip(tr("Zoom on selection"));
@@ -161,7 +157,6 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_aZoomOnSelection->setShortcut(Qt::Key_S);
     QIcon zoomselectionicon(":/icons/zoomselectionx.svg");
     m_aZoomOnSelection->setIcon(zoomselectionicon);
-    waveformToolBar->addAction(m_aZoomOnSelection);
     connect(m_aZoomOnSelection, SIGNAL(triggered()), this, SLOT(selectionZoomOn()));
     m_aSelectionClear = new QAction(tr("Clear selection"), this);
     m_aSelectionClear->setStatusTip(tr("Clear the current selection"));
@@ -169,8 +164,6 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_aSelectionClear->setIcon(selectionclearicon);
     m_aSelectionClear->setEnabled(false);
     connect(m_aSelectionClear, SIGNAL(triggered()), this, SLOT(selectionClear()));
-    waveformToolBar->addAction(m_aSelectionClear);
-    WMainWindow::getMW()->ui->lWaveformToolBar->addWidget(waveformToolBar);
     m_aFitViewToSoundsAmplitude = new QAction(tr("Fit the view's amplitude to the max value"), this);
     m_aFitViewToSoundsAmplitude->setStatusTip(tr("Change the amplitude zoom so that to fit to the maximum of amplitude among all sounds"));
     connect(m_aFitViewToSoundsAmplitude, SIGNAL(triggered()), this, SLOT(fitViewToSoundsAmplitude()));
@@ -179,6 +172,16 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     connect(WMainWindow::getMW()->ui->sldWaveformAmplitude, SIGNAL(valueChanged(int)), this, SLOT(sldAmplitudeChanged(int)));
 
 //    setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers))); // Use OpenGL
+
+    // Fill the toolbar
+    QToolBar* waveformToolBar = new QToolBar(this);
+    waveformToolBar->addAction(m_aZoomIn);
+    waveformToolBar->addAction(m_aZoomOut);
+    waveformToolBar->addAction(m_aUnZoom);
+    waveformToolBar->addSeparator();
+    waveformToolBar->addAction(m_aZoomOnSelection);
+    waveformToolBar->addAction(m_aSelectionClear);
+    WMainWindow::getMW()->ui->lWaveformToolBar->addWidget(waveformToolBar);
 
     update_cursor(-1);
 }

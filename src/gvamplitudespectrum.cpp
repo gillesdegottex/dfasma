@@ -258,9 +258,11 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
 
     // Fill the toolbar
     m_toolBar->addAction(m_aShowProperties);
+    m_toolBar->addSeparator();
     m_toolBar->addAction(m_aZoomIn);
     m_toolBar->addAction(m_aZoomOut);
     m_toolBar->addAction(m_aUnZoom);
+    m_toolBar->addSeparator();
     m_toolBar->addAction(m_aZoomOnSelection);
     m_toolBar->addAction(m_aSelectionClear);
 
