@@ -292,6 +292,8 @@
      </widget>
     </item>
    </layout>
+   <zorder>splitter</zorder>
+   <zorder></zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

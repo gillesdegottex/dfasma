@@ -141,13 +141,20 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 
     m_gvWaveform = new QGVWaveform(this);
     ui->lWaveformGraphicsView->addWidget(m_gvWaveform);
-    ui->splitterViews->hide();
 
     m_gvSpectrum = new QGVAmplitudeSpectrum(this);
     ui->lAmplitudeSpectrumGraphicsView->addWidget(m_gvSpectrum);
 
     m_gvPhaseSpectrum = new QGVPhaseSpectrum(this);
     ui->lPhaseSpectrumGraphicsView->addWidget(m_gvPhaseSpectrum);
+
+    // Prevent both waveform and amplitude spectrum to be collapsed
+    WMainWindow::getMW()->ui->splitterViews->setCollapsible(0,false);
+    WMainWindow::getMW()->ui->splitterViews->setCollapsible(1,false);
+
+    // Start in open file mode
+    // and show the panels only if a file has been loaded
+    ui->splitterViews->hide();
 
     for(int f=0; f<sndfiles.size(); f++)
         addFile(sndfiles[f]);

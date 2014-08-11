@@ -57,10 +57,15 @@ QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
 //    m_dlgSettings->ui->sbSpectrumOversamplingFactor->setValue(settings.value("qgvphasespectrum/sbSpectrumOversamplingFactor", 1).toInt());
 
     m_aShowGrid = new QAction(tr("Show &grid"), this);
-    m_aShowGrid->setStatusTip(tr("Show &grid"));
     m_aShowGrid->setCheckable(true);
     m_aShowGrid->setChecked(settings.value("qgvphasespectrum/m_aShowGrid", true).toBool());
     connect(m_aShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
+
+    m_aShowPhase = new QAction(tr("Show &phase spectrum"), this);
+    m_aShowPhase->setCheckable(true);
+//    m_aShowPhase->setChecked(settings.value("qgvphasespectrum/m_aShow", true).toBool());
+//    connect(m_aShowPhase, SIGNAL(toggled(bool)), this, SLOT(showPhase(bool)));
+//    WMainWindow::getMW()->m_gvSpectrum->m_toolBar->addAction(m_aShowPhase);
 
     // Cursor
     m_giCursorHoriz = new QGraphicsLineItem(0, -100, 0, 100);
@@ -119,7 +124,7 @@ QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
 //    toolBar->addAction(m_aZoomOut);
     connect(m_aZoomOut, SIGNAL(triggered()), this, SLOT(azoomout()));
 
-    WMainWindow::getMW()->ui->lSpectrumToolBar->addWidget(toolBar); // TODO
+    WMainWindow::getMW()->ui->lSpectrumToolBar->addWidget(toolBar);
 
     updateSceneRect();
 
@@ -145,6 +150,29 @@ QRectF QGVPhaseSpectrum::removeHiddenMargin(const QRectF& sceneRect){
     const double mx = sceneRect.width()/viewport()->size().width()*bugMargin;
     const double my = sceneRect.height()/viewport()->size().height()*bugMargin;
     return sceneRect.adjusted(mx, my, -mx, -my);
+}
+
+void QGVPhaseSpectrum::showPhase(bool hastoshow) {
+    // TODO Doesnt work
+    // Once the phase view is hidden, the free space is not distributed
+    // among the other views
+////    cout << "QGVPhaseSpectrum::showPhase " << hastoshow << endl;
+
+//    if(hastoshow) {
+//        WMainWindow::getMW()->m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+////        WMainWindow::getMW()->ui->lPhaseSpectrumGraphicsView->hide();
+//        show();
+//    }
+//    else {
+//        WMainWindow::getMW()->m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+
+////        WMainWindow::getMW()->ui->splitterViews->setStretchFactor(2, 0);
+
+////        WMainWindow::getMW()->ui->lPhaseSpectrumGraphicsView->;
+//        hide();
+//        WMainWindow::getMW()->ui->splitterViews->refresh();
+//    }
 }
 
 void QGVPhaseSpectrum::settingsSave() {
@@ -234,14 +262,23 @@ void QGVPhaseSpectrum::resizeEvent(QResizeEvent* event) {
     if(viewrect.width()==0 && viewrect.height()==0)
         viewrect = m_scene->sceneRect();
 
-    if(viewrect.left()<m_scene->sceneRect().left()) viewrect.setLeft(m_scene->sceneRect().left());
-    if(viewrect.right()>m_scene->sceneRect().right()) viewrect.setRight(m_scene->sceneRect().right());
-    if(viewrect.top()<m_scene->sceneRect().top()) viewrect.setTop(m_scene->sceneRect().top());
-    if(viewrect.bottom()>m_scene->sceneRect().bottom()) viewrect.setBottom(m_scene->sceneRect().bottom());
-    fitInView(removeHiddenMargin(viewrect));
+    if(event->size().height()==0) {
+//        cout << "Hide Phase Spectrum View" << endl;
+        WMainWindow::getMW()->m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    }
+    else {
+//        cout << "Show Phase Spectrum View" << endl;
+        WMainWindow::getMW()->m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    viewChangesRequested();
-    cursorUpdate(QPointF(-1,0));
+        if(viewrect.left()<m_scene->sceneRect().left()) viewrect.setLeft(m_scene->sceneRect().left());
+        if(viewrect.right()>m_scene->sceneRect().right()) viewrect.setRight(m_scene->sceneRect().right());
+        if(viewrect.top()<m_scene->sceneRect().top()) viewrect.setTop(m_scene->sceneRect().top());
+        if(viewrect.bottom()>m_scene->sceneRect().bottom()) viewrect.setBottom(m_scene->sceneRect().bottom());
+        fitInView(removeHiddenMargin(viewrect));
+
+        viewChangesRequested();
+        cursorUpdate(QPointF(-1,0));
+    }
 
 //    cout << "QGVPhaseSpectrum::~resizeEvent" << endl;
 }

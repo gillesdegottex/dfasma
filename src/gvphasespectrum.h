@@ -86,6 +86,7 @@ public:
     void draw_grid(QPainter* painter, const QRectF& rect);
 
     QAction* m_aShowGrid;
+    QAction* m_aShowPhase;
     QAction* m_aZoomIn;
     QAction* m_aZoomOut;
 //    QAction* m_aShowProperties;
@@ -95,6 +96,8 @@ public:
 signals:
     
 public slots:
+    void showPhase(bool hastoshow);
+
     void settingsSave();
     void soundsChanged();
     void updateSceneRect();

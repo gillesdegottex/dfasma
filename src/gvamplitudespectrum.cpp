@@ -161,7 +161,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_fftresizethread = new FFTResizeThread(m_fft, this);
 
     // Cursor
-    m_giCursorHoriz = new QGraphicsLineItem(0, -100, 0, 100);
+    m_giCursorHoriz = new QGraphicsLineItem(0, -1000, 0, 1000);
     QPen cursorPen(QColor(64, 64, 64));
     cursorPen.setWidth(0);
     m_giCursorHoriz->setPen(cursorPen);
@@ -203,31 +203,31 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     WMainWindow::getMW()->ui->lblSpectrumSelectionTxt->setText("No selection");
 
     // Build actions
-    QToolBar* toolBar = new QToolBar(this);
+    m_toolBar = new QToolBar(this);
     m_aZoomIn = new QAction(tr("Zoom In"), this);;
     m_aZoomIn->setStatusTip(tr("Zoom In"));
     m_aZoomIn->setShortcut(Qt::Key_Plus);
     m_aZoomIn->setIcon(QIcon(":/icons/zoomin.svg"));
-    toolBar->addAction(m_aZoomIn);
+    m_toolBar->addAction(m_aZoomIn);
     connect(m_aZoomIn, SIGNAL(triggered()), this, SLOT(azoomin()));
     m_aZoomOut = new QAction(tr("Zoom Out"), this);;
     m_aZoomOut->setStatusTip(tr("Zoom Out"));
     m_aZoomOut->setShortcut(Qt::Key_Minus);
     m_aZoomOut->setIcon(QIcon(":/icons/zoomout.svg"));
-    toolBar->addAction(m_aZoomOut);
+    m_toolBar->addAction(m_aZoomOut);
     connect(m_aZoomOut, SIGNAL(triggered()), this, SLOT(azoomout()));
     m_aUnZoom = new QAction(tr("Un-Zoom"), this);
     m_aUnZoom->setStatusTip(tr("Un-Zoom"));
     m_aUnZoom->setShortcut(Qt::Key_Z);
     m_aUnZoom->setIcon(QIcon(":/icons/unzoomxy.svg"));
-    toolBar->addAction(m_aUnZoom);
+    m_toolBar->addAction(m_aUnZoom);
     connect(m_aUnZoom, SIGNAL(triggered()), this, SLOT(aunzoom()));
     m_aZoomOnSelection = new QAction(tr("&Zoom on selection"), this);
     m_aZoomOnSelection->setStatusTip(tr("Zoom on selection"));
     m_aZoomOnSelection->setEnabled(false);
     m_aZoomOnSelection->setShortcut(Qt::Key_S);
     m_aZoomOnSelection->setIcon(QIcon(":/icons/zoomselectionxy.svg"));
-    toolBar->addAction(m_aZoomOnSelection);
+    m_toolBar->addAction(m_aZoomOnSelection);
     connect(m_aZoomOnSelection, SIGNAL(triggered()), this, SLOT(selectionZoomOn()));
 
     m_aSelectionClear = new QAction(tr("Clear selection"), this);
@@ -236,13 +236,13 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_aSelectionClear->setIcon(selectionclearicon);
     m_aSelectionClear->setEnabled(false);
     connect(m_aSelectionClear, SIGNAL(triggered()), this, SLOT(selectionClear()));
-    toolBar->addAction(m_aSelectionClear);
+    m_toolBar->addAction(m_aSelectionClear);
 
-    WMainWindow::getMW()->ui->lSpectrumToolBar->addWidget(toolBar);
+    WMainWindow::getMW()->ui->lSpectrumToolBar->addWidget(m_toolBar);
     WMainWindow::getMW()->ui->lblSpectrumSelectionTxt->setText("No selection");
 
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setResizeAnchor(QGraphicsView::AnchorViewCenter);
     setMouseTracking(true);
 
@@ -363,7 +363,8 @@ void QGVAmplitudeSpectrum::computeDFTs(){
         m_fftresizethread->m_mutex_resizing.unlock();
 
         m_scene->invalidate();
-        WMainWindow::getMW()->m_gvPhaseSpectrum->m_scene->invalidate();
+        if(WMainWindow::getMW()->m_gvPhaseSpectrum)
+            WMainWindow::getMW()->m_gvPhaseSpectrum->m_scene->invalidate();
     }
 
 //    std::cout << "~QGVAmplitudeSpectrum::computeDFTs" << endl;
@@ -467,18 +468,23 @@ void QGVAmplitudeSpectrum::viewChangesRequested() {
 void QGVAmplitudeSpectrum::resizeEvent(QResizeEvent* event){
 
 //    cout << "QGVAmplitudeSpectrum::resizeEvent" << endl;
+//    cout << "oldSize: " << event->oldSize().width() << " X " << event->oldSize().height() << endl;
 
-    QRectF viewrect = mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect();
+    QRectF oldviewrect = mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect();
 
-    if(viewrect.width()==0 && viewrect.height()==0)
-        viewrect = m_scene->sceneRect();
+//    cout << "oldviewrect: " << oldviewrect.left() << "," << oldviewrect.right() << " X " << oldviewrect.top() << "," << oldviewrect.bottom() << endl;
 
-    if(viewrect.left()<m_scene->sceneRect().left()) viewrect.setLeft(m_scene->sceneRect().left());
-    if(viewrect.right()>m_scene->sceneRect().right()) viewrect.setRight(m_scene->sceneRect().right());
-    if(viewrect.top()<m_scene->sceneRect().top()) viewrect.setTop(m_scene->sceneRect().top());
-    if(viewrect.bottom()>m_scene->sceneRect().bottom()) viewrect.setBottom(m_scene->sceneRect().bottom());
+    if(oldviewrect.width()==0 && oldviewrect.height()==0)
+        oldviewrect = m_scene->sceneRect();
 
-    fitInView(removeHiddenMargin(viewrect));
+//    cout << "oldviewrect2: " << oldviewrect.left() << "," << oldviewrect.right() << " X " << oldviewrect.top() << "," << oldviewrect.bottom() << endl;
+
+    if(oldviewrect.left()<m_scene->sceneRect().left()) oldviewrect.setLeft(m_scene->sceneRect().left());
+    if(oldviewrect.right()>m_scene->sceneRect().right()) oldviewrect.setRight(m_scene->sceneRect().right());
+    if(oldviewrect.top()<m_scene->sceneRect().top()) oldviewrect.setTop(m_scene->sceneRect().top());
+    if(oldviewrect.bottom()>m_scene->sceneRect().bottom()) oldviewrect.setBottom(m_scene->sceneRect().bottom());
+
+    fitInView(removeHiddenMargin(oldviewrect));
 
     viewChangesRequested();
 
@@ -787,7 +793,8 @@ void QGVAmplitudeSpectrum::selectionClear() {
     m_aSelectionClear->setEnabled(false);
     setCursor(Qt::CrossCursor);
 
-    WMainWindow::getMW()->m_gvPhaseSpectrum->selectionClear();
+    if(WMainWindow::getMW()->m_gvPhaseSpectrum)
+        WMainWindow::getMW()->m_gvPhaseSpectrum->selectionClear();
 
     selectionSetTextInForm();
 }
@@ -829,13 +836,15 @@ void QGVAmplitudeSpectrum::selectionSetTextInForm() {
 void QGVAmplitudeSpectrum::selectionChangesRequested() {
     selectionFixAndRefresh();
 
-    WMainWindow::getMW()->m_gvPhaseSpectrum->m_mouseSelection.setLeft(m_mouseSelection.left());
-    WMainWindow::getMW()->m_gvPhaseSpectrum->m_mouseSelection.setRight(m_mouseSelection.right());
-    if(WMainWindow::getMW()->m_gvPhaseSpectrum->m_mouseSelection.height()==0) {
-        WMainWindow::getMW()->m_gvPhaseSpectrum->m_mouseSelection.setTop(-M_PI);
-        WMainWindow::getMW()->m_gvPhaseSpectrum->m_mouseSelection.setBottom(M_PI);
+    if(WMainWindow::getMW()->m_gvPhaseSpectrum) {
+        WMainWindow::getMW()->m_gvPhaseSpectrum->m_mouseSelection.setLeft(m_mouseSelection.left());
+        WMainWindow::getMW()->m_gvPhaseSpectrum->m_mouseSelection.setRight(m_mouseSelection.right());
+        if(WMainWindow::getMW()->m_gvPhaseSpectrum->m_mouseSelection.height()==0) {
+            WMainWindow::getMW()->m_gvPhaseSpectrum->m_mouseSelection.setTop(-M_PI);
+            WMainWindow::getMW()->m_gvPhaseSpectrum->m_mouseSelection.setBottom(M_PI);
+        }
+        WMainWindow::getMW()->m_gvPhaseSpectrum->selectionFixAndRefresh();
     }
-    WMainWindow::getMW()->m_gvPhaseSpectrum->selectionFixAndRefresh();
 
     selectionSetTextInForm();
 }

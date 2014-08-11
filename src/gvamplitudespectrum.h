@@ -83,6 +83,7 @@ public:
 
     QGraphicsScene* m_scene;
 
+    QToolBar* m_toolBar;
     QMenu m_contextmenu;
 
     int m_winlen;
