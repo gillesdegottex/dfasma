@@ -18,78 +18,37 @@ file provided in the source code of DFasma. Another copy can be found at
 <http://www.gnu.org/licenses/>.
 */
 
-#ifndef QGVSPECTRUM_H
-#define QGVSPECTRUM_H
+#ifndef QGVPHASESPECTRUM_H
+#define QGVPHASESPECTRUM_H
 
 #include <vector>
 #include <deque>
 
 #include <QGraphicsView>
-#include <QMutex>
-#include <QThread>
 #include <QMenu>
 
-#include "wmainwindow.h"
+//#include "wmainwindow.h"
 
 #include "external/FFTwrapper.h"
 
-class GVSpectrumWDialogSettings;
-class MainWindow;
+//class GVPhaseSpectrumWDialogSettings;
+class WMainWindow;
 class QSpinBox;
 
-class FFTResizeThread : public QThread
+class QGVPhaseSpectrum : public QGraphicsView
 {
     Q_OBJECT
-
-    FFTwrapper* m_fft;   // The FFT transformer
-
-    int m_size_resizing;// The size which is in preparation by FFTResizeThread
-    int m_size_todo;    // The next size which has to be done by FFTResizeThread asap
-
-    void run(); //Q_DECL_OVERRIDE
-
-signals:
-    void fftResizing(int prevSize, int newSize);
-    void fftResized(int prevSize, int newSize);
-
-public:
-    FFTResizeThread(FFTwrapper* fft, QObject* parent);
-
-    void resize(int newsize);
-
-    int size();
-
-    QMutex m_mutex_resizing;      // To protect the access to the FFT transformer
-    QMutex m_mutex_changingsizes; // To protect the access to the size variables above
-};
-
-
-class QGVSpectrum : public QGraphicsView
-{
-    Q_OBJECT
-
-    double m_minsy;
-    double m_maxsy;
 
     QRectF removeHiddenMargin(const QRectF& sceneRect);
 
 public:
-    explicit QGVSpectrum(WMainWindow* parent);
+    explicit QGVPhaseSpectrum(WMainWindow* parent);
 
-    GVSpectrumWDialogSettings* m_dlgSettings;
-
-    FFTwrapper* m_fft;
-    FFTResizeThread* m_fftresizethread;
+//    GVPhaseSpectrumWDialogSettings* m_dlgSettings;
 
     QGraphicsScene* m_scene;
 
     QMenu m_contextmenu;
-
-    int m_winlen;
-    unsigned int m_nl;
-    unsigned int m_nr;
-    std::vector<FFTTYPE> m_win;
-    std::vector<FFTTYPE> m_filterresponse;
 
     QGraphicsLineItem* m_giCursorHoriz;
     QGraphicsLineItem* m_giCursorVert;
@@ -109,7 +68,7 @@ public:
     QGraphicsSimpleTextItem* m_giSelectionTxt;
     void selectionChangesRequested();
     void selectionFixAndRefresh();
-    void selectionSetTextInForm();
+    void selectionClear();
 
     void scrollContentsBy(int dx, int dy);
     void wheelEvent(QWheelEvent* event);
@@ -126,33 +85,22 @@ public:
     void drawBackground(QPainter* painter, const QRectF& rect);
     void draw_grid(QPainter* painter, const QRectF& rect);
 
-    ~QGVSpectrum();
-
     QAction* m_aShowGrid;
-    QAction* m_aZoomOnSelection;
-    QAction* m_aSelectionClear;
     QAction* m_aZoomIn;
     QAction* m_aZoomOut;
-    QAction* m_aUnZoom;
-    QAction* m_aShowProperties;
+//    QAction* m_aShowProperties;
+
+    ~QGVPhaseSpectrum();
 
 signals:
     
 public slots:
     void settingsSave();
     void soundsChanged();
-
-    void setWindowRange(double tstart, double tend);
     void updateSceneRect();
-    void updateDFTSettings();
-    void computeDFTs();
-    void fftResizing(int prevSize, int newSize);
 
-    void selectionZoomOn();
-    void selectionClear();
     void azoomin();
     void azoomout();
-    void aunzoom();
 };
 
-#endif // QGVSPECTRUM_H
+#endif // QGVPHASESPECTRUM_H

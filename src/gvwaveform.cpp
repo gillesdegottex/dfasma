@@ -322,7 +322,7 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
                 m_selection_pressedx = p.x();
                 m_mouseSelection = m_selection;
                 setCursor(Qt::ClosedHandCursor);
-                WMainWindow::getMW()->ui->lblSelectionTxt->setText(QString("Selection: [%1s").arg(m_selection.left()).append(",%1s] ").arg(m_selection.right()).append("%1s").arg(m_selection.width()));
+                WMainWindow::getMW()->ui->lblSelectionTxt->setText(QString("[%1").arg(m_selection.left()).append(",%1] ").arg(m_selection.right()).append("%1 s").arg(m_selection.width()));
             }
             else if(!event->modifiers().testFlag(Qt::ControlModifier)){
                 // When selecting
@@ -355,12 +355,15 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
         }
     }
     else if(event->buttons()&Qt::RightButton){
-        if (event->modifiers().testFlag(Qt::ControlModifier)) {
+        if (event->modifiers().testFlag(Qt::ShiftModifier)) {
             setCursor(Qt::CrossCursor);
             m_currentAction = CAZooming;
             m_selection_pressedx = p.x();
             m_pressed_mouseinviewport = mapFromScene(p);
             m_pressed_scenerect = mapToScene(viewport()->rect()).boundingRect();
+        }
+        else if (event->modifiers().testFlag(Qt::ControlModifier)) {
+            // TODO Stretch window from the center
         }
         else {
             QPoint posglobal = mapToGlobal(event->pos()+QPoint(0,0));
@@ -591,7 +594,7 @@ void QGVWaveform::selectionClipAndSet(QRectF selection){
     // Set the visible selection encompassing the actual selection
     m_giSelection->setRect(m_selection.left()-0.5/fs, -1, m_selection.width()+1.0/fs, 2);
 
-    WMainWindow::getMW()->ui->lblSelectionTxt->setText(QString("Selection: [%1s").arg(m_selection.left()).append(",%1s] ").arg(m_selection.right()).append("%1s").arg(m_selection.width()));
+    WMainWindow::getMW()->ui->lblSelectionTxt->setText(QString("[%1").arg(m_selection.left()).append(",%1] ").arg(m_selection.right()).append("%1 s").arg(m_selection.width()));
 
     m_giSelection->show();
     if(m_selection.width()>0){
@@ -829,7 +832,8 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
     double samppixdensity = (viewrect.right()-viewrect.left())*fs/viewport()->rect().width();
 
 //    samppixdensity=0.01;
-    if(samppixdensity<10){ // Full resolution
+    if(samppixdensity<4) {
+//        cout << "Draw lines between each sample in the updated rect" << endl;
 
         for(size_t fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++){
             if(!WMainWindow::getMW()->ftsnds[fi]->m_actionShow->isChecked())
@@ -887,11 +891,9 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
             painter->drawLine(QLineF(double(WMainWindow::getMW()->ftsnds[fi]->wav.size()-1)/fs, -1.0, double(WMainWindow::getMW()->ftsnds[fi]->wav.size()-1)/fs, 1.0));
         }
-
-        WMainWindow::getMW()->ui->lblInfoTxt->setText("Full resolution waveform plot");
     }
     else {
-        // Plot only one line per pixel, in order to reduce computation time
+//        cout << "Plot only one line per pixel, in order to reduce computation time" << endl;
 
         painter->setWorldMatrixEnabled(false); // Work in pixel coordinates
 
@@ -940,9 +942,6 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
         }
 
         painter->setWorldMatrixEnabled(true); // Go back to scene coordinates
-
-        // Tell that the waveform is simplified
-        WMainWindow::getMW()->ui->lblInfoTxt->setText("Quick plot using simplified waveform");
     }
 
 

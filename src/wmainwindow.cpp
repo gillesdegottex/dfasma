@@ -26,6 +26,7 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "gvwaveform.h"
 #include "gvspectrum.h"
+#include "gvphasespectrum.h"
 #include "ftsound.h"
 #include "ftfzero.h"
 #include "ftlabels.h"
@@ -68,6 +69,7 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     , m_dlgSettings(NULL)
     , m_gvWaveform(NULL)
     , m_gvSpectrum(NULL)
+    , m_gvPhaseSpectrum(NULL)
     , m_audioengine(NULL)
 {
     ui->setupUi(this);
@@ -142,8 +144,10 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     ui->splitterViews->hide();
 
     m_gvSpectrum = new QGVSpectrum(this);
-    ui->lSpectrumGraphicsView->addWidget(m_gvSpectrum);
-    ui->gvPSpectrum->hide(); // TODO Phase spectrum
+    ui->lAmplitudeSpectrumGraphicsView->addWidget(m_gvSpectrum);
+
+    m_gvPhaseSpectrum = new QGVPhaseSpectrum(this);
+    ui->lPhaseSpectrumGraphicsView->addWidget(m_gvPhaseSpectrum);
 
     for(int f=0; f<sndfiles.size(); f++)
         addFile(sndfiles[f]);
@@ -233,10 +237,6 @@ double WMainWindow::getMaxLastSampleTime(){
         lst = std::max(lst, ftlabels[fi]->getLastSampleTime());
 
     return lst;
-}
-
-WMainWindow::~WMainWindow() {
-    delete ui;
 }
 
 void WMainWindow::keyPressEvent(QKeyEvent* event){
@@ -340,6 +340,11 @@ void WMainWindow::setEditMode(bool checked){
     else
         setSelectionMode(true);
 }
+
+WMainWindow::~WMainWindow() {
+    delete ui;
+}
+
 
 // File management =======================================================
 

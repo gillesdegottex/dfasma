@@ -130,6 +130,7 @@ SOURCES   += src/main.cpp\
              src/gvwaveform.cpp \
              src/gvspectrum.cpp \
              src/gvspectrumwdialogsettings.cpp \
+             src/gvphasespectrum.cpp \
              src/wdialogsettings.cpp \
              external/audioengine/audioengine.cpp \
              external/FFTwrapper.cpp
@@ -142,6 +143,7 @@ HEADERS   += src/wmainwindow.h \
              src/ftlabels.h \
              src/gvwaveform.h \
              src/gvspectrum.h \
+             src/gvphasespectrum.h \
              src/gvspectrumwdialogsettings.h \
              src/wdialogsettings.h \
              external/audioengine/audioengine.h \

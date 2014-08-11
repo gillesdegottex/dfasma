@@ -42,6 +42,7 @@ class FTLabels;
 class AudioEngine;
 class QGVWaveform;
 class QGVSpectrum;
+class QGVPhaseSpectrum;
 class QHBoxLayout;
 class QProgressBar;
 class QLabel;
@@ -117,6 +118,7 @@ public:
 
     QGVWaveform* m_gvWaveform;
     QGVSpectrum* m_gvSpectrum;
+    QGVPhaseSpectrum* m_gvPhaseSpectrum;
 
     AudioEngine* m_audioengine;
 };
