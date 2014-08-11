@@ -34,6 +34,8 @@ using namespace Easdif;
 FTFZero::FTFZero(const QString& _fileName, QObject *parent)
     : FileType(FTFZERO, _fileName, this)
 {
+    Q_UNUSED(parent)
+
     // TODO load text files
 
 #ifdef SUPPORT_SDIF

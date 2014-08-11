@@ -18,8 +18,8 @@ file provided in the source code of DFasma. Another copy can be found at
 <http://www.gnu.org/licenses/>.
 */
 
-#ifndef QGVSPECTRUM_H
-#define QGVSPECTRUM_H
+#ifndef QGVAMPLITUDESPECTRUM_H
+#define QGVAMPLITUDESPECTRUM_H
 
 #include <vector>
 #include <deque>
@@ -33,7 +33,7 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "external/FFTwrapper.h"
 
-class GVSpectrumWDialogSettings;
+class GVAmplitudeSpectrumWDialogSettings;
 class MainWindow;
 class QSpinBox;
 
@@ -64,19 +64,19 @@ public:
 };
 
 
-class QGVSpectrum : public QGraphicsView
+class QGVAmplitudeSpectrum : public QGraphicsView
 {
     Q_OBJECT
 
-    double m_minsy;
-    double m_maxsy;
+    qreal m_minsy;
+    qreal m_maxsy;
 
     QRectF removeHiddenMargin(const QRectF& sceneRect);
 
 public:
-    explicit QGVSpectrum(WMainWindow* parent);
+    explicit QGVAmplitudeSpectrum(WMainWindow* parent);
 
-    GVSpectrumWDialogSettings* m_dlgSettings;
+    GVAmplitudeSpectrumWDialogSettings* m_dlgSettings;
 
     FFTwrapper* m_fft;
     FFTResizeThread* m_fftresizethread;
@@ -126,7 +126,7 @@ public:
     void drawBackground(QPainter* painter, const QRectF& rect);
     void draw_grid(QPainter* painter, const QRectF& rect);
 
-    ~QGVSpectrum();
+    ~QGVAmplitudeSpectrum();
 
     QAction* m_aShowGrid;
     QAction* m_aZoomOnSelection;
@@ -155,4 +155,4 @@ public slots:
     void aunzoom();
 };
 
-#endif // QGVSPECTRUM_H
+#endif // QGVAMPLITUDESPECTRUM_H

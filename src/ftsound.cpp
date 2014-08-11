@@ -31,7 +31,7 @@ using namespace std;
 #include <QMessageBox>
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
-#include "gvspectrum.h"
+#include "gvamplitudespectrum.h"
 #include "gvwaveform.h"
 #include "sigproc.h"
 

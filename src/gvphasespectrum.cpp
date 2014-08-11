@@ -22,10 +22,8 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
-#include "gvspectrumwdialogsettings.h"
-#include "ui_gvspectrumwdialogsettings.h"
 #include "gvwaveform.h"
-#include "gvspectrum.h"
+#include "gvamplitudespectrum.h"
 #include "ftsound.h"
 #include "ftfzero.h"
 #include "sigproc.h"

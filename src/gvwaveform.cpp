@@ -22,7 +22,7 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
-#include "gvspectrum.h"
+#include "gvamplitudespectrum.h"
 #include "ftsound.h"
 #include "ftlabels.h"
 

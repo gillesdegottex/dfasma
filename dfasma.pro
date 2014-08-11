@@ -128,8 +128,8 @@ SOURCES   += src/main.cpp\
              src/ftfzero.cpp \
              src/ftlabels.cpp \
              src/gvwaveform.cpp \
-             src/gvspectrum.cpp \
-             src/gvspectrumwdialogsettings.cpp \
+             src/gvamplitudespectrum.cpp \
+             src/gvamplitudespectrumwdialogsettings.cpp \
              src/gvphasespectrum.cpp \
              src/wdialogsettings.cpp \
              external/audioengine/audioengine.cpp \
@@ -142,15 +142,15 @@ HEADERS   += src/wmainwindow.h \
              src/ftfzero.h \
              src/ftlabels.h \
              src/gvwaveform.h \
-             src/gvspectrum.h \
+             src/gvamplitudespectrum.h \
+             src/gvamplitudespectrumwdialogsettings.h \
              src/gvphasespectrum.h \
-             src/gvspectrumwdialogsettings.h \
              src/wdialogsettings.h \
              external/audioengine/audioengine.h \
              external/FFTwrapper.h
 
 FORMS     += src/wmainwindow.ui \
              src/wdialogsettings.ui \
-             src/gvspectrumwdialogsettings.ui
+             src/gvamplitudespectrumwdialogsettings.ui
 
 RESOURCES += ressources.qrc

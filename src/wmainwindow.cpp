@@ -25,7 +25,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "ui_wdialogsettings.h"
 
 #include "gvwaveform.h"
-#include "gvspectrum.h"
+#include "gvamplitudespectrum.h"
 #include "gvphasespectrum.h"
 #include "ftsound.h"
 #include "ftfzero.h"
@@ -143,7 +143,7 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     ui->lWaveformGraphicsView->addWidget(m_gvWaveform);
     ui->splitterViews->hide();
 
-    m_gvSpectrum = new QGVSpectrum(this);
+    m_gvSpectrum = new QGVAmplitudeSpectrum(this);
     ui->lAmplitudeSpectrumGraphicsView->addWidget(m_gvSpectrum);
 
     m_gvPhaseSpectrum = new QGVPhaseSpectrum(this);

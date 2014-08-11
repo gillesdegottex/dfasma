@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>GVSpectrumWDialogSettings</class>
- <widget class="QDialog" name="GVSpectrumWDialogSettings">
+ <class>GVAmplitudeSpectrumWDialogSettings</class>
+ <widget class="QDialog" name="GVAmplitudeSpectrumWDialogSettings">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -231,7 +231,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>GVSpectrumWDialogSettings</receiver>
+   <receiver>GVAmplitudeSpectrumWDialogSettings</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -247,7 +247,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>GVSpectrumWDialogSettings</receiver>
+   <receiver>GVAmplitudeSpectrumWDialogSettings</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

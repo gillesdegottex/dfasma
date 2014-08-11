@@ -41,7 +41,7 @@ class FTFZero;
 class FTLabels;
 class AudioEngine;
 class QGVWaveform;
-class QGVSpectrum;
+class QGVAmplitudeSpectrum;
 class QGVPhaseSpectrum;
 class QHBoxLayout;
 class QProgressBar;
@@ -117,7 +117,7 @@ public:
     double getMaxLastSampleTime();
 
     QGVWaveform* m_gvWaveform;
-    QGVSpectrum* m_gvSpectrum;
+    QGVAmplitudeSpectrum* m_gvSpectrum;
     QGVPhaseSpectrum* m_gvPhaseSpectrum;
 
     AudioEngine* m_audioengine;
