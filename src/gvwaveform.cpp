@@ -366,8 +366,11 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
             m_pressed_mouseinviewport = mapFromScene(p);
             m_pressed_scenerect = mapToScene(viewport()->rect()).boundingRect();
         }
-        else if (event->modifiers().testFlag(Qt::ControlModifier)) {
-            // TODO Stretch window from the center
+        else if (event->modifiers().testFlag(Qt::ControlModifier) &&
+                 m_selection.width()>0) {
+            m_currentAction = CAStretchSelection;
+            m_selection_pressedx = p.x();
+            setCursor(Qt::SplitHCursor);
         }
         else {
             QPoint posglobal = mapToGlobal(event->pos()+QPoint(0,0));
@@ -444,6 +447,12 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
         m_mouseSelection.setRight(p.x());
         selectionClipAndSet(m_mouseSelection);
     }
+    else if(m_currentAction==CAStretchSelection) {
+        m_mouseSelection.setLeft(m_mouseSelection.left()-(p.x()-m_selection_pressedx));
+        m_mouseSelection.setRight(m_mouseSelection.right()+(p.x()-m_selection_pressedx));
+        selectionClipAndSet(m_mouseSelection);
+        m_selection_pressedx = p.x();
+    }
     else if(m_currentAction==CAWaveformScale){
         // When scaling the waveform
         FTSound* currentftsound = WMainWindow::getMW()->getCurrentFTSound();
@@ -511,7 +520,7 @@ void QGVWaveform::mouseReleaseEvent(QMouseEvent* event){
 
     m_currentAction = CANothing;
 
-    // Order the selection to avoid negative width
+    // Order the mouse selection to avoid negative width
     if(m_mouseSelection.right()<m_mouseSelection.left()){
         float tmp = m_mouseSelection.left();
         m_mouseSelection.setLeft(m_mouseSelection.right());

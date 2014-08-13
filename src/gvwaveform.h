@@ -41,7 +41,7 @@ public:
     float m_selection_pressedx;
     QPointF m_pressed_mouseinviewport;
     QRectF m_pressed_scenerect;
-    enum CurrentAction {CANothing, CAMoving, CAZooming, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight, CAWaveformScale, CAWaveformDelay};
+    enum CurrentAction {CANothing, CAMoving, CAZooming, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight, CAStretchSelection, CAWaveformScale, CAWaveformDelay};
     int m_currentAction;
     QRectF m_mouseSelection; // The mouse selection. This one ignores the samples
     QRectF m_selection; // The actual selection, always at exact samples time
