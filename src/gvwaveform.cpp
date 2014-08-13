@@ -95,10 +95,11 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     WMainWindow::getMW()->ui->lblSelectionTxt->setText("No selection");
     m_giFilteredSelection = new QGraphicsRectItem();
     m_giFilteredSelection->hide();
-    QPen filteredSelectionPen(QColor(192, 192, 192));
+    QColor filtsecbrush(255, 128, 128);
+    QPen filteredSelectionPen(filtsecbrush);
     filteredSelectionPen.setWidth(0);
     m_giFilteredSelection->setPen(filteredSelectionPen);
-    QBrush filteredSelectionBrush(QColor(200, 200, 200));
+    QBrush filteredSelectionBrush(filtsecbrush);
     m_giFilteredSelection->setBrush(filteredSelectionBrush);
     m_giFilteredSelection->setOpacity(0.25);
     m_scene->addItem(m_giFilteredSelection);
