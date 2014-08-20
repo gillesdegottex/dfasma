@@ -12,5 +12,8 @@
         <file>icons/edit.svg</file>
         <file>icons/scroll.svg</file>
         <file>icons/selectionclear.svg</file>
+        <file>icons/grid.svg</file>
+        <file>icons/window.svg</file>
+        <file>icons/unzoomy.svg</file>
     </qresource>
 </RCC>
