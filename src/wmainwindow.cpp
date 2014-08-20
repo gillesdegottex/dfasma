@@ -83,7 +83,7 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     #ifdef SUPPORT_SDIF
         sdifinfostr = "<br/><i>SDIF file format:</i> <a href=\"http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/\">Easdif</a> version "+QString(EASDIF_VERSION_STRING);
     #else
-        sdifinfostr = "<br/><i>No support for SDIF file format</i>"));
+        sdifinfostr = "<br/><i>No support for SDIF file format</i>";
     #endif
     m_dlgSettings->ui->vlLibraries->addWidget(new QLabel(sdifinfostr));
 
