@@ -186,7 +186,7 @@ void WMainWindow::execAbout(){
 
     txt += "<h4>Credits</h4>\
             Most open-source softwares are infeasible without indirect contributions provided through libraries, open code, etc.\
-            Keeping in mind that none of the following geeks could be taken as responsible of DFasma\'s bugs or improper behaviors, it seems necessary to thanks them:<br/>\
+            Thus, thanks to the following geeks:<br/>\
             - A. J. Fisher for the Butterworth\'s filter design<br/>\
             - Laurent de Soras for the FFTReal<br/>\
             - FFTW3\'s team<br/>\

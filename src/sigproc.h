@@ -27,7 +27,7 @@ file provided in the source code of DFasma. Another copy can be found at
 
 namespace sigproc {
 
-// Interpolate value given time vector and data vector
+// Interpolate value given time vector and corresponding data vector
 template<typename DataType, typename ContainerTimes, typename ContainerData>
 inline DataType nearest(const ContainerTimes& ts, const ContainerData& data, double t, const DataType& defvalue) {
 
@@ -50,7 +50,7 @@ inline DataType nearest(const ContainerTimes& ts, const ContainerData& data, dou
 }
 
 
-inline std::vector<double> hann(int n) // To put somewhere in common with other sig proc stuffs
+inline std::vector<double> hann(int n)
 {
     std::vector<double> win(n);
 
@@ -74,6 +74,8 @@ inline std::vector<double> hamming(int n)
 
     return win;
 }
+
+// TODO Blackman
 
 // filtfilt using Direct Form II
 template<typename DataType, typename ContainerIn, typename ContainerOut> inline void filtfilt(const ContainerIn& wav, const std::vector<double>& num, const std::vector<double>& den, ContainerOut& filteredwav, int nstart=-1, int nend=-1)
