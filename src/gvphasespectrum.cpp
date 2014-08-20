@@ -56,17 +56,6 @@ QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
 //    m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->setValue(settings.value("qgvphasespectrum/sbSpectrumAmplitudeRangeMax", 10).toInt());
 //    m_dlgSettings->ui->sbSpectrumOversamplingFactor->setValue(settings.value("qgvphasespectrum/sbSpectrumOversamplingFactor", 1).toInt());
 
-    m_aShowGrid = new QAction(tr("Show &grid"), this);
-    m_aShowGrid->setCheckable(true);
-    m_aShowGrid->setChecked(settings.value("qgvphasespectrum/m_aShowGrid", true).toBool());
-    connect(m_aShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
-
-    m_aShowPhase = new QAction(tr("Show &phase spectrum"), this);
-    m_aShowPhase->setCheckable(true);
-//    m_aShowPhase->setChecked(settings.value("qgvphasespectrum/m_aShow", true).toBool());
-//    connect(m_aShowPhase, SIGNAL(toggled(bool)), this, SLOT(showPhase(bool)));
-//    WMainWindow::getMW()->m_gvSpectrum->m_toolBar->addAction(m_aShowPhase);
-
     // Cursor
     m_giCursorHoriz = new QGraphicsLineItem(0, -100, 0, 100);
     QPen cursorPen(QColor(64, 64, 64));
@@ -134,13 +123,15 @@ QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
     setMouseTracking(true);
 
     // Build the context menu
-    m_contextmenu.addAction(m_aShowGrid);
+    m_contextmenu.addAction(WMainWindow::getMW()->m_gvSpectrum->m_aShowGrid);
     m_contextmenu.addSeparator();
 //    m_aShowProperties = new QAction(tr("&Properties"), this);
 //    m_aShowProperties->setStatusTip(tr("Open the properties configuration panel of the spectrum view"));
 //    m_contextmenu.addAction(m_aShowProperties);
 //    connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
 //    connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(updateSceneRect()));
+
+    connect(WMainWindow::getMW()->m_gvSpectrum->m_aShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
 }
 
 // Remove hard coded margin (Bug 11945)
@@ -153,6 +144,7 @@ QRectF QGVPhaseSpectrum::removeHiddenMargin(const QRectF& sceneRect){
 }
 
 void QGVPhaseSpectrum::showPhase(bool hastoshow) {
+    Q_UNUSED(hastoshow)
     // TODO Doesnt work
     // Once the phase view is hidden, the free space is not distributed
     // among the other views
@@ -176,8 +168,6 @@ void QGVPhaseSpectrum::showPhase(bool hastoshow) {
 }
 
 void QGVPhaseSpectrum::settingsSave() {
-    QSettings settings;
-    settings.setValue("qgvphasespectrum/m_aShowGrid", m_aShowGrid->isChecked());
 }
 
 void QGVPhaseSpectrum::soundsChanged() {
@@ -585,7 +575,7 @@ void QGVPhaseSpectrum::selectionChangesRequested() {
 
     WMainWindow::getMW()->m_gvSpectrum->m_mouseSelection.setLeft(m_mouseSelection.left());
     WMainWindow::getMW()->m_gvSpectrum->m_mouseSelection.setRight(m_mouseSelection.right());
-    cout << "QGVPhaseSpectrum::selectionChangesRequested " << WMainWindow::getMW()->m_gvSpectrum->m_mouseSelection.height() << endl;
+//    cout << "QGVPhaseSpectrum::selectionChangesRequested " << WMainWindow::getMW()->m_gvSpectrum->m_mouseSelection.height() << endl;
     if(WMainWindow::getMW()->m_gvSpectrum->m_mouseSelection.height()==0) {
         WMainWindow::getMW()->m_gvSpectrum->m_mouseSelection.setTop(WMainWindow::getMW()->m_gvSpectrum->m_scene->sceneRect().top());
         WMainWindow::getMW()->m_gvSpectrum->m_mouseSelection.setBottom(WMainWindow::getMW()->m_gvSpectrum->m_scene->sceneRect().bottom());
@@ -724,7 +714,7 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
     // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
 
     // Draw grid
-    if(m_aShowGrid->isChecked())
+    if(WMainWindow::getMW()->m_gvSpectrum->m_aShowGrid->isChecked())
         draw_grid(painter, rect);
 
     // Draw the phase spectrum
