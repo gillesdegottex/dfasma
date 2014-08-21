@@ -90,6 +90,7 @@ public:
     unsigned int m_nl;
     unsigned int m_nr;
     std::vector<FFTTYPE> m_win;
+    std::vector<std::complex<FFTTYPE> > m_windft; // Window spectrum
     std::vector<FFTTYPE> m_filterresponse;
 
     QGraphicsLineItem* m_giCursorHoriz;
@@ -130,6 +131,7 @@ public:
     ~QGVAmplitudeSpectrum();
 
     QAction* m_aShowGrid;
+    QAction* m_aShowWindow;
     QAction* m_aZoomOnSelection;
     QAction* m_aSelectionClear;
     QAction* m_aZoomIn;

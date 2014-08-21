@@ -62,6 +62,7 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_aShowGrid = new QAction(tr("Show &grid"), this);
     m_aShowGrid->setStatusTip(tr("Show &grid"));
     m_aShowGrid->setCheckable(true);
+    m_aShowGrid->setIcon(QIcon(":/icons/grid.svg"));
     m_aShowGrid->setChecked(settings.value("qgvwaveform/m_aShowGrid", true).toBool());
     connect(m_aShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
     m_contextmenu.addAction(m_aShowGrid);
@@ -106,6 +107,7 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
 
     // Window
     m_giWindow = new QGraphicsPathItem();
+    // QPen pen(QColor(192,192,192));
     QPen pen(QColor(0,0,0));
     pen.setWidth(0);
     m_giWindow->setPen(pen);
@@ -114,6 +116,7 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_aShowWindow = new QAction(tr("Show window"), this);
     m_aShowWindow->setStatusTip(tr("Show window"));
     m_aShowWindow->setCheckable(true);
+    m_aShowWindow->setIcon(QIcon(":/icons/window.svg"));
     m_aShowWindow->setChecked(settings.value("qgvwaveform/m_aShowWindow", true).toBool());
     connect(m_aShowWindow, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
     m_contextmenu.addAction(m_aShowWindow);
@@ -166,6 +169,7 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_aSelectionClear->setEnabled(false);
     connect(m_aSelectionClear, SIGNAL(triggered()), this, SLOT(selectionClear()));
     m_aFitViewToSoundsAmplitude = new QAction(tr("Fit the view's amplitude to the max value"), this);
+    m_aFitViewToSoundsAmplitude->setIcon(QIcon(":/icons/unzoomy.svg"));
     m_aFitViewToSoundsAmplitude->setStatusTip(tr("Change the amplitude zoom so that to fit to the maximum of amplitude among all sounds"));
     connect(m_aFitViewToSoundsAmplitude, SIGNAL(triggered()), this, SLOT(fitViewToSoundsAmplitude()));
     m_contextmenu.addAction(m_aFitViewToSoundsAmplitude);
@@ -176,9 +180,13 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
 
     // Fill the toolbar
     QToolBar* waveformToolBar = new QToolBar(this);
+    waveformToolBar->addAction(m_aShowGrid);
+    waveformToolBar->addAction(m_aShowWindow);
+    waveformToolBar->addSeparator();
     waveformToolBar->addAction(m_aZoomIn);
     waveformToolBar->addAction(m_aZoomOut);
     waveformToolBar->addAction(m_aUnZoom);
+    waveformToolBar->addAction(m_aFitViewToSoundsAmplitude);
     waveformToolBar->addSeparator();
     waveformToolBar->addAction(m_aZoomOnSelection);
     waveformToolBar->addAction(m_aSelectionClear);
@@ -646,6 +654,11 @@ void QGVWaveform::selectionClipAndSet(QRectF selection){
             prevx = x;
             prevy = y;
         }
+
+        // Add the vertical line
+        qreal x = ((WMainWindow::getMW()->m_gvSpectrum->m_win.size()-1)/2.0)/fs;
+        path.moveTo(QPointF(x, 0));
+        path.lineTo(QPointF(x, -m_ampzoom));
 
         m_giWindow->setPath(path);
     }

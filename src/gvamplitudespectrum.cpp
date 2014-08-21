@@ -159,8 +159,16 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_aShowGrid = new QAction(tr("Show &grid"), this);
     m_aShowGrid->setStatusTip(tr("Show &grid"));
     m_aShowGrid->setCheckable(true);
+    m_aShowGrid->setIcon(QIcon(":/icons/grid.svg"));
     m_aShowGrid->setChecked(settings.value("qgvspectrum/m_aShowGrid", true).toBool());
     connect(m_aShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
+
+    m_aShowWindow = new QAction(tr("Show &window"), this);
+    m_aShowWindow->setStatusTip(tr("Show &window"));
+    m_aShowWindow->setCheckable(true);
+    m_aShowWindow->setIcon(QIcon(":/icons/window.svg"));
+    m_aShowWindow->setChecked(settings.value("qgvspectrum/m_aShowWindow", true).toBool());
+    connect(m_aShowWindow, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
 
     m_fft = new FFTwrapper();
     m_fftresizethread = new FFTResizeThread(m_fft, this);
@@ -259,6 +267,9 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     // Fill the toolbar
     m_toolBar->addAction(m_aShowProperties);
     m_toolBar->addSeparator();
+    m_toolBar->addAction(m_aShowGrid);
+    m_toolBar->addAction(m_aShowWindow);
+    m_toolBar->addSeparator();
     m_toolBar->addAction(m_aZoomIn);
     m_toolBar->addAction(m_aZoomOut);
     m_toolBar->addAction(m_aUnZoom);
@@ -268,9 +279,9 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
 
     // Build the context menu
     m_contextmenu.addAction(m_aShowGrid);
+    m_contextmenu.addAction(m_aShowWindow);
     m_contextmenu.addSeparator();
     connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
-    connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(updateSceneRect()));
     connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(updateDFTSettings()));
 }
 
@@ -292,6 +303,9 @@ void QGVAmplitudeSpectrum::setWindowRange(double tstart, double tend){
 
     m_winlen = m_nr-m_nl+1;
 
+    if(m_winlen%2==0 && m_dlgSettings->ui->cbWindowSizeForcedOdd->isChecked())
+        m_winlen--;
+
     updateDFTSettings();
 }
 
@@ -301,13 +315,23 @@ void QGVAmplitudeSpectrum::updateDFTSettings(){
 
     if(m_winlen<2) return;
 
-    m_win = sigproc::hann(m_winlen);
+    // Select the window
+    int ind = m_dlgSettings->ui->cbSpectrumWindowType->currentIndex();
+    if(ind==0)
+        m_win = sigproc::hann(m_winlen);
+    else if(ind==1)
+        m_win = sigproc::hamming(m_winlen);
+    else
+        throw QString("No window selected");
+
+    // Normalize the window energy
     double winsum = 0.0;
     for(int n=0; n<m_winlen; n++)
         winsum += m_win[n];
     for(int n=0; n<m_winlen; n++)
         m_win[n] /= winsum;
 
+    // Set the DFT length
     int dftlen = pow(2, std::ceil(log2(float(m_winlen)))+m_dlgSettings->ui->sbSpectrumOversamplingFactor->value());
 
     m_fftresizethread->resize(dftlen);
@@ -366,6 +390,22 @@ void QGVAmplitudeSpectrum::computeDFTs(){
             m_minsy=m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value();
         if(m_maxsy>m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value())
             m_maxsy=m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value();
+
+        // Compute the window's DFT
+        // TODO Avoid computation if not shown
+        if (true) {
+            int n = 0;
+            for(; n<m_winlen; n++)
+                m_fft->in[n] = m_win[n];
+            for(; n<dftlen; n++)
+                m_fft->in[n] = 0.0;
+
+            m_fft->execute();
+
+            m_windft.resize(dftlen/2+1);
+            for(n=0; n<dftlen/2+1; n++)
+                m_windft[n] = m_fft->out[n];
+        }
 
         m_fftresizethread->m_mutex_resizing.unlock();
 
@@ -1030,58 +1070,6 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
     if(m_aShowGrid->isChecked())
         draw_grid(painter, rect);
 
-    // Draw spectrum
-    for(unsigned int fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++){
-        if(!WMainWindow::getMW()->ftsnds[fi]->m_actionShow->isChecked())
-            continue;
-
-        if(WMainWindow::getMW()->ftsnds[fi]->m_dft.size()<1)
-            continue;
-
-//        QTransform trans = transform();
-//        float h11 = float(viewport()->rect().width())/(0.5*WMainWindow::getMW()->getFs());
-//        setTransform(QTransform(h11, trans.m12(), trans.m21(), trans.m22(), 0, 0));
-
-        QPen outlinePen(WMainWindow::getMW()->ftsnds[fi]->color);
-        outlinePen.setWidth(0);
-        painter->setPen(outlinePen);
-        painter->setBrush(QBrush(WMainWindow::getMW()->ftsnds[fi]->color));
-
-        int dftlen = (WMainWindow::getMW()->ftsnds[fi]->m_dft.size()-1)*2;
-        double prevx = 0;
-        double prevy = 20*log10(abs(WMainWindow::getMW()->ftsnds[fi]->m_dft[0]));
-        double a = WMainWindow::getMW()->ftsnds[fi]->m_ampscale;
-        std::complex<WAVTYPE>* data = WMainWindow::getMW()->ftsnds[fi]->m_dft.data();
-        int kmin = std::max(0, int(dftlen*rect.left()/WMainWindow::getMW()->getFs()));
-        int kmax = std::min(dftlen/2+1, int(1+dftlen*rect.right()/WMainWindow::getMW()->getFs()));
-        for(int k=kmin; k<=kmax; k++){
-            double x = WMainWindow::getMW()->getFs()*k/dftlen;
-            double y = 20*log10(a*abs(*(data+k)));
-            painter->drawLine(QLineF(prevx, -prevy, x, -y));
-            prevx = x;
-            prevy = y;
-        }
-    }
-
-    // Draw the filter response
-    if(m_filterresponse.size()>0) {
-        QPen outlinePen(QColor(0,0,0));
-        outlinePen.setWidth(0);
-        painter->setPen(outlinePen);
-
-        int dftlen = (m_filterresponse.size()-1)*2;
-        double prevx = 0;
-        double prevy = m_filterresponse[0];
-        for(int k=0; k<dftlen/2+1; k++){
-            double x = WMainWindow::getMW()->getFs()*k/dftlen;
-            double y = m_filterresponse[k];
-            painter->drawLine(QLineF(prevx, -prevy, x, -y));
-            prevx = x;
-            prevy = y;
-        }
-    }
-
-
     // Draw the f0 grids
     if(!WMainWindow::getMW()->ftfzeros.empty()) {
 
@@ -1113,6 +1101,88 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
             for(int h=2; h<int(0.5*WMainWindow::getMW()->getFs()/cf0)+1; h++) {
                 painter->drawLine(QLineF(h*cf0, -3000, h*cf0, 3000));
             }
+        }
+    }
+
+    // Draw the spectra
+    // TODO should draw spectra only if m_fft is not touching m_dft variables
+    if (WMainWindow::getMW()->ftsnds.size()==0) return;
+    int dftlen = (WMainWindow::getMW()->ftsnds[0]->m_dft.size()-1)*2;
+    if (dftlen==0) return;
+
+    int kmin = std::max(0, int(dftlen*rect.left()/WMainWindow::getMW()->getFs()));
+    int kmax = std::min(dftlen/2, int(1+dftlen*rect.right()/WMainWindow::getMW()->getFs()));
+
+    if (m_aShowWindow->isChecked() && m_windft.size()>0) {
+//        QPen outlinePen(QColor(255, 192, 192));
+//        QPen outlinePen(QColor(0, 0, 0));
+//        painter->setOpacity(0.25);
+        QPen outlinePen(QColor(192, 192, 192));
+        outlinePen.setWidth(0);
+        painter->setPen(outlinePen);
+        painter->setOpacity(1);
+
+        double prevx = 0;
+        double prevy = 20*log10(abs(m_windft[0]));
+        std::complex<WAVTYPE>* data = m_windft.data();
+        for(int k=kmin; k<=kmax; k++){
+            double x = WMainWindow::getMW()->getFs()*k/dftlen;
+            double y = 20*log10(abs(*(data+k)));
+            if(y<-1000000) y=-1000000;
+            painter->drawLine(QLineF(prevx, -prevy, x, -y));
+            prevx = x;
+            prevy = y;
+        }
+    }
+
+    // Draw the filter response
+    if(m_filterresponse.size()>0) {
+        QPen outlinePen(QColor(255, 192, 192));
+        outlinePen.setWidth(0);
+        painter->setPen(outlinePen);
+        painter->setOpacity(1);
+
+        int dftlen = (m_filterresponse.size()-1)*2;
+        double prevx = 0;
+        double prevy = m_filterresponse[0];
+        for(int k=kmin; k<=kmax; k++){
+            double x = WMainWindow::getMW()->getFs()*k/dftlen;
+            double y = m_filterresponse[k];
+            if(y<-1000000) y=-1000000;
+            painter->drawLine(QLineF(prevx, -prevy, x, -y));
+            prevx = x;
+            prevy = y;
+        }
+    }
+
+    for(unsigned int fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++){
+        if(!WMainWindow::getMW()->ftsnds[fi]->m_actionShow->isChecked())
+            continue;
+
+        if(WMainWindow::getMW()->ftsnds[fi]->m_dft.size()<1)
+            continue;
+
+//        QTransform trans = transform();
+//        float h11 = float(viewport()->rect().width())/(0.5*WMainWindow::getMW()->getFs());
+//        setTransform(QTransform(h11, trans.m12(), trans.m21(), trans.m22(), 0, 0));
+
+        QPen outlinePen(WMainWindow::getMW()->ftsnds[fi]->color);
+        outlinePen.setWidth(0);
+        painter->setPen(outlinePen);
+        painter->setBrush(QBrush(WMainWindow::getMW()->ftsnds[fi]->color));
+        painter->setOpacity(1);
+
+        double prevx = 0;
+        double prevy = 20*log10(abs(WMainWindow::getMW()->ftsnds[fi]->m_dft[0]));
+        double a = WMainWindow::getMW()->ftsnds[fi]->m_ampscale;
+        std::complex<WAVTYPE>* data = WMainWindow::getMW()->ftsnds[fi]->m_dft.data();
+        for(int k=kmin; k<=kmax; k++){
+            double x = WMainWindow::getMW()->getFs()*k/dftlen;
+            double y = 20*log10(a*abs(*(data+k)));
+            if(y<-1000000) y=-1000000;
+            painter->drawLine(QLineF(prevx, -prevy, x, -y));
+            prevx = x;
+            prevy = y;
         }
     }
 
@@ -1219,4 +1289,5 @@ QGVAmplitudeSpectrum::~QGVAmplitudeSpectrum(){
     m_fftresizethread->m_mutex_changingsizes.unlock();
     delete m_fftresizethread;
     delete m_fft;
+    delete m_dlgSettings;
 }
