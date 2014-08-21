@@ -26,6 +26,9 @@
 # For the Discrete Fast Fourier Transform
 # Chose among: fft_fftw3, fft_fftreal
 CONFIG += fft_fftw3
+# For FFTW3: Allow to limit the time spent in the resize of the FFT
+#(available only from FFTW3's version 3.1)
+DEFINES += FFTW3RESIZINGMAXTIMESPENT
 
 # For the audio file support
 # Chose among: audiofilereading_libsndfile, audiofilereading_libsox,
@@ -35,7 +38,7 @@ CONFIG += audiofilereading_libsndfile
 
 # Additional file format support
 # SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
-CONFIG += sdifreading
+# CONFIG += sdifreading
 
 # The most cross-platform/portable/compatible compilation settings
 # (comment all the above and uncomment below)
@@ -95,7 +98,9 @@ CONFIG(audiofilereading_libav) {
 
 CONFIG(fft_fftw3){
     QMAKE_CXXFLAGS += -DFFT_FFTW3
-    LIBS += -lfftw3
+    win32:INCLUDEPATH += "$$_PRO_FILE_PWD_/../fftw-3.3.4-dll32/"
+    unix:LIBS += -lfftw3
+    win32:LIBS += "$$_PRO_FILE_PWD_/../fftw-3.3.4-dll32/libfftw3-3.dll"
 }
 CONFIG(fft_fftreal){
     QMAKE_CXXFLAGS += -DFFT_FFTREAL

@@ -37,7 +37,9 @@ FFTwrapper::FFTwrapper(bool forward)
         m_fftw3_out = NULL;
         m_fftw3_in = NULL;
         m_fftw3_plan = NULL;
-        fftw_set_timelimit(1.0);
+        #ifdef FFTW3RESIZINGMAXTIMESPENT
+        fftw_set_timelimit(1.0); // From FFTW 3.1, though no means exist to check version at compile time ...
+        #endif
     #elif FFT_FFTREAL
         m_fftreal_out = NULL;
         m_fftreal_fft = NULL;
