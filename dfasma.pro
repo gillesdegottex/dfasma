@@ -34,7 +34,7 @@ DEFINES += FFTW3RESIZINGMAXTIMESPENT
 # Chose among: audiofilereading_libsndfile, audiofilereading_libsox,
 #              audiofilereading_libav,
 #              audiofilereading_qt, audiofilereading_builtin
-CONFIG += audiofilereading_builtin
+CONFIG += audiofilereading_libsox
 
 # Additional file format support
 # SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
@@ -85,7 +85,9 @@ CONFIG(audiofilereading_libsox) {
     message(Building with libsox support for audio file reading.)
     QMAKE_CXXFLAGS += -DAUDIOFILEREADING_LIBSOX
     SOURCES  += external/iodsound_load_libsox.cpp
-    LIBS += -lsox
+    win32:INCLUDEPATH += "$$_PRO_FILE_PWD_/../libsox/include/"
+    unix:LIBS += -lsox
+    win32:LIBS += "$$_PRO_FILE_PWD_/../libsox/lib/libsox.dll.a"
 }
 CONFIG(audiofilereading_libav) {
     message(Building with libav support for audio file reading.)
