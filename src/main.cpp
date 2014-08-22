@@ -62,6 +62,8 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationDomain("gillesdegottex.eu");
     QCoreApplication::setApplicationName("DFasma");
 
+    a.setWindowIcon(QIcon(":/icons/dfasma.svg"));
+
     QStringList filestoload = QApplication::arguments();
     filestoload.removeAt(0);
 

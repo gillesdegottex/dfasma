@@ -15,5 +15,7 @@
         <file>icons/grid.svg</file>
         <file>icons/window.svg</file>
         <file>icons/unzoomy.svg</file>
+        <file>icons/dfasma.svg</file>
+        <file>icons/dfasma.ico</file>
     </qresource>
 </RCC>

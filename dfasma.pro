@@ -127,6 +127,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = dfasma
 TEMPLATE = app
 
+RC_ICONS = icons/dfasma.ico
+
 SOURCES   += src/main.cpp\
              src/wmainwindow.cpp \
              src/filetype.cpp \
