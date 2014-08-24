@@ -24,6 +24,7 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include <vector>
 #include <limits>
+#include <iostream>
 
 namespace sigproc {
 
@@ -49,33 +50,84 @@ inline DataType nearest(const ContainerTimes& ts, const ContainerData& data, dou
     return d;
 }
 
-
-inline std::vector<double> hann(int n)
-{
-    std::vector<double> win(n);
+// Generalized cosin window
+inline std::vector<double> gencoswindow(int n, const std::vector<double>& c) {
+    std::vector<double> win(n, 0.0);
 
     for(size_t n=0; n<win.size(); n++)
-        win[n] = (1-cos(2.0*M_PI*n/(win.size()-1))) / (win.size()-1);
+        for (size_t k=0; k<c.size(); k++)
+            win[n] += c[k]*cos(k*2*M_PI*n/(win.size()-1));
 
     return win;
 }
 
-inline std::vector<double> hamming(int n)
-{
-    std::vector<double> win(n);
-
-    double s = 0.0;
-    for(size_t n=0; n<win.size(); n++) {
-        win[n] = (0.54-0.46*cos(2*M_PI*n/(win.size()-1)));
-        s += win[n];
-    }
-    for(size_t n=0; n<win.size(); n++)
-        win[n] /= s;
-
-    return win;
+inline std::vector<double> hann(int n) {
+    std::vector<double> c;
+    c.push_back(0.5);
+    c.push_back(-0.5);
+    return gencoswindow(n, c);
 }
 
-// TODO Blackman
+inline std::vector<double> hamming(int n) {
+    std::vector<double> c;
+    c.push_back(0.54);
+    c.push_back(-0.46);
+    return gencoswindow(n, c);
+}
+
+inline std::vector<double> blackman(int n) {
+    std::vector<double> c;
+    double alpha = 0.16;
+    c.push_back((1-alpha)/2);
+    c.push_back(-0.5);
+    c.push_back(alpha/2);
+    // The following gives slightly difference frequency response
+    // based on the Wikipedia's plot
+    // c.push_back(7938.0/18608.0);
+    // c.push_back(-9240.0/18608.0);
+    // c.push_back(1430.0/18608.0);
+    return gencoswindow(n, c);
+}
+
+// TODO Check coefs
+inline std::vector<double> nutall(int n) {
+    std::vector<double> c;
+    c.push_back(0.355768);
+    c.push_back(-0.487396);
+    c.push_back(0.144232);
+    c.push_back(-0.012604);
+    return gencoswindow(n, c);
+}
+
+// TODO Check coefs
+inline std::vector<double> blackmannutall(int n) {
+    std::vector<double> c;
+    c.push_back(0.3635819);
+    c.push_back(-0.4891775);
+    c.push_back(0.1365995);
+    c.push_back(-0.0106411);
+    return gencoswindow(n, c);
+}
+
+// TODO Check coefs
+inline std::vector<double> blackmanharris(int n) {
+    std::vector<double> c;
+    c.push_back(0.35875);
+    c.push_back(-0.48829);
+    c.push_back(0.14128);
+    c.push_back(-0.01168);
+    return gencoswindow(n, c);
+}
+
+inline std::vector<double> flattop(int n) {
+    std::vector<double> c;
+    c.push_back(1);
+    c.push_back(-1.93);
+    c.push_back(1.29);
+    c.push_back(-0.388);
+    c.push_back(0.028);
+    return gencoswindow(n, c);
+}
 
 // filtfilt using Direct Form II
 template<typename DataType, typename ContainerIn, typename ContainerOut> inline void filtfilt(const ContainerIn& wav, const std::vector<double>& num, const std::vector<double>& den, ContainerOut& filteredwav, int nstart=-1, int nend=-1)
