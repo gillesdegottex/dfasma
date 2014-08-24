@@ -23,6 +23,8 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "gvamplitudespectrum.h"
+#include "gvamplitudespectrumwdialogsettings.h"
+#include "ui_gvamplitudespectrumwdialogsettings.h"
 #include "ftsound.h"
 #include "ftlabels.h"
 
@@ -89,6 +91,12 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     QBrush selectionBrush(QColor(192, 192, 192));
     m_giSelection->setPen(selectionPen);
     m_giSelection->setBrush(selectionBrush);
+    m_giSelection->setOpacity(0.25);
+    // QPen mouseselectionPen(QColor(255, 0, 0));
+    // mouseselectionPen.setWidth(0);
+    // m_giMouseSelection = new QGraphicsRectItem();
+    // m_giMouseSelection->setPen(mouseselectionPen);
+    // m_scene->addItem(m_giMouseSelection);
     m_giSelection->setOpacity(0.25);
     m_mouseSelection = QRectF(0, -1, 0, 2);
     m_selection = m_mouseSelection;
@@ -172,7 +180,7 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_aFitViewToSoundsAmplitude->setIcon(QIcon(":/icons/unzoomy.svg"));
     m_aFitViewToSoundsAmplitude->setStatusTip(tr("Change the amplitude zoom so that to fit to the maximum of amplitude among all sounds"));
     connect(m_aFitViewToSoundsAmplitude, SIGNAL(triggered()), this, SLOT(fitViewToSoundsAmplitude()));
-    m_contextmenu.addAction(m_aFitViewToSoundsAmplitude);
+//    m_contextmenu.addAction(m_aFitViewToSoundsAmplitude);
 
     connect(WMainWindow::getMW()->ui->sldWaveformAmplitude, SIGNAL(valueChanged(int)), this, SLOT(sldAmplitudeChanged(int)));
 
@@ -180,9 +188,9 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
 
     // Fill the toolbar
     QToolBar* waveformToolBar = new QToolBar(this);
-    waveformToolBar->addAction(m_aShowGrid);
-    waveformToolBar->addAction(m_aShowWindow);
-    waveformToolBar->addSeparator();
+//    waveformToolBar->addAction(m_aShowGrid);
+//    waveformToolBar->addAction(m_aShowWindow);
+//    waveformToolBar->addSeparator();
     waveformToolBar->addAction(m_aZoomIn);
     waveformToolBar->addAction(m_aZoomOut);
     waveformToolBar->addAction(m_aUnZoom);
@@ -318,15 +326,17 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
             }
             else if(!event->modifiers().testFlag(Qt::ControlModifier) && m_selection.width()>0 && abs(selview.left()-event->x())<5){
                 // Resize left boundary of the selection
-                setCursor(Qt::SplitHCursor);
                 m_currentAction = CAModifSelectionLeft;
+                m_mouseSelection = m_selection;
                 m_selection_pressedx = p.x()-m_selection.left();
+                setCursor(Qt::SplitHCursor);
             }
             else if(!event->modifiers().testFlag(Qt::ControlModifier) && m_selection.width()>0 && abs(selview.right()-event->x())<5){
                 // Resize right boundary of the selection
-                setCursor(Qt::SplitHCursor);
                 m_currentAction = CAModifSelectionRight;
+                m_mouseSelection = m_selection;
                 m_selection_pressedx = p.x()-m_selection.right();
+                setCursor(Qt::SplitHCursor);
             }
             else if(m_selection.width()>0 && (event->modifiers().testFlag(Qt::ControlModifier) || (p.x()>=m_selection.left() && p.x()<=m_selection.right()))){
                 // cout << "Scrolling the selection" << endl;
@@ -368,15 +378,16 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
     }
     else if(event->buttons()&Qt::RightButton){
         if (event->modifiers().testFlag(Qt::ShiftModifier)) {
-            setCursor(Qt::CrossCursor);
             m_currentAction = CAZooming;
             m_selection_pressedx = p.x();
             m_pressed_mouseinviewport = mapFromScene(p);
             m_pressed_scenerect = mapToScene(viewport()->rect()).boundingRect();
+            setCursor(Qt::CrossCursor);
         }
         else if (event->modifiers().testFlag(Qt::ControlModifier) &&
                  m_selection.width()>0) {
             m_currentAction = CAStretchSelection;
+            m_mouseSelection = m_selection;
             m_selection_pressedx = p.x();
             setCursor(Qt::SplitHCursor);
         }
@@ -586,7 +597,9 @@ void QGVWaveform::selectionClear(){
     m_aSelectionClear->setEnabled(false);
 }
 
-void QGVWaveform::selectionClipAndSet(QRectF selection){
+void QGVWaveform::selectionClipAndSet(QRectF selection, bool winforceupdate){
+
+    // m_giMouseSelection->setRect(selection);
 
     double fs = WMainWindow::getMW()->getFs();
 
@@ -600,7 +613,7 @@ void QGVWaveform::selectionClipAndSet(QRectF selection){
     size_t prevwinlen = WMainWindow::getMW()->m_gvSpectrum->m_win.size();
     m_selection = selection;
 
-    // Clip selection at exact samples time
+    // Clip selection on exact sample times
     m_selection.setLeft((int(0.5+m_selection.left()*fs))/fs);
     if(selection.width()==0)
         m_selection.setRight(m_selection.left());
@@ -611,6 +624,23 @@ void QGVWaveform::selectionClipAndSet(QRectF selection){
     if(m_selection.left()>WMainWindow::getMW()->getMaxLastSampleTime()-1.0/fs) m_selection.setLeft(WMainWindow::getMW()->getMaxLastSampleTime()-1.0/fs);
     if(m_selection.right()<1.0/fs) m_selection.setRight(1.0/fs);
     if(m_selection.right()>WMainWindow::getMW()->getMaxLastSampleTime()) m_selection.setRight(WMainWindow::getMW()->getMaxLastSampleTime());
+
+    // Adjust parity of the window size according to option
+    int nl = std::max(0, int(0.5+m_selection.left()*fs));
+    int nr = int(0.5+std::min(WMainWindow::getMW()->getMaxLastSampleTime(),m_selection.right())*fs);
+    int winlen = nr-nl+1;
+    if(winlen%2==0 && WMainWindow::getMW()->m_gvSpectrum->m_dlgSettings->ui->cbWindowSizeForcedOdd->isChecked()) {
+        if(m_currentAction==CAModifSelectionLeft)
+            m_selection.setLeft(m_selection.left()+1.0/fs);
+        else if(m_currentAction==CAModifSelectionRight)
+            m_selection.setRight(m_selection.right()-1.0/fs);
+        else {
+            if(m_selection.left()==0)
+                m_selection.setRight(m_selection.right()-1.0/fs);
+            else
+                m_selection.setLeft(m_selection.left()+1.0/fs);
+        }
+    }
 
     // Set the visible selection encompassing the actual selection
     m_giSelection->setRect(m_selection.left()-0.5/fs, -1, m_selection.width()+1.0/fs, 2);
@@ -633,22 +663,22 @@ void QGVWaveform::selectionClipAndSet(QRectF selection){
     WMainWindow::getMW()->m_gvSpectrum->setWindowRange(m_selection.left(), m_selection.right());
 
     // Update the visible window
-    if(WMainWindow::getMW()->m_gvSpectrum->m_win.size() != prevwinlen) {
+    if(winforceupdate || WMainWindow::getMW()->m_gvSpectrum->m_win.size() != prevwinlen) {
 
         qreal winmax = 0.0;
         for(size_t n=0; n<WMainWindow::getMW()->m_gvSpectrum->m_win.size(); n++)
             winmax = std::max(winmax, WMainWindow::getMW()->m_gvSpectrum->m_win[n]);
-
-        winmax = m_ampzoom/winmax;
+        winmax = 1.0/winmax;
 
         QPainterPath path;
 
         qreal prevx = 0;
-        qreal prevy = WMainWindow::getMW()->m_gvSpectrum->m_win[0];
+        qreal prevy = WMainWindow::getMW()->m_gvSpectrum->m_win[0]*winmax;
         path.moveTo(QPointF(prevx, -prevy));
+        qreal y;
         for(size_t n=1; n<WMainWindow::getMW()->m_gvSpectrum->m_win.size(); n++) {
             qreal x = n/fs;
-            qreal y = WMainWindow::getMW()->m_gvSpectrum->m_win[n];
+            y = WMainWindow::getMW()->m_gvSpectrum->m_win[n];
             y *= winmax;
             path.lineTo(QPointF(x, -y));
             prevx = x;
@@ -657,8 +687,8 @@ void QGVWaveform::selectionClipAndSet(QRectF selection){
 
         // Add the vertical line
         qreal x = ((WMainWindow::getMW()->m_gvSpectrum->m_win.size()-1)/2.0)/fs;
-        path.moveTo(QPointF(x, 0));
-        path.lineTo(QPointF(x, -m_ampzoom));
+        path.moveTo(QPointF(x, 1.0));
+        path.lineTo(QPointF(x, -1.0));
 
         m_giWindow->setPath(path);
     }
@@ -775,6 +805,10 @@ void QGVWaveform::sldAmplitudeChanged(int value){
     }
 
     update_cursor(-1);
+
+    QTransform m;
+    m.scale(1.0, m_ampzoom);
+    m_giWindow->setTransform(m);
 
     m_scene->invalidate();
 }

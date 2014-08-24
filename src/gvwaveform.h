@@ -46,6 +46,7 @@ public:
     QRectF m_mouseSelection; // The mouse selection. This one ignores the samples
     QRectF m_selection; // The actual selection, always at exact samples time
     QGraphicsRectItem* m_giSelection; // The shown selection, which contains the actual selection (start and end - and + 0.5 sample before and after the actual selection)
+    // QGraphicsRectItem* m_giMouseSelection; // For debug purpose
     QGraphicsLineItem* m_giCursor;
     QGraphicsSimpleTextItem* m_giCursorPositionTxt;
 //    QGraphicsItemGroup* m_yTicksLabels; // TODO Use this instead of print them individually ?
@@ -97,7 +98,7 @@ public slots:
     void aunzoom();
     void sldAmplitudeChanged(int value);
     void fitViewToSoundsAmplitude();
-    void selectionClipAndSet(QRectF selection);
+    void selectionClipAndSet(QRectF selection, bool winforceupdate=false);
     void selectionClear();
     void selectionZoomOn();
 

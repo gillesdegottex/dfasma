@@ -267,9 +267,9 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     // Fill the toolbar
     m_toolBar->addAction(m_aShowProperties);
     m_toolBar->addSeparator();
-    m_toolBar->addAction(m_aShowGrid);
-    m_toolBar->addAction(m_aShowWindow);
-    m_toolBar->addSeparator();
+//    m_toolBar->addAction(m_aShowGrid);
+//    m_toolBar->addAction(m_aShowWindow);
+//    m_toolBar->addSeparator();
     m_toolBar->addAction(m_aZoomIn);
     m_toolBar->addAction(m_aZoomOut);
     m_toolBar->addAction(m_aUnZoom);
@@ -282,7 +282,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_contextmenu.addAction(m_aShowWindow);
     m_contextmenu.addSeparator();
     connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
-    connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(updateDFTSettings()));
+    connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(settingsModified()));
 }
 
 // Remove hard coded margin (Bug 11945)
@@ -294,7 +294,11 @@ QRectF QGVAmplitudeSpectrum::removeHiddenMargin(const QRectF& sceneRect){
     return sceneRect.adjusted(mx, my, -mx, -my);
 }
 
-void QGVAmplitudeSpectrum::setWindowRange(double tstart, double tend){
+void QGVAmplitudeSpectrum::settingsModified(){
+    WMainWindow::getMW()->m_gvWaveform->selectionClipAndSet(WMainWindow::getMW()->m_gvWaveform->m_mouseSelection, true);
+}
+
+void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
     if(tstart==tend) return;
 
     m_nl = std::max(0, int(0.5+tstart*WMainWindow::getMW()->getFs()));
@@ -302,9 +306,6 @@ void QGVAmplitudeSpectrum::setWindowRange(double tstart, double tend){
     if(m_nl==m_nr) return;
 
     m_winlen = m_nr-m_nl+1;
-
-    if(m_winlen%2==0 && m_dlgSettings->ui->cbWindowSizeForcedOdd->isChecked())
-        m_winlen--;
 
     updateDFTSettings();
 }
@@ -321,10 +322,20 @@ void QGVAmplitudeSpectrum::updateDFTSettings(){
         m_win = sigproc::hann(m_winlen);
     else if(ind==1)
         m_win = sigproc::hamming(m_winlen);
+    else if(ind==2)
+        m_win = sigproc::blackman(m_winlen);
+    else if(ind==3)
+        m_win = sigproc::nutall(m_winlen);
+    else if(ind==4)
+        m_win = sigproc::blackmannutall(m_winlen);
+    else if(ind==5)
+        m_win = sigproc::blackmanharris(m_winlen);
+    else if(ind==6)
+        m_win = sigproc::flattop(m_winlen);
     else
         throw QString("No window selected");
 
-    // Normalize the window energy
+    // Normalize the window energy to sum=1
     double winsum = 0.0;
     for(int n=0; n<m_winlen; n++)
         winsum += m_win[n];
@@ -392,7 +403,6 @@ void QGVAmplitudeSpectrum::computeDFTs(){
             m_maxsy=m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value();
 
         // Compute the window's DFT
-        // TODO Avoid computation if not shown
         if (true) {
             int n = 0;
             for(; n<m_winlen; n++)

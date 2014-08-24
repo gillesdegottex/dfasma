@@ -148,6 +148,7 @@ public slots:
     void setWindowRange(double tstart, double tend);
     void updateSceneRect();
     void updateDFTSettings();
+    void settingsModified();
     void computeDFTs();
     void fftResizing(int prevSize, int newSize);
 
