@@ -78,7 +78,7 @@ void FFTwrapper::resize(int n)
     #endif
 
     in.resize(m_size);
-    out.resize(m_size);
+    out.resize((m_size%2==1)?(m_size-1)/2+1:m_size/2+1);
 }
 
 void FFTwrapper::execute()
@@ -93,6 +93,10 @@ void FFTwrapper::execute(const vector<FFTTYPE>& in, vector<std::complex<FFTTYPE>
 
     assert(int(in.size())>=m_size);
 
+    int neededsize = (m_size%2==1)?(m_size-1)/2+1:m_size/2+1;
+    if(int(out.size())<neededsize)
+        out.resize(neededsize);
+
     #ifdef FFT_FFTW3
         for(int i=0; i<m_size; i++)
         {
@@ -102,10 +106,7 @@ void FFTwrapper::execute(const vector<FFTTYPE>& in, vector<std::complex<FFTTYPE>
 
         fftw_execute(m_fftw3_plan);
 
-        if(int(out.size())<m_size)
-            out.resize(m_size);
-
-        for(int i=0; i<m_size; i++)
+        for(size_t i=0; i<out.size(); i++)
             out[i] = make_complex(m_fftw3_out[i]);
 
     #elif FFT_FFTREAL
@@ -113,15 +114,13 @@ void FFTwrapper::execute(const vector<FFTTYPE>& in, vector<std::complex<FFTTYPE>
             m_fftreal_fft->do_fft(m_fftreal_out, &(in[0]));
         else           // IDFT
             assert(false); // TODO
-//std::cout << "FFTwrapper::execute do done" << endl;
 
         out[0] = m_fftreal_out[0]; // DC
+        // TODO manage odd size ?
         for(int f=1; f<m_size/2; f++)
-            out[f] = make_complex(m_fftreal_out[f], m_fftreal_out[m_size/2+f]);
+            out[f] = make_complex(m_fftreal_out[f], -m_fftreal_out[m_size/2+f]);
         out[m_size/2] = m_fftreal_out[m_size/2]; // Nyquist
-//std::cout << "FFTwrapper::execute copy done" << endl;
 
-//std::cout << "FFTwrapper::execute delete done" << endl;
     #endif
 }
 
