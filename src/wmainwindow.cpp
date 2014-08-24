@@ -174,12 +174,13 @@ void WMainWindow::execAbout(){
 
     txt += "<h4>Purpose</h4>";
     txt += "<p><i>DFasma</i> is an open-source software whose main purpose is to compare waveforms in time and spectral domains. Even though there are a few scaling functionalities, DFasma is basically <u>not</u> a sound editor.</p>";
-    txt += "<p>Its purpose and design are inspired by the <i>Xspect</i> software developed at <a href='http://www.ircam.fr'>Ircam</a>.</p>";
+    txt += "<p>Its purpose and design are inspired by the Xspect software which was developed at <a href='http://www.ircam.fr'>Ircam</a>.</p>";
+	// <a href='http://recherche.ircam.fr/equipes/analyse-synthese/DOCUMENTATIONS/xspect/xsintro1.2.html'>Xspect software</a>
 
 //    txt += "<br/>";
 
     txt += "<h4>Legal</h4>\
-            <p>Copyright (&copy;) 2014 Gilles Degottex <a href='mailto:gilles.degottex@gmail.com'>&lt;gilles.degottex@gmail.com&gt;</a></p>\
+            <p>Copyright &copy; 2014 Gilles Degottex <a href='mailto:gilles.degottex@gmail.com'>&lt;gilles.degottex@gmail.com&gt;</a></p>\
     <p>It is coded in C++/<a href='http://qt-project.org'>Qt</a> under the <a href='http://www.gnu.org/licenses/gpl.html'>GPL (v3) License</a>.\
     <br/>The source code is hosted on <a href='https://github.com/gillesdegottex/dfasma'>GitHub</a>.</p>";
 
@@ -193,7 +194,7 @@ void WMainWindow::execAbout(){
             - Erik de Castro Lopo for the libsndfile library<br/>\
             - SOX\'s team for the audio file library<br/>\
             - Ircam\'s team for the SDIF format library<br/>\
-            - Qt\'s team<br/>\
+            - Qt\'s team\
             ";
 
     txt += "<p>Any contribution of any sort is very welcome and will be rewarded by your name in this about box, in addition to a pint of your favorite beer during the next signal processing <a href='http://www.obsessedwithsports.com/wp-content/uploads/2013/03/revenge-of-the-nerds-sloan-conference.png'>conference</a>!</p>";
