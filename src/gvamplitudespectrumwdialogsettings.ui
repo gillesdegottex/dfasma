@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>513</width>
-    <height>251</height>
+    <width>547</width>
+    <height>285</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -195,13 +195,36 @@
             <string>Hamming</string>
            </property>
           </item>
+          <item>
+           <property name="text">
+            <string>Blackman</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Nutall</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Blackman-Nutall</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Blackman-Harris</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Flat top</string>
+           </property>
+          </item>
          </widget>
         </item>
        </layout>
       </item>
      </layout>
-     <zorder></zorder>
-     <zorder>cbWindowSizeForcedOdd</zorder>
     </widget>
    </item>
    <item>
