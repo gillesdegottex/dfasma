@@ -199,7 +199,7 @@ void WMainWindow::execAbout(){
 
     txt += "<p>Any contribution of any sort is very welcome and will be rewarded by your name in this about box, in addition to a pint of your favorite beer during the next signal processing <a href='http://www.obsessedwithsports.com/wp-content/uploads/2013/03/revenge-of-the-nerds-sloan-conference.png'>conference</a>!</p>";
 
-    QMessageBox::about(this, "About this software", txt);
+    QMessageBox::about(this, "About this software                                                                                                ", txt);
 
 //    QMessageBox::aboutQt(this, "About this software");
 }
