@@ -726,10 +726,6 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
         if(WMainWindow::getMW()->ftsnds[fi]->m_dft.size()<1)
             continue;
 
-//        QTransform trans = transform();
-//        float h11 = float(viewport()->rect().width())/(0.5*WMainWindow::getMW()->getFs());
-//        setTransform(QTransform(h11, trans.m12(), trans.m21(), trans.m22(), 0, 0));
-
         QPen outlinePen(WMainWindow::getMW()->ftsnds[fi]->color);
         outlinePen.setWidth(0);
         painter->setPen(outlinePen);
