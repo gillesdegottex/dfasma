@@ -129,6 +129,11 @@ inline std::vector<double> flattop(int n) {
     return gencoswindow(n, c);
 }
 
+inline std::vector<double> rectangular(int n) {
+    return std::vector<double>(n, 1.0);
+}
+
+
 // filtfilt using Direct Form II
 template<typename DataType, typename ContainerIn, typename ContainerOut> inline void filtfilt(const ContainerIn& wav, const std::vector<double>& num, const std::vector<double>& den, ContainerOut& filteredwav, int nstart=-1, int nend=-1)
 {

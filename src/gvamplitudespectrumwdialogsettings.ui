@@ -220,6 +220,11 @@
             <string>Flat top</string>
            </property>
           </item>
+          <item>
+           <property name="text">
+            <string>Rectangular</string>
+           </property>
+          </item>
          </widget>
         </item>
        </layout>
