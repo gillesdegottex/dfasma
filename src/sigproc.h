@@ -51,8 +51,8 @@ inline DataType nearest(const ContainerTimes& ts, const ContainerData& data, dou
 }
 
 // Generalized cosin window
-inline std::vector<double> gencoswindow(int n, const std::vector<double>& c) {
-    std::vector<double> win(n, 0.0);
+inline std::vector<double> gencoswindow(int N, const std::vector<double>& c) {
+    std::vector<double> win(N, 0.0);
 
     for(size_t n=0; n<win.size(); n++)
         for (size_t k=0; k<c.size(); k++)
@@ -133,6 +133,22 @@ inline std::vector<double> rectangular(int n) {
     return std::vector<double>(n, 1.0);
 }
 
+// Generalized normal window
+inline std::vector<double> gennormwindow(int N, double s, double p=2.0) {
+    std::vector<double> win(N, 0.0);
+
+    for(size_t n=0; n<win.size(); n++)
+        win[n] = exp(-std::pow(std::abs((n-(N-1)/2.0)/(s*((N-1)/2.0))),p));
+
+    return win;
+}
+
+inline std::vector<double> expwindow(int N, double D=60.0) {
+
+    double tau = (N/2.0)/(D/8.69);
+
+    return gennormwindow(N, tau/((N-1)/2.0), 1.0);
+}
 
 // filtfilt using Direct Form II
 template<typename DataType, typename ContainerIn, typename ContainerOut> inline void filtfilt(const ContainerIn& wav, const std::vector<double>& num, const std::vector<double>& den, ContainerOut& filteredwav, int nstart=-1, int nend=-1)

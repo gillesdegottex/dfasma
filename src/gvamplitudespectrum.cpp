@@ -334,6 +334,10 @@ void QGVAmplitudeSpectrum::updateDFTSettings(){
         m_win = sigproc::flattop(m_winlen);
     else if(ind==7)
         m_win = sigproc::rectangular(m_winlen);
+    else if(ind==8)
+        m_win = sigproc::gennormwindow(m_winlen, m_dlgSettings->ui->spWindowNormSigma->value(), m_dlgSettings->ui->spWindowNormPower->value());
+    else if(ind==9)
+        m_win = sigproc::expwindow(m_winlen, m_dlgSettings->ui->spWindowExpDecay->value());
     else
         throw QString("No window selected");
 

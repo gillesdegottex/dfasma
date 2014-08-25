@@ -17,6 +17,9 @@ public:
 
     Ui::GVAmplitudeSpectrumWDialogSettings *ui;
 private:
+
+private slots:
+    void CBSpectrumWindowTypeCurrentIndexChanged(QString txt);
 };
 
 #endif // GVAMPLITUDESPECTRUMWDIALOGSETTINGS_H
