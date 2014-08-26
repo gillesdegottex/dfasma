@@ -235,6 +235,11 @@
             <string>Exponential</string>
            </property>
           </item>
+          <item>
+           <property name="text">
+            <string>Generalized Normal</string>
+           </property>
+          </item>
          </widget>
         </item>
        </layout>
@@ -243,6 +248,55 @@
        <layout class="QHBoxLayout" name="horizontalLayout_8">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
+            <item>
+             <widget class="QLabel" name="lblWindowNormPower">
+              <property name="toolTip">
+               <string>Power of the exponential's argument</string>
+              </property>
+              <property name="text">
+               <string>power=</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QDoubleSpinBox" name="spWindowNormPower">
+              <property name="toolTip">
+               <string>Power of the exponential's argument</string>
+              </property>
+              <property name="decimals">
+               <number>6</number>
+              </property>
+              <property name="maximum">
+               <double>1000000.000000000000000</double>
+              </property>
+              <property name="singleStep">
+               <double>0.100000000000000</double>
+              </property>
+              <property name="value">
+               <double>2.000000000000000</double>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
           <item>
            <widget class="QLabel" name="lblWindowNormSigma">
             <property name="text">
@@ -271,55 +325,15 @@
           </item>
          </layout>
         </item>
-        <item>
-         <spacer name="horizontalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_7">
-          <item>
-           <widget class="QLabel" name="lblWindowNormPower">
-            <property name="text">
-             <string>power=</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QDoubleSpinBox" name="spWindowNormPower">
-            <property name="decimals">
-             <number>6</number>
-            </property>
-            <property name="maximum">
-             <double>1000000.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.100000000000000</double>
-            </property>
-            <property name="value">
-             <double>2.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
        </layout>
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_9">
         <item>
          <widget class="QLabel" name="lblWindowExpDecay">
+          <property name="toolTip">
+           <string>Targeted decay over half of the window length</string>
+          </property>
           <property name="text">
            <string>Decay=</string>
           </property>
@@ -330,6 +344,9 @@
         </item>
         <item>
          <widget class="QDoubleSpinBox" name="spWindowExpDecay">
+          <property name="toolTip">
+           <string>Targeted decay over half of the window length</string>
+          </property>
           <property name="suffix">
            <string> dB</string>
           </property>
