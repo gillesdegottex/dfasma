@@ -749,39 +749,38 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
         }
     }
 
-//    // Draw the f0 grids
-//    if(!WMainWindow::getMW()->ftfzeros.empty()) {
+    // Draw the f0 grids
+    if(!WMainWindow::getMW()->ftfzeros.empty()) {
 
-//        for(size_t fi=0; fi<WMainWindow::getMW()->ftfzeros.size(); fi++){
-//            if(!WMainWindow::getMW()->ftfzeros[fi]->m_actionShow->isChecked())
-//                continue;
+        for(size_t fi=0; fi<WMainWindow::getMW()->ftfzeros.size(); fi++){
+            if(!WMainWindow::getMW()->ftfzeros[fi]->m_actionShow->isChecked())
+                continue;
 
-//            QPen outlinePen(WMainWindow::getMW()->ftfzeros[fi]->color);
-//            outlinePen.setWidth(0);
-//            painter->setPen(outlinePen);
-//            painter->setBrush(QBrush(WMainWindow::getMW()->ftfzeros[fi]->color));
+            QPen outlinePen(WMainWindow::getMW()->ftfzeros[fi]->color);
+            outlinePen.setWidth(0);
+            painter->setPen(outlinePen);
+            painter->setBrush(QBrush(WMainWindow::getMW()->ftfzeros[fi]->color));
 
-//            double ct = 0.5*(m_nl+m_nr)/WMainWindow::getMW()->getFs();
-//            double cf0 = sigproc::nearest<double>(WMainWindow::getMW()->ftfzeros[fi]->ts, WMainWindow::getMW()->ftfzeros[fi]->f0s, ct, -1.0);
+            double ct = 0.5*(WMainWindow::getMW()->m_gvSpectrum->m_nl+WMainWindow::getMW()->m_gvSpectrum->m_nr)/WMainWindow::getMW()->getFs();
+            double cf0 = sigproc::nearest<double>(WMainWindow::getMW()->ftfzeros[fi]->ts, WMainWindow::getMW()->ftfzeros[fi]->f0s, ct, -1.0);
 
-//            // cout << ct << ":" << cf0 << endl;
-//            if(cf0==-1) continue;
+            // cout << ct << ":" << cf0 << endl;
+            if(cf0==-1) continue;
 
-//            QColor c = WMainWindow::getMW()->ftfzeros[fi]->color;
-//            c.setAlphaF(1.0);
-//            outlinePen.setColor(c);
-//            painter->setPen(outlinePen);
-//            painter->drawLine(QLineF(cf0, -3000, cf0, 3000));
+            QColor c = WMainWindow::getMW()->ftfzeros[fi]->color;
+            c.setAlphaF(1.0);
+            outlinePen.setColor(c);
+            painter->setPen(outlinePen);
+            painter->drawLine(QLineF(cf0, -M_PI, cf0, M_PI));
 
-//            c.setAlphaF(0.5);
-//            outlinePen.setColor(c);
-//            painter->setPen(outlinePen);
+            c.setAlphaF(0.5);
+            outlinePen.setColor(c);
+            painter->setPen(outlinePen);
 
-//            for(int h=2; h<int(0.5*WMainWindow::getMW()->getFs()/cf0)+1; h++) {
-//                painter->drawLine(QLineF(h*cf0, -3000, h*cf0, 3000));
-//            }
-//        }
-//    }
+            for(int h=2; h<int(0.5*WMainWindow::getMW()->getFs()/cf0)+1; h++)
+                painter->drawLine(QLineF(h*cf0, -M_PI, h*cf0, M_PI));
+        }
+    }
 
 //    cout << "QGVPhaseSpectrum::~drawBackground" << endl;
 }
