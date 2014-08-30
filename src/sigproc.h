@@ -134,13 +134,17 @@ inline std::vector<double> rectangular(int n) {
 }
 
 // Generalized normal window
-inline std::vector<double> gennormwindow(int N, double s, double p=2.0) {
+inline std::vector<double> gennormwindow(int N, double sigma, double p) {
     std::vector<double> win(N, 0.0);
 
     for(size_t n=0; n<win.size(); n++)
-        win[n] = exp(-std::pow(std::abs((n-(N-1)/2.0)/(s*((N-1)/2.0))),p));
+        win[n] = exp(-std::pow(std::abs((n-(N-1)/2.0)/(sigma*((N-1)/2.0))),p));
 
     return win;
+}
+
+inline std::vector<double> normwindow(int N, double std) {
+    return sigproc::gennormwindow(N, std::sqrt(2.0)*std, 2.0);
 }
 
 inline std::vector<double> expwindow(int N, double D=60.0) {
