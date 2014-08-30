@@ -119,10 +119,10 @@ CONFIG(fft_fftreal){
 # Common configurations --------------------------------------------------------
 
 QT += core gui multimedia opengl
+QT -= network
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 QMAKE_CXXFLAGS += -D__STDC_CONSTANT_MACROS
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = dfasma
 TEMPLATE = app
