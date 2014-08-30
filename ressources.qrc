@@ -17,5 +17,6 @@
         <file>icons/unzoomy.svg</file>
         <file>icons/dfasma.svg</file>
         <file>icons/dfasma.ico</file>
+        <file>icons/autoupdatedft.svg</file>
     </qresource>
 </RCC>
