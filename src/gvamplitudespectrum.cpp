@@ -139,6 +139,7 @@ void FFTResizeThread::run() {
 QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     : QGraphicsView(parent)
     , m_winlen(0)
+    , m_dftlen(0)
 {
     m_scene = new QGraphicsScene(this);
     setScene(m_scene);
@@ -155,6 +156,11 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_aShowProperties->setStatusTip(tr("Open the properties configuration panel of the spectrum view"));
     m_aShowProperties->setIcon(QIcon(":/icons/settings.svg"));
 
+
+    m_gridFontPen.setColor(QColor(128,128,128));
+    m_gridFontPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
+    m_gridFont.setPointSize(6);
+    m_gridFont.setFamily("Helvetica");
 
     m_aShowGrid = new QAction(tr("Show &grid"), this);
     m_aShowGrid->setStatusTip(tr("Show &grid"));
@@ -216,7 +222,6 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     WMainWindow::getMW()->ui->lblSpectrumSelectionTxt->setText("No selection");
 
     // Build actions
-    m_toolBar = new QToolBar(this);
     m_aZoomIn = new QAction(tr("Zoom In"), this);;
     m_aZoomIn->setStatusTip(tr("Zoom In"));
     m_aZoomIn->setShortcut(Qt::Key_Plus);
@@ -246,7 +251,13 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_aSelectionClear->setEnabled(false);
     connect(m_aSelectionClear, SIGNAL(triggered()), this, SLOT(selectionClear()));
 
-    WMainWindow::getMW()->ui->lSpectrumToolBar->addWidget(m_toolBar);
+    m_aAutoUpdateDFT = new QAction(tr("Auto-Update the DFT view"), this);;
+    m_aAutoUpdateDFT->setStatusTip(tr("Auto-Update the DFT view when the selection is modified"));
+    m_aAutoUpdateDFT->setCheckable(true);
+    m_aAutoUpdateDFT->setChecked(true);
+    m_aAutoUpdateDFT->setIcon(QIcon(":/icons/autoupdatedft.svg"));
+    connect(m_aAutoUpdateDFT, SIGNAL(toggled(bool)), this, SLOT(settingsModified()));
+
     WMainWindow::getMW()->ui->lblSpectrumSelectionTxt->setText("No selection");
 
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -265,17 +276,17 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     updateSceneRect();
 
     // Fill the toolbar
+    m_toolBar = new QToolBar(this);
     m_toolBar->addAction(m_aShowProperties);
+    m_toolBar->addAction(m_aAutoUpdateDFT);
     m_toolBar->addSeparator();
-//    m_toolBar->addAction(m_aShowGrid);
-//    m_toolBar->addAction(m_aShowWindow);
-//    m_toolBar->addSeparator();
     m_toolBar->addAction(m_aZoomIn);
     m_toolBar->addAction(m_aZoomOut);
     m_toolBar->addAction(m_aUnZoom);
     m_toolBar->addSeparator();
     m_toolBar->addAction(m_aZoomOnSelection);
     m_toolBar->addAction(m_aSelectionClear);
+    WMainWindow::getMW()->ui->lSpectrumToolBar->addWidget(m_toolBar);
 
     // Build the context menu
     m_contextmenu.addAction(m_aShowGrid);
@@ -298,16 +309,20 @@ void QGVAmplitudeSpectrum::settingsModified(){
     WMainWindow::getMW()->m_gvWaveform->selectionClipAndSet(WMainWindow::getMW()->m_gvWaveform->m_mouseSelection, true);
 }
 
-void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
+void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend, bool winforceupdate){
     if(tstart==tend) return;
 
     m_nl = std::max(0, int(0.5+tstart*WMainWindow::getMW()->getFs()));
     m_nr = int(0.5+std::min(WMainWindow::getMW()->getMaxLastSampleTime(),tend)*WMainWindow::getMW()->getFs());
     if(m_nl==m_nr) return;
 
+    int winlen_prev = m_winlen;
     m_winlen = m_nr-m_nl+1;
 
-    updateDFTSettings();
+    if(m_winlen!=winlen_prev || winforceupdate)
+        updateDFTSettings();
+    else if(m_aAutoUpdateDFT->isChecked())
+        computeDFTs();
 }
 
 void QGVAmplitudeSpectrum::updateDFTSettings(){
@@ -316,29 +331,29 @@ void QGVAmplitudeSpectrum::updateDFTSettings(){
 
     if(m_winlen<2) return;
 
-    // Select the window
-    int ind = m_dlgSettings->ui->cbSpectrumWindowType->currentIndex();
-    if(ind==0)
+    // Create the window
+    int wintype = m_dlgSettings->ui->cbSpectrumWindowType->currentIndex();
+    if(wintype==0)
         m_win = sigproc::hann(m_winlen);
-    else if(ind==1)
+    else if(wintype==1)
         m_win = sigproc::hamming(m_winlen);
-    else if(ind==2)
+    else if(wintype==2)
         m_win = sigproc::blackman(m_winlen);
-    else if(ind==3)
+    else if(wintype==3)
         m_win = sigproc::nutall(m_winlen);
-    else if(ind==4)
+    else if(wintype==4)
         m_win = sigproc::blackmannutall(m_winlen);
-    else if(ind==5)
+    else if(wintype==5)
         m_win = sigproc::blackmanharris(m_winlen);
-    else if(ind==6)
+    else if(wintype==6)
         m_win = sigproc::flattop(m_winlen);
-    else if(ind==7)
+    else if(wintype==7)
         m_win = sigproc::rectangular(m_winlen);
-    else if(ind==8)
-        m_win = sigproc::gennormwindow(m_winlen, std::sqrt(2.0)*m_dlgSettings->ui->spWindowNormSigma->value(), 2.0);
-    else if(ind==9)
+    else if(wintype==8)
+        m_win = sigproc::normwindow(m_winlen, m_dlgSettings->ui->spWindowNormSigma->value());
+    else if(wintype==9)
         m_win = sigproc::expwindow(m_winlen, m_dlgSettings->ui->spWindowExpDecay->value());
-    else if(ind==10)
+    else if(wintype==10)
         m_win = sigproc::gennormwindow(m_winlen, m_dlgSettings->ui->spWindowNormSigma->value(), m_dlgSettings->ui->spWindowNormPower->value());
     else
         throw QString("No window selected");
@@ -351,11 +366,10 @@ void QGVAmplitudeSpectrum::updateDFTSettings(){
         m_win[n] /= winsum;
 
     // Set the DFT length
-    int dftlen = pow(2, std::ceil(log2(float(m_winlen)))+m_dlgSettings->ui->sbSpectrumOversamplingFactor->value());
+    m_dftlen = pow(2, std::ceil(log2(float(m_winlen)))+m_dlgSettings->ui->sbSpectrumOversamplingFactor->value());
 
-    m_fftresizethread->resize(dftlen);
-
-    computeDFTs();
+    if(m_aAutoUpdateDFT->isChecked())
+        computeDFTs();
 }
 
 void QGVAmplitudeSpectrum::computeDFTs(){
@@ -363,9 +377,11 @@ void QGVAmplitudeSpectrum::computeDFTs(){
     if(m_winlen<2)
         return;
 
+    m_fftresizethread->resize(m_dftlen);
+
     if(m_fftresizethread->m_mutex_resizing.tryLock()){
 
-        int dftlen = m_fft->size();
+        int dftlen = m_fft->size(); // Local copy of the actual dftlen
 
         WMainWindow::getMW()->ui->pgbFFTResize->hide();
         WMainWindow::getMW()->ui->lblSpectrumInfoTxt->setText(QString("DFT size=%1").arg(dftlen));
@@ -1215,13 +1231,7 @@ void QGVAmplitudeSpectrum::draw_grid(QPainter* painter, const QRectF& rect){
     // TODO put this in the constructor to limit the allocations in this function
     QPen gridPen(QColor(192,192,192)); //192
     gridPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-    QPen thinGridPen(QColor(224,224,224));
-    thinGridPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-    QPen gridFontPen(QColor(128,128,128));
-    gridFontPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-    QFont font;
-    font.setPointSize(8);
-    painter->setFont(font);
+    painter->setFont(m_gridFont);
 
     // Horizontal lines
 
@@ -1250,7 +1260,7 @@ void QGVAmplitudeSpectrum::draw_grid(QPainter* painter, const QRectF& rect){
     }
 
     // Write the ordinates of the horizontal lines
-    painter->setPen(gridFontPen);
+    painter->setPen(m_gridFontPen);
     QTransform trans = transform();
     for(double l=int(viewrect.top()/lstep)*lstep; l<=rect.bottom(); l+=lstep){
         painter->save();
@@ -1267,7 +1277,7 @@ void QGVAmplitudeSpectrum::draw_grid(QPainter* painter, const QRectF& rect){
     // Vertical lines
 
     // Adapt the lines absissa to the viewport
-    f = log10(float(viewrect.width()));
+    f = std::log10(float(viewrect.width()));
     if(f<0) fi=int(f-1);
     else fi = int(f);
 //    std::cout << viewrect.height() << " " << f << " " << fi << endl;
@@ -1290,7 +1300,7 @@ void QGVAmplitudeSpectrum::draw_grid(QPainter* painter, const QRectF& rect){
     }
 
     // Write the absissa of the vertical lines
-    painter->setPen(gridFontPen);
+    painter->setPen(m_gridFontPen);
     for(double l=int(viewrect.left()/lstep)*lstep; l<=rect.right(); l+=lstep){
         painter->save();
         painter->translate(QPointF(l, viewrect.bottom()-14/trans.m22()));

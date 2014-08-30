@@ -73,6 +73,9 @@ class QGVAmplitudeSpectrum : public QGraphicsView
 
     QRectF removeHiddenMargin(const QRectF& sceneRect);
 
+    QPen m_gridFontPen;
+    QFont m_gridFont;
+
 public:
     explicit QGVAmplitudeSpectrum(WMainWindow* parent);
 
@@ -87,6 +90,7 @@ public:
     QMenu m_contextmenu;
 
     int m_winlen;
+    int m_dftlen; // The dftlen set through the settings
     unsigned int m_nl;
     unsigned int m_nr;
     std::vector<FFTTYPE> m_win;
@@ -138,6 +142,7 @@ public:
     QAction* m_aZoomOut;
     QAction* m_aUnZoom;
     QAction* m_aShowProperties;
+    QAction* m_aAutoUpdateDFT;
 
 signals:
     
@@ -145,7 +150,7 @@ public slots:
     void settingsSave();
     void soundsChanged();
 
-    void setWindowRange(double tstart, double tend);
+    void setWindowRange(double tstart, double tend, bool winforceupdate);
     void updateSceneRect();
     void updateDFTSettings();
     void settingsModified();
