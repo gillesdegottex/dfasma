@@ -51,7 +51,6 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
 {
     m_scene = new QGraphicsScene(this);
     setScene(m_scene);
-    m_scene->setSceneRect(-1.0/WMainWindow::getMW()->getFs(), -1.05*m_ampzoom, WMainWindow::getMW()->getMaxDuration()+1.0/WMainWindow::getMW()->getFs(), 2.1*m_ampzoom);
 
     QSettings settings;
 
@@ -60,7 +59,8 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_gridPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
     m_gridFontPen.setColor(QColor(128,128,128));
     m_gridFontPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-    m_gridFont.setPointSize(8);
+    m_gridFont.setPointSize(6);
+    m_gridFont.setFamily("Helvetica");
     m_aShowGrid = new QAction(tr("Show &grid"), this);
     m_aShowGrid->setStatusTip(tr("Show &grid"));
     m_aShowGrid->setCheckable(true);
@@ -184,6 +184,7 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
 
     connect(WMainWindow::getMW()->ui->sldWaveformAmplitude, SIGNAL(valueChanged(int)), this, SLOT(sldAmplitudeChanged(int)));
 
+    updateSceneRect();
 //    setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers))); // Use OpenGL
 
     // Fill the toolbar
@@ -200,12 +201,21 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     waveformToolBar->addAction(m_aSelectionClear);
     WMainWindow::getMW()->ui->lWaveformToolBar->addWidget(waveformToolBar);
 
-    update_cursor(-1);
+    cursorUpdate(-1);
 }
 
 void QGVWaveform::settingsSave() {
     QSettings settings;
     settings.setValue("qgvwaveform/m_aShowGrid", m_aShowGrid->isChecked());
+}
+
+// Remove hard coded margin (Bug 11945)
+// See: https://bugreports.qt-project.org/browse/QTBUG-11945
+QRectF QGVWaveform::removeHiddenMargin(const QRectF& sceneRect){
+    const int bugMargin = 2;
+    const double mx = sceneRect.width()/viewport()->size().width()*bugMargin;
+    const double my = sceneRect.height()/viewport()->size().height()*bugMargin;
+    return sceneRect.adjusted(mx, my, -mx, -my);
 }
 
 void QGVWaveform::fitViewToSoundsAmplitude(){
@@ -218,16 +228,163 @@ void QGVWaveform::fitViewToSoundsAmplitude(){
         maxwavmaxamp *= 1.05;
 
         WMainWindow::getMW()->ui->sldWaveformAmplitude->setValue(100-(maxwavmaxamp*100.0));
-
-//        cout << "sldWaveformAmplitude " << 100-(100.0/m_gvWaveform->m_ampzoom) << endl;
     }
+}
+
+void QGVWaveform::updateSceneRect() {
+    m_scene->setSceneRect(-1.0/WMainWindow::getMW()->getFs(), -1.05*m_ampzoom, WMainWindow::getMW()->getMaxDuration()+1.0/WMainWindow::getMW()->getFs(), 2.1*m_ampzoom);
+
+    viewFixAndRefresh();
+}
+void QGVWaveform::viewFixAndRefresh() {
+
+//    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+//    cout << "QGVWaveform::viewFixAndRefresh viewrect: " << viewrect.width() << "," << viewrect.height() << endl;
+
+    QTransform trans = transform();
+    qreal h11 = trans.m11();
+    qreal h22 = trans.m22();
+
+    qreal min11 = viewport()->rect().width()/m_scene->sceneRect().width();
+    qreal min22 = viewport()->rect().height()/m_scene->sceneRect().height();
+    qreal max11 = viewport()->rect().width()/(10*1.0/WMainWindow::getMW()->getFs()); // Clip the zoom because the plot can't be infinitely precise
+    qreal max22 = viewport()->rect().height()/pow(10, -20);// Clip the zoom because the plot can't be infinitely precise
+    if(h11<min11) h11=min11;
+    if(h11>max11) h11=max11;
+    if(h22<min22) h22=min22;
+    if(h22>max22) h22=max22;
+
+    setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+    setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
+
+//    viewUpdateTexts();
+}
+void QGVWaveform::viewSet(QRectF viewrect) {
+//    cout << "QGVWaveform::viewSet" << endl;
+
+    QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
+    if(viewrect!=currentviewrect) {
+        if(viewrect.top()>m_scene->sceneRect().top())
+            viewrect.setTop(m_scene->sceneRect().top()-0.01);
+        if(viewrect.bottom()<m_scene->sceneRect().bottom())
+            viewrect.setBottom(m_scene->sceneRect().bottom()+0.01);
+        if(viewrect.left()<m_scene->sceneRect().left())
+            viewrect.setLeft(m_scene->sceneRect().left());
+        if(viewrect.right()>m_scene->sceneRect().right())
+            viewrect.setRight(m_scene->sceneRect().right());
+        fitInView(removeHiddenMargin(viewrect));
+        viewFixAndRefresh();
+    }
+
+//    cout << "QGVWaveform::~viewSet" << endl;
+}
+void QGVWaveform::viewChangesRequested() {
+//    cout << "QGVPhaseSpectrum::viewChangesRequested" << endl;
+
+    viewFixAndRefresh();
+
+    // TODO Should contain some stuff for view synchro with the spectrogram
+
+//    cout << "QGVPhaseSpectrum::~viewChangesRequested" << endl;
 }
 
 void QGVWaveform::soundsChanged(){
     if(WMainWindow::getMW()->ftsnds.size()>0)
-        m_scene->setSceneRect(-1.0/WMainWindow::getMW()->getFs(), -1.05*m_ampzoom, WMainWindow::getMW()->getMaxDuration()+1.0/WMainWindow::getMW()->getFs(), 2.1*m_ampzoom);
+        updateSceneRect();
 
     m_scene->update(this->sceneRect());
+}
+
+void QGVWaveform::sldAmplitudeChanged(int value){
+
+    m_ampzoom = (100-value)/100.0;
+
+    updateSceneRect();
+    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+    viewrect.setTop(-2);
+    viewrect.setBottom(+2);
+    viewSet(viewrect);
+
+    cursorUpdate(-1);
+
+    QTransform m;
+    m.scale(1.0, m_ampzoom);
+    m_giWindow->setTransform(m);
+
+    m_scene->invalidate();
+}
+
+void QGVWaveform::azoomin(){
+
+    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+    viewrect.setLeft(viewrect.left()+viewrect.width()/4);
+    viewrect.setRight(viewrect.right()-viewrect.width()/4);
+    viewSet(viewrect);
+
+    cursorUpdate(-1);
+
+    m_aZoomIn->setEnabled(true);
+    m_aZoomOut->setEnabled(true);
+    m_aUnZoom->setEnabled(true);
+    m_aZoomOnSelection->setEnabled(m_selection.width()>0);
+}
+
+void QGVWaveform::azoomout(){
+
+    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+    viewrect.setLeft(viewrect.left()-viewrect.width()/4);
+    viewrect.setRight(viewrect.right()+viewrect.width()/4);
+    viewSet(viewrect);
+
+    cursorUpdate(-1);
+
+    m_aZoomOut->setEnabled(true);
+    m_aUnZoom->setEnabled(true);
+    m_aZoomIn->setEnabled(true);
+    m_aZoomOnSelection->setEnabled(m_selection.width()>0);
+}
+
+void QGVWaveform::aunzoom(){
+
+    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+    viewrect.setLeft(m_scene->sceneRect().left());
+    viewrect.setRight(m_scene->sceneRect().right());
+    viewSet(viewrect);
+
+    cursorUpdate(-1);
+
+    m_aZoomIn->setEnabled(true);
+    m_aZoomOut->setEnabled(false);
+    m_aUnZoom->setEnabled(false);
+    m_aZoomOnSelection->setEnabled(m_selection.width()>0);
+}
+
+void QGVWaveform::cursorUpdate(float x){
+    if(x==-1){
+        m_giCursor->hide();
+        m_giCursorPositionTxt->hide();
+    }
+    else {
+//        giCursorPositionTxt->setText("000000000000");
+//        QRectF br = giCursorPositionTxt->boundingRect();
+
+        m_giCursor->show();
+        m_giCursorPositionTxt->show();
+        m_giCursor->setLine(x, -1, x, 1);
+        QString txt = QString("%1s").arg(x);
+        m_giCursorPositionTxt->setText(txt);
+        QTransform trans = transform();
+        QTransform txttrans;
+        txttrans.scale(1.0/trans.m11(),1.0/trans.m22());
+        m_giCursorPositionTxt->setTransform(txttrans);
+        QRectF br = m_giCursorPositionTxt->boundingRect();
+//        QRectF viewrect = mapToScene(QRect(QPoint(0,0), QSize(viewport()->rect().width(), viewport()->rect().height()))).boundingRect();
+        QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+        x = min(x, float(viewrect.right()-br.width()/trans.m11()));
+//        if(x+br.width()/trans.m11()>viewrect.right())
+//            x = x - br.width()/trans.m11();
+        m_giCursorPositionTxt->setPos(x+1/trans.m11(), -1.05*m_ampzoom);
+    }
 }
 
 void QGVWaveform::resizeEvent(QResizeEvent* event){
@@ -237,19 +394,9 @@ void QGVWaveform::resizeEvent(QResizeEvent* event){
     QRectF viewrect = mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect();
     if(viewrect.width()==0 && viewrect.height()==0)
         viewrect = m_scene->sceneRect();
+    viewSet(viewrect);
 
-//    cout << "old viewrect: " << viewrect.left() << " " << viewrect.right() << " " << viewrect.top() << " " << viewrect.bottom() << endl;
-
-    if(viewrect.left()<m_scene->sceneRect().left()) viewrect.setLeft(m_scene->sceneRect().left());
-    if(viewrect.right()>m_scene->sceneRect().right()) viewrect.setRight(m_scene->sceneRect().right());
-    if(viewrect.top()<m_scene->sceneRect().top()) viewrect.setTop(m_scene->sceneRect().top());
-    if(viewrect.bottom()>m_scene->sceneRect().bottom()) viewrect.setBottom(m_scene->sceneRect().bottom());
-
-//    cout << "fixed viewrect: " << viewrect.left() << " " << viewrect.right() << " " << viewrect.top() << " " << viewrect.bottom() << endl;
-
-    fitInView(removeHiddenMargin(viewrect));
-
-    update_cursor(-1);
+    cursorUpdate(-1);
 
 //    cout << "QGVWaveform::~resizeEvent" << endl;
 }
@@ -258,9 +405,9 @@ void QGVWaveform::scrollContentsBy(int dx, int dy){
 
     // Ensure the y ticks labels will be redrawn
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-    m_scene->invalidate(QRectF(viewrect.left(), -1.05*m_ampzoom, 5*14/transform().m11(), 2.1*m_ampzoom));
+    m_scene->invalidate(QRectF(viewrect.left(), -1.05, 5*14/transform().m11(), 2.10));
 
-    update_cursor(-1);
+    cursorUpdate(-1);
 
     QGraphicsView::scrollContentsBy(dx, dy);
 }
@@ -278,32 +425,17 @@ void QGVWaveform::wheelEvent(QWheelEvent* event){
     else {
         QTransform trans = transform();
         float h11 = trans.m11();
-
         h11 += 0.01*h11*numDegrees.y();
+        setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+        setTransform(QTransform(h11, trans.m12(), trans.m21(), trans.m22(), 0, 0));
+        viewChangesRequested();
 
+        QPointF p = mapToScene(QPoint(event->x(),0));
+        cursorUpdate(p.x());
         m_aZoomOnSelection->setEnabled(m_selection.width()>0);
         m_aZoomOut->setEnabled(true);
         m_aZoomIn->setEnabled(true);
         m_aUnZoom->setEnabled(true);
-
-        qreal min11 = viewport()->rect().width()/(10*1.0/WMainWindow::getMW()->getFs());
-        if(h11>=min11){
-            h11=min11;
-            m_aZoomIn->setEnabled(false);
-        }
-
-        qreal max11 = viewport()->rect().width()/WMainWindow::getMW()->getMaxDuration();
-        if(h11<=max11){
-            h11=max11;
-            m_aZoomOut->setEnabled(false);
-            m_aUnZoom->setEnabled(false);
-        }
-
-        setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-        setTransform(QTransform(h11, trans.m12(), trans.m21(), trans.m22(), 0, 0));
-
-        QPointF p = mapToScene(QPoint(event->x(),0));
-        update_cursor(p.x());
     }
 
 //    std::cout << "~QGVWaveform::wheelEvent" << endl;
@@ -322,7 +454,7 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
                 // cout << "Scrolling the waveform" << endl;
                 m_currentAction = CAMoving;
                 setDragMode(QGraphicsView::ScrollHandDrag);
-                update_cursor(-1);
+                cursorUpdate(-1);
             }
             else if(!event->modifiers().testFlag(Qt::ControlModifier) && m_selection.width()>0 && abs(selview.left()-event->x())<5){
                 // Resize left boundary of the selection
@@ -401,25 +533,16 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
 //    std::cout << "~QGVWaveform::mousePressEvent " << p.x() << endl;
 }
 
-// Remove hard coded margin (Bug 11945)
-// See: https://bugreports.qt-project.org/browse/QTBUG-11945
-QRectF QGVWaveform::removeHiddenMargin(const QRectF& sceneRect){
-    const int bugMargin = 2;
-    const double mx = sceneRect.width()/viewport()->size().width()*bugMargin;
-    const double my = sceneRect.height()/viewport()->size().height()*bugMargin;
-    return sceneRect.adjusted(mx, my, -mx, -my);
-}
-
 void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
 //    std::cout << "QGVWaveform::mouseMoveEvent" << m_selection.width() << endl;
 
     QPointF p = mapToScene(event->pos());
 
-    update_cursor(p.x());
+    cursorUpdate(p.x());
 
     if(m_currentAction==CAMoving) {
         // When scrolling the waveform
-        update_cursor(-1);
+        cursorUpdate(-1);
         QGraphicsView::mouseMoveEvent(event);
     }
     else if(m_currentAction==CAZooming) {
@@ -432,16 +555,10 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
 
         newrect.setLeft(m_selection_pressedx-(m_selection_pressedx-m_pressed_scenerect.left())*exp(dx));
         newrect.setRight(m_selection_pressedx+(m_pressed_scenerect.right()-m_selection_pressedx)*exp(dx));
-
-        if(newrect.left()<m_scene->sceneRect().left())
-            newrect.setLeft(m_scene->sceneRect().left());
-        if(newrect.right()>m_scene->sceneRect().right())
-            newrect.setRight(m_scene->sceneRect().right());
-
-        fitInView(removeHiddenMargin(newrect));
+        viewSet(newrect);
 
         QPointF p = mapToScene(event->pos());
-        update_cursor(p.x());
+        cursorUpdate(p.x());
 
         m_aUnZoom->setEnabled(true);
         m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
@@ -660,7 +777,7 @@ void QGVWaveform::selectionClipAndSet(QRectF selection, bool winforceupdate){
     // The selection's width can vary up to eps, even when it is only shifted
 
     // Spectrum
-    WMainWindow::getMW()->m_gvSpectrum->setWindowRange(m_selection.left(), m_selection.right());
+    WMainWindow::getMW()->m_gvSpectrum->setWindowRange(m_selection.left(), m_selection.right(), winforceupdate);
 
     // Update the visible window
     if(winforceupdate || WMainWindow::getMW()->m_gvSpectrum->m_win.size() != prevwinlen) {
@@ -698,146 +815,18 @@ void QGVWaveform::selectionClipAndSet(QRectF selection, bool winforceupdate){
 
 void QGVWaveform::selectionZoomOn(){
     if(m_selection.width()>0){
-        centerOn(0.5*(m_selection.left()+m_selection.right()), 0);
 
-        QTransform trans = transform();
-        float h11 = (viewport()->rect().width()-1)/m_selection.width();
+        QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+        viewrect.setLeft(m_selection.left()-0.1*m_selection.width());
+        viewrect.setRight(m_selection.right()+0.1*m_selection.width());
+        viewSet(viewrect);
 
-        h11 *= 0.9;
-
-        qreal min11 = viewport()->rect().width()/(10*1.0/WMainWindow::getMW()->getFs());
-        if(h11>=min11)
-            h11=min11;
-
-        setTransformationAnchor(QGraphicsView::AnchorViewCenter);
-        setTransform(QTransform(h11, trans.m12(), trans.m21(), trans.m22(), 0, 0));
-
-        m_aZoomIn->setEnabled(h11<min11);
+        m_aZoomIn->setEnabled(true);
         m_aZoomOut->setEnabled(true);
         m_aUnZoom->setEnabled(true);
-
-//        selectionClipAndSet();
-
         m_aZoomOnSelection->setEnabled(false);
 
-        update_cursor(-1);
-    }
-}
-
-void QGVWaveform::azoomin(){
-    QTransform trans = transform();
-    float h11 = trans.m11();
-    h11 *= 1.5;
-
-    setResizeAnchor(QGraphicsView::AnchorViewCenter);
-
-    qreal min11 = viewport()->rect().width()/(10*1.0/WMainWindow::getMW()->getFs());
-    if(h11>=min11){
-        h11=min11;
-        m_aZoomIn->setEnabled(false);
-    }
-    m_aZoomOut->setEnabled(true);
-    m_aUnZoom->setEnabled(true);
-    m_aZoomOnSelection->setEnabled(m_selection.width()>0);
-
-    setTransformationAnchor(QGraphicsView::AnchorViewCenter);
-    setTransform(QTransform(h11, trans.m12(), trans.m21(), trans.m22(), 0, 0));
-
-    update_cursor(-1);
-}
-
-void QGVWaveform::azoomout(){
-    QTransform trans = transform();
-    float h11 = trans.m11();
-    h11 /= 1.5;
-
-    setResizeAnchor(QGraphicsView::AnchorViewCenter);
-
-    qreal max11 = viewport()->rect().width()/WMainWindow::getMW()->getMaxDuration();
-    if(h11<=max11){
-        h11=max11;
-        m_aZoomOut->setEnabled(false);
-        m_aUnZoom->setEnabled(false);
-    }
-    m_aZoomIn->setEnabled(true);
-    m_aZoomOnSelection->setEnabled(m_selection.width()>0);
-
-    setTransformationAnchor(QGraphicsView::AnchorViewCenter);
-    setTransform(QTransform(h11, trans.m12(), trans.m21(), trans.m22(), 0, 0));
-
-    update_cursor(-1);
-}
-
-void QGVWaveform::aunzoom(){
-    QTransform trans = transform();
-    float h11 = float(viewport()->rect().width())/(WMainWindow::getMW()->getMaxDuration());
-
-    m_aZoomIn->setEnabled(true);
-    m_aZoomOut->setEnabled(false);
-    m_aUnZoom->setEnabled(false);
-    m_aZoomOnSelection->setEnabled(m_selection.width()>0);
-
-    setTransform(QTransform(h11, trans.m12(), trans.m21(), trans.m22(), 0, 0));
-
-    update_cursor(-1);
-}
-
-void QGVWaveform::sldAmplitudeChanged(int value){
-
-    Q_UNUSED(value);
-
-    m_ampzoom = (100-value)/100.0;
-//    m_ampzoom = 1+value/50.0;
-
-//    cout << "GVWaveform::sldAmplitudeChanged v=" << value << " z=" << m_ampzoom << endl;
-
-    if(WMainWindow::getMW()->ftsnds.size()>0){
-
-        m_scene->setSceneRect(-1.0/WMainWindow::getMW()->getFs(), -1.05*m_ampzoom, WMainWindow::getMW()->getMaxDuration()+1.0/WMainWindow::getMW()->getFs(), 2.1*m_ampzoom);
-
-        QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-        centerOn(QPointF(viewrect.center().x(), 0.0));
-
-        qreal h22 = (viewport()->rect().height())/m_scene->sceneRect().height();
-
-        QTransform trans = transform();
-        setTransform(QTransform(trans.m11(), trans.m12(), trans.m21(), h22, 0, 0));
-    }
-
-    update_cursor(-1);
-
-    QTransform m;
-    m.scale(1.0, m_ampzoom);
-    m_giWindow->setTransform(m);
-
-    m_scene->invalidate();
-}
-
-void QGVWaveform::update_cursor(float x){
-    if(x==-1){
-        m_giCursor->hide();
-        m_giCursorPositionTxt->hide();
-    }
-    else {
-//        giCursorPositionTxt->setText("000000000000");
-//        QRectF br = giCursorPositionTxt->boundingRect();
-
-        m_giCursor->show();
-        m_giCursorPositionTxt->show();
-        m_giCursor->setLine(x, -1, x, 1);
-        QString txt = QString("%1s").arg(x);
-        m_giCursorPositionTxt->setText(txt);
-        QTransform trans = transform();
-        QTransform txttrans;
-        txttrans.scale(1.0/trans.m11(),1.0/trans.m22());
-        m_giCursorPositionTxt->setTransform(txttrans);
-        QRectF br = m_giCursorPositionTxt->boundingRect();
-//        QRectF viewrect = mapToScene(QRect(QPoint(0,0), QSize(viewport()->rect().width(), viewport()->rect().height()))).boundingRect();
-        QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-        x = min(x, float(viewrect.right()-br.width()/trans.m11()));
-//        if(x+br.width()/trans.m11()>viewrect.right())
-//            x = x - br.width()/trans.m11();
-        m_giCursorPositionTxt->setPos(x+1/trans.m11(), -1.05*m_ampzoom);
+        cursorUpdate(-1);
     }
 }
 
@@ -868,8 +857,6 @@ void QGVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
 
 //    static QTimeTracker2 time_tracker;
 //    time_tracker.restart();
-
-//    m_scene->invalidate();
 
     if(m_aShowGrid->isChecked())
         draw_grid(painter, rect);
@@ -963,7 +950,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
             double a = WMainWindow::getMW()->ftsnds[fi]->m_ampscale;
             if(WMainWindow::getMW()->ftsnds[fi]->m_actionInvPolarity->isChecked())
-                a *=-1.0;
+                a *= -1.0;
 
             QPen outlinePen(WMainWindow::getMW()->ftsnds[fi]->color);
             outlinePen.setWidth(0);

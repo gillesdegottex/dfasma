@@ -34,6 +34,8 @@ class QGVWaveform : public QGraphicsView
 
     QRectF removeHiddenMargin(const QRectF& sceneRect);
 
+    void viewSet(QRectF viewrect);
+
 public:
 
     bool m_first_start;
@@ -81,7 +83,7 @@ public:
 
     void drawBackground(QPainter* painter, const QRectF& rect);
 
-    void update_cursor(float x);
+    void cursorUpdate(float x);
     QPen m_gridPen;
     QPen m_gridFontPen;
     QFont m_gridFont;
@@ -93,6 +95,9 @@ signals:
 public slots:
     void settingsSave();
     void soundsChanged();
+    void updateSceneRect();
+    void viewFixAndRefresh();
+    void viewChangesRequested();
     void azoomin();
     void azoomout();
     void aunzoom();
