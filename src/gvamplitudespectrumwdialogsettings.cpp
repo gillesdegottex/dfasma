@@ -1,11 +1,15 @@
 #include "gvamplitudespectrumwdialogsettings.h"
 #include "ui_gvamplitudespectrumwdialogsettings.h"
 
-GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::GVAmplitudeSpectrumWDialogSettings)
+#include "gvamplitudespectrum.h"
+
+GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(QGVAmplitudeSpectrum* parent)
+    : QDialog((QWidget*)parent)
+    , ui(new Ui::GVAmplitudeSpectrumWDialogSettings)
 {
     ui->setupUi(this);
+
+    m_ampspec = parent;
 
     #ifndef FFTW3RESIZINGMAXTIMESPENT
     ui->lblFFTW3ResizingMaxTimeSpent->hide();
@@ -22,6 +26,16 @@ GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(QWidget *
     adjustSize();
 
     connect(ui->cbSpectrumWindowType, SIGNAL(currentIndexChanged(QString)), this, SLOT(CBSpectrumWindowTypeCurrentIndexChanged(QString)));
+
+    // Update the DFT view automatically
+    connect(ui->sbSpectrumAmplitudeRangeMin, SIGNAL(valueChanged(double)), m_ampspec, SLOT(settingsModified()));
+    connect(ui->sbSpectrumAmplitudeRangeMax, SIGNAL(valueChanged(double)), m_ampspec, SLOT(settingsModified()));
+    connect(ui->sbSpectrumOversamplingFactor, SIGNAL(valueChanged(int)), m_ampspec, SLOT(settingsModified()));
+    connect(ui->cbWindowSizeForcedOdd, SIGNAL(toggled(bool)), m_ampspec, SLOT(settingsModified()));
+    connect(ui->cbSpectrumWindowType, SIGNAL(currentIndexChanged(int)), m_ampspec, SLOT(settingsModified()));
+    connect(ui->spWindowNormPower, SIGNAL(valueChanged(double)), m_ampspec, SLOT(settingsModified()));
+    connect(ui->spWindowNormSigma, SIGNAL(valueChanged(double)), m_ampspec, SLOT(settingsModified()));
+    connect(ui->spWindowExpDecay, SIGNAL(valueChanged(double)), m_ampspec, SLOT(settingsModified()));
 }
 
 void GVAmplitudeSpectrumWDialogSettings::CBSpectrumWindowTypeCurrentIndexChanged(QString txt) {
