@@ -408,29 +408,6 @@ void WMainWindow::addFile(const QString& filepath) {
             ftsnds.push_back(ftsnd);
             ft = ftsnd;
 
-            QAudioFormat format = ftsnd->format();
-            // Display some information
-            QString str = "";
-            str += "Codec: "+QString::number(format.channelCount())+" channel "+format.codec()+"<br/>";
-            str += "Sampling frequency: "+QString::number(format.sampleRate())+"Hz<br/>";
-            str += "Sample type: "+QString::number(format.sampleSize())+"b ";
-            QAudioFormat::SampleType sampletype = format.sampleType();
-            if(sampletype==QAudioFormat::Unknown)
-                str += "(unknown type)";
-            else if(sampletype==QAudioFormat::SignedInt)
-                str += "signed integer";
-            else if(sampletype==QAudioFormat::UnSignedInt)
-                str += "unsigned interger";
-            else if(sampletype==QAudioFormat::Float)
-                str += "float";
-            QAudioFormat::Endian byteOrder = format.byteOrder();
-            if(byteOrder==QAudioFormat::BigEndian)
-                str += " big endian";
-            else if(byteOrder==QAudioFormat::LittleEndian)
-                str += " little endian";
-            str += "<br/>";
-            cout << str.toLocal8Bit().constData() << endl;
-
             // The first sound will determine the common fs for the audio output
             if(ftsnds.size()==1)
                 initializeSoundSystem(ftsnds[0]->fs);

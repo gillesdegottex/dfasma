@@ -104,6 +104,25 @@ QString FTSound::info() const {
     else if(byteOrder==QAudioFormat::LittleEndian)
         str += " little endian";
     str += "<br/>";
+    str += "SQNR="+QString::number(20*std::log10(std::pow(2,m_fileaudioformat.sampleSize())))+"dB<br/>";
+
+    if(sampletype!=QAudioFormat::Unknown) {
+        double smallest=1.0;
+        if(sampletype==QAudioFormat::SignedInt)
+            smallest = 1.0/std::pow(2.0,m_fileaudioformat.sampleSize()-1);
+        else if(sampletype==QAudioFormat::UnSignedInt)
+            smallest = 2.0/std::pow(2.0,m_fileaudioformat.sampleSize());
+        else if(sampletype==QAudioFormat::Float) {
+            if(m_fileaudioformat.sampleSize()==sizeof(float))
+                smallest = std::numeric_limits<float>::min();
+            else if(m_fileaudioformat.sampleSize()==sizeof(double))
+                smallest = std::numeric_limits<double>::min();
+            else if(m_fileaudioformat.sampleSize()==sizeof(long double))
+                smallest = std::numeric_limits<long double>::min();
+        }
+        if(smallest!=1.0)
+            str += "Smallest amplitude: "+QString::number(20*log10(smallest))+"dB";
+    }
 
     return str;
 }
