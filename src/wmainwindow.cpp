@@ -496,13 +496,19 @@ void WMainWindow::resetAmpScale(){
     if(currentftsound) {
         currentftsound->m_ampscale = 1.0;
 
+        if(currentftsound->m_delay==0.0)
+            currentftsound->setModifiedState(false);
+
         soundsChanged();
     }
 }
 void WMainWindow::resetDelay(){
     FTSound* currentftsound = getCurrentFTSound();
     if(currentftsound) {
-        currentftsound->m_delay = 0;
+        currentftsound->m_delay = 0.0;
+
+        if(currentftsound->m_ampscale==1.0)
+            currentftsound->setModifiedState(false);
 
         soundsChanged();
     }
@@ -523,7 +529,7 @@ void WMainWindow::closeSelectedFile() {
 
         FileType* ft = (FileType*)l.at(i);
 
-        cout << "Closing file: \"" << ft->fileName.toLocal8Bit().constData() << "\"" << endl;
+        cout << "Closing file: \"" << ft->fileFullPath.toLocal8Bit().constData() << "\"" << endl;
 
         delete ft; // Remove it from the listview
 
@@ -562,7 +568,6 @@ void WMainWindow::initializeSoundSystem(float fs){
     connect(m_audioengine, SIGNAL(audioOutputDeviceChanged(const QAudioDeviceInfo&)), this, SLOT(audioOutputDeviceChanged(const QAudioDeviceInfo&)));
     connect(m_audioengine, SIGNAL(playPositionChanged(double)), m_gvWaveform, SLOT(playCursorSet(double)));
     connect(m_audioengine, SIGNAL(localEnergyChanged(double)), this, SLOT(localEnergyChanged(double)));
-
 
     // Provide some information
     QString txt = m_audioengine->audioOutputDevice().deviceName();
@@ -614,7 +619,7 @@ void WMainWindow::play()
                     m_gvWaveform->m_initialPlayPosition = tstart;
                     m_audioengine->startPlayback(currentftsound, tstart, tstop, fstart, fstop);
 
-                    QString txt = QString("Play ")+currentftsound->fileName+QString(": [%1s, %2s]x[%3Hz, %4Hz]").arg(m_gvWaveform->m_selection.left()).arg(m_gvWaveform->m_selection.right()).arg(fstart).arg(fstop);
+                    QString txt = QString("Play ")+currentftsound->fileFullPath+QString(": [%1s, %2s]x[%3Hz, %4Hz]").arg(m_gvWaveform->m_selection.left()).arg(m_gvWaveform->m_selection.right()).arg(fstart).arg(fstop);
                     statusBar()->showMessage(txt);
 
                     if(fstart!=0.0 || fstop!=getFs()) {

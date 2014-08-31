@@ -25,6 +25,7 @@ file provided in the source code of DFasma. Another copy can be found at
 using namespace std;
 
 #include <QMenu>
+#include <QFileInfo>
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 
@@ -81,7 +82,7 @@ QColor GetNextColor(){
 
 FileType::FileType(FILETYPE _type, const QString& _fileName, QObject * parent)
     : type(_type)
-    , fileName(_fileName)
+    , fileFullPath(_fileName)
     , color(GetNextColor())
 {
 //    cout << "FileType::FileType: " << _fileName.toLocal8Bit().constData() << endl;
@@ -100,6 +101,18 @@ void FileType::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
     mainwindow->connect(m_actionShow, SIGNAL(toggled(bool)), mainwindow, SLOT(setSoundShown(bool)));
     contextmenu.addAction(mainwindow->ui->actionCloseFile);
     contextmenu.addSeparator();
+}
+
+void FileType::setModifiedState(bool modified) {
+    QFileInfo fileInfo(fileFullPath);
+    if(modified) {
+        setText("*"+fileInfo.fileName());
+        setToolTip("(modified) "+fileInfo.absoluteFilePath());
+    }
+    else {
+        setText(fileInfo.fileName());
+        setToolTip(fileInfo.absoluteFilePath());
+    }
 }
 
 FileType::~FileType() {

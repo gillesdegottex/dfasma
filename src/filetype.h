@@ -39,7 +39,7 @@ public:
     virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
 
     FILETYPE type;
-    QString fileName;
+    QString fileFullPath;
     QColor color;
 
     QAction* m_actionShow;
@@ -49,6 +49,9 @@ public:
     #ifdef SUPPORT_SDIF
     static bool SDIF_hasFrame(const QString& filename, const QString& framesignature);
     #endif
+
+public slots:
+    void setModifiedState(bool modified);
 };
 
 #endif // FILETYPE_H

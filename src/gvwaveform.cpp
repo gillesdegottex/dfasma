@@ -595,13 +595,14 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
         selectionClipAndSet(m_mouseSelection);
     }
     else if(m_currentAction==CAStretchSelection) {
+        // Stretch the selection from its center
         m_mouseSelection.setLeft(m_mouseSelection.left()-(p.x()-m_selection_pressedx));
         m_mouseSelection.setRight(m_mouseSelection.right()+(p.x()-m_selection_pressedx));
         selectionClipAndSet(m_mouseSelection);
         m_selection_pressedx = p.x();
     }
     else if(m_currentAction==CAWaveformScale){
-        // When scaling the waveform
+        // Scale the selected waveform
         FTSound* currentftsound = WMainWindow::getMW()->getCurrentFTSound();
         if(currentftsound){
             currentftsound->m_ampscale *= pow(10, -10*(p.y()-m_selection_pressedx)/20.0);
@@ -609,6 +610,8 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
 
             if(currentftsound->m_ampscale>1e10) currentftsound->m_ampscale = 1e10;
             else if(currentftsound->m_ampscale<1e-10) currentftsound->m_ampscale = 1e-10;
+
+            currentftsound->setModifiedState(true);
 
             soundsChanged();
             WMainWindow::getMW()->m_gvSpectrum->soundsChanged();
@@ -621,6 +624,8 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
             m_selection_pressedx = p.x();
             currentftsound->m_delay = int(0.5+m_tmpdelay*WMainWindow::getMW()->getFs());
             if(m_tmpdelay<0) currentftsound->m_delay--;
+
+            currentftsound->setModifiedState(true);
 
             soundsChanged();
             WMainWindow::getMW()->m_gvSpectrum->soundsChanged();
