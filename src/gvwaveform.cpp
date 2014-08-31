@@ -901,7 +901,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
 //    samppixdensity=0.01;
     if(samppixdensity<4) {
-//        cout << "Draw lines between each sample in the updated rect" << endl;
+        // cout << "Draw lines between each sample in the updated rect" << endl;
 
         for(size_t fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++){
             if(!WMainWindow::getMW()->ftsnds[fi]->m_actionShow->isChecked())

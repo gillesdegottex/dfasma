@@ -131,7 +131,7 @@ public:
     void viewUpdateTexts();
     void drawBackground(QPainter* painter, const QRectF& rect);
     void draw_grid(QPainter* painter, const QRectF& rect);
-    void draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& dft, double fs, double ascale, const QRectF& rect);
+    void draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& ldft, double fs, double ascale, const QRectF& rect);
 
     ~QGVAmplitudeSpectrum();
 

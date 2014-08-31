@@ -135,7 +135,6 @@ void FFTResizeThread::run() {
 //    std::cout << "~FFTResizeThread::run m_size_resizing=" << m_size_resizing << " m_size_todo=" << m_size_todo << endl;
 }
 
-
 QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     : QGraphicsView(parent)
     , m_winlen(0)
@@ -271,8 +270,8 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     connect(m_fftresizethread, SIGNAL(fftResized(int,int)), this, SLOT(computeDFTs()));
     connect(m_fftresizethread, SIGNAL(fftResizing(int,int)), this, SLOT(fftResizing(int,int)));
 
-    m_minsy = std::numeric_limits<double>::infinity();
-    m_maxsy = -std::numeric_limits<double>::infinity();
+    m_minsy = m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value();
+    m_maxsy = m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value();
     updateSceneRect();
 
     // Fill the toolbar
@@ -306,7 +305,15 @@ QRectF QGVAmplitudeSpectrum::removeHiddenMargin(const QRectF& sceneRect){
 }
 
 void QGVAmplitudeSpectrum::settingsModified(){
+    updateSceneRect();
     WMainWindow::getMW()->m_gvWaveform->selectionClipAndSet(WMainWindow::getMW()->m_gvWaveform->m_mouseSelection, true);
+}
+
+void QGVAmplitudeSpectrum::fftResizing(int prevSize, int newSize){
+    Q_UNUSED(prevSize);
+
+    WMainWindow::getMW()->ui->pgbFFTResize->show();
+    WMainWindow::getMW()->ui->lblSpectrumInfoTxt->setText(QString("Resizing DFT to %1").arg(newSize));
 }
 
 void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend, bool winforceupdate){
@@ -387,7 +394,7 @@ void QGVAmplitudeSpectrum::computeDFTs(){
         WMainWindow::getMW()->ui->lblSpectrumInfoTxt->setText(QString("DFT size=%1").arg(dftlen));
 
         m_minsy = std::numeric_limits<double>::infinity();
-        m_maxsy = 0;
+        m_maxsy = -std::numeric_limits<double>::infinity();
         for(unsigned int fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++){
             int pol = 1;
             if(WMainWindow::getMW()->ftsnds[fi]->m_actionInvPolarity->isChecked())
@@ -405,26 +412,26 @@ void QGVAmplitudeSpectrum::computeDFTs(){
             for(; n<dftlen; n++)
                 m_fft->in[n] = 0.0;
 
-            m_fft->execute();
+            m_fft->execute(); // Compute the DFT
 
             WMainWindow::getMW()->ftsnds[fi]->m_dft.resize(dftlen/2+1);
             for(n=0; n<dftlen/2+1; n++) {
-                WMainWindow::getMW()->ftsnds[fi]->m_dft[n] = m_fft->out[n];
-                double y = std::abs(WMainWindow::getMW()->ftsnds[fi]->m_dft[n]);
+                WMainWindow::getMW()->ftsnds[fi]->m_dft[n] = std::complex<WAVTYPE>(std::log(std::abs(m_fft->out[n])),std::arg(m_fft->out[n]));
+                double y = WMainWindow::getMW()->ftsnds[fi]->m_dft[n].real();
                 m_minsy = std::min(m_minsy, y);
                 m_maxsy = std::max(m_maxsy, y);
             }
-
-//            std::cout << "DTF " << fi << " computed" << endl;
-
         }
 
-        m_minsy = 20*log10(m_minsy)-3;
-        m_maxsy = 20*log10(m_maxsy)+3;
-        if(m_minsy<m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value())
-            m_minsy=m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value();
-        if(m_maxsy>m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value())
-            m_maxsy=m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value();
+        m_minsy = sigproc::log2db*m_minsy-3;
+        m_maxsy = sigproc::log2db*m_maxsy+3;
+
+//        if(m_minsy<m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value())
+//            m_minsy=m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value();
+//        if(m_maxsy>m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value())
+//            m_maxsy=m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value();
+
+//        cout << "extrema of the spectrum m_minsy=" << m_minsy << " m_maxsy=" << m_maxsy << endl;
 
         // Compute the window's DFT
         if (true) {
@@ -438,7 +445,7 @@ void QGVAmplitudeSpectrum::computeDFTs(){
 
             m_windft.resize(dftlen/2+1);
             for(n=0; n<dftlen/2+1; n++)
-                m_windft[n] = m_fft->out[n];
+                m_windft[n] = std::complex<WAVTYPE>(std::log(std::abs(m_fft->out[n])),std::arg(m_fft->out[n]));
         }
 
         m_fftresizethread->m_mutex_resizing.unlock();
@@ -460,12 +467,12 @@ void QGVAmplitudeSpectrum::settingsSave() {
 }
 
 void QGVAmplitudeSpectrum::updateSceneRect() {
+//    cout << "QGVAmplitudeSpectrum::updateSceneRect" << endl;
     m_scene->setSceneRect(0.0, -m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value(), WMainWindow::getMW()->getFs()/2, (m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value()-m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value()));
 
-    if(m_minsy<m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value())
-        m_minsy=m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value();
-    if(m_maxsy>m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value())
-        m_maxsy=m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value();
+//    cout << "QGVAmplitudeSpectrum::updateSceneRect: " << m_scene->sceneRect().left() << "," << m_scene->sceneRect().right() << " X " << m_scene->sceneRect().top() << "," << m_scene->sceneRect().bottom() << endl;
+
+//    cout << "corrected extrema of the spectrum m_minsy=" << m_minsy << " m_maxsy=" << m_maxsy << endl;
 
     if(WMainWindow::getMW()->m_gvPhaseSpectrum)
         WMainWindow::getMW()->m_gvPhaseSpectrum->updateSceneRect();
@@ -477,37 +484,8 @@ void QGVAmplitudeSpectrum::soundsChanged(){
     m_scene->update();
 }
 
-//void QGVAmplitudeSpectrum::viewFixAndRefresh() {
-//    cout << "QGVAmplitudeSpectrum::viewFixAndRefresh" << endl;
-//    cout << m_scene->sceneRect().width() << " " << m_scene->sceneRect().height() << endl;
-
-//    QTransform trans = transform();
-//    qreal h11 = trans.m11();
-//    qreal h22 = trans.m22();
-
-//    qreal min11 = viewport()->rect().width()/m_scene->sceneRect().width();
-//    qreal min22 = viewport()->rect().height()/m_scene->sceneRect().height();
-//    qreal max11 = viewport()->rect().width()/pow(10, -20); // Clip the zoom because the plot can't be infinitely precise
-//    qreal max22 = viewport()->rect().height()/pow(10, -20);// Clip the zoom because the plot can't be infinitely precise
-//    if(h11<min11) h11=min11;
-//    if(h11>max11) h11=max11;
-//    if(h22<min22) h22=min22;
-//    if(h22>max22) h22=max22;
-
-//    setTransformationAnchor(QGraphicsView::AnchorViewCenter);
-//    setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
-
-//    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-//    cout << "viewrect: " << viewrect.width() << "," << viewrect.height() << endl;
-
-//    viewUpdateTexts();
-
-//    m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
-
-//    cout << "QGVAmplitudeSpectrum::~viewFixAndRefresh" << endl;
-//}
-
 void QGVAmplitudeSpectrum::viewSet(QRectF viewrect, bool sync) {
+//    cout << "QGVAmplitudeSpectrum::viewSet" << endl;
 
     QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
 
@@ -528,6 +506,8 @@ void QGVAmplitudeSpectrum::viewSet(QRectF viewrect, bool sync) {
 
         if(sync) viewSync();
     }
+
+//    cout << "QGVAmplitudeSpectrum::~viewSet" << endl;
 }
 
 void QGVAmplitudeSpectrum::viewSync() {
@@ -540,26 +520,31 @@ void QGVAmplitudeSpectrum::viewSync() {
         currect.setRight(viewrect.right());
         WMainWindow::getMW()->m_gvPhaseSpectrum->viewSet(currect, false);
 
-//            QPointF p = WMainWindow::getMW()->m_gvPhaseSpectrum->mapToScene(WMainWindow::getMW()->m_gvPhaseSpectrum->viewport()->rect()).boundingRect().center();
-//            p.setX(viewrect.center().x());
-//            WMainWindow::getMW()->m_gvPhaseSpectrum->centerOn(p);
+//        QPointF p = WMainWindow::getMW()->m_gvPhaseSpectrum->mapToScene(WMainWindow::getMW()->m_gvPhaseSpectrum->viewport()->rect()).boundingRect().center();
+//        p.setX(viewrect.center().x());
+//        WMainWindow::getMW()->m_gvPhaseSpectrum->centerOn(p);
     }
 }
 
 void QGVAmplitudeSpectrum::resizeEvent(QResizeEvent* event){
+    // Note: Resized is called for all views so better to not forward modifications
+//    cout << "QGVAmplitudeSpectrum::resizeEvent" << endl;
 
     QRectF oldviewrect = mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect();
 
+//    cout << "QGVAmplitudeSpectrum::resizeEvent old viewrect: " << oldviewrect.left() << "," << oldviewrect.right() << " X " << oldviewrect.top() << "," << oldviewrect.bottom() << endl;
+
     if(oldviewrect.width()==0 && oldviewrect.height()==0) {
         updateSceneRect();
-        viewSet(m_scene->sceneRect());
+        viewSet(m_scene->sceneRect(), false);
     }
     else
-        viewSet(oldviewrect);
+        viewSet(oldviewrect, false);
 
     viewUpdateTexts();
 
     cursorUpdate(QPointF(-1,0));
+//    cout << "QGVAmplitudeSpectrum::~resizeEvent" << endl;
 }
 
 void QGVAmplitudeSpectrum::scrollContentsBy(int dx, int dy) {
@@ -577,8 +562,6 @@ void QGVAmplitudeSpectrum::scrollContentsBy(int dx, int dy) {
 
     viewUpdateTexts();
     cursorUpdate(QPointF(-1,0));
-
-    viewrect = mapToScene(viewport()->rect()).boundingRect();
 
     QGraphicsView::scrollContentsBy(dx, dy);
 }
@@ -966,10 +949,10 @@ void QGVAmplitudeSpectrum::viewUpdateTexts() {
 void QGVAmplitudeSpectrum::selectionZoomOn(){
     if(m_selection.width()>0 && m_selection.height()>0){
         QRectF zoomonrect = m_selection;
-        QTransform trans = transform();
-//        QRectF adj = mapToScene(QRect(0,0,10,10)).boundingRect();
-//        QRectF adj = QRectF(0,0,10,10);
-        zoomonrect.adjust(-10/trans.m11(), -10/trans.m22(), 10/trans.m11(), 10/trans.m22());
+        zoomonrect.setTop(zoomonrect.top()-0.1*zoomonrect.height());
+        zoomonrect.setBottom(zoomonrect.bottom()+0.1*zoomonrect.height());
+        zoomonrect.setLeft(zoomonrect.left()-0.1*zoomonrect.width());
+        zoomonrect.setRight(zoomonrect.right()+0.1*zoomonrect.width());
         viewSet(zoomonrect);
 
         viewUpdateTexts();
@@ -977,7 +960,7 @@ void QGVAmplitudeSpectrum::selectionZoomOn(){
             WMainWindow::getMW()->m_gvPhaseSpectrum->viewUpdateTexts();
 
         cursorUpdate(QPointF(-1,0));
-        m_aZoomOnSelection->setEnabled(false);
+//        m_aZoomOnSelection->setEnabled(false);
     }
 }
 
@@ -1008,12 +991,25 @@ void QGVAmplitudeSpectrum::azoomout(){
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
 }
 void QGVAmplitudeSpectrum::aunzoom(){
-    viewSet(QRectF(0.0, -m_maxsy, WMainWindow::getMW()->getFs()/2, -(m_minsy-m_maxsy)));
-    if(WMainWindow::getMW()->m_gvPhaseSpectrum)
-        WMainWindow::getMW()->m_gvPhaseSpectrum->viewSet(QRectF(0.0, -M_PI, WMainWindow::getMW()->getFs()/2, 2*M_PI));
 
-    cursorUpdate(QPointF(-1,0));
-    m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
+    QRectF rect = QRectF(0.0, -m_maxsy, WMainWindow::getMW()->getFs()/2, (m_maxsy-m_minsy));
+
+    if(rect.bottom()>-m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value())
+        rect.setBottom(-m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value());
+    if(rect.top()<-m_maxsy>m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value())
+        rect.setTop(-m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value());
+
+    viewSet(rect, false);
+
+//    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+//    cout << "QGVAmplitudeSpectrum::aunzoom viewrect: " << viewrect.left() << "," << viewrect.right() << " X " << viewrect.top() << "," << viewrect.bottom() << endl;
+
+    if(WMainWindow::getMW()->m_gvPhaseSpectrum) {
+        WMainWindow::getMW()->m_gvPhaseSpectrum->viewSet(QRectF(0.0, -M_PI, WMainWindow::getMW()->getFs()/2, 2*M_PI), false);
+    }
+
+//    cursorUpdate(QPointF(-1,0));
+//    m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
 }
 
 void QGVAmplitudeSpectrum::cursorUpdate(QPointF p) {
@@ -1065,14 +1061,6 @@ void QGVAmplitudeSpectrum::cursorFixAndRefresh() {
         br = m_giCursorPositionYTxt->boundingRect();
         m_giCursorPositionYTxt->setPos(viewrect.right()-br.width()/trans.m11(), m_giCursorHoriz->line().y1()-br.height()/trans.m22());
     }
-}
-
-
-void QGVAmplitudeSpectrum::fftResizing(int prevSize, int newSize){
-    Q_UNUSED(prevSize);
-
-    WMainWindow::getMW()->ui->pgbFFTResize->show();
-    WMainWindow::getMW()->ui->lblSpectrumInfoTxt->setText(QString("Resizing DFT to %1").arg(newSize));
 }
 
 void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
@@ -1182,9 +1170,12 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
 //    cout << "QGVAmplitudeSpectrum::~drawBackground" << endl;
 }
 
-void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& dft, double fs, double ascale, const QRectF& rect) {
-    int dftlen = (dft.size()-1)*2;
+void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& ldft, double fs, double ascale, const QRectF& rect) {
+    int dftlen = (ldft.size()-1)*2;
     if (dftlen==0) return;
+
+    double lascale = std::log(ascale);
+//    cout << "lascale=" << lascale << endl;
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
@@ -1198,11 +1189,11 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
 //        cout << "Spec: Draw lines between each bin" << endl;
 
         double prevx = fs*kmin/dftlen;
-        double prevy = 20*log10(abs(dft[kmin]));
-        std::complex<WAVTYPE>* data = dft.data();
+        double prevy = sigproc::log2db*ldft[kmin].real();
+        std::complex<WAVTYPE>* data = ldft.data();
         for(int k=kmin+1; k<=kmax; ++k){
             double x = fs*k/dftlen;
-            double y = 20*log10(ascale*abs(*(data+k)));
+            double y = sigproc::log2db*(lascale+(*(data+k)).real());
             if(y<-1000000) y=-1000000;
             painter->drawLine(QLineF(prevx, -prevy, x, -y));
             prevx = x;
@@ -1220,26 +1211,27 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
         double s2p = -ascale*fullpixrect.height()/viewrect.height(); // Scene to pixel
         double p2s = viewrect.width()/fullpixrect.width(); // Pixel to scene
         double yzero = mapFromScene(QPointF(0,0)).y();
+//        cout << "yzero=" << yzero << endl;
 
-        std::complex<WAVTYPE>* yp = dft.data();
+        std::complex<WAVTYPE>* yp = ldft.data();
 
         for(int i=pixrect.left(); i<=pixrect.right(); i++) {
             int ns = int(dftlen*(viewrect.left()+i*p2s)/fs);
             int ne = int(dftlen*(viewrect.left()+(i+1)*p2s)/fs);
 
-            if(ns>=0 && ne<int(dft.size())) {
+            if(ns>=0 && ne<int(ldft.size())) {
                 WAVTYPE ymin = std::numeric_limits<double>::infinity();
                 WAVTYPE ymax = -std::numeric_limits<double>::infinity();
                 std::complex<WAVTYPE>* ypp = yp+ns;
                 WAVTYPE y;
                 for(int n=ns; n<=ne; n++) {
-                    y = std::abs(*ypp);
+                    y = (*ypp).real();
                     ymin = std::min(ymin, y);
                     ymax = std::max(ymax, y);
                     ypp++;
                 }
-                ymin = 20*log10(ascale*ymin);
-                ymax = 20*log10(ascale*ymax);
+                ymin = sigproc::log2db*(lascale+ymin);
+                ymax = sigproc::log2db*(lascale+ymax);
                 ymin *= s2p;
                 ymax *= s2p;
                 painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));

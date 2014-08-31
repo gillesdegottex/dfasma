@@ -70,7 +70,7 @@ public:
     qint64 m_delay;   // [sample index]
 
     // Spectrum
-    std::vector<std::complex<WAVTYPE> > m_dft;
+    std::vector<std::complex<WAVTYPE> > m_dft; // Store the _log_ of the dft
 
     // QIODevice
     double setPlay(const QAudioFormat& format, double tstart=0.0, double tstop=0.0, double fstart=0.0, double fstop=0.0);

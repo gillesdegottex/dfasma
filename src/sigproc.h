@@ -28,6 +28,8 @@ file provided in the source code of DFasma. Another copy can be found at
 
 namespace sigproc {
 
+    static const double log2db = 20.0/std::log(10);
+
 // Interpolate value given time vector and corresponding data vector
 template<typename DataType, typename ContainerTimes, typename ContainerData>
 inline DataType nearest(const ContainerTimes& ts, const ContainerData& data, double t, const DataType& defvalue) {

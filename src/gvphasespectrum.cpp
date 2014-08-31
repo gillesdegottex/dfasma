@@ -98,7 +98,7 @@ QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
     m_giShownSelection->setOpacity(0.5);
     WMainWindow::getMW()->ui->lblSpectrumSelectionTxt->setText("No selection");
 
-    updateSceneRect();
+//    updateSceneRect();
 
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -161,34 +161,8 @@ void QGVPhaseSpectrum::updateSceneRect() {
     m_scene->setSceneRect(0.0, -M_PI, WMainWindow::getMW()->getFs()/2, 2*M_PI);
 }
 
-//void QGVPhaseSpectrum::viewFixAndRefresh() {
-
-//    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-//    cout << "QGVPhaseSpectrum::viewFixAndRefresh viewrect: " << viewrect.width() << "," << viewrect.height() << endl;
-
-//    QTransform trans = transform();
-//    qreal h11 = trans.m11();
-//    qreal h22 = trans.m22();
-
-//    qreal min11 = viewport()->rect().width()/m_scene->sceneRect().width();
-////    cout << "h11=" << h11 << " min11=" << min11 << endl;
-//    qreal min22 = viewport()->rect().height()/m_scene->sceneRect().height();
-//    qreal max11 = viewport()->rect().width()/pow(10, -20); // Clip the zoom because the plot can't be infinitely precise
-//    qreal max22 = viewport()->rect().height()/pow(10, -20);// Clip the zoom because the plot can't be infinitely precise
-//    if(h11<min11) h11=min11;
-//    if(h11>max11) h11=max11;
-//    if(h22<min22) h22=min22;
-//    if(h22>max22) h22=max22;
-
-//    setTransformationAnchor(QGraphicsView::AnchorViewCenter);
-//    setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
-
-//    viewUpdateTexts();
-
-//    cout << "QGVPhaseSpectrum::~viewFixAndRefresh" << endl;
-//}
-
 void QGVPhaseSpectrum::viewSet(QRectF viewrect, bool sync) {
+//    cout << "QGVPhaseSpectrum::viewSet" << endl;
 
     QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
 
@@ -209,6 +183,7 @@ void QGVPhaseSpectrum::viewSet(QRectF viewrect, bool sync) {
 
         if(sync) viewSync();
     }
+//    cout << "QGVPhaseSpectrum::~viewSet" << endl;
 }
 
 void QGVPhaseSpectrum::viewSync() {
@@ -222,25 +197,40 @@ void QGVPhaseSpectrum::viewSync() {
         curspecvrect.setRight(viewrect.right());
         WMainWindow::getMW()->m_gvSpectrum->viewSet(curspecvrect, false);
 
-//            QPointF p = WMainWindow::getMW()->m_gvSpectrum->mapToScene(WMainWindow::getMW()->m_gvSpectrum->viewport()->rect()).boundingRect().center();
-//            p.setX(viewrect.center().x());
-//            WMainWindow::getMW()->m_gvSpectrum->centerOn(p);
+//        QPointF p = WMainWindow::getMW()->m_gvSpectrum->mapToScene(WMainWindow::getMW()->m_gvSpectrum->viewport()->rect()).boundingRect().center();
+//        p.setX(viewrect.center().x());
+//        WMainWindow::getMW()->m_gvSpectrum->centerOn(p);
     }
 
 //    cout << "QGVPhaseSpectrum::~viewSync" << endl;
 }
 
 void QGVPhaseSpectrum::resizeEvent(QResizeEvent* event) {
+//    cout << "QGVPhaseSpectrum::resizeEvent" << endl;
 
     QRectF oldviewrect = mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect();
 
+//    cout << oldviewrect.width() << " x " << oldviewrect.height() << endl;
+
     if(oldviewrect.width()==0 && oldviewrect.height()==0) {
         updateSceneRect();
-        viewSet(m_scene->sceneRect());
+        QRectF rect = m_scene->sceneRect();
+        QRectF curspecvrect = WMainWindow::getMW()->m_gvSpectrum->mapToScene(WMainWindow::getMW()->m_gvSpectrum->viewport()->rect()).boundingRect();
+        rect.setLeft(curspecvrect.left());
+        rect.setRight(curspecvrect.right());
+        viewSet(rect, false);
     }
-    else
-        viewSet(oldviewrect);
+    else {
+        if(event->size().height()>0) {
+            QRectF curspecvrect = WMainWindow::getMW()->m_gvSpectrum->mapToScene(WMainWindow::getMW()->m_gvSpectrum->viewport()->rect()).boundingRect();
+            QRectF rect = oldviewrect;
+            rect.setLeft(curspecvrect.left());
+            rect.setRight(curspecvrect.right());
+            viewSet(rect, false);
+        }
+    }
 
+    // Set the scroll bars in the amplitude and phase views
     if(event->size().height()==0) {
         // cout << "Hide Phase Spectrum View" << endl;
         WMainWindow::getMW()->m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -248,11 +238,13 @@ void QGVPhaseSpectrum::resizeEvent(QResizeEvent* event) {
     else {
         // cout << "Show Phase Spectrum View" << endl;
         WMainWindow::getMW()->m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
-        viewUpdateTexts();
-
-        cursorUpdate(QPointF(-1,0));
     }
+
+    viewUpdateTexts();
+
+    cursorUpdate(QPointF(-1,0));
+
+//    cout << "QGVPhaseSpectrum::~resizeEvent" << endl;
 }
 
 void QGVPhaseSpectrum::scrollContentsBy(int dx, int dy){
@@ -700,7 +692,7 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
 
         int dftlen = (WMainWindow::getMW()->ftsnds[fi]->m_dft.size()-1)*2;
         double prevx = 0;
-        double prevy = std::arg(WMainWindow::getMW()->ftsnds[fi]->m_dft[0]);
+        double prevy = WMainWindow::getMW()->ftsnds[fi]->m_dft[0].imag();
         std::complex<WAVTYPE>* data = WMainWindow::getMW()->ftsnds[fi]->m_dft.data();
         int kmin = std::max(0, int(dftlen*rect.left()/WMainWindow::getMW()->getFs()));
         int kmax = std::min(dftlen/2+1, int(1+dftlen*rect.right()/WMainWindow::getMW()->getFs()));
@@ -709,7 +701,8 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
         for(int k=kmin; k<=kmax; k++){
             double x = fs*k/dftlen;
             double dp = (windelay)*2.0*M_PI*k/dftlen;
-            double y = std::arg((*(data+k))*std::complex<WAVTYPE>(cos(dp),sin(dp)));
+            dp += (*(data+k)).imag();
+            double y = std::arg(std::complex<WAVTYPE>(cos(dp),sin(dp))); // TODO Use wrap instead
             painter->drawLine(QLineF(prevx, -prevy, x, -y));
             prevx = x;
             prevy = y;
