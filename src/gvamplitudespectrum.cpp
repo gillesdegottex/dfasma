@@ -1079,6 +1079,10 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
 
 //    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVAmplitudeSpectrum::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
+    double fs = WMainWindow::getMW()->getFs();
+
+    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+
     // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
 
     // Draw grid
@@ -1097,7 +1101,7 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
             painter->setPen(outlinePen);
             painter->setBrush(QBrush(WMainWindow::getMW()->ftfzeros[fi]->color));
 
-            double ct = 0.5*(m_nl+m_nr)/WMainWindow::getMW()->getFs();
+            double ct = 0.5*(m_nl+m_nr)/fs;
             double cf0 = sigproc::nearest<double>(WMainWindow::getMW()->ftfzeros[fi]->ts, WMainWindow::getMW()->ftfzeros[fi]->f0s, ct, -1.0);
 
             // cout << ct << ":" << cf0 << endl;
@@ -1113,7 +1117,7 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
             outlinePen.setColor(c);
             painter->setPen(outlinePen);
 
-            for(int h=2; h<int(0.5*WMainWindow::getMW()->getFs()/cf0)+1; h++) {
+            for(int h=2; h<int(0.5*fs/cf0)+1; h++) {
                 painter->drawLine(QLineF(h*cf0, -3000, h*cf0, 3000));
             }
         }
@@ -1130,14 +1134,16 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
         painter->setPen(outlinePen);
         painter->setOpacity(1.0);
 
-        int dftlen = (m_filterresponse.size()-1)*2; // The dftlen of the filter response is a fixed one ! It is not the same as the other spectra
-        int kmin = std::max(0, int(dftlen*rect.left()/WMainWindow::getMW()->getFs()));
-        int kmax = std::min(dftlen/2, int(1+dftlen*rect.right()/WMainWindow::getMW()->getFs()));
+//        draw_spectrum(painter, m_filterresponse, fs, 1.0, rect);
 
-        double prevx = WMainWindow::getMW()->getFs()*kmin/dftlen;
+        int dftlen = (m_filterresponse.size()-1)*2; // The dftlen of the filter response is a fixed one ! It is not the same as the other spectra
+        int kmin = std::max(0, int(dftlen*rect.left()/fs));
+        int kmax = std::min(dftlen/2, int(1+dftlen*rect.right()/fs));
+
+        double prevx = fs*kmin/dftlen;
         double prevy = m_filterresponse[kmin];
         for(int k=kmin+1; k<=kmax; ++k){
-            double x = WMainWindow::getMW()->getFs()*k/dftlen;
+            double x = fs*k/dftlen;
             double y = m_filterresponse[k];
             if(y<-1000000) y=-1000000;
             painter->drawLine(QLineF(prevx, -prevy, x, -y));
@@ -1146,37 +1152,18 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
         }
     }
 
-    int dftlen = (WMainWindow::getMW()->ftsnds[0]->m_dft.size()-1)*2;
-    if (dftlen==0) return;
-
-    int kmin = std::max(0, int(dftlen*rect.left()/WMainWindow::getMW()->getFs()));
-    int kmax = std::min(dftlen/2, int(1+dftlen*rect.right()/WMainWindow::getMW()->getFs()));
-
     // Draw the window's frequency response
     if (m_aShowWindow->isChecked() && m_windft.size()>0) {
-//        QPen outlinePen(QColor(255, 192, 192));
-//        QPen outlinePen(QColor(0, 0, 0));
-//        painter->setOpacity(0.25);
         QPen outlinePen(QColor(192, 192, 192));
         outlinePen.setWidth(0);
         painter->setPen(outlinePen);
         painter->setOpacity(1);
 
-        double prevx = WMainWindow::getMW()->getFs()*kmin/dftlen;
-        double prevy = 20*log10(abs(m_windft[kmin]));
-        std::complex<WAVTYPE>* data = m_windft.data();
-        for(int k=kmin+1; k<=kmax; ++k){
-            double x = WMainWindow::getMW()->getFs()*k/dftlen;
-            double y = 20*log10(abs(*(data+k)));
-            if(y<-1000000) y=-1000000;
-            painter->drawLine(QLineF(prevx, -prevy, x, -y));
-            prevx = x;
-            prevy = y;
-        }
+        draw_spectrum(painter, m_windft, fs, 1.0, rect);
     }
 
     // Draw the sound's spectra
-    for(unsigned int fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++){
+    for(size_t fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++){
         if(!WMainWindow::getMW()->ftsnds[fi]->m_actionShow->isChecked())
             continue;
 
@@ -1189,21 +1176,78 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
         painter->setBrush(QBrush(WMainWindow::getMW()->ftsnds[fi]->color));
         painter->setOpacity(1);
 
-        double prevx = WMainWindow::getMW()->getFs()*kmin/dftlen;
-        double prevy = 20*log10(abs(WMainWindow::getMW()->ftsnds[fi]->m_dft[kmin]));
-        double a = WMainWindow::getMW()->ftsnds[fi]->m_ampscale;
-        std::complex<WAVTYPE>* data = WMainWindow::getMW()->ftsnds[fi]->m_dft.data();
+        draw_spectrum(painter, WMainWindow::getMW()->ftsnds[fi]->m_dft, fs, WMainWindow::getMW()->ftsnds[fi]->m_ampscale, rect);
+    }
+
+//    cout << "QGVAmplitudeSpectrum::~drawBackground" << endl;
+}
+
+void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& dft, double fs, double ascale, const QRectF& rect) {
+    int dftlen = (dft.size()-1)*2;
+    if (dftlen==0) return;
+
+    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+
+    int kmin = std::max(0, int(dftlen*rect.left()/fs));
+    int kmax = std::min(dftlen/2, int(1+dftlen*rect.right()/fs));
+
+    // Draw the sound's spectra
+    double samppixdensity = (dftlen*(viewrect.right()-viewrect.left())/fs)/viewport()->rect().width();
+
+    if(samppixdensity<=1.0) {
+//        cout << "Spec: Draw lines between each bin" << endl;
+
+        double prevx = fs*kmin/dftlen;
+        double prevy = 20*log10(abs(dft[kmin]));
+        std::complex<WAVTYPE>* data = dft.data();
         for(int k=kmin+1; k<=kmax; ++k){
-            double x = WMainWindow::getMW()->getFs()*k/dftlen;
-            double y = 20*log10(a*abs(*(data+k)));
+            double x = fs*k/dftlen;
+            double y = 20*log10(ascale*abs(*(data+k)));
             if(y<-1000000) y=-1000000;
             painter->drawLine(QLineF(prevx, -prevy, x, -y));
             prevx = x;
             prevy = y;
         }
     }
+    else {
+//        cout << "Spec: Plot only one line per pixel, in order to reduce computation time" << endl;
 
-//    cout << "QGVAmplitudeSpectrum::~drawBackground" << endl;
+        painter->setWorldMatrixEnabled(false); // Work in pixel coordinates
+
+        QRect pixrect = mapFromScene(rect).boundingRect();
+        QRect fullpixrect = mapFromScene(viewrect).boundingRect();
+
+        double s2p = -ascale*fullpixrect.height()/viewrect.height(); // Scene to pixel
+        double p2s = viewrect.width()/fullpixrect.width(); // Pixel to scene
+        double yzero = mapFromScene(QPointF(0,0)).y();
+
+        std::complex<WAVTYPE>* yp = dft.data();
+
+        for(int i=pixrect.left(); i<=pixrect.right(); i++) {
+            int ns = int(dftlen*(viewrect.left()+i*p2s)/fs);
+            int ne = int(dftlen*(viewrect.left()+(i+1)*p2s)/fs);
+
+            if(ns>=0 && ne<int(dft.size())) {
+                WAVTYPE ymin = std::numeric_limits<double>::infinity();
+                WAVTYPE ymax = -std::numeric_limits<double>::infinity();
+                std::complex<WAVTYPE>* ypp = yp+ns;
+                WAVTYPE y;
+                for(int n=ns; n<=ne; n++) {
+                    y = std::abs(*ypp);
+                    ymin = std::min(ymin, y);
+                    ymax = std::max(ymax, y);
+                    ypp++;
+                }
+                ymin = 20*log10(ascale*ymin);
+                ymax = 20*log10(ascale*ymax);
+                ymin *= s2p;
+                ymax *= s2p;
+                painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
+            }
+        }
+
+        painter->setWorldMatrixEnabled(true); // Go back to scene coordinates
+    }
 }
 
 void QGVAmplitudeSpectrum::draw_grid(QPainter* painter, const QRectF& rect) {
