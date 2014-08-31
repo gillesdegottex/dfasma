@@ -28,7 +28,8 @@ extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavutil/avutil.h>
 }
-#elif AUDIOFILEREADING_LIBSOX
+#endif
+#ifdef AUDIOFILEREADING_LIBSOX
 extern "C" {
 #include <sox.h>
 #include <assert.h>
@@ -45,7 +46,8 @@ int main(int argc, char *argv[])
         // This call is necessarily done once in your app to initialize
         // libavformat to register all the muxers, demuxers and protocols.
         av_register_all();
-    #elif AUDIOFILEREADING_LIBSOX
+    #endif
+    #ifdef AUDIOFILEREADING_LIBSOX
         assert(sox_init() == SOX_SUCCESS);
         // TODO sox_quit();
     #endif

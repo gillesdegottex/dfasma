@@ -44,6 +44,8 @@ public:
 
     QAction* m_actionShow;
 
+    virtual QString info() const {return "This is an undefined file!";}
+
     ~FileType();
 
     #ifdef SUPPORT_SDIF

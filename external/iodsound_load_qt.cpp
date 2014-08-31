@@ -19,7 +19,7 @@ file provided in the source code of DFasma. Another copy can be found at
 */
 
 
-#include "iodsound.h"
+#include "../src/ftsound.h"
 
 #include <iostream>
 using namespace std;
@@ -190,7 +190,7 @@ void AudioDecoder::updateProgress()
 void FTSound::load(const QString& _fileName){
 
     // Load audio file
-    fileName = _fileName;
+    fileFullPath = _fileName;
 
 //    QAudioFormat desiredFormat;
 //    desiredFormat.setChannelCount(2);
@@ -201,7 +201,7 @@ void FTSound::load(const QString& _fileName){
 
     QAudioDecoder *decoder = new QAudioDecoder(this);
 //    decoder->setAudioFormat(desiredFormat);
-    decoder->setSourceFilename(fileName);
+    decoder->setSourceFilename(fileFullPath);
 
     QAudioFormat format = decoder->audioFormat();
 

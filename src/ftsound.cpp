@@ -82,6 +82,32 @@ FTSound::FTSound(const QString& _fileName, QObject *parent)
 //    QIODevice::open(QIODevice::ReadOnly);
 }
 
+QString FTSound::info() const {
+    QString str = "";
+    QString codecname = m_fileaudioformat.codec();
+    if(codecname.isEmpty()) codecname = "unknown type";
+    str += "Codec: "+codecname+" with "+QString::number(m_fileaudioformat.channelCount())+" channel<br/>";
+    str += "Sampling frequency: "+QString::number(m_fileaudioformat.sampleRate())+"Hz<br/>";
+    str += "Sample type: "+QString::number(m_fileaudioformat.sampleSize())+"b ";
+    QAudioFormat::SampleType sampletype = m_fileaudioformat.sampleType();
+    if(sampletype==QAudioFormat::Unknown)
+        str += "(unknown type)";
+    else if(sampletype==QAudioFormat::SignedInt)
+        str += "signed integer";
+    else if(sampletype==QAudioFormat::UnSignedInt)
+        str += "unsigned interger";
+    else if(sampletype==QAudioFormat::Float)
+        str += "float";
+    QAudioFormat::Endian byteOrder = m_fileaudioformat.byteOrder();
+    if(byteOrder==QAudioFormat::BigEndian)
+        str += " big endian";
+    else if(byteOrder==QAudioFormat::LittleEndian)
+        str += " little endian";
+    str += "<br/>";
+
+    return str;
+}
+
 void FTSound::setAvoidClicksWindowDuration(double halfduration) {
     sm_avoidclickswindow = sigproc::hann(2*int(2*halfduration*fs_common/2)+1); // Use 50ms half-windows on each side
     double winmax = sm_avoidclickswindow[(sm_avoidclickswindow.size()-1)/2];

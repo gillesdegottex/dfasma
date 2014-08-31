@@ -74,6 +74,7 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     , m_audioengine(NULL)
 {
     ui->setupUi(this);
+    ui->lblFileInfo->hide();
 
     sm_mainwindow = this;
 
@@ -407,6 +408,29 @@ void WMainWindow::addFile(const QString& filepath) {
             ftsnds.push_back(ftsnd);
             ft = ftsnd;
 
+            QAudioFormat format = ftsnd->format();
+            // Display some information
+            QString str = "";
+            str += "Codec: "+QString::number(format.channelCount())+" channel "+format.codec()+"<br/>";
+            str += "Sampling frequency: "+QString::number(format.sampleRate())+"Hz<br/>";
+            str += "Sample type: "+QString::number(format.sampleSize())+"b ";
+            QAudioFormat::SampleType sampletype = format.sampleType();
+            if(sampletype==QAudioFormat::Unknown)
+                str += "(unknown type)";
+            else if(sampletype==QAudioFormat::SignedInt)
+                str += "signed integer";
+            else if(sampletype==QAudioFormat::UnSignedInt)
+                str += "unsigned interger";
+            else if(sampletype==QAudioFormat::Float)
+                str += "float";
+            QAudioFormat::Endian byteOrder = format.byteOrder();
+            if(byteOrder==QAudioFormat::BigEndian)
+                str += " big endian";
+            else if(byteOrder==QAudioFormat::LittleEndian)
+                str += " little endian";
+            str += "<br/>";
+            cout << str.toLocal8Bit().constData() << endl;
+
             // The first sound will determine the common fs for the audio output
             if(ftsnds.size()==1)
                 initializeSoundSystem(ftsnds[0]->fs);
@@ -479,9 +503,18 @@ void WMainWindow::fileSelectionChanged(){
     ui->actionMultiShow->disconnect();
     connect(ui->actionMultiShow, SIGNAL(triggered()), this, SLOT(soundsChanged()));
 
-    QList<QListWidgetItem*> l = ui->listSndFiles->selectedItems();
-    for(int i=0; i<l.size(); i++)
-        connect(ui->actionMultiShow, SIGNAL(triggered()), ((FileType*)l.at(i))->m_actionShow, SLOT(toggle()));
+    QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
+    for(int i=0; i<list.size(); i++)
+        connect(ui->actionMultiShow, SIGNAL(triggered()), ((FileType*)list.at(i))->m_actionShow, SLOT(toggle()));
+
+    // If only one file selected
+    // Display Basic information of it
+    if(list.size()==1) {
+        ui->lblFileInfo->setText(((FileType*)list.at(0))->info());
+        ui->lblFileInfo->show();
+    }
+    else
+        ui->lblFileInfo->hide();
 }
 void WMainWindow::setSoundShown(bool show){
     QListWidgetItem* li = ui->listSndFiles->currentItem();

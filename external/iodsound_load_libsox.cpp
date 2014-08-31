@@ -69,7 +69,21 @@ void FTSound::load(const QString& _fileName){
     if(in->signal.channels>1)
         throw QString("libsox: This audio file has multiple audio channel, whereas DFasma is not designed for this. Please convert this file into a mono audio file before re-opening it with DFasma.");
 
+    m_fileaudioformat.setChannelCount(1);
+
     setSamplingRate(in->signal.rate);
+
+    m_fileaudioformat.setSampleRate(in->signal.rate);
+    m_fileaudioformat.setSampleSize(in->encoding.bits_per_sample);
+    // TODO Check with known examples
+    if(in->encoding.encoding==SOX_ENCODING_SIGN2)
+        m_fileaudioformat.setSampleType(QAudioFormat::SignedInt);
+    else if(in->encoding.encoding==SOX_ENCODING_UNSIGNED)
+        m_fileaudioformat.setSampleType(QAudioFormat::UnSignedInt);
+    else if(in->encoding.encoding==SOX_ENCODING_FLOAT)
+        m_fileaudioformat.setSampleType(QAudioFormat::Float);
+    m_fileaudioformat.setByteOrder((in->encoding.opposite_endian)?QAudioFormat::LittleEndian:QAudioFormat::BigEndian);
+    // TODO Check with known examples
 
     // Allocate a block of memory to store the block of audio samples:
     buf = (sox_sample_t*)(new char[sizeof(sox_sample_t) * BUFFER_LEN]);

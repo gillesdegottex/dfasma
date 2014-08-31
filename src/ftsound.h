@@ -45,6 +45,8 @@ class FTSound : public QIODevice, public FileType
 
     void load(const QString& _fileName);
 
+    QAudioFormat m_fileaudioformat;   // Format of the audio data
+
     QAudioFormat m_outputaudioformat; // Temporary copy for readData
 
     void setSamplingRate(double _fs); // Used by implementations of load
@@ -73,6 +75,7 @@ public:
     std::vector<std::complex<WAVTYPE> > m_dft; // Store the _log_ of the dft
 
     // QIODevice
+    QAudioFormat format(){return m_fileaudioformat;}
     double setPlay(const QAudioFormat& format, double tstart=0.0, double tstop=0.0, double fstart=0.0, double fstop=0.0);
     void stop();
     qint64 readData(char *data, qint64 maxlen);
@@ -91,6 +94,8 @@ public:
     QAction* m_actionInvPolarity;
     QAction* m_actionResetAmpScale;
     QAction* m_actionResetDelay;
+
+    virtual QString info() const;
 
     ~FTSound();
 };

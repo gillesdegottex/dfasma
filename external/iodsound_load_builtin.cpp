@@ -29,35 +29,35 @@ QString FTSound::getAudioFileReadingDescription(){
 
 void FTSound::load(const QString& _fileName){
     // Load audio file
-    fileName = _fileName;
+    fileFullPath = _fileName;
 
     // Create the file reader and read the format
     WavFile* pfile = new WavFile(this);
-    if(!pfile->open(fileName))
+    if(!pfile->open(fileFullPath))
         throw QString("built-in WAV file reader: Cannot open the file.");
 
-    QAudioFormat format = pfile->fileFormat();
+    m_fileaudioformat = pfile->fileFormat();
 
     // Check if the format is currently supported
-    if(!format.isValid())
+    if(!m_fileaudioformat.isValid())
         throw QString("built-in WAV file reader: Format is invalid.");
 
-    if(format.channelCount()>1)
+    if(m_fileaudioformat.channelCount()>1)
         throw QString("built-in WAV file reader: This audio file has multiple audio channel, whereas DFasma is not designed for this. Please convert this file into a mono audio file before re-opening it with DFasma.");
 
-    if(!((format.codec() == "audio/pcm") &&
-         format.sampleType() == QAudioFormat::SignedInt &&
-         format.sampleSize() == 16 &&
-         format.byteOrder() == QAudioFormat::LittleEndian))
-        throw QString("built-in WAV file reader: Supports only 16 bit signed LE mono format, whereas current format is "+formatToString(format));
+    if(!((m_fileaudioformat.codec() == "audio/pcm") &&
+         m_fileaudioformat.sampleType() == QAudioFormat::SignedInt &&
+         m_fileaudioformat.sampleSize() == 16 &&
+         m_fileaudioformat.byteOrder() == QAudioFormat::LittleEndian))
+        throw QString("built-in WAV file reader: Supports only 16 bit signed LE mono format, whereas current format is "+formatToString(m_fileaudioformat));
 
-    setSamplingRate(format.sampleRate());
+    setSamplingRate(m_fileaudioformat.sampleRate());
 
     // Load the waveform data from the file
     pfile->seek(pfile->headerLength());
 
     QByteArray  buffer;
-    qint64      toread = format.sampleSize()/8;
+    qint64      toread = m_fileaudioformat.sampleSize()/8;
     qint64      red;
     buffer.resize(toread);
     while((red = pfile->read(buffer.data(),toread))) {

@@ -51,7 +51,7 @@
                </sizepolicy>
               </property>
               <property name="text">
-               <string>Sampling Frequency:</string>
+               <string>Session sampling Frequency:</string>
               </property>
              </widget>
             </item>
@@ -76,6 +76,18 @@
              </spacer>
             </item>
            </layout>
+          </item>
+          <item>
+           <widget class="QLabel" name="lblFileInfo">
+            <property name="font">
+             <font>
+              <pointsize>6</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>&lt;file info&gt;</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
@@ -292,8 +304,6 @@
      </widget>
     </item>
    </layout>
-   <zorder>splitter</zorder>
-   <zorder></zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -301,7 +311,7 @@
      <x>0</x>
      <y>0</y>
      <width>814</width>
-     <height>25</height>
+     <height>31</height>
     </rect>
    </property>
   </widget>
