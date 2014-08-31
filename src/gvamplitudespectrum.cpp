@@ -1120,47 +1120,23 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
     }
 
     // Draw the spectra
-    // TODO should draw spectra only if m_fft is not touching m_dft variables
+    // TODO should draw spectra only if m_fft is not touching m_dft variables (it doesnt crash ??)
     if (WMainWindow::getMW()->ftsnds.size()==0) return;
-    int dftlen = (WMainWindow::getMW()->ftsnds[0]->m_dft.size()-1)*2;
-    if (dftlen==0) return;
-
-    int kmin = std::max(0, int(dftlen*rect.left()/WMainWindow::getMW()->getFs()));
-    int kmax = std::min(dftlen/2, int(1+dftlen*rect.right()/WMainWindow::getMW()->getFs()));
-
-    if (m_aShowWindow->isChecked() && m_windft.size()>0) {
-//        QPen outlinePen(QColor(255, 192, 192));
-//        QPen outlinePen(QColor(0, 0, 0));
-//        painter->setOpacity(0.25);
-        QPen outlinePen(QColor(192, 192, 192));
-        outlinePen.setWidth(0);
-        painter->setPen(outlinePen);
-        painter->setOpacity(1);
-
-        double prevx = 0;
-        double prevy = 20*log10(abs(m_windft[0]));
-        std::complex<WAVTYPE>* data = m_windft.data();
-        for(int k=kmin; k<=kmax; k++){
-            double x = WMainWindow::getMW()->getFs()*k/dftlen;
-            double y = 20*log10(abs(*(data+k)));
-            if(y<-1000000) y=-1000000;
-            painter->drawLine(QLineF(prevx, -prevy, x, -y));
-            prevx = x;
-            prevy = y;
-        }
-    }
 
     // Draw the filter response
     if(m_filterresponse.size()>0) {
         QPen outlinePen(QColor(255, 192, 192));
         outlinePen.setWidth(0);
         painter->setPen(outlinePen);
-        painter->setOpacity(1);
+        painter->setOpacity(1.0);
 
-        int dftlen = (m_filterresponse.size()-1)*2;
-        double prevx = 0;
-        double prevy = m_filterresponse[0];
-        for(int k=kmin; k<=kmax; k++){
+        int dftlen = (m_filterresponse.size()-1)*2; // The dftlen of the filter response is a fixed one ! It is not the same as the other spectra
+        int kmin = std::max(0, int(dftlen*rect.left()/WMainWindow::getMW()->getFs()));
+        int kmax = std::min(dftlen/2, int(1+dftlen*rect.right()/WMainWindow::getMW()->getFs()));
+
+        double prevx = WMainWindow::getMW()->getFs()*kmin/dftlen;
+        double prevy = m_filterresponse[kmin];
+        for(int k=kmin+1; k<=kmax; ++k){
             double x = WMainWindow::getMW()->getFs()*k/dftlen;
             double y = m_filterresponse[k];
             if(y<-1000000) y=-1000000;
@@ -1170,6 +1146,36 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
         }
     }
 
+    int dftlen = (WMainWindow::getMW()->ftsnds[0]->m_dft.size()-1)*2;
+    if (dftlen==0) return;
+
+    int kmin = std::max(0, int(dftlen*rect.left()/WMainWindow::getMW()->getFs()));
+    int kmax = std::min(dftlen/2, int(1+dftlen*rect.right()/WMainWindow::getMW()->getFs()));
+
+    // Draw the window's frequency response
+    if (m_aShowWindow->isChecked() && m_windft.size()>0) {
+//        QPen outlinePen(QColor(255, 192, 192));
+//        QPen outlinePen(QColor(0, 0, 0));
+//        painter->setOpacity(0.25);
+        QPen outlinePen(QColor(192, 192, 192));
+        outlinePen.setWidth(0);
+        painter->setPen(outlinePen);
+        painter->setOpacity(1);
+
+        double prevx = WMainWindow::getMW()->getFs()*kmin/dftlen;
+        double prevy = 20*log10(abs(m_windft[kmin]));
+        std::complex<WAVTYPE>* data = m_windft.data();
+        for(int k=kmin+1; k<=kmax; ++k){
+            double x = WMainWindow::getMW()->getFs()*k/dftlen;
+            double y = 20*log10(abs(*(data+k)));
+            if(y<-1000000) y=-1000000;
+            painter->drawLine(QLineF(prevx, -prevy, x, -y));
+            prevx = x;
+            prevy = y;
+        }
+    }
+
+    // Draw the sound's spectra
     for(unsigned int fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++){
         if(!WMainWindow::getMW()->ftsnds[fi]->m_actionShow->isChecked())
             continue;
@@ -1177,21 +1183,17 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
         if(WMainWindow::getMW()->ftsnds[fi]->m_dft.size()<1)
             continue;
 
-//        QTransform trans = transform();
-//        float h11 = float(viewport()->rect().width())/(0.5*WMainWindow::getMW()->getFs());
-//        setTransform(QTransform(h11, trans.m12(), trans.m21(), trans.m22(), 0, 0));
-
         QPen outlinePen(WMainWindow::getMW()->ftsnds[fi]->color);
         outlinePen.setWidth(0);
         painter->setPen(outlinePen);
         painter->setBrush(QBrush(WMainWindow::getMW()->ftsnds[fi]->color));
         painter->setOpacity(1);
 
-        double prevx = 0;
-        double prevy = 20*log10(abs(WMainWindow::getMW()->ftsnds[fi]->m_dft[0]));
+        double prevx = WMainWindow::getMW()->getFs()*kmin/dftlen;
+        double prevy = 20*log10(abs(WMainWindow::getMW()->ftsnds[fi]->m_dft[kmin]));
         double a = WMainWindow::getMW()->ftsnds[fi]->m_ampscale;
         std::complex<WAVTYPE>* data = WMainWindow::getMW()->ftsnds[fi]->m_dft.data();
-        for(int k=kmin; k<=kmax; k++){
+        for(int k=kmin+1; k<=kmax; ++k){
             double x = WMainWindow::getMW()->getFs()*k/dftlen;
             double y = 20*log10(a*abs(*(data+k)));
             if(y<-1000000) y=-1000000;
@@ -1205,8 +1207,6 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
 }
 
 void QGVAmplitudeSpectrum::draw_grid(QPainter* painter, const QRectF& rect) {
-    // Plot the grid
-
     // Prepare the pens and fonts
     // TODO put this in the constructor to limit the allocations in this function
     QPen gridPen(QColor(192,192,192)); //192
