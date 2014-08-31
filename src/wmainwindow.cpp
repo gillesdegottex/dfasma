@@ -601,7 +601,6 @@ void WMainWindow::selectAudioOutputDevice(int di) {
 }
 
 void WMainWindow::selectAudioOutputDevice(const QString& devicename) {
-    cout << "INFO: Selecting audio output device: " << devicename.toLocal8Bit().constData() << endl;
     if(devicename=="default") {
         m_audioengine->setAudioOutputDevice(QAudioDeviceInfo::defaultOutputDevice());
     }
@@ -620,6 +619,7 @@ void WMainWindow::selectAudioOutputDevice(const QString& devicename) {
 }
 
 void WMainWindow::audioOutputDeviceChanged(const QAudioDeviceInfo& device){
+    cout << "INFO: Selecting audio output device: " << device.deviceName().toLocal8Bit().constData() << endl;
 
     // Display some information
     QString str = "";
