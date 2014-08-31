@@ -77,7 +77,7 @@ FTSound::FTSound(const QString& _fileName, QObject *parent)
     if(sm_avoidclickswindow.size()==0)
         FTSound::setAvoidClicksWindowDuration(WMainWindow::getMW()->m_dlgSettings->ui->sbAvoidClicksWindowDuration->value());
 
-    std::cout << wav.size() << " samples loaded (" << wav.size()/fs << "s max amplitude=" << m_wavmaxamp << ")" << endl;
+    std::cout << "INFO: " << wav.size() << " samples loaded (" << wav.size()/fs << "s max amplitude=" << m_wavmaxamp << ")" << endl;
 
 //    QIODevice::open(QIODevice::ReadOnly);
 }
