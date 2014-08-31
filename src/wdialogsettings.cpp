@@ -68,6 +68,7 @@ void WDialogSettings::setSBAvoidClicksWindowDuration(double halfduration) {
 
 void WDialogSettings::settingsSave() {
     QSettings settings;
+    settings.setValue("playback/AudioOutputDeviceName", ui->cbAudioOutputDevices->currentText());
     settings.setValue("playback/sbButterworthOrder", ui->sbButterworthOrder->value());
     settings.setValue("playback/ckAvoidClicksAddWindows", ui->ckAvoidClicksAddWindows->isChecked());
     settings.setValue("playback/sbAvoidClicksWindowDuration", ui->sbAvoidClicksWindowDuration->value());

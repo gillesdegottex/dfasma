@@ -89,6 +89,8 @@ private slots:
     void fileSelectionChanged();
 
 public slots:
+    void selectAudioOutputDevice(int di);
+    void selectAudioOutputDevice(const QString& devicename);
     void settingsSave();
 
 public:

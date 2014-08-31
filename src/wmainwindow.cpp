@@ -119,8 +119,7 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     ui->listSndFiles->setAcceptDrops(true);
     ui->listSndFiles->setSelectionRectVisible(false);
     ui->listSndFiles->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->listSndFiles, SIGNAL(customContextMenuRequested(const QPoint&)),
-            this, SLOT(showFileContextMenu(const QPoint&)));
+    connect(ui->listSndFiles, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showFileContextMenu(const QPoint&)));
 
     ui->actionAbout->setIcon(QIcon(":/icons/about.svg"));
     ui->actionSettings->setIcon(QIcon(":/icons/settings.svg"));
@@ -374,7 +373,7 @@ void WMainWindow::openFile() {
 }
 
 void WMainWindow::addFile(const QString& filepath) {
-    cout << "MainWindow::addFile " << filepath.toLocal8Bit().constData() << endl;
+    cout << "INFO: Add file: " << filepath.toLocal8Bit().constData() << endl;
 
     try
     {
@@ -569,12 +568,16 @@ void WMainWindow::initializeSoundSystem(float fs){
     connect(m_audioengine, SIGNAL(playPositionChanged(double)), m_gvWaveform, SLOT(playCursorSet(double)));
     connect(m_audioengine, SIGNAL(localEnergyChanged(double)), this, SLOT(localEnergyChanged(double)));
 
-    // Provide some information
-    QString txt = m_audioengine->audioOutputDevice().deviceName();
-    m_dlgSettings->ui->lblSoundSystem->setText(txt);
-    m_dlgSettings->ui->lblSoundSystem->setToolTip(txt);
+    // List the audio devices and select the first one
+    QList<QAudioDeviceInfo> audioDevices = m_audioengine->availableAudioOutputDevices();
+    for(int di=0; di<audioDevices.size(); di++)
+        m_dlgSettings->ui->cbAudioOutputDevices->addItem(audioDevices[di].deviceName());
 
-    txt = QString("%1Hz").arg(fs);
+    QSettings settings;
+    selectAudioOutputDevice(settings.value("playback/AudioOutputDeviceName", "default").toString());
+    connect(m_dlgSettings->ui->cbAudioOutputDevices, SIGNAL(currentIndexChanged(int)), this, SLOT(selectAudioOutputDevice(int)));
+
+    QString txt = QString("%1Hz").arg(fs);
     ui->lblFs->setText(txt);
     ui->lblFs->setToolTip(txt);
 
@@ -582,11 +585,54 @@ void WMainWindow::initializeSoundSystem(float fs){
 //    cout << "~MainWindow::initializeSoundSystem" << endl;
 }
 
+void WMainWindow::selectAudioOutputDevice(int di) {
+    QList<QAudioDeviceInfo> audioDevices = m_audioengine->availableAudioOutputDevices();
+    m_audioengine->setAudioOutputDevice(audioDevices[di]);
+}
+
+void WMainWindow::selectAudioOutputDevice(const QString& devicename) {
+    cout << "INFO: Selecting audio output device: " << devicename.toLocal8Bit().constData() << endl;
+    if(devicename=="default") {
+        m_audioengine->setAudioOutputDevice(QAudioDeviceInfo::defaultOutputDevice());
+    }
+    else {
+        QList<QAudioDeviceInfo> audioDevices = m_audioengine->availableAudioOutputDevices();
+        for(int di=0; di<audioDevices.size(); di++) {
+            if(audioDevices[di].deviceName()==devicename) {
+                m_audioengine->setAudioOutputDevice(audioDevices[di]);
+                m_dlgSettings->ui->cbAudioOutputDevices->setCurrentIndex(di);
+                return;
+            }
+        }
+
+        m_audioengine->setAudioOutputDevice(QAudioDeviceInfo::defaultOutputDevice());
+    }
+}
+
 void WMainWindow::audioOutputDeviceChanged(const QAudioDeviceInfo& device){
-    // Provide some information
-    QString txt = device.deviceName();
-    m_dlgSettings->ui->lblSoundSystem->setText(txt);
-    m_dlgSettings->ui->lblSoundSystem->setToolTip(txt);
+
+    // Display some information
+    QString str = "";
+    str += "Codec: "+QString::number(m_audioengine->format().channelCount())+" channel "+m_audioengine->format().codec()+"<br/>";
+    str += "Sampling frequency: "+QString::number(m_audioengine->format().sampleRate())+"Hz<br/>";
+    str += "Sample type: "+QString::number(m_audioengine->format().sampleSize())+"b ";
+    QAudioFormat::SampleType sampletype = m_audioengine->format().sampleType();
+    if(sampletype==QAudioFormat::Unknown)
+        str += "(unknown type)";
+    else if(sampletype==QAudioFormat::SignedInt)
+        str += "signed integer";
+    else if(sampletype==QAudioFormat::UnSignedInt)
+        str += "unsigned interger";
+    else if(sampletype==QAudioFormat::Float)
+        str += "float";
+    QAudioFormat::Endian byteOrder = m_audioengine->format().byteOrder();
+    if(byteOrder==QAudioFormat::BigEndian)
+        str += " big endian";
+    else if(byteOrder==QAudioFormat::LittleEndian)
+        str += " little endian";
+    str += "<br/>";
+
+    m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText(str);
 }
 
 void WMainWindow::play()

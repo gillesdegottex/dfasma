@@ -81,23 +81,45 @@ AudioEngine::AudioEngine(int fs, QObject *parent)
     m_rtinfo_timer.setInterval(1000*1/12.0);  // Ask for 24 refresh per second
     connect(&m_rtinfo_timer, SIGNAL(timeout()), this, SLOT(sendRealTimeInfo()));
 
-    m_availableAudioOutputDevices = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
-    if(m_availableAudioOutputDevices.size()==1){
-        m_audioOutputDevice = QAudioDeviceInfo::defaultOutputDevice();
-        std::cout << "Only one audio device available. Select it: " << m_audioOutputDevice.deviceName().toLocal8Bit().constData() << endl;
-        emit audioOutputDeviceChanged(m_audioOutputDevice);
-    }
-    else if(m_availableAudioOutputDevices.size()>1){
-        m_audioOutputDevice = QAudioDeviceInfo::defaultOutputDevice();
-        std::cout << m_availableAudioOutputDevices.size() << " audio device available. Select the one by default:" << m_audioOutputDevice.deviceName().toLocal8Bit().constData() << endl;
-        emit audioOutputDeviceChanged(m_audioOutputDevice);
-    }
-    else{
-        std::cout << "No audio device available!" << endl;
-    }
+    listAudioOutputDevices();
 
-    initialize();
+//    initialize();
 }
+
+void AudioEngine::listAudioOutputDevices() {
+    m_availableAudioOutputDevices = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
+
+//    if(m_availableAudioOutputDevices.size()==1){
+//        m_audioOutputDevice = QAudioDeviceInfo::defaultOutputDevice();
+//        std::cout << "Only one audio device available. Select it: " << m_audioOutputDevice.deviceName().toLocal8Bit().constData() << endl;
+//        emit audioOutputDeviceChanged(m_audioOutputDevice);
+//    }
+//    else if(m_availableAudioOutputDevices.size()>1){
+//        m_audioOutputDevice = QAudioDeviceInfo::defaultOutputDevice();
+//        std::cout << m_availableAudioOutputDevices.size() << " audio device available. Select the one by default:" << m_audioOutputDevice.deviceName().toLocal8Bit().constData() << endl;
+//        emit audioOutputDeviceChanged(m_audioOutputDevice);
+//    }
+//    else
+//        std::cout << "No audio device available!" << endl;
+}
+
+void AudioEngine::selectAudioOutputDevice(const QString& devicename) {
+    if(devicename=="default") {
+        setAudioOutputDevice(QAudioDeviceInfo::defaultOutputDevice());
+    }
+    else {
+        QList<QAudioDeviceInfo> audioDevices = availableAudioOutputDevices();
+        for(int di=0; di<audioDevices.size(); di++) {
+            if(audioDevices[di].deviceName()==devicename) {
+                setAudioOutputDevice(audioDevices[di]);
+                return;
+            }
+        }
+
+        setAudioOutputDevice(QAudioDeviceInfo::defaultOutputDevice());
+    }
+}
+
 
 AudioEngine::~AudioEngine()
 {
@@ -170,7 +192,9 @@ void AudioEngine::stopPlayback()
 void AudioEngine::setAudioOutputDevice(const QAudioDeviceInfo &device)
 {
     if (device.deviceName() != m_audioOutputDevice.deviceName()) {
+
         m_audioOutputDevice = device;
+
         reset();
 
         emit audioOutputDeviceChanged(m_audioOutputDevice);
@@ -274,7 +298,7 @@ bool AudioEngine::initialize()
         emit errorMessage(tr("No common output format found"), "");
     }
 
-    qDebug() << "AudioEngine::initialize" << "format" << m_format;
+    // qDebug() << "AudioEngine::initialize" << "format" << m_format;
 
 //    std::cout << "AudioEngine: " << m_audioOutput->bufferSize() << endl;
 
