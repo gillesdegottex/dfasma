@@ -567,7 +567,7 @@ void QGVPhaseSpectrum::selectionFixAndRefresh(){
     m_giShownSelection->show();
 
     m_giSelectionTxt->setText(QString("%1Hz,%2rad").arg(m_selection.width()).arg(m_selection.height()));
-    m_giSelectionTxt->show();
+//    m_giSelectionTxt->show();
     viewUpdateTexts();
 }
 

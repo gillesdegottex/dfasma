@@ -426,13 +426,6 @@ void QGVAmplitudeSpectrum::computeDFTs(){
         m_minsy = sigproc::log2db*m_minsy-3;
         m_maxsy = sigproc::log2db*m_maxsy+3;
 
-//        if(m_minsy<m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value())
-//            m_minsy=m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value();
-//        if(m_maxsy>m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value())
-//            m_maxsy=m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value();
-
-//        cout << "extrema of the spectrum m_minsy=" << m_minsy << " m_maxsy=" << m_maxsy << endl;
-
         // Compute the window's DFT
         if (true) {
             int n = 0;
@@ -469,10 +462,6 @@ void QGVAmplitudeSpectrum::settingsSave() {
 void QGVAmplitudeSpectrum::updateSceneRect() {
 //    cout << "QGVAmplitudeSpectrum::updateSceneRect" << endl;
     m_scene->setSceneRect(0.0, -m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value(), WMainWindow::getMW()->getFs()/2, (m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value()-m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value()));
-
-//    cout << "QGVAmplitudeSpectrum::updateSceneRect: " << m_scene->sceneRect().left() << "," << m_scene->sceneRect().right() << " X " << m_scene->sceneRect().top() << "," << m_scene->sceneRect().bottom() << endl;
-
-//    cout << "corrected extrema of the spectrum m_minsy=" << m_minsy << " m_maxsy=" << m_maxsy << endl;
 
     if(WMainWindow::getMW()->m_gvPhaseSpectrum)
         WMainWindow::getMW()->m_gvPhaseSpectrum->updateSceneRect();
@@ -922,7 +911,7 @@ void QGVAmplitudeSpectrum::selectionFixAndRefresh() {
     m_giShownSelection->show();
 
     m_giSelectionTxt->setText(QString("%1Hz,%2dB").arg(m_selection.width()).arg(m_selection.height()));
-    m_giSelectionTxt->show();
+//    m_giSelectionTxt->show();
     viewUpdateTexts();
 
     selectionSetTextInForm();
