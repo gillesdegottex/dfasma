@@ -30,6 +30,7 @@ file provided in the source code of DFasma. Another copy can be found at
 //#include "wmainwindow.h"
 
 #include "external/FFTwrapper.h"
+#include "ftsound.h"
 
 //class GVPhaseSpectrumWDialogSettings;
 class WMainWindow;
@@ -82,6 +83,7 @@ public:
     void viewSync();
     void viewUpdateTexts();
     void drawBackground(QPainter* painter, const QRectF& rect);
+    void draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& ldft, double fs, double delay, const QRectF& rect);
     void draw_grid(QPainter* painter, const QRectF& rect);
 
     QAction* m_aShowPhase;
