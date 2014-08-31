@@ -26,8 +26,10 @@ using namespace std;
 
 #include <QMenu>
 #include <QFileInfo>
+#include <QColorDialog>
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
+#include "gvamplitudespectrum.h"
 
 #ifdef SUPPORT_SDIF
 #include <easdif/easdif.h>
@@ -87,6 +89,15 @@ FileType::FileType(FILETYPE _type, const QString& _fileName, QObject * parent)
 {
 //    cout << "FileType::FileType: " << _fileName.toLocal8Bit().constData() << endl;
 
+    QPixmap pm(32,32);
+    pm.fill(color);
+    setIcon(QIcon(pm));
+
+    // Set properties common to all files
+    QFileInfo fileInfo(fileFullPath);
+    setText(fileInfo.fileName());
+    setToolTip(fileInfo.absoluteFilePath());
+
     m_actionShow = new QAction("Show", parent);
     m_actionShow->setStatusTip("Show the sound in the views");
 //    m_actionShow->setShortcut(QKeySequence(Qt::CTRL+Qt::Key_H));
@@ -96,9 +107,27 @@ FileType::FileType(FILETYPE _type, const QString& _fileName, QObject * parent)
 //    QIODevice::open(QIODevice::ReadOnly);
 }
 
+void FileType::setColor(const QColor& _color) {
+    color = _color;
+    QPixmap pm(32,32);
+    pm.fill(color);
+    setIcon(QIcon(pm));
+}
+
 void FileType::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
     contextmenu.addAction(m_actionShow);
     mainwindow->connect(m_actionShow, SIGNAL(toggled(bool)), mainwindow, SLOT(setSoundShown(bool)));
+    QColorDialog* colordialog = new QColorDialog(&contextmenu);
+    QObject::connect(colordialog, SIGNAL(colorSelected(const QColor &)), WMainWindow::getMW(), SLOT(colorSelected(const QColor &)));
+//    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), WMainWindow::getMW(), SLOT(colorSelected(const QColor &)));
+//    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), WMainWindow::getMW()->m_gvSpectrum, SLOT(soundsChanged()));
+
+    // Add the available Matlab colors to the custom colors
+    int ci = 0;
+    for(std::deque<QColor>::iterator it=sg_colors.begin(); it!=sg_colors.end(); it++,ci++)
+        QColorDialog::setCustomColor(ci, (*it));
+
+    contextmenu.addAction("Color ...", colordialog, SLOT(exec()));
     contextmenu.addAction(mainwindow->ui->actionCloseFile);
     contextmenu.addSeparator();
 }

@@ -416,15 +416,6 @@ void WMainWindow::addFile(const QString& filepath) {
         //    cout << "~MainWindow::addFile" << endl;
         }
 
-        // Set properties common to all files
-        QFileInfo fileInfo(filepath);
-        ft->setText(fileInfo.fileName());
-        ft->setToolTip(fileInfo.absoluteFilePath());
-
-        QPixmap pm(32,32);
-        pm.fill(ft->color);
-        ft->setIcon(QIcon(pm));
-
         ui->listSndFiles->addItem(ft);
         soundsChanged();
         ui->actionCloseFile->setEnabled(true);
@@ -499,6 +490,11 @@ void WMainWindow::setSoundShown(bool show){
     else        li->setForeground(QBrush(QColor(168,168,168)));
 
     soundsChanged();
+}
+void WMainWindow::colorSelected(const QColor& color) {
+    FileType* currenItem = (FileType*)(ui->listSndFiles->currentItem());
+    if(currenItem)
+        currenItem->setColor(color);
 }
 void WMainWindow::resetAmpScale(){
     FTSound* currentftsound = getCurrentFTSound();

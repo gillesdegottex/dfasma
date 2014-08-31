@@ -92,6 +92,7 @@ public slots:
     void selectAudioOutputDevice(int di);
     void selectAudioOutputDevice(const QString& devicename);
     void settingsSave();
+    void colorSelected(const QColor& color);
 
 public:
     explicit WMainWindow(QStringList sndfiles, QWidget* parent=0);

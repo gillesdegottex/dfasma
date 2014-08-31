@@ -52,8 +52,8 @@ public:
     static bool SDIF_hasFrame(const QString& filename, const QString& framesignature);
     #endif
 
-public slots:
     void setModifiedState(bool modified);
+    void setColor(const QColor& _color);
 };
 
 #endif // FILETYPE_H
