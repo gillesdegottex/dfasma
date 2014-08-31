@@ -125,9 +125,8 @@ public:
     void mouseReleaseEvent(QMouseEvent* event);
     void keyPressEvent(QKeyEvent* event);
 
-    void viewFixAndRefresh();
-    void viewSet(QRectF viewrect);
-    void viewChangesRequested();
+    void viewSet(QRectF viewrect=QRectF(), bool sync=true);
+    void viewSync();
     void viewUpdateTexts();
     void drawBackground(QPainter* painter, const QRectF& rect);
     void draw_grid(QPainter* painter, const QRectF& rect);
@@ -151,7 +150,7 @@ public slots:
     void soundsChanged();
 
     void setWindowRange(double tstart, double tend, bool winforceupdate);
-    void updateSceneRect();
+    void updateSceneRect(); // To call when fs has changed and limits in dB
     void updateDFTSettings();
     void settingsModified();
     void computeDFTs();

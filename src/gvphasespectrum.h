@@ -78,16 +78,13 @@ public:
     void mouseReleaseEvent(QMouseEvent* event);
     void keyPressEvent(QKeyEvent* event);
 
-    void viewFixAndRefresh();
-    void viewSet(QRectF viewrect);
-    void viewChangesRequested();
+    void viewSet(QRectF viewrect=QRectF(), bool sync=true);
+    void viewSync();
     void viewUpdateTexts();
     void drawBackground(QPainter* painter, const QRectF& rect);
     void draw_grid(QPainter* painter, const QRectF& rect);
 
     QAction* m_aShowPhase;
-    QAction* m_aZoomIn;
-    QAction* m_aZoomOut;
 //    QAction* m_aShowProperties;
 
     ~QGVPhaseSpectrum();

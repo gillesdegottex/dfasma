@@ -271,8 +271,8 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     connect(m_fftresizethread, SIGNAL(fftResized(int,int)), this, SLOT(computeDFTs()));
     connect(m_fftresizethread, SIGNAL(fftResizing(int,int)), this, SLOT(fftResizing(int,int)));
 
-    m_minsy = -std::numeric_limits<double>::infinity();
-    m_maxsy = std::numeric_limits<double>::infinity();
+    m_minsy = std::numeric_limits<double>::infinity();
+    m_maxsy = -std::numeric_limits<double>::infinity();
     updateSceneRect();
 
     // Fill the toolbar
@@ -467,8 +467,6 @@ void QGVAmplitudeSpectrum::updateSceneRect() {
     if(m_maxsy>m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value())
         m_maxsy=m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value();
 
-    viewFixAndRefresh();
-
     if(WMainWindow::getMW()->m_gvPhaseSpectrum)
         WMainWindow::getMW()->m_gvPhaseSpectrum->updateSceneRect();
 }
@@ -479,107 +477,94 @@ void QGVAmplitudeSpectrum::soundsChanged(){
     m_scene->update();
 }
 
-void QGVAmplitudeSpectrum::viewFixAndRefresh() {
+//void QGVAmplitudeSpectrum::viewFixAndRefresh() {
 //    cout << "QGVAmplitudeSpectrum::viewFixAndRefresh" << endl;
 //    cout << m_scene->sceneRect().width() << " " << m_scene->sceneRect().height() << endl;
 
-    QTransform trans = transform();
-    qreal h11 = trans.m11();
-    qreal h22 = trans.m22();
+//    QTransform trans = transform();
+//    qreal h11 = trans.m11();
+//    qreal h22 = trans.m22();
 
-    qreal min11 = viewport()->rect().width()/m_scene->sceneRect().width();
-    qreal min22 = viewport()->rect().height()/m_scene->sceneRect().height();
-    qreal max11 = viewport()->rect().width()/pow(10, -20); // Clip the zoom because the plot can't be infinitely precise
-    qreal max22 = viewport()->rect().height()/pow(10, -20);// Clip the zoom because the plot can't be infinitely precise
-    if(h11<min11) h11=min11;
-    if(h11>max11) h11=max11;
-    if(h22<min22) h22=min22;
-    if(h22>max22) h22=max22;
+//    qreal min11 = viewport()->rect().width()/m_scene->sceneRect().width();
+//    qreal min22 = viewport()->rect().height()/m_scene->sceneRect().height();
+//    qreal max11 = viewport()->rect().width()/pow(10, -20); // Clip the zoom because the plot can't be infinitely precise
+//    qreal max22 = viewport()->rect().height()/pow(10, -20);// Clip the zoom because the plot can't be infinitely precise
+//    if(h11<min11) h11=min11;
+//    if(h11>max11) h11=max11;
+//    if(h22<min22) h22=min22;
+//    if(h22>max22) h22=max22;
 
-    setTransformationAnchor(QGraphicsView::AnchorViewCenter);
-    setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
+//    setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+//    setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
 
 //    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 //    cout << "viewrect: " << viewrect.width() << "," << viewrect.height() << endl;
 
-    viewUpdateTexts();
+//    viewUpdateTexts();
 
-    m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
+//    m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
 
 //    cout << "QGVAmplitudeSpectrum::~viewFixAndRefresh" << endl;
-}
+//}
 
-void QGVAmplitudeSpectrum::viewSet(QRectF viewrect) {
-//    cout << "QGVAmplitudeSpectrum::viewSet" << endl;
+void QGVAmplitudeSpectrum::viewSet(QRectF viewrect, bool sync) {
 
     QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
-    if(viewrect!=currentviewrect) {
-        if(viewrect.top()>m_scene->sceneRect().top())
-            viewrect.setTop(m_scene->sceneRect().top());
-        if(viewrect.bottom()<m_scene->sceneRect().bottom())
-            viewrect.setBottom(m_scene->sceneRect().bottom());
+
+    if(viewrect==QRect() || viewrect!=currentviewrect) {
+        if(viewrect==QRectF())
+            viewrect = currentviewrect;
+
+        if(viewrect.top()<=m_scene->sceneRect().top())
+            viewrect.setTop(m_scene->sceneRect().top()-2);
+        if(viewrect.bottom()>=m_scene->sceneRect().bottom())
+            viewrect.setBottom(m_scene->sceneRect().bottom()+2);
         if(viewrect.left()<m_scene->sceneRect().left())
             viewrect.setLeft(m_scene->sceneRect().left());
         if(viewrect.right()>m_scene->sceneRect().right())
             viewrect.setRight(m_scene->sceneRect().right());
-        fitInView(removeHiddenMargin(viewrect));
-        viewFixAndRefresh();
-    }
 
-//    cout << "QGVAmplitudeSpectrum::~viewSet" << endl;
+        fitInView(removeHiddenMargin(viewrect));
+
+        if(sync) viewSync();
+    }
 }
 
-void QGVAmplitudeSpectrum::viewChangesRequested() {
-//    cout << "QGVAmplitudeSpectrum::viewChangesRequested" << endl;
-
-    viewFixAndRefresh();
+void QGVAmplitudeSpectrum::viewSync() {
 
     if(WMainWindow::getMW()->m_gvPhaseSpectrum) {
         QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+
         QRectF currect = WMainWindow::getMW()->m_gvPhaseSpectrum->mapToScene(WMainWindow::getMW()->m_gvPhaseSpectrum->viewport()->rect()).boundingRect();
         currect.setLeft(viewrect.left());
         currect.setRight(viewrect.right());
-        WMainWindow::getMW()->m_gvPhaseSpectrum->viewSet(currect);
+        WMainWindow::getMW()->m_gvPhaseSpectrum->viewSet(currect, false);
 
-        QPointF p = WMainWindow::getMW()->m_gvPhaseSpectrum->mapToScene(WMainWindow::getMW()->m_gvPhaseSpectrum->viewport()->rect()).boundingRect().center();
-        p.setX(viewrect.center().x());
-        WMainWindow::getMW()->m_gvPhaseSpectrum->centerOn(p);
+//            QPointF p = WMainWindow::getMW()->m_gvPhaseSpectrum->mapToScene(WMainWindow::getMW()->m_gvPhaseSpectrum->viewport()->rect()).boundingRect().center();
+//            p.setX(viewrect.center().x());
+//            WMainWindow::getMW()->m_gvPhaseSpectrum->centerOn(p);
     }
-
-//    cout << "QGVAmplitudeSpectrum::~viewChangesRequested" << endl;
 }
 
 void QGVAmplitudeSpectrum::resizeEvent(QResizeEvent* event){
 
-//    cout << "QGVAmplitudeSpectrum::resizeEvent" << endl;
-//    cout << "oldSize: " << event->oldSize().width() << " X " << event->oldSize().height() << endl;
-
     QRectF oldviewrect = mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect();
 
-//    cout << "oldviewrect: " << oldviewrect.left() << "," << oldviewrect.right() << " X " << oldviewrect.top() << "," << oldviewrect.bottom() << endl;
+    if(oldviewrect.width()==0 && oldviewrect.height()==0) {
+        updateSceneRect();
+        viewSet(m_scene->sceneRect());
+    }
+    else
+        viewSet(oldviewrect);
 
-    if(oldviewrect.width()==0 && oldviewrect.height()==0)
-        oldviewrect = m_scene->sceneRect();
-
-//    cout << "oldviewrect2: " << oldviewrect.left() << "," << oldviewrect.right() << " X " << oldviewrect.top() << "," << oldviewrect.bottom() << endl;
-
-    if(oldviewrect.left()<m_scene->sceneRect().left()) oldviewrect.setLeft(m_scene->sceneRect().left());
-    if(oldviewrect.right()>m_scene->sceneRect().right()) oldviewrect.setRight(m_scene->sceneRect().right());
-    if(oldviewrect.top()<m_scene->sceneRect().top()) oldviewrect.setTop(m_scene->sceneRect().top());
-    if(oldviewrect.bottom()>m_scene->sceneRect().bottom()) oldviewrect.setBottom(m_scene->sceneRect().bottom());
-
-    fitInView(removeHiddenMargin(oldviewrect));
-
-    viewChangesRequested();
+    viewUpdateTexts();
 
     cursorUpdate(QPointF(-1,0));
-
-//    cout << "QGVAmplitudeSpectrum::~resizeEvent" << endl;
 }
 
-void QGVAmplitudeSpectrum::scrollContentsBy(int dx, int dy){
-//    cout << "QGVAmplitudeSpectrum::scrollContentsBy" << endl;
+void QGVAmplitudeSpectrum::scrollContentsBy(int dx, int dy) {
 
+    // Invalidate the necessary parts
     // Ensure the y ticks labels will be redrawn
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
     QTransform trans = transform();
@@ -590,33 +575,32 @@ void QGVAmplitudeSpectrum::scrollContentsBy(int dx, int dy){
     r = QRectF(viewrect.left(), viewrect.top()+viewrect.height()-14/trans.m22(), viewrect.width(), 14/trans.m22());
     m_scene->invalidate(r);
 
+    viewUpdateTexts();
     cursorUpdate(QPointF(-1,0));
 
-    QGraphicsView::scrollContentsBy(dx, dy);
+    viewrect = mapToScene(viewport()->rect()).boundingRect();
 
-//    cout << "QGVAmplitudeSpectrum::~scrollContentsBy" << endl;
+    QGraphicsView::scrollContentsBy(dx, dy);
 }
 
-void QGVAmplitudeSpectrum::wheelEvent(QWheelEvent* event){
+void QGVAmplitudeSpectrum::wheelEvent(QWheelEvent* event) {
 
-    QPoint numDegrees = event->angleDelta() / 8;
-
-//    std::cout << "QGVAmplitudeSpectrum::wheelEvent " << numDegrees.y() << endl;
+    qreal numDegrees = (event->angleDelta() / 8).y();
+    // Clip to avoid flipping (workaround of a Qt bug ?)
+    if(numDegrees>90) numDegrees = 90;
+    if(numDegrees<-90) numDegrees = -90;
 
     QTransform trans = transform();
     qreal h11 = trans.m11();
     qreal h22 = trans.m22();
-    h11 += 0.01*h11*numDegrees.y();
-    h22 += 0.01*h22*numDegrees.y();
+    h11 += 0.01*h11*numDegrees;
+    h22 += 0.01*h22*numDegrees;
     setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
     setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
-
-    viewChangesRequested();
+    viewSet();
 
     QPointF p = mapToScene(event->pos());
     cursorUpdate(p);
-
-//    std::cout << "~QGVAmplitudeSpectrum::wheelEvent" << endl;
 }
 
 void QGVAmplitudeSpectrum::mousePressEvent(QMouseEvent* event){
@@ -711,7 +695,6 @@ void QGVAmplitudeSpectrum::mouseMoveEvent(QMouseEvent* event){
 
     if(m_currentAction==CAMoving) {
         // When scrolling the view around the scene
-        viewChangesRequested();
         cursorUpdate(QPointF(-1,0));
     }
     else if(m_currentAction==CAZooming) {
@@ -725,11 +708,9 @@ void QGVAmplitudeSpectrum::mouseMoveEvent(QMouseEvent* event){
 
         newrect.setTop(m_selection_pressedp.y()-(m_selection_pressedp.y()-m_pressed_viewrect.top())*exp(dy));
         newrect.setBottom(m_selection_pressedp.y()+(m_pressed_viewrect.bottom()-m_selection_pressedp.y())*exp(dy));
+        viewSet(newrect);
 
-        fitInView(removeHiddenMargin(newrect));
-
-        viewChangesRequested();
-
+        viewUpdateTexts();
         cursorUpdate(mapToScene(event->pos()));
 
         m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
@@ -989,8 +970,11 @@ void QGVAmplitudeSpectrum::selectionZoomOn(){
 //        QRectF adj = mapToScene(QRect(0,0,10,10)).boundingRect();
 //        QRectF adj = QRectF(0,0,10,10);
         zoomonrect.adjust(-10/trans.m11(), -10/trans.m22(), 10/trans.m11(), 10/trans.m22());
-        fitInView(removeHiddenMargin(zoomonrect));
-        viewChangesRequested();
+        viewSet(zoomonrect);
+
+        viewUpdateTexts();
+        if(WMainWindow::getMW()->m_gvPhaseSpectrum)
+            WMainWindow::getMW()->m_gvPhaseSpectrum->viewUpdateTexts();
 
         cursorUpdate(QPointF(-1,0));
         m_aZoomOnSelection->setEnabled(false);
@@ -1005,7 +989,7 @@ void QGVAmplitudeSpectrum::azoomin(){
     h22 *= 1.5;
     setTransformationAnchor(QGraphicsView::AnchorViewCenter);
     setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
-    viewChangesRequested();
+    viewSet();
 
     cursorUpdate(QPointF(-1,0));
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
@@ -1018,18 +1002,15 @@ void QGVAmplitudeSpectrum::azoomout(){
     h22 /= 1.5;
     setTransformationAnchor(QGraphicsView::AnchorViewCenter);
     setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
-    viewChangesRequested();
+    viewSet();
 
     cursorUpdate(QPointF(-1,0));
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
 }
 void QGVAmplitudeSpectrum::aunzoom(){
-
-    fitInView(removeHiddenMargin(QRectF(0.0, -m_maxsy, WMainWindow::getMW()->getFs()/2, -(m_minsy-m_maxsy))));
-    viewChangesRequested();
-
+    viewSet(QRectF(0.0, -m_maxsy, WMainWindow::getMW()->getFs()/2, -(m_minsy-m_maxsy)));
     if(WMainWindow::getMW()->m_gvPhaseSpectrum)
-        WMainWindow::getMW()->m_gvPhaseSpectrum->m_scene->setSceneRect(0.0, -M_PI, WMainWindow::getMW()->getFs()/2, 2*M_PI);
+        WMainWindow::getMW()->m_gvPhaseSpectrum->viewSet(QRectF(0.0, -M_PI, WMainWindow::getMW()->getFs()/2, 2*M_PI));
 
     cursorUpdate(QPointF(-1,0));
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
@@ -1223,8 +1204,7 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
 //    cout << "QGVAmplitudeSpectrum::~drawBackground" << endl;
 }
 
-void QGVAmplitudeSpectrum::draw_grid(QPainter* painter, const QRectF& rect){
-
+void QGVAmplitudeSpectrum::draw_grid(QPainter* painter, const QRectF& rect) {
     // Plot the grid
 
     // Prepare the pens and fonts

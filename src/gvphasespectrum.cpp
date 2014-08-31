@@ -98,23 +98,6 @@ QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
     m_giShownSelection->setOpacity(0.5);
     WMainWindow::getMW()->ui->lblSpectrumSelectionTxt->setText("No selection");
 
-    // Build actions
-    QToolBar* toolBar = new QToolBar(this);
-    m_aZoomIn = new QAction(tr("Zoom In"), this);;
-    m_aZoomIn->setStatusTip(tr("Zoom In"));
-    m_aZoomIn->setShortcut(Qt::Key_Plus);
-    m_aZoomIn->setIcon(QIcon(":/icons/zoomin.svg"));
-//    toolBar->addAction(m_aZoomIn);
-    connect(m_aZoomIn, SIGNAL(triggered()), this, SLOT(azoomin()));
-    m_aZoomOut = new QAction(tr("Zoom Out"), this);;
-    m_aZoomOut->setStatusTip(tr("Zoom Out"));
-    m_aZoomOut->setShortcut(Qt::Key_Minus);
-    m_aZoomOut->setIcon(QIcon(":/icons/zoomout.svg"));
-//    toolBar->addAction(m_aZoomOut);
-    connect(m_aZoomOut, SIGNAL(triggered()), this, SLOT(azoomout()));
-
-    WMainWindow::getMW()->ui->lSpectrumToolBar->addWidget(toolBar);
-
     updateSceneRect();
 
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -176,61 +159,60 @@ void QGVPhaseSpectrum::soundsChanged() {
 
 void QGVPhaseSpectrum::updateSceneRect() {
     m_scene->setSceneRect(0.0, -M_PI, WMainWindow::getMW()->getFs()/2, 2*M_PI);
-
-    viewFixAndRefresh();
 }
 
-void QGVPhaseSpectrum::viewFixAndRefresh() {
+//void QGVPhaseSpectrum::viewFixAndRefresh() {
 
 //    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 //    cout << "QGVPhaseSpectrum::viewFixAndRefresh viewrect: " << viewrect.width() << "," << viewrect.height() << endl;
 
-    QTransform trans = transform();
-    qreal h11 = trans.m11();
-    qreal h22 = trans.m22();
+//    QTransform trans = transform();
+//    qreal h11 = trans.m11();
+//    qreal h22 = trans.m22();
 
-    qreal min11 = viewport()->rect().width()/m_scene->sceneRect().width();
-//    cout << "h11=" << h11 << " min11=" << min11 << endl;
-    qreal min22 = viewport()->rect().height()/m_scene->sceneRect().height();
-    qreal max11 = viewport()->rect().width()/pow(10, -20); // Clip the zoom because the plot can't be infinitely precise
-    qreal max22 = viewport()->rect().height()/pow(10, -20);// Clip the zoom because the plot can't be infinitely precise
-    if(h11<min11) h11=min11;
-    if(h11>max11) h11=max11;
-    if(h22<min22) h22=min22;
-    if(h22>max22) h22=max22;
+//    qreal min11 = viewport()->rect().width()/m_scene->sceneRect().width();
+////    cout << "h11=" << h11 << " min11=" << min11 << endl;
+//    qreal min22 = viewport()->rect().height()/m_scene->sceneRect().height();
+//    qreal max11 = viewport()->rect().width()/pow(10, -20); // Clip the zoom because the plot can't be infinitely precise
+//    qreal max22 = viewport()->rect().height()/pow(10, -20);// Clip the zoom because the plot can't be infinitely precise
+//    if(h11<min11) h11=min11;
+//    if(h11>max11) h11=max11;
+//    if(h22<min22) h22=min22;
+//    if(h22>max22) h22=max22;
 
-    setTransformationAnchor(QGraphicsView::AnchorViewCenter);
-    setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
+//    setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+//    setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
 
-    viewUpdateTexts();
+//    viewUpdateTexts();
 
 //    cout << "QGVPhaseSpectrum::~viewFixAndRefresh" << endl;
-}
+//}
 
-void QGVPhaseSpectrum::viewSet(QRectF viewrect) {
-//    cout << "QGVPhaseSpectrum::viewSet" << endl;
+void QGVPhaseSpectrum::viewSet(QRectF viewrect, bool sync) {
 
     QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
-    if(viewrect!=currentviewrect) {
-        if(viewrect.top()>m_scene->sceneRect().top())
-            viewrect.setTop(m_scene->sceneRect().top());
-        if(viewrect.bottom()<m_scene->sceneRect().bottom())
-            viewrect.setBottom(m_scene->sceneRect().bottom());
+
+    if(viewrect==QRect() || viewrect!=currentviewrect) {
+        if(viewrect==QRectF())
+            viewrect = currentviewrect;
+
+        if(viewrect.top()<=m_scene->sceneRect().top())
+            viewrect.setTop(m_scene->sceneRect().top()-0.1);
+        if(viewrect.bottom()>=m_scene->sceneRect().bottom())
+            viewrect.setBottom(m_scene->sceneRect().bottom()+0.1);
         if(viewrect.left()<m_scene->sceneRect().left())
             viewrect.setLeft(m_scene->sceneRect().left());
         if(viewrect.right()>m_scene->sceneRect().right())
             viewrect.setRight(m_scene->sceneRect().right());
-        fitInView(removeHiddenMargin(viewrect));
-        viewFixAndRefresh();
-    }
 
-//    cout << "QGVPhaseSpectrum::~viewSet" << endl;
+        fitInView(removeHiddenMargin(viewrect));
+
+        if(sync) viewSync();
+    }
 }
 
-void QGVPhaseSpectrum::viewChangesRequested() {
-//    cout << "QGVPhaseSpectrum::viewChangesRequested" << endl;
-
-    viewFixAndRefresh();
+void QGVPhaseSpectrum::viewSync() {
+//    cout << "QGVPhaseSpectrum::viewSync" << endl;
 
     if(WMainWindow::getMW()->m_gvSpectrum) {
         QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
@@ -238,89 +220,77 @@ void QGVPhaseSpectrum::viewChangesRequested() {
         QRectF curspecvrect = WMainWindow::getMW()->m_gvSpectrum->mapToScene(WMainWindow::getMW()->m_gvSpectrum->viewport()->rect()).boundingRect();
         curspecvrect.setLeft(viewrect.left());
         curspecvrect.setRight(viewrect.right());
-        WMainWindow::getMW()->m_gvSpectrum->viewSet(curspecvrect);
+        WMainWindow::getMW()->m_gvSpectrum->viewSet(curspecvrect, false);
 
-        QPointF p = WMainWindow::getMW()->m_gvSpectrum->mapToScene(WMainWindow::getMW()->m_gvSpectrum->viewport()->rect()).boundingRect().center();
-        p.setX(viewrect.center().x());
-        WMainWindow::getMW()->m_gvSpectrum->centerOn(p);
+//            QPointF p = WMainWindow::getMW()->m_gvSpectrum->mapToScene(WMainWindow::getMW()->m_gvSpectrum->viewport()->rect()).boundingRect().center();
+//            p.setX(viewrect.center().x());
+//            WMainWindow::getMW()->m_gvSpectrum->centerOn(p);
     }
 
-//    cout << "QGVPhaseSpectrum::~viewChangesRequested" << endl;
+//    cout << "QGVPhaseSpectrum::~viewSync" << endl;
 }
 
 void QGVPhaseSpectrum::resizeEvent(QResizeEvent* event) {
 
-//    cout << "QGVPhaseSpectrum::resizeEvent rect: " << event->size().width() << "x" << event->size().height() << endl;
+    QRectF oldviewrect = mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect();
 
-    QRectF viewrect = mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect();
-
-    if(viewrect.width()==0 && viewrect.height()==0)
-        viewrect = m_scene->sceneRect();
+    if(oldviewrect.width()==0 && oldviewrect.height()==0) {
+        updateSceneRect();
+        viewSet(m_scene->sceneRect());
+    }
+    else
+        viewSet(oldviewrect);
 
     if(event->size().height()==0) {
-//        cout << "Hide Phase Spectrum View" << endl;
+        // cout << "Hide Phase Spectrum View" << endl;
         WMainWindow::getMW()->m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     }
     else {
-//        cout << "Show Phase Spectrum View" << endl;
+        // cout << "Show Phase Spectrum View" << endl;
         WMainWindow::getMW()->m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-        if(viewrect.left()<m_scene->sceneRect().left()) viewrect.setLeft(m_scene->sceneRect().left());
-        if(viewrect.right()>m_scene->sceneRect().right()) viewrect.setRight(m_scene->sceneRect().right());
-        if(viewrect.top()<m_scene->sceneRect().top()) viewrect.setTop(m_scene->sceneRect().top());
-        if(viewrect.bottom()>m_scene->sceneRect().bottom()) viewrect.setBottom(m_scene->sceneRect().bottom());
-        fitInView(removeHiddenMargin(viewrect));
+        viewUpdateTexts();
 
-        viewChangesRequested();
         cursorUpdate(QPointF(-1,0));
     }
-
-//    cout << "QGVPhaseSpectrum::~resizeEvent" << endl;
 }
 
 void QGVPhaseSpectrum::scrollContentsBy(int dx, int dy){
 
-//    cout << "dx=" << dx << " dy=" << dy << endl;
-
+    // Invalidate the necessary parts
     // Ensure the y ticks labels will be redrawn
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
     QTransform trans = transform();
 
-    QRectF r = QRectF(viewrect.left(), viewrect.top(), 5*14/trans.m11(), viewrect.height());
+    QRectF r = QRectF(viewrect.left(), viewrect.top(), 5*14.0/trans.m11(), viewrect.height());
     m_scene->invalidate(r);
 
-    r = QRectF(viewrect.left(), viewrect.top()+14/trans.m22(), viewrect.width(), 14/trans.m22());
+    r = QRectF(viewrect.left(), viewrect.bottom()-14/trans.m22(), viewrect.width(), 14/trans.m22());
     m_scene->invalidate(r);
 
+    viewUpdateTexts();
     cursorUpdate(QPointF(-1,0));
 
     QGraphicsView::scrollContentsBy(dx, dy);
-
-    if(WMainWindow::getMW()->m_gvSpectrum) {
-        viewrect = mapToScene(viewport()->rect()).boundingRect();
-
-        QPointF p = WMainWindow::getMW()->m_gvSpectrum->mapToScene(WMainWindow::getMW()->m_gvSpectrum->viewport()->rect()).boundingRect().center();
-        p.setX(viewrect.center().x());
-        WMainWindow::getMW()->m_gvSpectrum->centerOn(p);
-
-//        cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVPhaseSpectrum::scrollContentsBy " << viewrect.left() << " " << viewrect.right() << " " << viewrect.top() << " " << viewrect.bottom() << " center=" << viewrect.center().x() << endl;
-    }
 }
 
 void QGVPhaseSpectrum::wheelEvent(QWheelEvent* event) {
 //    cout << "QGVPhaseSpectrum::wheelEvent" << endl;
 
-    QPoint numDegrees = event->angleDelta() / 8;
+    qreal numDegrees = (event->angleDelta() / 8).y();
+    // Clip to avoid flipping (workaround of a Qt bug ?)
+    if(numDegrees>90) numDegrees = 90;
+    if(numDegrees<-90) numDegrees = -90;
 
     QTransform trans = transform();
     qreal h11 = trans.m11();
     qreal h22 = trans.m22();
-    h11 += h11*numDegrees.y()/100.0;
-    h22 += h22*numDegrees.y()/100.0;
+    h11 += 0.01*h11*numDegrees;
+    h22 += 0.01*h22*numDegrees;
     setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
     setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
+    viewSet();
 
-    viewChangesRequested();
     cursorUpdate(mapToScene(event->pos()));
 
 //    cout << "QGVPhaseSpectrum::~wheelEvent" << endl;
@@ -416,8 +386,7 @@ void QGVPhaseSpectrum::mouseMoveEvent(QMouseEvent* event){
 
     if(m_currentAction==CAMoving) {
         // When scrolling the view around the scene
-        viewChangesRequested();
-        cursorUpdate(QPointF(-1,0));        
+        cursorUpdate(QPointF(-1,0));
     }
     else if(m_currentAction==CAZooming) {
         double dx = -(event->pos()-m_pressed_mouseinviewport).x()/100.0;
@@ -429,9 +398,7 @@ void QGVPhaseSpectrum::mouseMoveEvent(QMouseEvent* event){
         newrect.setRight(m_selection_pressedp.x()+(m_pressed_viewrect.right()-m_selection_pressedp.x())*exp(dx));
         newrect.setTop(m_selection_pressedp.y()-(m_selection_pressedp.y()-m_pressed_viewrect.top())*exp(dy));
         newrect.setBottom(m_selection_pressedp.y()+(m_pressed_viewrect.bottom()-m_selection_pressedp.y())*exp(dy));
-        fitInView(removeHiddenMargin(newrect));
-
-        viewChangesRequested();
+        viewSet(newrect);
     }
     else if(m_currentAction==CAModifSelectionLeft){
         m_mouseSelection.setLeft(p.x()-m_selection_pressedp.x());
@@ -635,7 +602,7 @@ void QGVPhaseSpectrum::azoomin(){
     h22 *= 1.5;
     setTransformationAnchor(QGraphicsView::AnchorViewCenter);
     setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
-    viewChangesRequested();
+    viewSet();
 
     cursorUpdate(QPointF(-1,0));
 }
@@ -647,7 +614,7 @@ void QGVPhaseSpectrum::azoomout(){
     h22 /= 1.5;
     setTransformationAnchor(QGraphicsView::AnchorViewCenter);
     setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
-    viewChangesRequested();
+    viewSet();
 
     cursorUpdate(QPointF(-1,0));
 }
@@ -787,10 +754,9 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
 
 void QGVPhaseSpectrum::draw_grid(QPainter* painter, const QRectF& rect){
 
-    // Plot the grid
+    // TODO Everything here could be save a lot of drawing instructions
 
     // Prepare the pens and fonts
-    // TODO put this in the constructor to limit the allocations in this function
     QPen gridPen(QColor(192,192,192)); //192
     gridPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
     QPen thinGridPen(QColor(224,224,224));
@@ -798,7 +764,7 @@ void QGVPhaseSpectrum::draw_grid(QPainter* painter, const QRectF& rect){
     QPen gridFontPen(QColor(128,128,128));
     gridFontPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
     QFont font;
-    font.setPointSize(8);
+    font.setPointSize(6);
     painter->setFont(font);
 
     // Horizontal lines
@@ -848,14 +814,14 @@ void QGVPhaseSpectrum::draw_grid(QPainter* painter, const QRectF& rect){
         if(l<viewrect.bottom()-0.75*txtrect.height()/trans.m22())
             painter->drawStaticText(QPointF(0, -0.9*txtrect.height()), QStaticText(txt));
         painter->restore();
-
+    }
+    for(double l=0.0; l>=rect.top(); l-=lstep) {
         painter->save();
-
-        painter->translate(QPointF(viewrect.left(), -l));
+        painter->translate(QPointF(viewrect.left(), l));
         painter->scale(1.0/trans.m11(), 1.0/trans.m22());
 
-        txt = QString("%1rad").arg(l);
-        txtrect = painter->boundingRect(QRectF(), Qt::AlignLeft, txt);
+        QString txt = QString("%1rad").arg(-l);
+        QRectF txtrect = painter->boundingRect(QRectF(), Qt::AlignLeft, txt);
         if(l<viewrect.bottom()-0.75*txtrect.height()/trans.m22())
             painter->drawStaticText(QPointF(0, -0.9*txtrect.height()), QStaticText(txt));
         painter->restore();
@@ -888,9 +854,10 @@ void QGVPhaseSpectrum::draw_grid(QPainter* painter, const QRectF& rect){
 
     // Write the absissa of the vertical lines
     painter->setPen(gridFontPen);
+    trans = transform();
     for(double l=int(viewrect.left()/lstep)*lstep; l<=rect.right(); l+=lstep) {
         painter->save();
-        painter->translate(QPointF(l, viewrect.bottom()-14/trans.m22()));
+        painter->translate(QPointF(l, viewrect.bottom()-14.0/trans.m22()));
         painter->scale(1.0/trans.m11(), 1.0/trans.m22());
         painter->drawStaticText(QPointF(0, 0), QStaticText(QString("%1Hz").arg(l)));
         painter->restore();

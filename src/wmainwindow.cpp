@@ -56,6 +56,7 @@ using namespace std;
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QMimeData>
+#include <QScrollBar>
 
 #ifdef SUPPORT_SDIF
 #include <easdif/easdif.h>
@@ -147,6 +148,9 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 
     m_gvPhaseSpectrum = new QGVPhaseSpectrum(this);
     ui->lPhaseSpectrumGraphicsView->addWidget(m_gvPhaseSpectrum);
+
+    connect(m_gvSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvPhaseSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
+    connect(m_gvPhaseSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
 
     // Prevent both waveform and amplitude spectrum to be collapsed
     WMainWindow::getMW()->ui->splitterViews->setCollapsible(0,false);
