@@ -52,7 +52,8 @@ public:
     QGraphicsLineItem* m_giCursor;
     QGraphicsSimpleTextItem* m_giCursorPositionTxt;
 //    QGraphicsItemGroup* m_yTicksLabels; // TODO Use this instead of print them individually ?
-    QGraphicsLineItem* m_giPlayCursor;
+    qreal m_initialPlayPosition;
+    QGraphicsPathItem* m_giPlayCursor;
     QGraphicsRectItem* m_giFilteredSelection;
 
     QGraphicsPathItem* m_giWindow;
@@ -107,7 +108,8 @@ public slots:
     void selectionClear();
     void selectionZoomOn();
 
-    void setPlayCursor(double t);
+    void playCursorUpdate();
+    void playCursorSet(double t);
 
 };
 

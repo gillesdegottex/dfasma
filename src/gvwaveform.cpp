@@ -130,11 +130,18 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_contextmenu.addAction(m_aShowWindow);
 
     // Play Cursor
-    m_giPlayCursor = new QGraphicsLineItem(0, -1, 0, 1);
-    QPen playCursorPen(QColor(0, 0, 1));
+    m_giPlayCursor = new QGraphicsPathItem();
+    QPen playCursorPen(QColor(255, 0, 0));
     playCursorPen.setWidth(0);
     m_giPlayCursor->setPen(playCursorPen);
-    m_giPlayCursor->hide();
+    m_giPlayCursor->setBrush(QBrush(QColor(255, 0, 0)));
+    QPainterPath path;
+    path.moveTo(QPointF(0, 1.0));
+    path.lineTo(QPointF(0, -1.0));
+    path.lineTo(QPointF(1, -1.0));
+    path.lineTo(QPointF(1, 1.0));
+    m_giPlayCursor->setPath(path);
+    playCursorSet(0.0);
     m_scene->addItem(m_giPlayCursor);
 
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -256,6 +263,8 @@ void QGVWaveform::viewFixAndRefresh() {
 
     setTransformationAnchor(QGraphicsView::AnchorViewCenter);
     setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
+
+    playCursorUpdate();
 
 //    viewUpdateTexts();
 }
@@ -486,6 +495,8 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
                 m_mouseSelection.setRight(m_selection_pressedx);
                 selectionClipAndSet(m_mouseSelection);
                 m_giSelection->show();
+                // Put the play cursor
+                playCursorSet(p.x());
             }
         }
         else if(WMainWindow::getMW()->ui->actionEditMode->isChecked()){
@@ -699,8 +710,10 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
 
 //    cout << "QGVWaveform::keyPressEvent " << endl;
 
-    if(event->key()==Qt::Key_Escape)
+    if(event->key()==Qt::Key_Escape) {
         selectionClear();
+        playCursorSet(0.0);
+    }
 
     QGraphicsView::keyPressEvent(event);
 }
@@ -765,6 +778,9 @@ void QGVWaveform::selectionClipAndSet(QRectF selection, bool winforceupdate){
     WMainWindow::getMW()->ui->lblSelectionTxt->setText(QString("[%1").arg(m_selection.left()).append(",%1] ").arg(m_selection.right()).append("%1 s").arg(m_selection.width()));
 
     m_giSelection->show();
+
+    playCursorSet(m_selection.left());
+
     if(m_selection.width()>0){
         m_aZoomOnSelection->setEnabled(true);
         m_aSelectionClear->setEnabled(true);
@@ -1120,13 +1136,22 @@ void QGVWaveform::draw_grid(QPainter* painter, const QRectF& rect){
     }
 }
 
-void QGVWaveform::setPlayCursor(double t){
+void QGVWaveform::playCursorUpdate() {
+    QTransform trans = transform();
+    QTransform cursortrans = QTransform::fromScale(1.0/trans.m11(), 1.0);
+    m_giPlayCursor->setTransform(cursortrans);
+}
+
+void QGVWaveform::playCursorSet(double t){
     if(t==-1){
-        m_giPlayCursor->setLine(0, -1, 0, 1);
-        m_giPlayCursor->hide();
+        if(m_selection.width()>0)
+            playCursorSet(m_selection.left());
+        else
+            m_giPlayCursor->setPos(QPointF(m_initialPlayPosition, 0));
     }
     else{
-        m_giPlayCursor->setLine(t, -1, t, 1);
+        m_giPlayCursor->setPos(QPointF(t, 0));
         m_giPlayCursor->show();
+        playCursorUpdate();
     }
 }

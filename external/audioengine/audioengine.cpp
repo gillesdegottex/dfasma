@@ -151,7 +151,7 @@ void AudioEngine::startPlayback(FTSound* dssound, double tstart, double tstop, d
 void AudioEngine::stopPlayback()
 {
 //    DEBUGSTRING << "AudioEngine::stopPlayback" << endl;
-    if (m_audioOutput) {
+    if (m_audioOutput && m_state!=QAudio::StoppedState) {
 //        DEBUGSTRING << "AudioEngine::stopPlayback 1" << endl;
         m_audioOutput->stop();
 //        DEBUGSTRING << "AudioEngine::stopPlayback 2" << endl;
@@ -227,8 +227,7 @@ void AudioEngine::audioStateChanged(QAudio::State state)
     if (state==QAudio::StoppedState) {
 
         // Check error
-        QAudio::Error error = QAudio::NoError;
-        error = m_audioOutput->error();
+        QAudio::Error error = m_audioOutput->error();
 
         if (QAudio::NoError != error) {
 //            DEBUGSTRING << "AudioEngine::audioStateChanged: finished with errors!" << endl;

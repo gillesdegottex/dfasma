@@ -560,7 +560,7 @@ void WMainWindow::initializeSoundSystem(float fs){
     m_audioengine = new AudioEngine(fs, this);
     connect(m_audioengine, SIGNAL(stateChanged(QAudio::State)), this, SLOT(audioStateChanged(QAudio::State)));
     connect(m_audioengine, SIGNAL(audioOutputDeviceChanged(const QAudioDeviceInfo&)), this, SLOT(audioOutputDeviceChanged(const QAudioDeviceInfo&)));
-    connect(m_audioengine, SIGNAL(playPositionChanged(double)), m_gvWaveform, SLOT(setPlayCursor(double)));
+    connect(m_audioengine, SIGNAL(playPositionChanged(double)), m_gvWaveform, SLOT(playCursorSet(double)));
     connect(m_audioengine, SIGNAL(localEnergyChanged(double)), this, SLOT(localEnergyChanged(double)));
 
 
@@ -595,15 +595,15 @@ void WMainWindow::play()
             FTSound* currentftsound = getCurrentFTSound();
             if(currentftsound) {
 
-                double tstart = 0.0;
-                double tstop = 0.0;
+                double tstart = m_gvWaveform->m_giPlayCursor->pos().x();
+                double tstop = getMaxLastSampleTime();
                 if(m_gvWaveform->m_selection.width()>0){
                     tstart = m_gvWaveform->m_selection.left();
                     tstop = m_gvWaveform->m_selection.right();
                 }
 
                 double fstart = 0.0;
-                double fstop = 0.0;
+                double fstop = getFs();
                 if(QApplication::keyboardModifiers().testFlag(Qt::ControlModifier) &&
                     m_gvSpectrum->m_selection.width()>0){
                     fstart = m_gvSpectrum->m_selection.left();
@@ -611,12 +611,13 @@ void WMainWindow::play()
                 }
 
                 try {
+                    m_gvWaveform->m_initialPlayPosition = tstart;
                     m_audioengine->startPlayback(currentftsound, tstart, tstop, fstart, fstop);
 
                     QString txt = QString("Play ")+currentftsound->fileName+QString(": [%1s, %2s]x[%3Hz, %4Hz]").arg(m_gvWaveform->m_selection.left()).arg(m_gvWaveform->m_selection.right()).arg(fstart).arg(fstop);
                     statusBar()->showMessage(txt);
 
-                    if(fstart!=0.0 || fstop!=0.0) {
+                    if(fstart!=0.0 || fstop!=getFs()) {
                         if(m_gvWaveform->m_giSelection->rect().width()>0)
                             m_gvWaveform->m_giFilteredSelection->setRect(m_gvWaveform->m_giSelection->rect());
                         else
@@ -641,7 +642,7 @@ void WMainWindow::play()
         else if(m_audioengine->state()==QAudio::ActiveState){
             // If playing, just stop it
             m_audioengine->stopPlayback();
-            m_gvWaveform->m_giPlayCursor->hide();
+//            m_gvWaveform->m_giPlayCursor->hide();
         }
     }
     else
