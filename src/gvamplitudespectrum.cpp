@@ -983,9 +983,9 @@ void QGVAmplitudeSpectrum::aunzoom(){
 
     QRectF rect = QRectF(0.0, -m_maxsy, WMainWindow::getMW()->getFs()/2, (m_maxsy-m_minsy));
 
-    if(rect.bottom()>-m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value())
+    if(rect.bottom()>(-m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value()))
         rect.setBottom(-m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value());
-    if(rect.top()<-m_maxsy>m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value())
+    if(rect.top()<(-m_maxsy>m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value()))
         rect.setTop(-m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value());
 
     viewSet(rect, false);
@@ -1057,8 +1057,6 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
 //    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVAmplitudeSpectrum::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
     double fs = WMainWindow::getMW()->getFs();
-
-    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
     // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
 
@@ -1221,6 +1219,8 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
                 }
                 ymin = sigproc::log2db*(lascale+ymin);
                 ymax = sigproc::log2db*(lascale+ymax);
+                if(ymin<-1000000) y=-1000000;
+                if(ymax<-1000000) y=-1000000;
                 ymin *= s2p;
                 ymax *= s2p;
                 painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
