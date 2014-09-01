@@ -46,12 +46,12 @@ int main(int argc, char *argv[])
         // This call is necessarily done once in your app to initialize
         // libavformat to register all the muxers, demuxers and protocols.
         av_register_all();
+        // TODO av_unregister ?
     #endif
     #ifdef AUDIOFILEREADING_LIBSOX
         assert(sox_init() == SOX_SUCCESS);
         // TODO sox_quit();
     #endif
-
 
     #ifdef SUPPORT_SDIF
         Easdif::EasdifInit();

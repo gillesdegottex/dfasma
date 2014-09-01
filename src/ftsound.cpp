@@ -176,6 +176,8 @@ void FTSound::setSamplingRate(double _fs){
 
 double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop, double fstart, double fstop)
 {
+//    cout << "FTSound::setPlay" << endl;
+
     m_outputaudioformat = format;
 
     s_play_power = 0;
@@ -317,6 +319,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
     double tobeplayed = double(m_end-m_pos+1)/fs;
 
 //    std::cout << "DSSound::start [" << tstart << "s(" << m_pos << "), " << tstop << "s(" << m_end << ")] " << tobeplayed << "s" << endl;
+//    cout << "FTSound::~setPlay" << endl;
 
     return tobeplayed;
 }

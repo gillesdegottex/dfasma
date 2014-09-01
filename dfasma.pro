@@ -34,11 +34,11 @@ DEFINES += FFTW3RESIZINGMAXTIMESPENT
 # Chose among: audiofilereading_libsndfile, audiofilereading_libsox,
 #              audiofilereading_libav,
 #              audiofilereading_builtin, audiofilereading_qt
-CONFIG += audiofilereading_libsox
+CONFIG += audiofilereading_libsndfile
 
 # Additional file format support
 # SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
-# CONFIG += sdifreading
+CONFIG += sdifreading
 
 # The most cross-platform/portable/compatible compilation settings
 # (comment all the above and uncomment below)
