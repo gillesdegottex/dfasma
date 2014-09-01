@@ -43,7 +43,7 @@ FTFZero::FTFZero(const QString& _fileName, QObject *parent)
     SDIFEntity readentity;
 
     try {
-        if (!readentity.OpenRead(fileName.toLocal8Bit().constData()) )
+        if (!readentity.OpenRead(fileFullPath.toLocal8Bit().constData()) )
             throw QString("SDIF: Cannot open file");
     }
     catch(SDIFBadHeader& e) {

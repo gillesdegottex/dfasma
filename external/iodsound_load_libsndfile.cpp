@@ -86,7 +86,7 @@ QString FTSound::getAudioFileReadingDescription(){
 void FTSound::load(const QString& _fileName){
 
     // Load audio file
-    fileName = _fileName;
+    fileFullPath = _fileName;
 
     /* This is a buffer of double precision floating point values
     ** which will hold our data while we process it.
@@ -111,7 +111,7 @@ void FTSound::load(const QString& _fileName){
     ** for all subsequent operations on that file.
     ** If an error occurs during sf_open_read, the function returns a NULL pointer.
     */
-    if( !(infile = sf_open(fileName.toLocal8Bit().constData(), SFM_READ, &sfinfo)) ) {
+    if( !(infile = sf_open(fileFullPath.toLocal8Bit().constData(), SFM_READ, &sfinfo)) ) {
         /* Open failed so print an error message. */
         throw QString("libsndfile: Not able to open input file");
     }
