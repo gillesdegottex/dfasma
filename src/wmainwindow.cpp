@@ -583,10 +583,6 @@ void WMainWindow::initializeSoundSystem(float fs){
     selectAudioOutputDevice(settings.value("playback/AudioOutputDeviceName", "default").toString());
     connect(m_dlgSettings->ui->cbAudioOutputDevices, SIGNAL(currentIndexChanged(int)), this, SLOT(selectAudioOutputDevice(int)));
 
-    QString txt = QString("%1Hz").arg(fs);
-    ui->lblFs->setText(txt);
-    ui->lblFs->setToolTip(txt);
-
     ui->actionPlay->setEnabled(true);
 //    cout << "~MainWindow::initializeSoundSystem" << endl;
 }
