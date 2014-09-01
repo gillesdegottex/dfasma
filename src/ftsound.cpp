@@ -98,11 +98,6 @@ QString FTSound::info() const {
         str += "unsigned interger";
     else if(sampletype==QAudioFormat::Float)
         str += "float";
-    QAudioFormat::Endian byteOrder = m_fileaudioformat.byteOrder();
-    if(byteOrder==QAudioFormat::BigEndian)
-        str += " big endian";
-    else if(byteOrder==QAudioFormat::LittleEndian)
-        str += " little endian";
     str += "<br/>";
     str += "SQNR="+QString::number(20*std::log10(std::pow(2,m_fileaudioformat.sampleSize())))+"dB<br/>";
 
