@@ -1219,10 +1219,10 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
                 }
                 ymin = sigproc::log2db*(ymin);
                 ymax = sigproc::log2db*(ymax);
-                if(ymin<-1000000) y=-1000000;
-                if(ymax<-1000000) y=-1000000;
                 ymin *= s2p;
                 ymax *= s2p;
+                if(ymin<-1000000) y=-1000000;
+                if(ymax<-1000000) y=-1000000;
                 painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
             }
         }
