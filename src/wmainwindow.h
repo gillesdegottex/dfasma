@@ -77,7 +77,7 @@ private slots:
     void localEnergyChanged(double);
 
     void audioStateChanged(QAudio::State state);
-    void audioOutputDeviceChanged(const QAudioDeviceInfo& device);
+    void audioOutputFormatChanged(const QAudioFormat& format);
     void showFileContextMenu(const QPoint&);
     void soundsChanged();
     void setSoundShown(bool show);

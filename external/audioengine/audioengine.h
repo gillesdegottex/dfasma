@@ -91,7 +91,6 @@ class AudioEngine : public QObject
     FTSound* m_ftsound; // The selected sound to play
     double m_tobeplayed;
 
-    bool initialize();
     bool selectFormat();
     void setState(QAudio::State state);
     void setFormat(const QAudioFormat &format);
@@ -103,9 +102,10 @@ private slots:
     void sendRealTimeInfo();
 
 public:
-    explicit AudioEngine(int fs, QObject *parent = 0);
+    explicit AudioEngine(QObject *parent = 0);
     ~AudioEngine();
 
+    bool initialize(int fs);
     bool isInitialized();
 
     const QList<QAudioDeviceInfo> &availableAudioOutputDevices() const

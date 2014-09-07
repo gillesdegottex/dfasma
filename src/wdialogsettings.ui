@@ -64,7 +64,7 @@
           <item>
            <widget class="QLabel" name="lblAudioOutputDeviceFormat">
             <property name="text">
-             <string>&lt;audio output device format&gt;</string>
+             <string>No audio output format specified yet</string>
             </property>
            </widget>
           </item>

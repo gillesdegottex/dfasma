@@ -70,9 +70,9 @@ const int    NotifyIntervalMs       = 100;
 // Constructor and destructor
 //-----------------------------------------------------------------------------
 
-AudioEngine::AudioEngine(int fs, QObject *parent)
+AudioEngine::AudioEngine(QObject *parent)
     : QObject(parent)
-    , m_fs(fs)
+    , m_fs(0)
     , m_state(QAudio::StoppedState)
     , m_audioOutput(0)
     , m_ftsound(0)
@@ -82,8 +82,6 @@ AudioEngine::AudioEngine(int fs, QObject *parent)
     connect(&m_rtinfo_timer, SIGNAL(timeout()), this, SLOT(sendRealTimeInfo()));
 
     listAudioOutputDevices();
-
-//    initialize();
 }
 
 void AudioEngine::listAudioOutputDevices() {
@@ -264,16 +262,22 @@ void AudioEngine::audioStateChanged(QAudio::State state)
 //    DEBUGSTRING << "~AudioEngine::audioStateChanged" << endl;
 }
 
-void AudioEngine::reset()
-{
+void AudioEngine::reset() {
     stopPlayback();
     setState(QAudio::StoppedState);
     setFormat(QAudioFormat());
-    initialize();
+    if(m_fs>0)
+        initialize(m_fs);
 }
 
-bool AudioEngine::initialize()
-{
+bool AudioEngine::initialize(int fs) {
+    m_fs = fs;
+    m_audioOutput = NULL;
+    m_ftsound = NULL;
+    stopPlayback();
+    setState(QAudio::StoppedState);
+    setFormat(QAudioFormat());
+
     bool result = false;
 
     QAudioFormat format = m_format;
