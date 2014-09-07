@@ -214,6 +214,7 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
 void QGVWaveform::settingsSave() {
     QSettings settings;
     settings.setValue("qgvwaveform/m_aShowGrid", m_aShowGrid->isChecked());
+    settings.setValue("qgvwaveform/m_aShowWindow", m_aShowWindow->isChecked());
 }
 
 // Remove hard coded margin (Bug 11945)
@@ -744,7 +745,9 @@ void QGVWaveform::selectionClipAndSet(QRectF selection, bool winforceupdate){
         selection.setRight(tmp);
     }
 
-    size_t prevwinlen = WMainWindow::getMW()->m_gvSpectrum->m_win.size();
+    size_t prevwinlen = 0;
+    if(WMainWindow::getMW()->m_gvSpectrum)
+        prevwinlen = WMainWindow::getMW()->m_gvSpectrum->m_win.size();
     m_selection = selection;
 
     // Clip selection on exact sample times
