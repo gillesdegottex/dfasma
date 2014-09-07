@@ -192,6 +192,8 @@ void FTSound::load(const QString& _fileName){
     // Load audio file
     fileFullPath = _fileName;
 
+    m_fileaudioformat = QAudioFormat(); // Clear the format
+
 //    QAudioFormat desiredFormat;
 //    desiredFormat.setChannelCount(2);
 //    desiredFormat.setCodec("audio/x-raw");

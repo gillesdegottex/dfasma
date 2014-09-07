@@ -31,6 +31,8 @@ void FTSound::load(const QString& _fileName){
     // Load audio file
     fileFullPath = _fileName;
 
+    m_fileaudioformat = QAudioFormat(); // Clear the format
+
     // Create the file reader and read the format
     WavFile* pfile = new WavFile(this);
     if(!pfile->open(fileFullPath))

@@ -53,6 +53,8 @@ void FTSound::load(const QString& _fileName){
     // Load audio file
     fileName = _fileName;
 
+    m_fileaudioformat = QAudioFormat(); // Clear the format
+
     // Find the apropriate codec and open it
     AVFormatContext* container=avformat_alloc_context();
     if(avformat_open_input(&container,fileName.toLocal8Bit().constData(),NULL,NULL)<0)

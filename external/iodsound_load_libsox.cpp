@@ -59,6 +59,8 @@ void FTSound::load(const QString& _fileName){
     // Load audio file
     fileFullPath = _fileName;
 
+    m_fileaudioformat = QAudioFormat(); // Clear the format
+
     sox_format_t* in; // input and output files
     sox_sample_t* buf;
     size_t readcount;

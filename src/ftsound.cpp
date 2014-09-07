@@ -113,8 +113,8 @@ void FTSound::reload() {
 QString FTSound::info() const {
     QString str = "";
     QString codecname = m_fileaudioformat.codec();
-    if(codecname.isEmpty()) codecname = "unknown type";
-    str += "Codec: "+codecname+"<br/>";
+//    if(codecname.isEmpty()) codecname = "unknown type";
+//    str += "Codec: "+codecname+"<br/>";
 //    if(m_fileaudioformat.channelCount()!=-1)
 //        str += "Channels: "+QString::number(m_fileaudioformat.channelCount())+" channel<br/>";
     str += "Sampling frequency: "+QString::number(m_fileaudioformat.sampleRate())+"Hz<br/>";
@@ -138,11 +138,11 @@ QString FTSound::info() const {
             else if(sampletype==QAudioFormat::UnSignedInt)
                 smallest = 2.0/std::pow(2.0,m_fileaudioformat.sampleSize());
             else if(sampletype==QAudioFormat::Float) {
-                if(m_fileaudioformat.sampleSize()==sizeof(float))
+                if(m_fileaudioformat.sampleSize()==8*sizeof(float))
                     smallest = std::numeric_limits<float>::min();
-                else if(m_fileaudioformat.sampleSize()==sizeof(double))
+                else if(m_fileaudioformat.sampleSize()==8*sizeof(double))
                     smallest = std::numeric_limits<double>::min();
-                else if(m_fileaudioformat.sampleSize()==sizeof(long double))
+                else if(m_fileaudioformat.sampleSize()==8*sizeof(long double))
                     smallest = std::numeric_limits<long double>::min();
             }
             if(smallest!=1.0)

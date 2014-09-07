@@ -80,13 +80,15 @@ QString FTSound::getAudioFileReadingDescription(){
 */
 #define BUFFER_LEN      1024
 
-/* libsndfile can handle more than 6 channels but we'll restrict it to 6. */
-#define    MAX_CHANNELS    6
+///* libsndfile can handle more than 6 channels but we'll restrict it to 6. */
+//#define    MAX_CHANNELS    6
 
 void FTSound::load(const QString& _fileName){
 
     // Load audio file
     fileFullPath = _fileName;
+
+    m_fileaudioformat = QAudioFormat(); // Clear the format
 
     /* This is a buffer of double precision floating point values
     ** which will hold our data while we process it.
@@ -120,7 +122,48 @@ void FTSound::load(const QString& _fileName){
         throw QString("libsndfile: This audio file has multiple audio channel, whereas DFasma is not designed for this. Please convert this file into a mono audio file before re-opening it with DFasma.");
     }
 
+    m_fileaudioformat.setChannelCount(1);
+
     setSamplingRate(sfinfo.samplerate);
+
+    m_fileaudioformat.setSampleRate(sfinfo.samplerate);
+
+    // TODO Fill the codec name based on:
+    //      http://www.mega-nerd.com/libsndfile/api.html
+
+    if((sfinfo.format&0x00FF)==SF_FORMAT_PCM_S8) {
+        m_fileaudioformat.setSampleType(QAudioFormat::SignedInt);
+        m_fileaudioformat.setSampleSize(8);
+    }
+    else if((sfinfo.format&0x00FF)==SF_FORMAT_PCM_16) {
+        m_fileaudioformat.setSampleType(QAudioFormat::SignedInt);
+        m_fileaudioformat.setSampleSize(16);
+    }
+    else if((sfinfo.format&0x00FF)==SF_FORMAT_PCM_24) {
+        m_fileaudioformat.setSampleType(QAudioFormat::SignedInt);
+        m_fileaudioformat.setSampleSize(24);
+    }
+    else if((sfinfo.format&0x00FF)==SF_FORMAT_PCM_32) {
+        m_fileaudioformat.setSampleType(QAudioFormat::SignedInt);
+        m_fileaudioformat.setSampleSize(32);
+    }
+    else if((sfinfo.format&0x00FF)==SF_FORMAT_PCM_U8) {
+        m_fileaudioformat.setSampleType(QAudioFormat::UnSignedInt);
+        m_fileaudioformat.setSampleSize(8);
+    }
+    else if((sfinfo.format&0x00FF)==SF_FORMAT_FLOAT) {
+        m_fileaudioformat.setSampleType(QAudioFormat::Float);
+        m_fileaudioformat.setSampleSize(32);
+    }
+    else if((sfinfo.format&0x00FF)==SF_FORMAT_DOUBLE) {
+        m_fileaudioformat.setSampleType(QAudioFormat::Float);
+        m_fileaudioformat.setSampleSize(64);
+    }
+
+    if((sfinfo.format&0xF0000000)==SF_ENDIAN_LITTLE)
+        m_fileaudioformat.setByteOrder(QAudioFormat::LittleEndian);
+    else if((sfinfo.format&0xF0000000)==SF_ENDIAN_BIG)
+        m_fileaudioformat.setByteOrder(QAudioFormat::BigEndian);
 
     /* While there are samples in the input file, read them, process
     ** them and write them to the output file.
