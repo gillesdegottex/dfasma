@@ -1162,7 +1162,7 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
     if (dftlen==0) return;
 
     double lascale = std::log(ascale);
-//    cout << "lascale=" << lascale << endl;
+//    cout << "ascale=" << ascale << " lascale=" << lascale << endl;
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
@@ -1176,11 +1176,11 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
 //        cout << "Spec: Draw lines between each bin" << endl;
 
         double prevx = fs*kmin/dftlen;
-        double prevy = sigproc::log2db*ldft[kmin].real();
-        std::complex<WAVTYPE>* data = ldft.data();
+        std::complex<WAVTYPE>* yp = ldft.data();
+        double prevy = sigproc::log2db*(lascale+yp[kmin].real());
         for(int k=kmin+1; k<=kmax; ++k){
             double x = fs*k/dftlen;
-            double y = sigproc::log2db*(lascale+(*(data+k)).real());
+            double y = sigproc::log2db*(lascale+yp[k].real());
             if(y<-1000000) y=-1000000;
             painter->drawLine(QLineF(prevx, -prevy, x, -y));
             prevx = x;
@@ -1195,7 +1195,7 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
         QRect pixrect = mapFromScene(rect).boundingRect();
         QRect fullpixrect = mapFromScene(viewrect).boundingRect();
 
-        double s2p = -ascale*fullpixrect.height()/viewrect.height(); // Scene to pixel
+        double s2p = -fullpixrect.height()/viewrect.height(); // Scene to pixel
         double p2s = viewrect.width()/fullpixrect.width(); // Pixel to scene
         double yzero = mapFromScene(QPointF(0,0)).y();
 //        cout << "yzero=" << yzero << endl;
@@ -1212,13 +1212,13 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
                 std::complex<WAVTYPE>* ypp = yp+ns;
                 WAVTYPE y;
                 for(int n=ns; n<=ne; n++) {
-                    y = (*ypp).real();
+                    y = lascale+(*ypp).real();
                     ymin = std::min(ymin, y);
                     ymax = std::max(ymax, y);
                     ypp++;
                 }
-                ymin = sigproc::log2db*(lascale+ymin);
-                ymax = sigproc::log2db*(lascale+ymax);
+                ymin = sigproc::log2db*(ymin);
+                ymax = sigproc::log2db*(ymax);
                 if(ymin<-1000000) y=-1000000;
                 if(ymax<-1000000) y=-1000000;
                 ymin *= s2p;
