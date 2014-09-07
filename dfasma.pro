@@ -18,8 +18,7 @@
 # file provided in the source code of DFasma. Another copy can be found at
 # <http://www.gnu.org/licenses/>.
 
-# ------------------------------------------------------------------------------
-# Compilation options
+# Compilation options ----------------------------------------------------------
 # (except for fft_fftreal and audiofilereading_builtin, all the other
 #  options request linking with external libraries)
 
@@ -34,17 +33,11 @@ DEFINES += FFTW3RESIZINGMAXTIMESPENT
 # Chose among: audiofilereading_libsndfile, audiofilereading_libsox,
 #              audiofilereading_libav,
 #              audiofilereading_builtin, audiofilereading_qt
-CONFIG += audiofilereading_libsndfile
+CONFIG += audiofilereading_libsox
 
 # Additional file format support
 # SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
 CONFIG += sdifreading
-
-# The most cross-platform/portable/compatible compilation settings
-# (comment all the above and uncomment below)
-#CONFIG += fft_fftreal
-#CONFIG += audiofilereading_builtin
-
 
 # OS specific options
 QMAKE_MAC_SDK = macosx10.6
