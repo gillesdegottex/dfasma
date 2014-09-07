@@ -100,9 +100,11 @@ FileType::FileType(FILETYPE _type, const QString& _fileName, QObject * parent)
 
     m_actionShow = new QAction("Show", parent);
     m_actionShow->setStatusTip("Show the sound in the views");
-//    m_actionShow->setShortcut(QKeySequence(Qt::CTRL+Qt::Key_H));
     m_actionShow->setCheckable(true);
     m_actionShow->setChecked(true);
+
+    m_actionReload = new QAction("Reload", parent);
+    m_actionReload->setStatusTip("Reload data from the file");
 
 //    QIODevice::open(QIODevice::ReadOnly);
 }
@@ -117,6 +119,7 @@ void FileType::setColor(const QColor& _color) {
 void FileType::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
     contextmenu.addAction(m_actionShow);
     mainwindow->connect(m_actionShow, SIGNAL(toggled(bool)), mainwindow, SLOT(setSoundShown(bool)));
+    contextmenu.addAction(m_actionReload);
     QColorDialog* colordialog = new QColorDialog(&contextmenu);
     QObject::connect(colordialog, SIGNAL(colorSelected(const QColor &)), WMainWindow::getMW(), SLOT(colorSelected(const QColor &)));
 //    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), WMainWindow::getMW(), SLOT(colorSelected(const QColor &)));
@@ -145,7 +148,6 @@ void FileType::setModifiedState(bool modified) {
 }
 
 FileType::~FileType() {
-//    delete m_actionShow; // Make the closure crash (??)
 
     sg_colors.push_front(color);
 }

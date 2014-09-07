@@ -68,8 +68,15 @@ FTSound::FTSound(const QString& _fileName, QObject *parent)
     m_actionResetDelay = new QAction("Reset the delay", this);
     m_actionResetDelay->setStatusTip(tr("Reset the delay to 0s"));
 
-    load(_fileName);
+    connect(m_actionReload, SIGNAL(triggered()), this, SLOT(reload()));
 
+    load(_fileName);
+    load_finalize();
+
+//    QIODevice::open(QIODevice::ReadOnly);
+}
+
+void FTSound::load_finalize() {
     m_wavmaxamp = 0.0;
     for(unsigned int n=0; n<wav.size(); ++n)
         m_wavmaxamp = std::max(m_wavmaxamp, abs(wav[n]));
@@ -78,45 +85,69 @@ FTSound::FTSound(const QString& _fileName, QObject *parent)
         FTSound::setAvoidClicksWindowDuration(WMainWindow::getMW()->m_dlgSettings->ui->sbAvoidClicksWindowDuration->value());
 
     std::cout << "INFO: " << wav.size() << " samples loaded (" << wav.size()/fs << "s max amplitude=" << m_wavmaxamp << ")" << endl;
+}
 
-//    QIODevice::open(QIODevice::ReadOnly);
+void FTSound::reload() {
+//    cout << "FTSound::reload" << endl;
+
+    stop();
+
+    // Reset everything ...
+    wavtoplay = &wav;
+    m_ampscale = 1.0;
+    m_delay = 0;
+    m_start = 0;
+    m_pos = 0;
+    m_end = 0;
+    m_avoidclickswinpos = 0;
+    wav.clear();
+    wavfiltered.clear();
+
+    // ... and reload the data from the file
+    load(fileFullPath);
+    load_finalize();
+
+    setModifiedState(false);
 }
 
 QString FTSound::info() const {
     QString str = "";
     QString codecname = m_fileaudioformat.codec();
     if(codecname.isEmpty()) codecname = "unknown type";
-    str += "Codec: "+codecname+" with "+QString::number(m_fileaudioformat.channelCount())+" channel<br/>";
+    str += "Codec: "+codecname+"<br/>";
+//    if(m_fileaudioformat.channelCount()!=-1)
+//        str += "Channels: "+QString::number(m_fileaudioformat.channelCount())+" channel<br/>";
     str += "Sampling frequency: "+QString::number(m_fileaudioformat.sampleRate())+"Hz<br/>";
-    str += "Sample type: "+QString::number(m_fileaudioformat.sampleSize())+"b ";
-    QAudioFormat::SampleType sampletype = m_fileaudioformat.sampleType();
-    if(sampletype==QAudioFormat::Unknown)
-        str += "(unknown type)";
-    else if(sampletype==QAudioFormat::SignedInt)
-        str += "signed integer";
-    else if(sampletype==QAudioFormat::UnSignedInt)
-        str += "unsigned interger";
-    else if(sampletype==QAudioFormat::Float)
-        str += "float";
-    str += "<br/>";
-    str += "SQNR="+QString::number(20*std::log10(std::pow(2,m_fileaudioformat.sampleSize())))+"dB<br/>";
-
-    if(sampletype!=QAudioFormat::Unknown) {
-        double smallest=1.0;
-        if(sampletype==QAudioFormat::SignedInt)
-            smallest = 1.0/std::pow(2.0,m_fileaudioformat.sampleSize()-1);
+    if(m_fileaudioformat.sampleSize()!=-1) {
+        str += "Sample type: "+QString::number(m_fileaudioformat.sampleSize())+"b ";
+        QAudioFormat::SampleType sampletype = m_fileaudioformat.sampleType();
+        if(sampletype==QAudioFormat::Unknown)
+            str += "(unknown type)";
+        else if(sampletype==QAudioFormat::SignedInt)
+            str += "signed integer";
         else if(sampletype==QAudioFormat::UnSignedInt)
-            smallest = 2.0/std::pow(2.0,m_fileaudioformat.sampleSize());
-        else if(sampletype==QAudioFormat::Float) {
-            if(m_fileaudioformat.sampleSize()==sizeof(float))
-                smallest = std::numeric_limits<float>::min();
-            else if(m_fileaudioformat.sampleSize()==sizeof(double))
-                smallest = std::numeric_limits<double>::min();
-            else if(m_fileaudioformat.sampleSize()==sizeof(long double))
-                smallest = std::numeric_limits<long double>::min();
+            str += "unsigned interger";
+        else if(sampletype==QAudioFormat::Float)
+            str += "float";
+        str += "<br/>";
+        str += "SQNR="+QString::number(20*std::log10(std::pow(2,m_fileaudioformat.sampleSize())))+"dB<br/>";
+        if(sampletype!=QAudioFormat::Unknown) {
+            double smallest=1.0;
+            if(sampletype==QAudioFormat::SignedInt)
+                smallest = 1.0/std::pow(2.0,m_fileaudioformat.sampleSize()-1);
+            else if(sampletype==QAudioFormat::UnSignedInt)
+                smallest = 2.0/std::pow(2.0,m_fileaudioformat.sampleSize());
+            else if(sampletype==QAudioFormat::Float) {
+                if(m_fileaudioformat.sampleSize()==sizeof(float))
+                    smallest = std::numeric_limits<float>::min();
+                else if(m_fileaudioformat.sampleSize()==sizeof(double))
+                    smallest = std::numeric_limits<double>::min();
+                else if(m_fileaudioformat.sampleSize()==sizeof(long double))
+                    smallest = std::numeric_limits<long double>::min();
+            }
+            if(smallest!=1.0)
+                str += "Smallest amplitude: "+QString::number(20*log10(smallest))+"dB";
         }
-        if(smallest!=1.0)
-            str += "Smallest amplitude: "+QString::number(20*log10(smallest))+"dB";
     }
 
     return str;
@@ -132,6 +163,8 @@ void FTSound::setAvoidClicksWindowDuration(double halfduration) {
 void FTSound::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
 
     FileType::fillContextMenu(contextmenu, mainwindow);
+
+    connect(m_actionReload, SIGNAL(triggered()), mainwindow, SLOT(soundsChanged()));
 
     contextmenu.setTitle("Sound");
 
@@ -411,8 +444,6 @@ qint64 FTSound::writeData(const char *data, qint64 askedlen){
 
 FTSound::~FTSound(){
     QIODevice::close();
-
-    delete m_actionShow;
 }
 
 

@@ -132,6 +132,7 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     connectModes();
     connect(ui->listSndFiles, SIGNAL(itemSelectionChanged()), this, SLOT(fileSelectionChanged()));
     addAction(ui->actionMultiShow);
+    addAction(ui->actionMultiReload);
     addAction(ui->actionPlayFiltered);
 
     // Audio engine for playing the selections
@@ -460,6 +461,7 @@ void WMainWindow::showFileContextMenu(const QPoint& pos) {
     }
     else {
         contextmenu.addAction(ui->actionMultiShow);
+        contextmenu.addAction(ui->actionMultiReload);
         contextmenu.addAction(ui->actionCloseFile);
     }
 
@@ -467,13 +469,19 @@ void WMainWindow::showFileContextMenu(const QPoint& pos) {
     QPoint posglobal = mapToGlobal(pos)+QPoint(24,contextmenuheight/2);
     contextmenu.exec(posglobal);
 }
+
 void WMainWindow::fileSelectionChanged(){
+//    cout << "WMainWindow::fileSelectionChanged" << endl;
     ui->actionMultiShow->disconnect();
+    ui->actionMultiReload->disconnect();
     connect(ui->actionMultiShow, SIGNAL(triggered()), this, SLOT(soundsChanged()));
+    connect(ui->actionMultiReload, SIGNAL(triggered()), this, SLOT(soundsChanged()));
 
     QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
-    for(int i=0; i<list.size(); i++)
+    for(int i=0; i<list.size(); i++) {
         connect(ui->actionMultiShow, SIGNAL(triggered()), ((FileType*)list.at(i))->m_actionShow, SLOT(toggle()));
+        connect(ui->actionMultiReload, SIGNAL(triggered()), ((FileType*)list.at(i))->m_actionReload, SLOT(trigger()));
+    }
 
     // If only one file selected
     // Display Basic information of it

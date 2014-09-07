@@ -44,6 +44,7 @@ class FTSound : public QIODevice, public FileType
     Q_OBJECT
 
     void load(const QString& _fileName);
+    void load_finalize();
 
     QAudioFormat m_fileaudioformat;   // Format of the audio data
 
@@ -55,8 +56,6 @@ public:
 
     FTSound(const QString& _fileName, QObject* parent);
     static double fs_common;  // [Hz] Sampling frequency of the sound player
-    static QString getAudioFileReadingDescription();
-    static void setAvoidClicksWindowDuration(double halfduration);
     static std::vector<WAVTYPE> sm_avoidclickswindow;
 
     std::vector<WAVTYPE> wav;
@@ -64,9 +63,6 @@ public:
     std::vector<WAVTYPE>* wavtoplay;
     WAVTYPE m_wavmaxamp;
     double fs; // [Hz] Sampling frequency of this specific wav file
-    double getDuration() const {return wav.size()/fs;}
-    virtual double getLastSampleTime() const;
-    virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
 
     qreal m_ampscale; // [linear]
     qint64 m_delay;   // [sample index]
@@ -75,9 +71,6 @@ public:
     std::vector<std::complex<WAVTYPE> > m_dft; // Store the _log_ of the dft
 
     // QIODevice
-    QAudioFormat format(){return m_fileaudioformat;}
-    double setPlay(const QAudioFormat& format, double tstart=0.0, double tstop=0.0, double fstart=0.0, double fstop=0.0);
-    void stop();
     qint64 readData(char *data, qint64 maxlen);
     qint64 writeData(const char *data, qint64 len);
 //    qint64 bytesAvailable() const;
@@ -95,9 +88,24 @@ public:
     QAction* m_actionResetAmpScale;
     QAction* m_actionResetDelay;
 
+    // To keep public
+    QAudioFormat format() const {return m_fileaudioformat;}
     virtual QString info() const;
+    static QString getAudioFileReadingDescription();
+
+    double getDuration() const {return wav.size()/fs;}
+    virtual double getLastSampleTime() const;
+    virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
+
+    double setPlay(const QAudioFormat& format, double tstart=0.0, double tstop=0.0, double fstart=0.0, double fstop=0.0);
+    void stop();
+
+    static void setAvoidClicksWindowDuration(double halfduration);
 
     ~FTSound();
+
+public slots:
+    void reload();
 };
 
 #endif // FTSOUND_H

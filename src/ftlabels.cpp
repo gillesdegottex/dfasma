@@ -36,6 +36,13 @@ FTLabels::FTLabels(const QString& _fileName, QObject *parent)
 {
     Q_UNUSED(parent)
 
+    load(_fileName);
+}
+
+void FTLabels::load(const QString& _fileName) {
+
+    fileFullPath = _fileName;
+
 #ifdef SUPPORT_SDIF
     // TODO load .lab files
 
@@ -123,6 +130,18 @@ FTLabels::FTLabels(const QString& _fileName, QObject *parent)
             ends.push_back(starts.back() + 0.01); // fix the duration of the last segment to 10ms
     }
 #endif
+}
+
+void FTLabels::reload() {
+//    cout << "FTLabels::reload" << endl;
+
+    // Reset everything ...
+    starts.clear();
+    ends.clear();
+    labels.clear();
+
+    // ... and reload the data from the file
+    load(fileFullPath);
 }
 
 double FTLabels::getLastSampleTime() const {

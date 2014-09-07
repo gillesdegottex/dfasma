@@ -30,21 +30,20 @@ class WMainWindow;
 
 class FileType : public QListWidgetItem
 {
+protected:
+    virtual void load(const QString& _fileName) =0;
+
 public:
     enum FILETYPE {FTUNSET, FTSOUND, FTFZERO, FTLABELS};
 
     FileType(FILETYPE _type, const QString& _fileName, QObject *parent);
-
-    virtual double getLastSampleTime() const =0;
-    virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
 
     FILETYPE type;
     QString fileFullPath;
     QColor color;
 
     QAction* m_actionShow;
-
-    virtual QString info() const {return "This is an undefined file!";}
+    QAction* m_actionReload;
 
     ~FileType();
 
@@ -52,8 +51,11 @@ public:
     static bool SDIF_hasFrame(const QString& filename, const QString& framesignature);
     #endif
 
+    virtual QString info() const =0;
     void setModifiedState(bool modified);
     void setColor(const QColor& _color);
+    virtual double getLastSampleTime() const =0;
+    virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
 };
 
 #endif // FILETYPE_H

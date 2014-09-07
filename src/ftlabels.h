@@ -46,6 +46,9 @@ public:
     virtual double getLastSampleTime() const;
 
     ~FTLabels();
+
+public slots:
+    void reload();
 };
 
 #endif // FTLABELS_H

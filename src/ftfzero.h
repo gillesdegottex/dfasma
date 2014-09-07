@@ -34,6 +34,8 @@ class FTFZero : public QObject, public FileType
 {
     Q_OBJECT
 
+    void load(const QString& _fileName);
+
 public:
     FTFZero(const QString& _fileName, QObject* parent);
 
@@ -43,6 +45,9 @@ public:
     virtual double getLastSampleTime() const;
 
     ~FTFZero();
+
+public slots:
+    void reload();
 };
 
 #endif // FTFZERO_H
