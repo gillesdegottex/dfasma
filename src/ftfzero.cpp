@@ -130,6 +130,10 @@ void FTFZero::reload() {
     load(fileFullPath);
 }
 
+QString FTFZero::info() const {
+    return "";
+}
+
 double FTFZero::getLastSampleTime() const {
     if(ts.empty())
         return 0.0;

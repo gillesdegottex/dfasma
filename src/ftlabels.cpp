@@ -144,6 +144,10 @@ void FTLabels::reload() {
     load(fileFullPath);
 }
 
+QString FTLabels::info() const {
+    return "";
+}
+
 double FTLabels::getLastSampleTime() const {
     if(ends.empty())
         return 0.0;

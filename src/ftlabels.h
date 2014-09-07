@@ -43,6 +43,7 @@ public:
     std::deque<double> ends;
     std::deque<QString> labels;
 
+    virtual QString info() const;
     virtual double getLastSampleTime() const;
 
     ~FTLabels();

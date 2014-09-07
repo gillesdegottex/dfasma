@@ -42,6 +42,7 @@ public:
     std::deque<double> ts;
     std::deque<double> f0s;
 
+    virtual QString info() const;
     virtual double getLastSampleTime() const;
 
     ~FTFZero();
