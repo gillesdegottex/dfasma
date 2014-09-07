@@ -733,7 +733,6 @@ void QGVWaveform::selectionClear(){
 }
 
 void QGVWaveform::selectionClipAndSet(QRectF selection, bool winforceupdate){
-
     // m_giMouseSelection->setRect(selection);
 
     double fs = WMainWindow::getMW()->getFs();
@@ -801,7 +800,7 @@ void QGVWaveform::selectionClipAndSet(QRectF selection, bool winforceupdate){
     WMainWindow::getMW()->m_gvSpectrum->setWindowRange(m_selection.left(), m_selection.right(), winforceupdate);
 
     // Update the visible window
-    if(winforceupdate || WMainWindow::getMW()->m_gvSpectrum->m_win.size() != prevwinlen) {
+    if(WMainWindow::getMW()->m_gvSpectrum->m_win.size()>0 && (winforceupdate || WMainWindow::getMW()->m_gvSpectrum->m_win.size() != prevwinlen)) {
 
         qreal winmax = 0.0;
         for(size_t n=0; n<WMainWindow::getMW()->m_gvSpectrum->m_win.size(); n++)
