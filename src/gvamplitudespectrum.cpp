@@ -145,16 +145,11 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
 
     m_dlgSettings = new GVAmplitudeSpectrumWDialogSettings(this);
 
-    // Load the settings
     QSettings settings;
-    m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->setValue(settings.value("qgvamplitudespectrum/sbSpectrumAmplitudeRangeMin", -215).toInt());
-    m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->setValue(settings.value("qgvamplitudespectrum/sbSpectrumAmplitudeRangeMax", 10).toInt());
-    m_dlgSettings->ui->sbSpectrumOversamplingFactor->setValue(settings.value("qgvamplitudespectrum/sbSpectrumOversamplingFactor", 1).toInt());
 
     m_aShowProperties = new QAction(tr("&Properties"), this);
     m_aShowProperties->setStatusTip(tr("Open the properties configuration panel of the spectrum view"));
     m_aShowProperties->setIcon(QIcon(":/icons/settings.svg"));
-
 
     m_gridFontPen.setColor(QColor(128,128,128));
     m_gridFontPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
@@ -306,7 +301,8 @@ QRectF QGVAmplitudeSpectrum::removeHiddenMargin(const QRectF& sceneRect){
 
 void QGVAmplitudeSpectrum::settingsModified(){
     updateSceneRect();
-    WMainWindow::getMW()->m_gvWaveform->selectionClipAndSet(WMainWindow::getMW()->m_gvWaveform->m_mouseSelection, true);
+    if(WMainWindow::getMW()->m_gvWaveform)
+        WMainWindow::getMW()->m_gvWaveform->selectionClipAndSet(WMainWindow::getMW()->m_gvWaveform->m_mouseSelection, true);
 }
 
 void QGVAmplitudeSpectrum::fftResizing(int prevSize, int newSize){
@@ -453,10 +449,17 @@ void QGVAmplitudeSpectrum::computeDFTs(){
 
 void QGVAmplitudeSpectrum::settingsSave() {
     QSettings settings;
-    settings.setValue("qgvspectrum/m_aShowGrid", m_aShowGrid->isChecked());
-    settings.setValue("qgvspectrum/sbSpectrumOversamplingFactor", m_dlgSettings->ui->sbSpectrumOversamplingFactor->value());
-    settings.setValue("qgvspectrum/sbSpectrumAmplitudeRangeMin", m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value());
-    settings.setValue("qgvspectrum/sbSpectrumAmplitudeRangeMax", m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value());
+    settings.setValue("qgvamplitudespectrum/m_aShowGrid", m_aShowGrid->isChecked());
+    settings.setValue("qgvamplitudespectrum/m_aShowWindow", m_aShowWindow->isChecked());
+    settings.setValue("qgvamplitudespectrum/sbSpectrumAmplitudeRangeMin", m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value());
+    settings.setValue("qgvamplitudespectrum/sbSpectrumAmplitudeRangeMax", m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value());
+    settings.setValue("qgvamplitudespectrum/sbSpectrumOversamplingFactor", m_dlgSettings->ui->sbSpectrumOversamplingFactor->value());
+    settings.setValue("qgvamplitudespectrum/sbFFTW3ResizingMaxTimeSpent", m_dlgSettings->ui->sbFFTW3ResizingMaxTimeSpent->value());
+    settings.setValue("qgvamplitudespectrum/cbWindowSizeForcedOdd", m_dlgSettings->ui->cbWindowSizeForcedOdd->isChecked());
+    settings.setValue("qgvamplitudespectrum/cbSpectrumWindowType", m_dlgSettings->ui->cbSpectrumWindowType->currentIndex());
+    settings.setValue("qgvamplitudespectrum/spWindowNormPower", m_dlgSettings->ui->spWindowNormPower->value());
+    settings.setValue("qgvamplitudespectrum/spWindowNormSigma", m_dlgSettings->ui->spWindowNormSigma->value());
+    settings.setValue("qgvamplitudespectrum/spWindowExpDecay", m_dlgSettings->ui->spWindowExpDecay->value());
 }
 
 void QGVAmplitudeSpectrum::updateSceneRect() {

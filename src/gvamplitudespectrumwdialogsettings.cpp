@@ -3,6 +3,9 @@
 
 #include "gvamplitudespectrum.h"
 
+#include <iostream>
+using namespace std;
+
 GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(QGVAmplitudeSpectrum* parent)
     : QDialog((QWidget*)parent)
     , ui(new Ui::GVAmplitudeSpectrumWDialogSettings)
@@ -15,6 +18,19 @@ GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(QGVAmplit
     ui->lblFFTW3ResizingMaxTimeSpent->hide();
     ui->sbFFTW3ResizingMaxTimeSpent->hide();
     #endif
+
+    // Load the settings
+    QSettings settings;
+    ui->sbSpectrumAmplitudeRangeMin->setValue(settings.value("qgvamplitudespectrum/sbSpectrumAmplitudeRangeMin", -215).toInt());
+    ui->sbSpectrumAmplitudeRangeMax->setValue(settings.value("qgvamplitudespectrum/sbSpectrumAmplitudeRangeMax", 10).toInt());
+    ui->sbSpectrumOversamplingFactor->setValue(settings.value("qgvamplitudespectrum/sbSpectrumOversamplingFactor", 1).toInt());
+    ui->sbFFTW3ResizingMaxTimeSpent->setValue(settings.value("qgvamplitudespectrum/sbFFTW3ResizingMaxTimeSpent", 1).toDouble());
+
+    ui->cbWindowSizeForcedOdd->setChecked(settings.value("qgvamplitudespectrum/cbWindowSizeForcedOdd", false).toBool());
+    ui->cbSpectrumWindowType->setCurrentIndex(settings.value("qgvamplitudespectrum/cbSpectrumWindowType", 0).toInt());
+    ui->spWindowNormPower->setValue(settings.value("qgvamplitudespectrum/spWindowNormPower", 2.0).toDouble());
+    ui->spWindowNormSigma->setValue(settings.value("qgvamplitudespectrum/spWindowNormSigma", 0.3).toDouble());
+    ui->spWindowExpDecay->setValue(settings.value("qgvamplitudespectrum/spWindowExpDecay", 60.0).toDouble());
 
     ui->lblWindowNormSigma->hide();
     ui->spWindowNormSigma->hide();
@@ -72,7 +88,6 @@ void GVAmplitudeSpectrumWDialogSettings::CBSpectrumWindowTypeCurrentIndexChanged
     adjustSize();
 }
 
-GVAmplitudeSpectrumWDialogSettings::~GVAmplitudeSpectrumWDialogSettings()
-{
+GVAmplitudeSpectrumWDialogSettings::~GVAmplitudeSpectrumWDialogSettings() {
     delete ui;
 }
