@@ -59,9 +59,10 @@ public:
     void cursorFixAndRefresh();
 
     QPointF m_selection_pressedp;
+    QRectF m_wavselection_pressed;
     QPointF m_pressed_mouseinviewport;
     QRectF m_pressed_viewrect;
-    enum CurrentAction {CANothing, CAMoving, CAZooming, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight, CAModifSelectionTop, CAModifSelectionBottom, CAWaveformScale};
+    enum CurrentAction {CANothing, CAMoving, CAZooming, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight, CAModifSelectionTop, CAModifSelectionBottom, CAMovingWaveformSelection};
     int m_currentAction;
 
     QRectF m_selection, m_mouseSelection;

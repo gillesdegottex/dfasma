@@ -612,7 +612,7 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
             if(currentftsound->m_ampscale>1e10) currentftsound->m_ampscale = 1e10;
             else if(currentftsound->m_ampscale<1e-10) currentftsound->m_ampscale = 1e-10;
 
-            currentftsound->setModifiedState(true);
+            currentftsound->setTexts();
 
             soundsChanged();
             WMainWindow::getMW()->m_gvSpectrum->soundsChanged();
@@ -626,7 +626,7 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
             currentftsound->m_delay = int(0.5+m_tmpdelay*WMainWindow::getMW()->getFs());
             if(m_tmpdelay<0) currentftsound->m_delay--;
 
-            currentftsound->setModifiedState(true);
+            currentftsound->setTexts();
 
             soundsChanged();
             WMainWindow::getMW()->m_gvSpectrum->soundsChanged();
@@ -950,7 +950,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
             // When resolution is big enough, draw tick marks at each sample
             double samppixdensity_dotsthr = 0.125;
             if(samppixdensity<samppixdensity_dotsthr){
-                qreal markhalfheight = ((samppixdensity_dotsthr-samppixdensity)/samppixdensity_dotsthr)*(1.0/20);
+                qreal markhalfheight = m_ampzoom*(1.0/10)*((samppixdensity_dotsthr-samppixdensity)/samppixdensity_dotsthr);
 
                 for(int n=nleft; n<=nright; n++){
                     x = (n+delay)*dt;

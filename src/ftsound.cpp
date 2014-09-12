@@ -107,7 +107,7 @@ void FTSound::reload() {
     load(fileFullPath);
     load_finalize();
 
-    setModifiedState(false);
+    setTexts();
 }
 
 QString FTSound::info() const {
@@ -184,6 +184,9 @@ void FTSound::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
 double FTSound::getLastSampleTime() const {
     return (wav.size()-1)/fs;
 }
+bool FTSound::isModified() {
+    return m_delay!=0.0 || m_ampscale!=1.0;
+}
 
 void FTSound::setSamplingRate(double _fs){
 
@@ -205,6 +208,11 @@ void FTSound::setSamplingRate(double _fs){
 double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop, double fstart, double fstop)
 {
 //    cout << "FTSound::setPlay" << endl;
+
+    // Start by reseting any other filtered sounds
+    for(size_t fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++)
+        if(WMainWindow::getMW()->ftsnds[fi]!=this)
+            WMainWindow::getMW()->ftsnds[fi]->wavtoplay = &(WMainWindow::getMW()->ftsnds[fi]->wav);
 
     m_outputaudioformat = format;
 

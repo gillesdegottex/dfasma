@@ -27,13 +27,13 @@
 CONFIG += fft_fftw3
 # For FFTW3: Allow to limit the time spent in the resize of the FFT
 #(available only from FFTW3's version 3.1)
-DEFINES += FFTW3RESIZINGMAXTIMESPENT
+#DEFINES += FFTW3RESIZINGMAXTIMESPENT
 
 # For the audio file support
 # Chose among: audiofilereading_libsndfile, audiofilereading_libsox,
 #              audiofilereading_libav,
 #              audiofilereading_builtin, audiofilereading_qt
-CONFIG += audiofilereading_libsox
+CONFIG += audiofilereading_libsndfile
 
 # Additional file format support
 # SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
@@ -134,8 +134,11 @@ SOURCES   += src/main.cpp\
              src/gvamplitudespectrumwdialogsettings.cpp \
              src/gvphasespectrum.cpp \
              src/wdialogsettings.cpp \
+             src/gvspectrogram.cpp \
+             src/gvspectrogramwdialogsettings.cpp \
              external/audioengine/audioengine.cpp \
-             external/FFTwrapper.cpp
+             external/FFTwrapper.cpp \
+    src/fftresizethread.cpp
 
 HEADERS   += src/wmainwindow.h \
              src/sigproc.h \
@@ -148,11 +151,15 @@ HEADERS   += src/wmainwindow.h \
              src/gvamplitudespectrumwdialogsettings.h \
              src/gvphasespectrum.h \
              src/wdialogsettings.h \
+             src/gvspectrogram.h \
+             src/gvspectrogramwdialogsettings.h \
              external/audioengine/audioengine.h \
-             external/FFTwrapper.h
+             external/FFTwrapper.h \
+    src/fftresizethread.h
 
 FORMS     += src/wmainwindow.ui \
              src/wdialogsettings.ui \
-             src/gvamplitudespectrumwdialogsettings.ui
+             src/gvamplitudespectrumwdialogsettings.ui \
+             src/gvspectrogramwdialogsettings.ui
 
 RESOURCES += ressources.qrc

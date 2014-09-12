@@ -135,16 +135,37 @@ void FileType::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
     contextmenu.addSeparator();
 }
 
-void FileType::setModifiedState(bool modified) {
-    QFileInfo fileInfo(fileFullPath);
-    if(modified) {
-        setText("*"+fileInfo.fileName());
-        setToolTip("(modified) "+fileInfo.absoluteFilePath());
+void FileType::setShown(bool shown) {
+    m_actionShow->setChecked(shown);
+    if(shown) {
+        setForeground(QBrush(QColor(0,0,0)));
     }
     else {
-        setText(fileInfo.fileName());
-        setToolTip(fileInfo.absoluteFilePath());
+        // TODO add diagonal gray stripes in the icon
+        setForeground(QBrush(QColor(168,168,168)));
     }
+    setTexts();
+}
+
+void FileType::setTexts() {
+    QFileInfo fileInfo(fileFullPath);
+
+    QString liststr = fileInfo.fileName();
+    QString tooltipstr = fileInfo.absoluteFilePath();
+
+    if(isModified()) {
+        liststr = '*'+liststr;
+        tooltipstr = "(modified)"+tooltipstr;
+        // TODO Set plain icon
+    }
+    if(!m_actionShow->isChecked()) {
+        liststr = '('+liststr+')';
+        tooltipstr = "(hidden)"+tooltipstr;
+        // TODO Add diagonal stripes in the icon
+    }
+
+    setText(liststr);
+    setToolTip(tooltipstr);
 }
 
 FileType::~FileType() {

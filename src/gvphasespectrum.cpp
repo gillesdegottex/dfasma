@@ -294,41 +294,50 @@ void QGVPhaseSpectrum::mousePressEvent(QMouseEvent* event){
     QPointF p = mapToScene(event->pos());
     QRect selview = mapFromScene(m_selection).boundingRect();
 
+    bool kshift = event->modifiers().testFlag(Qt::ShiftModifier);
+    bool kctrl = event->modifiers().testFlag(Qt::ControlModifier);
+
     if(event->buttons()&Qt::LeftButton){
         if(WMainWindow::getMW()->ui->actionSelectionMode->isChecked()){
-            if(event->modifiers().testFlag(Qt::ShiftModifier)) {
+            if(kshift && !kctrl) {
                 // When moving the spectrum's view
                 m_currentAction = CAMoving;
                 setDragMode(QGraphicsView::ScrollHandDrag);
                 cursorUpdate(QPointF(-1,0));
             }
-            else if(!event->modifiers().testFlag(Qt::ControlModifier) && m_selection.width()>0 && m_selection.height()>0 && abs(selview.left()-event->x())<5 && event->y()>=selview.top() && event->y()<=selview.bottom()) {
+            else if((!kctrl && !kshift) && m_selection.width()>0 && m_selection.height()>0 && abs(selview.left()-event->x())<5 && event->y()>=selview.top() && event->y()<=selview.bottom()) {
                 // Resize left boundary of the selection
                 m_currentAction = CAModifSelectionLeft;
                 m_selection_pressedp = QPointF(p.x()-m_selection.left(), 0);
             }
-            else if(!event->modifiers().testFlag(Qt::ControlModifier) && m_selection.width()>0 && m_selection.height()>0 && abs(selview.right()-event->x())<5 && event->y()>=selview.top() && event->y()<=selview.bottom()){
+            else if((!kctrl && !kshift) && m_selection.width()>0 && m_selection.height()>0 && abs(selview.right()-event->x())<5 && event->y()>=selview.top() && event->y()<=selview.bottom()){
                 // Resize right boundary of the selection
                 m_currentAction = CAModifSelectionRight;
                 m_selection_pressedp = QPointF(p.x()-m_selection.right(), 0);
             }
-            else if(!event->modifiers().testFlag(Qt::ControlModifier) && m_selection.width()>0 && m_selection.height()>0 && abs(selview.top()-event->y())<5 && event->x()>=selview.left() && event->x()<=selview.right()){
+            else if((!kctrl && !kshift) && m_selection.width()>0 && m_selection.height()>0 && abs(selview.top()-event->y())<5 && event->x()>=selview.left() && event->x()<=selview.right()){
                 // Resize top boundary of the selection
                 m_currentAction = CAModifSelectionTop;
                 m_selection_pressedp = QPointF(0, p.y()-m_selection.top());
             }
-            else if(!event->modifiers().testFlag(Qt::ControlModifier) && m_selection.width()>0 && m_selection.height()>0 && abs(selview.bottom()-event->y())<5 && event->x()>=selview.left() && event->x()<=selview.right()){
+            else if((!kctrl && !kshift) && m_selection.width()>0 && m_selection.height()>0 && abs(selview.bottom()-event->y())<5 && event->x()>=selview.left() && event->x()<=selview.right()){
                 // Resize bottom boundary of the selection
                 m_currentAction = CAModifSelectionBottom;
                 m_selection_pressedp = QPointF(0, p.y()-m_selection.bottom());
             }
-            else if((m_selection.width()>0 && m_selection.height()>0) && (event->modifiers().testFlag(Qt::ControlModifier) || (p.x()>=m_selection.left() && p.x()<=m_selection.right() && p.y()>=m_selection.top() && p.y()<=m_selection.bottom()))){
+            else if((m_selection.width()>0 && m_selection.height()>0) && ((kctrl && !kshift) || (p.x()>=m_selection.left() && p.x()<=m_selection.right() && p.y()>=m_selection.top() && p.y()<=m_selection.bottom()))){
                 // When scroling the selection
                 m_currentAction = CAMovingSelection;
                 m_selection_pressedp = p;
                 m_mouseSelection = m_selection;
                 setCursor(Qt::ClosedHandCursor);
         //            WMainWindow::getMW()->ui->lblSpectrumSelectionTxt->setText(QString("Selection [%1s").arg(m_selection.left()).append(",%1s] ").arg(m_selection.right()).append("%1s").arg(m_selection.width()));
+            }
+            else if(kctrl && kshift) {
+                // cout << "Move waveform's selection" << endl;
+                m_currentAction = CAMovingWaveformSelection;
+                m_selection_pressedp = p;
+                m_wavselection_pressed = WMainWindow::getMW()->m_gvWaveform->m_selection;
             }
             else {
                 // When selecting
@@ -341,13 +350,7 @@ void QGVPhaseSpectrum::mousePressEvent(QMouseEvent* event){
         }
         else if(WMainWindow::getMW()->ui->actionEditMode->isChecked()){
             if(event->modifiers().testFlag(Qt::ShiftModifier)){
-//                 TODO
-            }
-            else{
-                // When scaling the waveform
-                m_currentAction = CAWaveformScale;
-                m_selection_pressedp = p;
-                setCursor(Qt::SizeVerCursor);
+                // TODO ? Using the same idea as in the shifting of the waveform's selection ?
             }
         }
     }
@@ -420,21 +423,14 @@ void QGVPhaseSpectrum::mouseMoveEvent(QMouseEvent* event){
         m_mouseSelection.setBottomRight(p);
         selectionChangesRequested();
     }
-    else if(m_currentAction==CAWaveformScale){
-        // When scaling the waveform
-        FTSound* currentftsound = WMainWindow::getMW()->getCurrentFTSound();
-        if(currentftsound){
-            currentftsound->m_ampscale *= pow(10, -(p.y()-m_selection_pressedp.y())/20.0);
-            m_selection_pressedp = p;
-
-            if(currentftsound->m_ampscale>1e10)
-                currentftsound->m_ampscale = 1e10;
-            else if(currentftsound->m_ampscale<1e-10)
-                currentftsound->m_ampscale = 1e-10;
-
-            WMainWindow::getMW()->m_gvWaveform->soundsChanged();
-            soundsChanged();
-        }
+    else if(m_currentAction==CAMovingWaveformSelection) {
+        double dy = -(p.y()-m_selection_pressedp.y());
+        // cout << "CAMovingWaveformSelection at " << m_selection_pressedp.x() << " " << dy << "rad" << endl;
+        double dt = ((WMainWindow::getMW()->getFs()/m_selection_pressedp.x())*dy/(2*M_PI))/WMainWindow::getMW()->getFs();
+        QRectF wavsel = m_wavselection_pressed;
+        wavsel.setLeft(wavsel.left()+dt);
+        wavsel.setRight(wavsel.right()+dt);
+        WMainWindow::getMW()->m_gvWaveform->selectionClipAndSet(wavsel);
     }
     else{
         QRect selview = mapFromScene(m_selection).boundingRect();

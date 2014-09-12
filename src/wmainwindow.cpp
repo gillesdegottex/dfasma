@@ -27,6 +27,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "gvwaveform.h"
 #include "gvamplitudespectrum.h"
 #include "gvphasespectrum.h"
+#include "gvspectrogram.h"
 #include "ftsound.h"
 #include "ftfzero.h"
 #include "ftlabels.h"
@@ -151,6 +152,14 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 
     m_gvPhaseSpectrum = new QGVPhaseSpectrum(this);
     ui->lPhaseSpectrumGraphicsView->addWidget(m_gvPhaseSpectrum);
+
+    m_gvSpectrogram = new QGVSpectrogram(this);
+    ui->lSpectrogramGraphicsView->addWidget(m_gvSpectrogram);
+    m_gvSpectrogram->hide();
+    m_gvSpectrogram->m_toolBar->hide();
+    ui->lblSpectrogramInfoTxt->hide();
+    ui->pgbSpectrogramFFTResize->hide();
+    ui->lblSpectrogramSelectionTxt->hide();
 
     connect(m_gvSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvPhaseSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
     connect(m_gvPhaseSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
@@ -488,18 +497,19 @@ void WMainWindow::showFileContextMenu(const QPoint& pos) {
     contextmenu.exec(posglobal);
 }
 
-void WMainWindow::fileSelectionChanged(){
+void WMainWindow::fileSelectionChanged() {
 //    cout << "WMainWindow::fileSelectionChanged" << endl;
     ui->actionMultiShow->disconnect();
     ui->actionMultiReload->disconnect();
-    connect(ui->actionMultiShow, SIGNAL(triggered()), this, SLOT(soundsChanged()));
-    connect(ui->actionMultiReload, SIGNAL(triggered()), this, SLOT(soundsChanged()));
 
     QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
     for(int i=0; i<list.size(); i++) {
         connect(ui->actionMultiShow, SIGNAL(triggered()), ((FileType*)list.at(i))->m_actionShow, SLOT(toggle()));
         connect(ui->actionMultiReload, SIGNAL(triggered()), ((FileType*)list.at(i))->m_actionReload, SLOT(trigger()));
     }
+
+    connect(ui->actionMultiShow, SIGNAL(triggered()), this, SLOT(toggleSoundShown()));
+    connect(ui->actionMultiReload, SIGNAL(triggered()), this, SLOT(soundsChanged()));
 
     // If only one file selected
     // Display Basic information of it
@@ -510,10 +520,10 @@ void WMainWindow::fileSelectionChanged(){
     else
         ui->lblFileInfo->hide();
 }
-void WMainWindow::setSoundShown(bool show){
-    QListWidgetItem* li = ui->listSndFiles->currentItem();
-    if(show)    li->setForeground(QBrush(QColor(0,0,0)));
-    else        li->setForeground(QBrush(QColor(168,168,168)));
+void WMainWindow::toggleSoundShown() {
+    QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
+    for(int i=0; i<list.size(); i++)
+        ((FileType*)list.at(i))->setShown(((FileType*)list.at(i))->m_actionShow->isChecked());
 
     soundsChanged();
 }
@@ -527,8 +537,7 @@ void WMainWindow::resetAmpScale(){
     if(currentftsound) {
         currentftsound->m_ampscale = 1.0;
 
-        if(currentftsound->m_delay==0.0)
-            currentftsound->setModifiedState(false);
+        currentftsound->setTexts();
 
         soundsChanged();
     }
@@ -538,8 +547,7 @@ void WMainWindow::resetDelay(){
     if(currentftsound) {
         currentftsound->m_delay = 0.0;
 
-        if(currentftsound->m_ampscale==1.0)
-            currentftsound->setModifiedState(false);
+        currentftsound->setTexts();
 
         soundsChanged();
     }

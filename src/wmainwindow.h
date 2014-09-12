@@ -43,6 +43,7 @@ class AudioEngine;
 class QGVWaveform;
 class QGVAmplitudeSpectrum;
 class QGVPhaseSpectrum;
+class QGVSpectrogram;
 class QHBoxLayout;
 class QProgressBar;
 class QLabel;
@@ -80,7 +81,7 @@ private slots:
     void audioOutputFormatChanged(const QAudioFormat& format);
     void showFileContextMenu(const QPoint&);
     void soundsChanged();
-    void setSoundShown(bool show);
+    void toggleSoundShown();
     void resetAmpScale();
     void resetDelay();
     void setSelectionMode(bool checked);
@@ -122,6 +123,7 @@ public:
     QGVWaveform* m_gvWaveform;
     QGVAmplitudeSpectrum* m_gvSpectrum;
     QGVPhaseSpectrum* m_gvPhaseSpectrum;
+    QGVSpectrogram* m_gvSpectrogram;
 
     AudioEngine* m_audioengine;
 };

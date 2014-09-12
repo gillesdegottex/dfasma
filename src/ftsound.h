@@ -96,6 +96,7 @@ public:
     double getDuration() const {return wav.size()/fs;}
     virtual double getLastSampleTime() const;
     virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
+    virtual bool isModified();
 
     double setPlay(const QAudioFormat& format, double tstart=0.0, double tstop=0.0, double fstart=0.0, double fstop=0.0);
     void stop();

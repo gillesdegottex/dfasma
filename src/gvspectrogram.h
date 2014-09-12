@@ -18,27 +18,28 @@ file provided in the source code of DFasma. Another copy can be found at
 <http://www.gnu.org/licenses/>.
 */
 
-#ifndef QGVAMPLITUDESPECTRUM_H
-#define QGVAMPLITUDESPECTRUM_H
+#ifndef QGVSPECTROGRAM_H
+#define QGVSPECTROGRAM_H
 
 #include <vector>
 #include <deque>
 
 #include <QGraphicsView>
+#include <QMutex>
+#include <QThread>
 #include <QMenu>
 
 #include "wmainwindow.h"
-#include "fftresizethread.h"
 
 #include "external/FFTwrapper.h"
 #include "ftsound.h"
 
-class GVAmplitudeSpectrumWDialogSettings;
+class GVSpectrogramWDialogSettings;
 class MainWindow;
 class QSpinBox;
-//class FFTwrapper;
+class FFTResizeThread;
 
-class QGVAmplitudeSpectrum : public QGraphicsView
+class QGVSpectrogram : public QGraphicsView
 {
     Q_OBJECT
 
@@ -51,9 +52,9 @@ class QGVAmplitudeSpectrum : public QGraphicsView
     QFont m_gridFont;
 
 public:
-    explicit QGVAmplitudeSpectrum(WMainWindow* parent);
+    explicit QGVSpectrogram(WMainWindow* parent);
 
-    GVAmplitudeSpectrumWDialogSettings* m_dlgSettings;
+    GVSpectrogramWDialogSettings* m_dlgSettings;
 
     FFTwrapper* m_fft;
     FFTResizeThread* m_fftresizethread;
@@ -104,19 +105,16 @@ public:
     void viewUpdateTexts();
     void drawBackground(QPainter* painter, const QRectF& rect);
     void draw_grid(QPainter* painter, const QRectF& rect);
-    void draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& ldft, double fs, double ascale, const QRectF& rect);
 
-    ~QGVAmplitudeSpectrum();
+    ~QGVSpectrogram();
 
     QAction* m_aShowGrid;
-    QAction* m_aShowWindow;
     QAction* m_aZoomOnSelection;
     QAction* m_aSelectionClear;
     QAction* m_aZoomIn;
     QAction* m_aZoomOut;
     QAction* m_aUnZoom;
     QAction* m_aShowProperties;
-    QAction* m_aAutoUpdateDFT;
 
 signals:
     
@@ -138,4 +136,4 @@ public slots:
     void aunzoom();
 };
 
-#endif // QGVAMPLITUDESPECTRUM_H
+#endif // QGVSPECTROGRAM_H

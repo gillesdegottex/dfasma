@@ -52,10 +52,13 @@ public:
     #endif
 
     virtual QString info() const =0;
-    void setModifiedState(bool modified);
+    void setShown(bool shown);
+    virtual bool isModified() {return false;}
     void setColor(const QColor& _color);
     virtual double getLastSampleTime() const =0;
     virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
+
+    void setTexts();
 };
 
 #endif // FILETYPE_H
