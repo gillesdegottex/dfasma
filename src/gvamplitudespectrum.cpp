@@ -638,8 +638,10 @@ void QGVAmplitudeSpectrum::mouseMoveEvent(QMouseEvent* event){
             else if(currentftsound->m_ampscale<1e-10)
                 currentftsound->m_ampscale = 1e-10;
 
-            WMainWindow::getMW()->m_gvWaveform->soundsChanged();
+            currentftsound->setTexts();
+
             soundsChanged();
+            WMainWindow::getMW()->m_gvWaveform->soundsChanged();
         }
     }
     else{

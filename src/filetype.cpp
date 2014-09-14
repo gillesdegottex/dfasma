@@ -118,7 +118,7 @@ void FileType::setColor(const QColor& _color) {
 
 void FileType::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
     contextmenu.addAction(m_actionShow);
-    mainwindow->connect(m_actionShow, SIGNAL(toggled(bool)), mainwindow, SLOT(setSoundShown(bool)));
+    mainwindow->connect(m_actionShow, SIGNAL(toggled(bool)), mainwindow, SLOT(toggleSoundShown()));
     contextmenu.addAction(m_actionReload);
     QColorDialog* colordialog = new QColorDialog(&contextmenu);
     QObject::connect(colordialog, SIGNAL(colorSelected(const QColor &)), WMainWindow::getMW(), SLOT(colorSelected(const QColor &)));
