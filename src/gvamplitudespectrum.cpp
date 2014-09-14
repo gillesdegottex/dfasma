@@ -1094,7 +1094,7 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
         for(int k=kmin+1; k<=kmax; ++k){
             double x = fs*k/dftlen;
             double y = sigproc::log2db*(lascale+yp[k].real());
-            if(y<-1000000) y=-1000000;
+            if(y<-10*viewrect.bottom()) y=-10*viewrect.bottom();
             painter->drawLine(QLineF(prevx, -prevy, x, -y));
             prevx = x;
             prevy = y;
