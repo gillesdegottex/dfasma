@@ -42,6 +42,7 @@ using namespace std;
 #include <QStaticText>
 #include <QDebug>
 #include <QTime>
+#include <QMessageBox>
 
 QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     : QGraphicsView(parent)
@@ -630,18 +631,24 @@ void QGVAmplitudeSpectrum::mouseMoveEvent(QMouseEvent* event){
         // When scaling the waveform
         FTSound* currentftsound = WMainWindow::getMW()->getCurrentFTSound();
         if(currentftsound){
-            currentftsound->m_ampscale *= pow(10, -(p.y()-m_selection_pressedp.y())/20.0);
-            m_selection_pressedp = p;
+            if(!currentftsound->m_actionShow->isChecked()) {
+                QMessageBox::warning(this, "Editing a hidden file", "<p>The selected file is hidden.<br/><br/>For edition, please select only visible files.</p>");
+                m_currentAction = CANothing;
+            }
+            else {
+                currentftsound->m_ampscale *= pow(10, -(p.y()-m_selection_pressedp.y())/20.0);
+                m_selection_pressedp = p;
 
-            if(currentftsound->m_ampscale>1e10)
-                currentftsound->m_ampscale = 1e10;
-            else if(currentftsound->m_ampscale<1e-10)
-                currentftsound->m_ampscale = 1e-10;
+                if(currentftsound->m_ampscale>1e10)
+                    currentftsound->m_ampscale = 1e10;
+                else if(currentftsound->m_ampscale<1e-10)
+                    currentftsound->m_ampscale = 1e-10;
 
-            currentftsound->setTexts();
+                currentftsound->setTexts();
 
-            soundsChanged();
-            WMainWindow::getMW()->m_gvWaveform->soundsChanged();
+                soundsChanged();
+                WMainWindow::getMW()->m_gvWaveform->soundsChanged();
+            }
         }
     }
     else{

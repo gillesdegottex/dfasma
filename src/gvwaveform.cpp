@@ -44,6 +44,8 @@ using namespace std;
 #include <QTime>
 #include <QAction>
 #include <QScrollBar>
+#include <QMessageBox>
+
 
 QGVWaveform::QGVWaveform(WMainWindow* parent)
     : QGraphicsView(parent)
@@ -606,30 +608,43 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
         // Scale the selected waveform
         FTSound* currentftsound = WMainWindow::getMW()->getCurrentFTSound();
         if(currentftsound){
-            currentftsound->m_ampscale *= pow(10, -10*(p.y()-m_selection_pressedx)/20.0);
-            m_selection_pressedx = p.y();
+            if(!currentftsound->m_actionShow->isChecked()) {
+                QMessageBox::warning(this, "Editing a hidden file", "<p>The selected file is hidden.<br/><br/>For edition, please select only visible files.</p>");
+                m_currentAction = CANothing;
+            }
+            else {
+                currentftsound->m_ampscale *= pow(10, -10*(p.y()-m_selection_pressedx)/20.0);
+                m_selection_pressedx = p.y();
 
-            if(currentftsound->m_ampscale>1e10) currentftsound->m_ampscale = 1e10;
-            else if(currentftsound->m_ampscale<1e-10) currentftsound->m_ampscale = 1e-10;
+                if(currentftsound->m_ampscale>1e10) currentftsound->m_ampscale = 1e10;
+                else if(currentftsound->m_ampscale<1e-10) currentftsound->m_ampscale = 1e-10;
 
-            currentftsound->setTexts();
+                currentftsound->setTexts();
 
-            soundsChanged();
-            WMainWindow::getMW()->m_gvSpectrum->soundsChanged();
+                soundsChanged();
+                WMainWindow::getMW()->m_gvSpectrum->soundsChanged();
+            }
         }
     }
     else if(m_currentAction==CAWaveformDelay){
         FTSound* currentftsound = WMainWindow::getMW()->getCurrentFTSound();
         if(currentftsound){
-            m_tmpdelay += p.x()-m_selection_pressedx;
-            m_selection_pressedx = p.x();
-            currentftsound->m_delay = int(0.5+m_tmpdelay*WMainWindow::getMW()->getFs());
-            if(m_tmpdelay<0) currentftsound->m_delay--;
+            // Check first if the user is not trying to modify a hidden file
+            if(!currentftsound->m_actionShow->isChecked()) {
+                QMessageBox::warning(this, "Editing a hidden file", "<p>The selected file is hidden.<br/><br/>For edition, please select only visible files.</p>");
+                m_currentAction = CANothing;
+            }
+            else {
+                m_tmpdelay += p.x()-m_selection_pressedx;
+                m_selection_pressedx = p.x();
+                currentftsound->m_delay = int(0.5+m_tmpdelay*WMainWindow::getMW()->getFs());
+                if(m_tmpdelay<0) currentftsound->m_delay--;
 
-            currentftsound->setTexts();
+                currentftsound->setTexts();
 
-            soundsChanged();
-            WMainWindow::getMW()->m_gvSpectrum->soundsChanged();
+                soundsChanged();
+                WMainWindow::getMW()->m_gvSpectrum->soundsChanged();
+            }
         }
     }
     else{
