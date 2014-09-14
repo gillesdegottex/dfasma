@@ -14,7 +14,7 @@
    <string>DFasma</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_7">
+   <layout class="QHBoxLayout" name="horizontalLayout_4">
     <item>
      <widget class="QSplitter" name="splitter_2">
       <property name="orientation">
@@ -62,9 +62,21 @@
        <property name="orientation">
         <enum>Qt::Vertical</enum>
        </property>
-       <widget class="QWidget" name="layoutWidget">
-        <layout class="QVBoxLayout" name="layerWaveform">
+       <widget class="QWidget" name="wWaveform" native="true">
+        <layout class="QVBoxLayout" name="vLayout_2">
          <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
           <number>0</number>
          </property>
          <item>
@@ -173,9 +185,21 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="layoutWidget">
+       <widget class="QWidget" name="wAmplitudeSpectrum" native="true">
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
           <number>0</number>
          </property>
          <item>
@@ -238,36 +262,57 @@
           </layout>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_4">
-           <item>
-            <widget class="QLabel" name="lblSpectrumSelectionTxt">
-             <property name="font">
-              <font>
-               <family>Monospace</family>
-               <pointsize>8</pointsize>
-               <weight>50</weight>
-               <italic>false</italic>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>&lt;selection&gt;</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="lAmplitudeSpectrumGraphicsView"/>
+          <widget class="QLabel" name="lblSpectrumSelectionTxt">
+           <property name="font">
+            <font>
+             <family>Monospace</family>
+             <pointsize>8</pointsize>
+             <weight>50</weight>
+             <italic>false</italic>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>&lt;selection&gt;</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="layoutWidget">
-        <layout class="QHBoxLayout" name="lPhaseSpectrumGraphicsView"/>
-       </widget>
-       <widget class="QWidget" name="layoutWidget_2">
-        <layout class="QVBoxLayout" name="vlSpectrogram">
+       <widget class="QWidget" name="wPhaseSpectrum" native="true">
+        <layout class="QVBoxLayout" name="verticalLayout_5">
          <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="wSpectrogram" native="true">
+        <layout class="QVBoxLayout" name="vLayout">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
           <number>0</number>
          </property>
          <item>
@@ -330,27 +375,20 @@
           </layout>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_6">
-           <item>
-            <widget class="QLabel" name="lblSpectrogramSelectionTxt">
-             <property name="font">
-              <font>
-               <family>Monospace</family>
-               <pointsize>8</pointsize>
-               <weight>50</weight>
-               <italic>false</italic>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>&lt;selection&gt;</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="lSpectrogramGraphicsView"/>
+          <widget class="QLabel" name="lblSpectrogramSelectionTxt">
+           <property name="font">
+            <font>
+             <family>Monospace</family>
+             <pointsize>8</pointsize>
+             <weight>50</weight>
+             <italic>false</italic>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>&lt;selection&gt;</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -383,6 +421,10 @@
    <addaction name="actionEditMode"/>
    <addaction name="separator"/>
    <addaction name="actionPlay"/>
+   <addaction name="separator"/>
+   <addaction name="actionShowAmplitudeSpectrum"/>
+   <addaction name="actionShowPhaseSpectrum"/>
+   <addaction name="actionShowSpectrogram"/>
    <addaction name="separator"/>
    <addaction name="actionSettings"/>
    <addaction name="actionAbout"/>
@@ -509,6 +551,60 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="actionShowAmplitudeSpectrum">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../ressources.qrc">
+     <normaloff>:/icons/amplitudespectrum.svg</normaloff>:/icons/amplitudespectrum.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Show amplitude spectrum</string>
+   </property>
+   <property name="toolTip">
+    <string>Show or hide the amplitude spectrum</string>
+   </property>
+   <property name="shortcut">
+    <string>F6</string>
+   </property>
+  </action>
+  <action name="actionShowPhaseSpectrum">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../ressources.qrc">
+     <normaloff>:/icons/phasespectrum.svg</normaloff>:/icons/phasespectrum.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Show phase spectrum</string>
+   </property>
+   <property name="toolTip">
+    <string>Show or hide the phase spectrum</string>
+   </property>
+   <property name="shortcut">
+    <string>F7</string>
+   </property>
+  </action>
+  <action name="actionShowSpectrogram">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../ressources.qrc">
+     <normaloff>:/icons/spectrogram.svg</normaloff>:/icons/spectrogram.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Show spectrogram</string>
+   </property>
+   <property name="toolTip">
+    <string>Show or hide the spectrogram</string>
+   </property>
+   <property name="shortcut">
+    <string>F8</string>
    </property>
   </action>
  </widget>

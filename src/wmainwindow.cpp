@@ -144,29 +144,36 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     connect(ui->actionPlay, SIGNAL(triggered()), this, SLOT(play()));
     connect(ui->actionPlayFiltered, SIGNAL(triggered()), this, SLOT(play()));
 
+    // Prevent both waveform and amplitude spectrum to be collapsed
+    WMainWindow::getMW()->ui->splitterViews->setCollapsible(0,false);
+    WMainWindow::getMW()->ui->splitterViews->setCollapsible(1,true);
+    WMainWindow::getMW()->ui->splitterViews->setCollapsible(2,true);
+    WMainWindow::getMW()->ui->splitterViews->setCollapsible(3,true);
+
     m_gvWaveform = new QGVWaveform(this);
     ui->lWaveformGraphicsView->addWidget(m_gvWaveform);
 
     m_gvSpectrum = new QGVAmplitudeSpectrum(this);
-    ui->lAmplitudeSpectrumGraphicsView->addWidget(m_gvSpectrum);
+    ui->wAmplitudeSpectrum->layout()->addWidget(m_gvSpectrum);
 
     m_gvPhaseSpectrum = new QGVPhaseSpectrum(this);
-    ui->lPhaseSpectrumGraphicsView->addWidget(m_gvPhaseSpectrum);
+    ui->wPhaseSpectrum->layout()->addWidget(m_gvPhaseSpectrum);
 
     m_gvSpectrogram = new QGVSpectrogram(this);
-    ui->lSpectrogramGraphicsView->addWidget(m_gvSpectrogram);
-    m_gvSpectrogram->hide();
-    m_gvSpectrogram->m_toolBar->hide();
-    ui->lblSpectrogramInfoTxt->hide();
-    ui->pgbSpectrogramFFTResize->hide();
-    ui->lblSpectrogramSelectionTxt->hide();
+    ui->wSpectrogram->layout()->addWidget(m_gvSpectrogram);
+    ui->wSpectrogram->hide();
 
     connect(m_gvSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvPhaseSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
     connect(m_gvPhaseSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
 
-    // Prevent both waveform and amplitude spectrum to be collapsed
-    WMainWindow::getMW()->ui->splitterViews->setCollapsible(0,false);
-    WMainWindow::getMW()->ui->splitterViews->setCollapsible(1,false);
+    connect(ui->actionShowAmplitudeSpectrum, SIGNAL(toggled(bool)), ui->wAmplitudeSpectrum, SLOT(setVisible(bool)));
+    connect(ui->actionShowPhaseSpectrum, SIGNAL(toggled(bool)), ui->wPhaseSpectrum, SLOT(setVisible(bool)));
+    connect(ui->actionShowSpectrogram, SIGNAL(toggled(bool)), ui->wSpectrogram, SLOT(setVisible(bool)));
+
+    QSettings settings;
+    ui->actionShowAmplitudeSpectrum->setChecked(settings.value("ShowAmplitudeSpectrum", true).toBool());
+    ui->actionShowPhaseSpectrum->setChecked(settings.value("ShowPhaseSpectrum", true).toBool());
+    ui->actionShowSpectrogram->setChecked(settings.value("ShowSpectrogram", false).toBool());
 
     // Start in open file mode
     // and show the panels only if a file has been loaded
@@ -193,6 +200,12 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 }
 
 void WMainWindow::settingsSave() {
+
+    QSettings settings;
+    settings.setValue("ShowAmplitudeSpectrum", ui->actionShowAmplitudeSpectrum->isChecked());
+    settings.setValue("ShowPhaseSpectrum", ui->actionShowPhaseSpectrum->isChecked());
+    settings.setValue("ShowSpectrogram", ui->actionShowSpectrogram->isChecked());
+
     m_gvSpectrum->settingsSave();
     m_gvWaveform->settingsSave();
 }
@@ -448,6 +461,7 @@ void WMainWindow::addFile(const QString& filepath) {
         soundsChanged();
         ui->actionCloseFile->setEnabled(true);
         ui->splitterViews->show();
+//        WMainWindow::getMW()->ui->splitterViews->handle(2)->hide();
     }
     catch (QString err)
     {

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>675</width>
-    <height>458</height>
+    <height>386</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -165,7 +165,7 @@
                </sizepolicy>
               </property>
               <property name="text">
-               <string>Butterworth's order</string>
+               <string>Butterworth filter's order</string>
               </property>
              </widget>
             </item>

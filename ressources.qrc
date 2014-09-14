@@ -18,5 +18,8 @@
         <file>icons/dfasma.svg</file>
         <file>icons/dfasma.ico</file>
         <file>icons/autoupdatedft.svg</file>
+        <file>icons/amplitudespectrum.svg</file>
+        <file>icons/phasespectrum.svg</file>
+        <file>icons/spectrogram.svg</file>
     </qresource>
 </RCC>
