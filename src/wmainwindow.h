@@ -88,6 +88,7 @@ private slots:
     void setEditMode(bool checked);
     void execAbout();
     void fileSelectionChanged();
+    void viewsDisplayedChanged();
 
 public slots:
     void selectAudioOutputDevice(int di);

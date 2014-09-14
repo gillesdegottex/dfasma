@@ -144,12 +144,6 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     connect(ui->actionPlay, SIGNAL(triggered()), this, SLOT(play()));
     connect(ui->actionPlayFiltered, SIGNAL(triggered()), this, SLOT(play()));
 
-    // Prevent both waveform and amplitude spectrum to be collapsed
-    WMainWindow::getMW()->ui->splitterViews->setCollapsible(0,false);
-    WMainWindow::getMW()->ui->splitterViews->setCollapsible(1,true);
-    WMainWindow::getMW()->ui->splitterViews->setCollapsible(2,true);
-    WMainWindow::getMW()->ui->splitterViews->setCollapsible(3,true);
-
     m_gvWaveform = new QGVWaveform(this);
     ui->lWaveformGraphicsView->addWidget(m_gvWaveform);
 
@@ -165,6 +159,9 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 
     connect(m_gvSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvPhaseSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
     connect(m_gvPhaseSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
+
+    connect(ui->actionShowAmplitudeSpectrum, SIGNAL(toggled(bool)), this, SLOT(viewsDisplayedChanged()));
+    connect(ui->actionShowPhaseSpectrum, SIGNAL(toggled(bool)), this, SLOT(viewsDisplayedChanged()));
 
     connect(ui->actionShowAmplitudeSpectrum, SIGNAL(toggled(bool)), ui->wAmplitudeSpectrum, SLOT(setVisible(bool)));
     connect(ui->actionShowPhaseSpectrum, SIGNAL(toggled(bool)), ui->wPhaseSpectrum, SLOT(setVisible(bool)));
@@ -197,6 +194,10 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 
     for(int f=0; f<sndfiles.size(); f++)
         addFile(sndfiles[f]);
+}
+
+void WMainWindow::viewsDisplayedChanged() {
+    ui->wSpectra->setVisible(ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked());
 }
 
 void WMainWindow::settingsSave() {
