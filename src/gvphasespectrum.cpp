@@ -741,11 +741,13 @@ void QGVPhaseSpectrum::draw_spectrum(QPainter* painter, std::vector<std::complex
 //         cout << "Spec: Draw lines between each bin" << endl;
 
         double prevx = fs*kmin/dftlen;
-        double prevy = ldft[kmin].imag();
+        double dp = delay*2.0*M_PI*kmin/dftlen;
+        dp += ldft[kmin].imag();
+        double prevy = std::arg(std::complex<WAVTYPE>(cos(dp),sin(dp)));
         std::complex<WAVTYPE>* data = ldft.data();
         for(int k=kmin+1; k<=kmax; ++k){
             double x = fs*k/dftlen;
-            double dp = delay*2.0*M_PI*k/dftlen;
+            dp = delay*2.0*M_PI*k/dftlen;
             dp += (*(data+k)).imag();
             double y = std::arg(std::complex<WAVTYPE>(cos(dp),sin(dp))); // TODO Use wrap instead
             painter->drawLine(QLineF(prevx, -prevy, x, -y));
