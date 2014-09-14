@@ -157,12 +157,15 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     ui->wSpectrogram->layout()->addWidget(m_gvSpectrogram);
     ui->wSpectrogram->hide();
 
-    connect(m_gvSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvPhaseSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
-    connect(m_gvPhaseSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
+    ui->splitterMain->setStretchFactor(1, 1);
+    ui->splitterViews->setStretchFactor(0, 0);
+    ui->splitterViews->setStretchFactor(1, 1);
+    ui->splitterViews->setStretchFactor(2, 1);
+    ui->splitterSpectra->setStretchFactor(0, 2);
+    ui->splitterSpectra->setStretchFactor(1, 1);
 
     connect(ui->actionShowAmplitudeSpectrum, SIGNAL(toggled(bool)), this, SLOT(viewsDisplayedChanged()));
     connect(ui->actionShowPhaseSpectrum, SIGNAL(toggled(bool)), this, SLOT(viewsDisplayedChanged()));
-
     connect(ui->actionShowAmplitudeSpectrum, SIGNAL(toggled(bool)), ui->wAmplitudeSpectrum, SLOT(setVisible(bool)));
     connect(ui->actionShowPhaseSpectrum, SIGNAL(toggled(bool)), ui->wPhaseSpectrum, SLOT(setVisible(bool)));
     connect(ui->actionShowSpectrogram, SIGNAL(toggled(bool)), ui->wSpectrogram, SLOT(setVisible(bool)));
@@ -171,6 +174,10 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     ui->actionShowAmplitudeSpectrum->setChecked(settings.value("ShowAmplitudeSpectrum", true).toBool());
     ui->actionShowPhaseSpectrum->setChecked(settings.value("ShowPhaseSpectrum", true).toBool());
     ui->actionShowSpectrogram->setChecked(settings.value("ShowSpectrogram", false).toBool());
+
+    // Link axis' views
+    connect(m_gvSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvPhaseSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
+    connect(m_gvPhaseSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
 
     // Start in open file mode
     // and show the panels only if a file has been loaded
