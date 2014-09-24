@@ -522,12 +522,12 @@
    <addaction name="actionOpen"/>
    <addaction name="actionCloseFile"/>
    <addaction name="separator"/>
+   <addaction name="actionSelectionMode"/>
+   <addaction name="actionEditMode"/>
+   <addaction name="separator"/>
    <addaction name="actionShowAmplitudeSpectrum"/>
    <addaction name="actionShowPhaseSpectrum"/>
    <addaction name="actionShowSpectrogram"/>
-   <addaction name="separator"/>
-   <addaction name="actionSelectionMode"/>
-   <addaction name="actionEditMode"/>
    <addaction name="separator"/>
    <addaction name="actionPlay"/>
    <addaction name="separator"/>
@@ -697,6 +697,9 @@
   <action name="actionShowSpectrogram">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
    </property>
    <property name="icon">
     <iconset resource="../ressources.qrc">
