@@ -214,8 +214,9 @@ void WMainWindow::settingsSave() {
     settings.setValue("ShowPhaseSpectrum", ui->actionShowPhaseSpectrum->isChecked());
     settings.setValue("ShowSpectrogram", ui->actionShowSpectrogram->isChecked());
 
-    m_gvSpectrum->settingsSave();
     m_gvWaveform->settingsSave();
+    m_gvSpectrum->settingsSave();
+    m_gvSpectrogram->settingsSave();
 }
 
 void WMainWindow::execAbout(){
@@ -493,7 +494,7 @@ void WMainWindow::dragEnterEvent(QDragEnterEvent *event){
 FTSound* WMainWindow::getCurrentFTSound() {
     FileType* currenItem = (FileType*)(ui->listSndFiles->currentItem());
 
-    if(currenItem->type==FileType::FTSOUND)
+    if(currenItem && currenItem->type==FileType::FTSOUND)
         return (FTSound*)currenItem;
 
     return NULL;
