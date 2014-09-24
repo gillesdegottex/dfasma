@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2014 Gilles Degottex <gilles.degottex@gmail.com> -->
+<application>
+  <id type="desktop">dfasma.desktop</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0+</project_license>
+  <name>DFasma</name>
+  <summary>DFasma. A tool to compare mono audio files in time and frequency.</summary>
+  <description>
+    <p>
+      A tool to compare mono audio files in time and frequency.
+    </p>
+    <p>DFasma is an open-source software used to compare audio files (mono only) in
+    time and frequency. The comparison is first visual, using wavforms and spectra.
+    Listening segments of the loaded files is also possible in order to allow
+    perceptual comparison.
+    </p>
+  </description>
+  <screenshots>
+    <screenshot type="default" width="400" height="235">http://gillesdegottex.eu/uploads/Main/dfasma.png</screenshot>
+</screenshots>
+  <url type="homepage">https://github.com/gillesdegottex/dfasma/</url>
+  <updatecontact>gilles.degottex@gmail.com</updatecontact>
+</application>

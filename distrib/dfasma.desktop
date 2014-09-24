@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=DFasma
+GenericName=
+Comment=Compare sound files
+Icon=dfasma
+Exec=dfasma %F
+Terminal=false
+Categories=AudioVideo;Audio;Player;
+
