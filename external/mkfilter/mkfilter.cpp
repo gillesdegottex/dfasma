@@ -545,11 +545,11 @@ void mkfilter::make_butterworth_filter(int _order, double _alpha, bool isLowPass
     }
 
 //    // Plot coefs
-//    cout << "gain=" << gain << endl;
-//    for (int i=0; i < zplane.numpoles+1; i++)
-//        cout << "xcoeffs[" << i << "]=" << xcoeffs[i] << endl;
-//    for (int i=0; i < zplane.numzeros; i++)
-//        cout << "ycoeffs[" << i << "]=" << ycoeffs[i] << endl;
+//    std::cout << "gain=" << gain << std::endl;
+//    for (size_t i=0; i < num.size(); i++)
+//        std::cout << "num[" << i << "]=" << num[i] << std::endl;
+//    for (size_t i=0; i < den.size(); i++)
+//        std::cout << "den[" << i << "]=" << den[i] << std::endl;
 }
 
 void printpoleszeros(pzrep zplane) {
@@ -575,11 +575,11 @@ void mkfilter::make_butterworth_filter_biquad(int _order, double _alpha, bool is
     prewarp();
     normalize();
 
-//    // Plot s-roots
-//    for (int i=0; i < splane.numpoles; i++)
-//        cout << "SP" << i << ": " << splane.poles[i].re << "+j*" << splane.poles[i].im << endl;
-//    for (int i=0; i < splane.numzeros; i++)
-//        cout << "SZ" << i << ": " << splane.zeros[i].re << "+j*" << splane.zeros[i].im << endl;
+//   // Plot s-roots
+//   for (int i=0; i < splane.numpoles; i++)
+//       std::cout << "SP" << i << ": " << splane.poles[i].re << "+j*" << splane.poles[i].im << std::endl;
+//   for (int i=0; i < splane.numzeros; i++)
+//       std::cout << "SZ" << i << ": " << splane.zeros[i].re << "+j*" << splane.zeros[i].im << std::endl;
 
     pzrep zplane;
     compute_z_blt(splane, zplane);
@@ -638,6 +638,15 @@ void mkfilter::make_butterworth_filter_biquad(int _order, double _alpha, bool is
 
         ii += biq.numpoles;
     }
+    
+//    // Plot coefs
+////     std::cout << "gain=" << gain << std::endl;
+//    for (size_t i=0; i < num.size(); i++)
+//        for (size_t j=0; j < num[i].size(); j++)
+//            std::cout << "num[" << i << "," << j << "]=" << num[i][j] << std::endl;
+//   for (size_t i=0; i < den.size(); i++)
+//        for (size_t j=0; j < num[i].size(); j++)
+//            std::cout << "den[" << i << "," << j << "]=" << den[i][j] << std::endl;
 }
 
 
