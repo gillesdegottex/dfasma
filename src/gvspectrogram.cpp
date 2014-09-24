@@ -50,6 +50,7 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     : QGraphicsView(parent)
     , m_winlen(0)
     , m_dftlen(0)
+    , m_imgSTFT(1, 1, QImage::Format_RGB32)
 {
     m_scene = new QGraphicsScene(this);
     setScene(m_scene);
@@ -183,6 +184,8 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_contextmenu.addSeparator();
     connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
     connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(settingsModified()));
+
+    updateDFTSettings();
 }
 
 // Remove hard coded margin (Bug 11945)
@@ -197,8 +200,9 @@ QRectF QGVSpectrogram::removeHiddenMargin(const QRectF& sceneRect){
 void QGVSpectrogram::settingsModified(){
     updateSceneRect();
     // TODO
-    if(WMainWindow::getMW()->m_gvWaveform)
-        WMainWindow::getMW()->m_gvWaveform->selectionClipAndSet(WMainWindow::getMW()->m_gvWaveform->m_mouseSelection, true);
+    updateDFTSettings();
+//    if(WMainWindow::getMW()->m_gvWaveform)
+//        WMainWindow::getMW()->m_gvWaveform->selectionClipAndSet(WMainWindow::getMW()->m_gvWaveform->m_mouseSelection, true);
 }
 
 void QGVSpectrogram::fftResizing(int prevSize, int newSize){
@@ -208,27 +212,13 @@ void QGVSpectrogram::fftResizing(int prevSize, int newSize){
     WMainWindow::getMW()->ui->lblSpectrogramInfoTxt->setText(QString("Resizing DFT to %1").arg(newSize));
 }
 
-void QGVSpectrogram::setWindowRange(qreal tstart, qreal tend, bool winforceupdate){
-    if(tstart==tend) return;
-
-    m_nl = std::max(0, int(0.5+tstart*WMainWindow::getMW()->getFs()));
-    m_nr = int(0.5+std::min(WMainWindow::getMW()->getMaxLastSampleTime(),tend)*WMainWindow::getMW()->getFs());
-    if(m_nl==m_nr) return;
-
-    int winlen_prev = m_winlen;
-    m_winlen = m_nr-m_nl+1;
-
-    if(m_winlen!=winlen_prev || winforceupdate)
-        updateDFTSettings();
-    else
-        computeDFTs();
-}
-
 void QGVSpectrogram::updateDFTSettings(){
+
+//    cout << "QGVSpectrogram::updateDFTSettings" << endl;
 
     updateSceneRect();
 
-    if(m_winlen<2) return;
+    m_winlen = std::floor(0.5+WMainWindow::getMW()->getFs()*m_dlgSettings->ui->sbWindowSize->value());
 
     // Create the window
     int wintype = m_dlgSettings->ui->cbSpectrogramWindowType->currentIndex();
@@ -267,11 +257,12 @@ void QGVSpectrogram::updateDFTSettings(){
     // Set the DFT length
     m_dftlen = pow(2, std::ceil(log2(float(m_winlen)))+m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());
 
-    computeDFTs();
+//    computeDFTs();
 }
 
 void QGVSpectrogram::computeDFTs(){
-//    std::cout << "QGVSpectrogram::computeDFTs " << m_winlen << endl;
+    std::cout << "QGVSpectrogram::computeDFTs " << m_winlen << endl;
+
     if(m_winlen<2)
         return;
 
@@ -281,65 +272,67 @@ void QGVSpectrogram::computeDFTs(){
 
         int dftlen = m_fft->size(); // Local copy of the actual dftlen
 
-        WMainWindow::getMW()->ui->pgbSpectrogramFFTResize->hide();
-        WMainWindow::getMW()->ui->lblSpectrogramInfoTxt->setText(QString("DFT size=%1").arg(dftlen));
+        FTSound* csnd = WMainWindow::getMW()->getCurrentFTSound();
+        if(csnd) {
 
-        m_minsy = std::numeric_limits<double>::infinity();
-        m_maxsy = -std::numeric_limits<double>::infinity();
-        for(unsigned int fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++){
-            int pol = 1;
-            if(WMainWindow::getMW()->ftsnds[fi]->m_actionInvPolarity->isChecked())
-                pol = -1;
+            double fs = WMainWindow::getMW()->getFs();
+            int stepsize = std::floor(0.5+fs*m_dlgSettings->ui->sbStepSize->value());
+            m_nbsteps = std::floor((WMainWindow::getMW()->getMaxLastSampleTime()*fs - (m_winlen-1)/2)/stepsize);
 
-            int n = 0;
-            int wn = 0;
-            for(; n<m_winlen; n++){
-                wn = m_nl+n - WMainWindow::getMW()->ftsnds[fi]->m_delay;
-                if(wn>=0 && wn<int(WMainWindow::getMW()->ftsnds[fi]->wavtoplay->size()))
-                    m_fft->in[n] = pol*(*(WMainWindow::getMW()->ftsnds[fi]->wavtoplay))[wn]*m_win[n];
-                else
+            m_imgSTFT = QImage(m_nbsteps, m_dftlen/2+1, QImage::Format_RGB32);
+
+            WMainWindow::getMW()->ui->pgbSpectrogramFFTResize->hide();
+            WMainWindow::getMW()->ui->lblSpectrogramInfoTxt->setText(QString("DFT size=%1").arg(dftlen));
+
+            m_minsy = std::numeric_limits<double>::infinity();
+            m_maxsy = -std::numeric_limits<double>::infinity();
+
+            QPainter imgpaint(&m_imgSTFT);
+            QPen outlinePen(QColor(255, 0, 0));
+            outlinePen.setWidth(0);
+            imgpaint.setPen(outlinePen);
+            imgpaint.setOpacity(1);
+            m_imgSTFT.fill(QColor(0,0,255));
+
+            for(int si=0; si<m_nbsteps; si++){
+                int n = 0;
+                int wn = 0;
+//                cout << si*stepsize/WMainWindow::getMW()->getFs() << endl;
+                for(; n<m_winlen; n++){
+                    wn = si*stepsize+n - csnd->m_delay;
+                    if(wn>=0 && wn<int(csnd->wavtoplay->size()))
+                        m_fft->in[n] = (*(csnd->wavtoplay))[wn]*m_win[n];
+                    else
+                        m_fft->in[n] = 0.0;
+                }
+                for(; n<dftlen; n++)
                     m_fft->in[n] = 0.0;
+
+                m_fft->execute(); // Compute the DFT
+
+                for(n=0; n<dftlen/2+1; n++) {
+                    double y = std::log(std::abs(m_fft->out[n]));
+                    int color = 256*(sigproc::log2db*y-m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMin->value())/(m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMax->value()-m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMin->value());
+                    if(color<0) color = 0;
+                    else if(color>255) color = 255;
+                    m_imgSTFT.setPixel(QPoint(si,n), QColor(color, color, color).rgb());
+                    m_minsy = std::min(m_minsy, y);
+                    m_maxsy = std::max(m_maxsy, y);
+                }
             }
-            for(; n<dftlen; n++)
-                m_fft->in[n] = 0.0;
 
-            m_fft->execute(); // Compute the DFT
+            m_minsy = sigproc::log2db*m_minsy;
+            m_maxsy = sigproc::log2db*m_maxsy;
 
-            WMainWindow::getMW()->ftsnds[fi]->m_dft.resize(dftlen/2+1);
-            for(n=0; n<dftlen/2+1; n++) {
-                WMainWindow::getMW()->ftsnds[fi]->m_dft[n] = std::complex<WAVTYPE>(std::log(std::abs(m_fft->out[n])),std::arg(m_fft->out[n]));
-                double y = WMainWindow::getMW()->ftsnds[fi]->m_dft[n].real();
-                m_minsy = std::min(m_minsy, y);
-                m_maxsy = std::max(m_maxsy, y);
-            }
+            m_imgSTFT = m_imgSTFT.mirrored(false, true);
+
+            m_fftresizethread->m_mutex_resizing.unlock();
+
+            m_scene->invalidate();
         }
-
-        m_minsy = sigproc::log2db*m_minsy-3;
-        m_maxsy = sigproc::log2db*m_maxsy+3;
-
-        // Compute the window's DFT
-        if (true) {
-            int n = 0;
-            for(; n<m_winlen; n++)
-                m_fft->in[n] = m_win[n];
-            for(; n<dftlen; n++)
-                m_fft->in[n] = 0.0;
-
-            m_fft->execute();
-
-            m_windft.resize(dftlen/2+1);
-            for(n=0; n<dftlen/2+1; n++)
-                m_windft[n] = std::complex<WAVTYPE>(std::log(std::abs(m_fft->out[n])),std::arg(m_fft->out[n]));
-        }
-
-        m_fftresizethread->m_mutex_resizing.unlock();
-
-        m_scene->invalidate();
-//        if(WMainWindow::getMW()->m_gvPhaseSpectrum)
-//            WMainWindow::getMW()->m_gvPhaseSpectrum->m_scene->invalidate();
     }
 
-//    std::cout << "~QGVSpectrogram::computeDFTs" << endl;
+    std::cout << "~QGVSpectrogram::computeDFTs" << endl;
 }
 
 void QGVSpectrogram::settingsSave() {
@@ -366,9 +359,9 @@ void QGVSpectrogram::updateSceneRect() {
 }
 
 void QGVSpectrogram::soundsChanged(){
-    if(WMainWindow::getMW()->ftsnds.size()>0)
-        computeDFTs();
-    m_scene->update();
+//    if(WMainWindow::getMW()->ftsnds.size()>0)
+//        computeDFTs();
+//    m_scene->update();
 }
 
 void QGVSpectrogram::viewSet(QRectF viewrect, bool sync) {
@@ -964,7 +957,6 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
     // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
 
     // Draw the f0 grids
-    // TODO
 //    if(!WMainWindow::getMW()->ftfzeros.empty()) {
 
 //        for(size_t fi=0; fi<WMainWindow::getMW()->ftfzeros.size(); fi++){
@@ -976,43 +968,23 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 //            painter->setPen(outlinePen);
 //            painter->setBrush(QBrush(WMainWindow::getMW()->ftfzeros[fi]->color));
 
-//            double ct = 0.5*(m_nl+m_nr)/fs;
-//            double cf0 = sigproc::nearest<double>(WMainWindow::getMW()->ftfzeros[fi]->ts, WMainWindow::getMW()->ftfzeros[fi]->f0s, ct, -1.0);
-
-//            // cout << ct << ":" << cf0 << endl;
-//            if(cf0==-1) continue;
-
-//            QColor c = WMainWindow::getMW()->ftfzeros[fi]->color;
-//            c.setAlphaF(1.0);
-//            outlinePen.setColor(c);
-//            painter->setPen(outlinePen);
-//            painter->drawLine(QLineF(cf0, -3000, cf0, 3000));
-
-//            c.setAlphaF(0.5);
-//            outlinePen.setColor(c);
-//            painter->setPen(outlinePen);
-
-//            for(int h=2; h<int(0.5*fs/cf0)+1; h++) {
-//                painter->drawLine(QLineF(h*cf0, -3000, h*cf0, 3000));
-//            }
+            // TODO
 //        }
 //    }
 
+    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+//    cout << viewrect.width() << " " << viewrect.height() << endl;
+
     // Draw the sound's spectra
+    // TODO only the current one
     for(size_t fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++){
         if(!WMainWindow::getMW()->ftsnds[fi]->m_actionShow->isChecked())
             continue;
 
-        if(WMainWindow::getMW()->ftsnds[fi]->m_dft.size()<1)
-            continue;
+//        cout << m_nbsteps << " " << m_dftlen << endl;
 
-        QPen outlinePen(WMainWindow::getMW()->ftsnds[fi]->color);
-        outlinePen.setWidth(0);
-        painter->setPen(outlinePen);
-        painter->setBrush(QBrush(WMainWindow::getMW()->ftsnds[fi]->color));
-        painter->setOpacity(1);
-
-        // TODO
+        // TODO Set source rect according to viewrect
+        painter->drawImage(viewrect, m_imgSTFT, m_imgSTFT.rect());
     }
 
     // Draw the grid above the spectrogram

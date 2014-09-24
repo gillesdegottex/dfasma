@@ -66,11 +66,11 @@ public:
 
     int m_winlen;
     int m_dftlen; // The dftlen set through the settings
-    unsigned int m_nl;
-    unsigned int m_nr;
+    int m_nbsteps;
+//    unsigned int m_nl;
+//    unsigned int m_nr;
     std::vector<FFTTYPE> m_win;
-    std::vector<std::complex<FFTTYPE> > m_windft; // Window spectrum
-    std::vector<FFTTYPE> m_filterresponse;
+    QImage m_imgSTFT;
 
     QGraphicsLineItem* m_giCursorHoriz;
     QGraphicsLineItem* m_giCursorVert;
@@ -122,7 +122,6 @@ public slots:
     void settingsSave();
     void soundsChanged();
 
-    void setWindowRange(double tstart, double tend, bool winforceupdate);
     void updateSceneRect(); // To call when fs has changed and limits in dB
     void updateDFTSettings();
     void settingsModified();
