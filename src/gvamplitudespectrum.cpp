@@ -1118,7 +1118,6 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
         double s2p = -fullpixrect.height()/viewrect.height(); // Scene to pixel
         double p2s = viewrect.width()/fullpixrect.width(); // Pixel to scene
         double yzero = mapFromScene(QPointF(0,0)).y();
-//        cout << "yzero=" << yzero << endl;
 
         std::complex<WAVTYPE>* yp = ldft.data();
 
@@ -1132,7 +1131,7 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
                 std::complex<WAVTYPE>* ypp = yp+ns;
                 WAVTYPE y;
                 for(int n=ns; n<=ne; n++) {
-                    y = lascale+(*ypp).real();
+                    y = lascale+ypp->real();
                     ymin = std::min(ymin, y);
                     ymax = std::max(ymax, y);
                     ypp++;
@@ -1141,8 +1140,8 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
                 ymax = sigproc::log2db*(ymax);
                 ymin *= s2p;
                 ymax *= s2p;
-                if(ymin>fullpixrect.height()+1) ymin=fullpixrect.height()+1;
-                if(ymax>fullpixrect.height()+1) ymax=fullpixrect.height()+1;
+                if(ymin>fullpixrect.height()+1-yzero) ymin=fullpixrect.height()+1-yzero;
+                if(ymax>fullpixrect.height()+1-yzero) ymax=fullpixrect.height()+1-yzero;
                 painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
             }
         }
