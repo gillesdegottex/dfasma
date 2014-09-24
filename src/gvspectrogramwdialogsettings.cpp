@@ -66,7 +66,7 @@ void GVSpectrogramWDialogSettings::CBSpectrumWindowTypeCurrentIndexChanged(QStri
         ui->lblWindowNormPower->show();
         ui->spWindowNormPower->show();
     }
-    if(txt=="Gaussian") {
+    else if(txt=="Gaussian") {
         ui->lblWindowNormSigma->show();
         ui->lblWindowNormSigma->setText("standard-deviation=");
         ui->lblWindowNormSigma->setToolTip("The standard-deviation relative to the half window size");
