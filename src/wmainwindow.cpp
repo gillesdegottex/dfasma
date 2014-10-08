@@ -223,7 +223,7 @@ void WMainWindow::execAbout(){
     QString curdate = QString(__DATE__)+" at "+__TIME__;
     QString txt = "\
     <h1>DFasma</h1>\
-    Version master\
+    Version $Revision:$\
     (compiled on "+curdate+")";
 
     txt += "<h4>Purpose</h4>";
