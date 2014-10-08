@@ -24,6 +24,7 @@
 
 # For the Discrete Fast Fourier Transform
 # Chose among: fft_fftw3, fft_fftreal
+# (fft_fftreal is builtin)
 CONFIG += fft_fftw3
 # For FFTW3: Allow to limit the time spent in the resize of the FFT
 #(available only from FFTW3's version 3.1)
@@ -33,7 +34,7 @@ CONFIG += fft_fftw3
 # Chose among: audiofilereading_libsndfile, audiofilereading_libsox,
 #              audiofilereading_libav,
 #              audiofilereading_builtin, audiofilereading_qt
-CONFIG += audiofilereading_libsox
+CONFIG += audiofilereading_libsndfile
 
 # Additional file format support
 # SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
