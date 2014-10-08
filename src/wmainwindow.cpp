@@ -18,6 +18,8 @@ file provided in the source code of DFasma. Another copy can be found at
 <http://www.gnu.org/licenses/>.
 */
 
+#include "../versions.h"
+
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 
@@ -223,8 +225,7 @@ void WMainWindow::execAbout(){
     QString curdate = QString(__DATE__)+" at "+__TIME__;
     QString txt = "\
     <h1>DFasma</h1>\
-    Version $Revision2$\
-    (compiled on "+curdate+")";
+    Version "+QString(DFASMA_VERSION)+"<br/>(compiled on "+curdate+")";
 
     txt += "<h4>Purpose</h4>";
     txt += "<p><i>DFasma</i> is an open-source software whose main purpose is to compare waveforms in time and spectral domains. Even though there are a few scaling functionalities, DFasma is basically <u>not</u> a sound editor.</p>";
