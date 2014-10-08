@@ -18,7 +18,7 @@ file provided in the source code of DFasma. Another copy can be found at
 <http://www.gnu.org/licenses/>.
 */
 
-#include "../versions.h"
+#include "versions.h"
 
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
@@ -97,9 +97,9 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     QString fftinfostr = "";
     fftinfostr += "<br/><i>Fast Fourier Transform (FFT):</i> ";
     #ifdef FFT_FFTW3
-        fftinfostr += "<a href=\"http://www.fftw.org\">FFTW</a> version 3";
+        fftinfostr += "<a href=\"http://www.fftw.org\">FFTW</a> version "+QString(FFTW_VERSION);
     #elif FFT_FFTREAL
-        fftinfostr += "<a href=\"http://ldesoras.free.fr/prod.html#src_audio\">FFTReal</a> version 2.11";
+        fftinfostr += "<a href=\"http://ldesoras.free.fr/prod.html#src_audio\">FFTReal</a> version "+QString(FFTREAL_VERSION);
     #endif
     fftinfostr += " ("+QString::number(sizeof(FFTTYPE)*8)+"bits; smallest: "+QString::number(20*log10(std::numeric_limits<FFTTYPE>::min()))+"dB)";
     fftinfostr += "</p>";

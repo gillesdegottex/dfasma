@@ -18,13 +18,17 @@
 # file provided in the source code of DFasma. Another copy can be found at
 # <http://www.gnu.org/licenses/>.
 
+
+# Before Compilation, you an run versions.sh at the source directory root to
+# update the version number appropriately.
+
+
 # Compilation options ----------------------------------------------------------
 # (except for fft_fftreal and audiofilereading_builtin, all the other
 #  options request linking with external libraries)
 
 # For the Discrete Fast Fourier Transform
-# Chose among: fft_fftw3, fft_fftreal
-# (fft_fftreal is builtin)
+# Chose among: fft_fftw3, fft_builtin_fftreal
 CONFIG += fft_fftw3
 # For FFTW3: Allow to limit the time spent in the resize of the FFT
 #(available only from FFTW3's version 3.1)
@@ -34,14 +38,12 @@ CONFIG += fft_fftw3
 # Chose among: audiofilereading_libsndfile, audiofilereading_libsox,
 #              audiofilereading_libav,
 #              audiofilereading_builtin, audiofilereading_qt
-CONFIG += audiofilereading_libsndfile
+CONFIG += audiofilereading_libsox
 
 # Additional file format support
 # SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
 #CONFIG += sdifreading
 
-# OS specific options
-QMAKE_MAC_SDK = macosx10.6
 
 # (modify the following at your own risks !) -----------------------------------
 
@@ -98,7 +100,7 @@ CONFIG(fft_fftw3){
     unix:LIBS += -lfftw3
     win32:LIBS += "$$_PRO_FILE_PWD_/../fftw-3.3.4-dll32/libfftw3-3.dll"
 }
-CONFIG(fft_fftreal){
+CONFIG(fft_builtin_fftreal){
     QMAKE_CXXFLAGS += -DFFT_FFTREAL
     HEADERS +=  external/FFTReal/FFTReal.h \
                 external/FFTReal/FFTReal.hpp \
@@ -155,9 +157,9 @@ HEADERS   += versions.h \
              src/wdialogsettings.h \
              src/gvspectrogram.h \
              src/gvspectrogramwdialogsettings.h \
+             src/fftresizethread.h \
              external/audioengine/audioengine.h \
-             external/FFTwrapper.h \
-    src/fftresizethread.h
+             external/FFTwrapper.h
 
 FORMS     += src/wmainwindow.ui \
              src/wdialogsettings.ui \
