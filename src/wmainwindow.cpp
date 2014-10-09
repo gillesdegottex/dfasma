@@ -18,8 +18,6 @@ file provided in the source code of DFasma. Another copy can be found at
 <http://www.gnu.org/licenses/>.
 */
 
-#include "versions.h"
-
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 

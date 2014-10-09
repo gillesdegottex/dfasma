@@ -18,11 +18,6 @@
 # file provided in the source code of DFasma. Another copy can be found at
 # <http://www.gnu.org/licenses/>.
 
-
-# Before Compilation, you an run versions.sh at the source directory root to
-# update the version number appropriately in the about box.
-
-
 # Compilation options ----------------------------------------------------------
 # (except for fft_fftreal and audiofilereading_builtin, all the other
 #  options request linking with external libraries)
@@ -48,6 +43,7 @@ CONFIG += audiofilereading_libsndfile
 #QMAKE_MAC_SDK = macosx10.6
 
 
+# ------------------------------------------------------------------------------
 # (modify the following at your own risks !) -----------------------------------
 
 # Generate the version number from git
