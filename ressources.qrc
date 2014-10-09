@@ -21,5 +21,6 @@
         <file>icons/amplitudespectrum.svg</file>
         <file>icons/phasespectrum.svg</file>
         <file>icons/spectrogram.svg</file>
+        <file>README.txt</file>
     </qresource>
 </RCC>

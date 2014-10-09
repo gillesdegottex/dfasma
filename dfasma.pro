@@ -44,16 +44,17 @@ CONFIG += audiofilereading_libsndfile
 # SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
 #CONFIG += sdifreading
 
-# OS specific options
-QMAKE_MAC_SDK = macosx10.6
+## OS specific options
+#QMAKE_MAC_SDK = macosx10.6
 
 
 # (modify the following at your own risks !) -----------------------------------
 
 # Generate the version number
-DFASMAVERSION = $$system(git describe --tags --always)
+#DFASMAVERSION = $$system(git describe --tags --always)
 #DFASMAVERSION = $$system(./version.sh)
-DEFINES += FASMAVERSION=$${DFASMAVERSION}
+#DEFINES += FASMAVERSION=$${DFASMAVERSION}
+DEFINES += DFASMAVERSIONGIT=$$system(git describe --tags --always)
 
 
 # SDIF file library ------------------------------------------------------------

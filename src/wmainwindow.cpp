@@ -225,10 +225,24 @@ void WMainWindow::settingsSave() {
 }
 
 void WMainWindow::execAbout(){
+
+    QFile readmefile(":/README.txt");
+    readmefile.open(QFile::ReadOnly | QFile::Text);
+    QTextStream readmefilestream(&readmefile);
+    readmefilestream.readLine();
+    readmefilestream.readLine();
+    QString	dfasmaversion = readmefilestream.readLine();
+
+//    #ifdef DFASMAVERSIONGIT
+//    QString dfasmaversion = QString("Version ")+STR(DFASMAVERSIONGIT);
+//    #else
+//        QString dfasmaversion = "0.5.0";
+//    #endif
+
     QString curdate = QString(__DATE__)+" at "+__TIME__;
     QString txt = QString("\
     <h1>DFasma</h1>\
-    Version ")+STR(FASMAVERSION)+"<br/>(compiled on "+curdate+")";
+    ")+dfasmaversion+"<br/>(compiled on "+curdate+")";
 
     txt += "<h4>Purpose</h4>";
     txt += "<p><i>DFasma</i> is an open-source software whose main purpose is to compare waveforms in time and spectral domains. Even though there are a few scaling functionalities, DFasma is basically <u>not</u> a sound editor.</p>";
