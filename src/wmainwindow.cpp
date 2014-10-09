@@ -65,6 +65,9 @@ using namespace std;
 #include <easdif/easdif.h>
 #endif
 
+#define QUOTE(name) #name
+#define STR(macro) QUOTE(macro)
+
 WMainWindow* WMainWindow::sm_mainwindow = NULL;
 
 WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
@@ -223,9 +226,9 @@ void WMainWindow::settingsSave() {
 
 void WMainWindow::execAbout(){
     QString curdate = QString(__DATE__)+" at "+__TIME__;
-    QString txt = "\
+    QString txt = QString("\
     <h1>DFasma</h1>\
-    Version "+QString(DFASMA_VERSION)+"<br/>(compiled on "+curdate+")";
+    Version ")+STR(FASMAVERSION)+"<br/>(compiled on "+curdate+")";
 
     txt += "<h4>Purpose</h4>";
     txt += "<p><i>DFasma</i> is an open-source software whose main purpose is to compare waveforms in time and spectral domains. Even though there are a few scaling functionalities, DFasma is basically <u>not</u> a sound editor.</p>";

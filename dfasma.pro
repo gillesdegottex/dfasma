@@ -20,7 +20,7 @@
 
 
 # Before Compilation, you an run versions.sh at the source directory root to
-# update the version number appropriately.
+# update the version number appropriately in the about box.
 
 
 # Compilation options ----------------------------------------------------------
@@ -32,20 +32,29 @@
 CONFIG += fft_fftw3
 # For FFTW3: Allow to limit the time spent in the resize of the FFT
 #(available only from FFTW3's version 3.1)
-#DEFINES += FFTW3RESIZINGMAXTIMESPENT
+DEFINES += FFTW3RESIZINGMAXTIMESPENT
 
 # For the audio file support
 # Chose among: audiofilereading_libsndfile, audiofilereading_libsox,
 #              audiofilereading_libav,
 #              audiofilereading_builtin, audiofilereading_qt
-CONFIG += audiofilereading_libsox
+CONFIG += audiofilereading_libsndfile
 
 # Additional file format support
 # SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
 #CONFIG += sdifreading
 
+# OS specific options
+QMAKE_MAC_SDK = macosx10.6
+
 
 # (modify the following at your own risks !) -----------------------------------
+
+# Generate the version number
+DFASMAVERSION = $$system(git describe --tags --always)
+#DFASMAVERSION = $$system(./version.sh)
+DEFINES += FASMAVERSION=$${DFASMAVERSION}
+
 
 # SDIF file library ------------------------------------------------------------
 
