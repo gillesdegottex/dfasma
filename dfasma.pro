@@ -147,8 +147,7 @@ SOURCES   += src/main.cpp\
              external/FFTwrapper.cpp \
     src/fftresizethread.cpp
 
-HEADERS   += versions.h \
-             src/wmainwindow.h \
+HEADERS   += src/wmainwindow.h \
              src/sigproc.h \
              src/filetype.h \
              src/ftsound.h \
