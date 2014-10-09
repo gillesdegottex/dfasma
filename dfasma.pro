@@ -50,10 +50,8 @@ CONFIG += audiofilereading_libsndfile
 
 # (modify the following at your own risks !) -----------------------------------
 
-# Generate the version number
-#DFASMAVERSION = $$system(git describe --tags --always)
-#DFASMAVERSION = $$system(./version.sh)
-#DEFINES += FASMAVERSION=$${DFASMAVERSION}
+# Generate the version number from git
+# (if fail, fall back on the version present in the README.txt file)
 DEFINES += DFASMAVERSIONGIT=$$system(git describe --tags --always)
 
 

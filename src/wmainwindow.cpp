@@ -67,6 +67,8 @@ using namespace std;
 
 #define QUOTE(name) #name
 #define STR(macro) QUOTE(macro)
+#define FFTREAL_VERSION "2.11" // This is the current built-in version
+#define FFTW_VERSION "3" // Used interface's version
 
 WMainWindow* WMainWindow::sm_mainwindow = NULL;
 
@@ -226,18 +228,20 @@ void WMainWindow::settingsSave() {
 
 void WMainWindow::execAbout(){
 
-    QFile readmefile(":/README.txt");
-    readmefile.open(QFile::ReadOnly | QFile::Text);
-    QTextStream readmefilestream(&readmefile);
-    readmefilestream.readLine();
-    readmefilestream.readLine();
-    QString	dfasmaversion = readmefilestream.readLine();
+    QString dfasmaversiongit = STR(DFASMAVERSIONGIT);
 
-//    #ifdef DFASMAVERSIONGIT
-//    QString dfasmaversion = QString("Version ")+STR(DFASMAVERSIONGIT);
-//    #else
-//        QString dfasmaversion = "0.5.0";
-//    #endif
+    QString	dfasmaversion;
+    if(dfasmaversiongit.length()>0) {
+        dfasmaversion = QString("Version ") + dfasmaversiongit;
+    }
+    else {
+        QFile readmefile(":/README.txt");
+        readmefile.open(QFile::ReadOnly | QFile::Text);
+        QTextStream readmefilestream(&readmefile);
+        readmefilestream.readLine();
+        readmefilestream.readLine();
+        dfasmaversion = readmefilestream.readLine();
+    }
 
     QString curdate = QString(__DATE__)+" at "+__TIME__;
     QString txt = QString("\
