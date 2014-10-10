@@ -169,20 +169,20 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     ui->splitterSpectra->setStretchFactor(0, 2);
     ui->splitterSpectra->setStretchFactor(1, 1);
 
+    // Link axis' views
+    connect(m_gvSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvPhaseSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
+    connect(m_gvPhaseSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
+
+    // Set visible views
     connect(ui->actionShowAmplitudeSpectrum, SIGNAL(toggled(bool)), this, SLOT(viewsDisplayedChanged()));
     connect(ui->actionShowPhaseSpectrum, SIGNAL(toggled(bool)), this, SLOT(viewsDisplayedChanged()));
     connect(ui->actionShowAmplitudeSpectrum, SIGNAL(toggled(bool)), ui->wAmplitudeSpectrum, SLOT(setVisible(bool)));
     connect(ui->actionShowPhaseSpectrum, SIGNAL(toggled(bool)), ui->wPhaseSpectrum, SLOT(setVisible(bool)));
     connect(ui->actionShowSpectrogram, SIGNAL(toggled(bool)), ui->wSpectrogram, SLOT(setVisible(bool)));
-
     QSettings settings;
     ui->actionShowAmplitudeSpectrum->setChecked(settings.value("ShowAmplitudeSpectrum", true).toBool());
     ui->actionShowPhaseSpectrum->setChecked(settings.value("ShowPhaseSpectrum", true).toBool());
     ui->actionShowSpectrogram->setChecked(settings.value("ShowSpectrogram", false).toBool());
-
-    // Link axis' views
-    connect(m_gvSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvPhaseSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
-    connect(m_gvPhaseSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
 
     // Start in open file mode
     // and show the panels only if a file has been loaded
@@ -568,7 +568,8 @@ void WMainWindow::toggleSoundShown() {
     for(int i=0; i<list.size(); i++)
         ((FileType*)list.at(i))->setShown(((FileType*)list.at(i))->m_actionShow->isChecked());
 
-    soundsChanged();
+    if(list.size()>0)
+        soundsChanged();
 }
 void WMainWindow::colorSelected(const QColor& color) {
     FileType* currenItem = (FileType*)(ui->listSndFiles->currentItem());

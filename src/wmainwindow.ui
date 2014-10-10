@@ -508,7 +508,7 @@
      <x>0</x>
      <y>0</y>
      <width>814</width>
-     <height>25</height>
+     <height>31</height>
     </rect>
    </property>
   </widget>
@@ -527,7 +527,6 @@
    <addaction name="separator"/>
    <addaction name="actionShowAmplitudeSpectrum"/>
    <addaction name="actionShowPhaseSpectrum"/>
-   <addaction name="actionShowSpectrogram"/>
    <addaction name="separator"/>
    <addaction name="actionPlay"/>
    <addaction name="separator"/>
@@ -662,6 +661,9 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="../ressources.qrc">
      <normaloff>:/icons/amplitudespectrum.svg</normaloff>:/icons/amplitudespectrum.svg</iconset>
@@ -678,6 +680,9 @@
   </action>
   <action name="actionShowPhaseSpectrum">
    <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
     <bool>true</bool>
    </property>
    <property name="icon">
