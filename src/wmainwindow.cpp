@@ -735,11 +735,17 @@ void WMainWindow::play()
                 }
 
                 try {
+                    QString playinfo = "";
+                    if(fstart!=0.0 || fstop!=getFs())
+                        playinfo =  "Filtering and playing ... ";
+                    else
+                        playinfo =  "Playing ... ";
+                    if(!currentftsound->m_actionShow->isChecked())
+                        playinfo += "WARNING: Playing a hidden waveform!";
+                    statusBar()->showMessage(playinfo);
+
                     m_gvWaveform->m_initialPlayPosition = tstart;
                     m_audioengine->startPlayback(currentftsound, tstart, tstop, fstart, fstop);
-
-                    QString txt = QString("Play ")+currentftsound->fileFullPath+QString(": [%1s, %2s]x[%3Hz, %4Hz]").arg(m_gvWaveform->m_selection.left()).arg(m_gvWaveform->m_selection.right()).arg(fstart).arg(fstop);
-                    statusBar()->showMessage(txt);
 
                     if(fstart!=0.0 || fstop!=getFs()) {
                         if(m_gvWaveform->m_giSelection->rect().width()>0)
