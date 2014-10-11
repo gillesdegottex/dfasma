@@ -117,12 +117,14 @@ QString FTSound::info() const {
 
     str += "Loaded at "+m_lastreadtime.toString("HH:mm:ss ddMMM")+"<br/>";
 
+    str += "Duration: "+QString::number(getDuration())+"s ("+QString::number(wav.size())+")<br/>";
+
     QString codecname = m_fileaudioformat.codec();
 //    if(codecname.isEmpty()) codecname = "unknown type";
 //    str += "Codec: "+codecname+"<br/>";
 //    if(m_fileaudioformat.channelCount()!=-1)
 //        str += "Channels: "+QString::number(m_fileaudioformat.channelCount())+" channel<br/>";
-    str += "Sampling frequency: "+QString::number(m_fileaudioformat.sampleRate())+"Hz<br/>";
+    str += "Sampling: "+QString::number(m_fileaudioformat.sampleRate())+"Hz<br/>";
     if(m_fileaudioformat.sampleSize()!=-1) {
         str += "Sample type: "+QString::number(m_fileaudioformat.sampleSize())+"b ";
         QAudioFormat::SampleType sampletype = m_fileaudioformat.sampleType();
@@ -135,7 +137,7 @@ QString FTSound::info() const {
         else if(sampletype==QAudioFormat::Float)
             str += "float";
         str += "<br/>";
-        str += "SQNR="+QString::number(20*std::log10(std::pow(2,m_fileaudioformat.sampleSize())))+"dB<br/>";
+//        str += "SQNR="+QString::number(20*std::log10(std::pow(2,m_fileaudioformat.sampleSize())))+"dB<br/>";
         if(sampletype!=QAudioFormat::Unknown) {
             double smallest=1.0;
             if(sampletype==QAudioFormat::SignedInt)
