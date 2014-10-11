@@ -73,7 +73,6 @@ protected:
 private slots:
     void openFile();
     void closeSelectedFile();
-    void fileInfoUpdate();
     void play();
     void enablePlay();
     void localEnergyChanged(double);
@@ -81,7 +80,6 @@ private slots:
     void audioStateChanged(QAudio::State state);
     void audioOutputFormatChanged(const QAudioFormat& format);
     void showFileContextMenu(const QPoint&);
-    void soundsChanged();
     void toggleSoundShown();
     void resetAmpScale();
     void resetDelay();
@@ -92,6 +90,8 @@ private slots:
     void viewsDisplayedChanged();
 
 public slots:
+    void fileInfoUpdate();
+    void soundsChanged();
     void selectAudioOutputDevice(int di);
     void selectAudioOutputDevice(const QString& devicename);
     void settingsSave();

@@ -621,6 +621,7 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
 
                 currentftsound->setTexts();
 
+                WMainWindow::getMW()->fileInfoUpdate();
                 soundsChanged();
                 WMainWindow::getMW()->m_gvSpectrum->soundsChanged();
             }
@@ -642,6 +643,7 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
 
                 currentftsound->setTexts();
 
+                WMainWindow::getMW()->fileInfoUpdate();
                 soundsChanged();
                 WMainWindow::getMW()->m_gvSpectrum->soundsChanged();
             }

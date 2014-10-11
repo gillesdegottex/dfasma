@@ -107,6 +107,8 @@ public:
 
 public slots:
     void reload();
+    void resetAmpScale();
+    void resetDelay();
 };
 
 #endif // FTSOUND_H

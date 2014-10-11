@@ -119,6 +119,11 @@ QString FTSound::info() const {
 
     str += "Duration: "+QString::number(getDuration())+"s ("+QString::number(wav.size())+")<br/>";
 
+    if(m_ampscale!=1.0)
+        str += "Scaled: "+QString::number(20*std::log10(m_ampscale), 'f', 4)+"dB ("+QString::number(m_ampscale, 'f', 4)+")<br/>";
+    if(m_delay!=0.0)
+        str += "Delayed: "+QString::number(double(m_delay)/fs, 'f', 4)+"s ("+QString::number(m_delay)+")<br/>";
+
     QString codecname = m_fileaudioformat.codec();
 //    if(codecname.isEmpty()) codecname = "unknown type";
 //    str += "Codec: "+codecname+"<br/>";
@@ -181,11 +186,28 @@ void FTSound::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
     m_actionResetAmpScale->setText(QString("Reset amplitude scaling (%1dB) to 0dB").arg(20*log10(m_ampscale), 0, 'g', 3));
     m_actionResetAmpScale->setDisabled(m_ampscale==1.0);
     contextmenu.addAction(m_actionResetAmpScale);
-    connect(m_actionResetAmpScale, SIGNAL(triggered()), mainwindow, SLOT(resetAmpScale()));
+    connect(m_actionResetAmpScale, SIGNAL(triggered()), this, SLOT(resetAmpScale()));
     m_actionResetDelay->setText(QString("Reset delay (%1s) to 0s").arg(m_delay/mainwindow->getFs(), 0, 'g', 3));
     m_actionResetDelay->setDisabled(m_delay==0);
     contextmenu.addAction(m_actionResetDelay);
-    connect(m_actionResetDelay, SIGNAL(triggered()), mainwindow, SLOT(resetDelay()));
+    connect(m_actionResetDelay, SIGNAL(triggered()), this, SLOT(resetDelay()));
+}
+
+void FTSound::resetAmpScale(){
+    m_ampscale = 1.0;
+
+    setTexts();
+
+    WMainWindow::getMW()->soundsChanged();
+    WMainWindow::getMW()->fileInfoUpdate();
+}
+void FTSound::resetDelay(){
+    m_delay = 0.0;
+
+    setTexts();
+
+    WMainWindow::getMW()->soundsChanged();
+    WMainWindow::getMW()->fileInfoUpdate();
 }
 
 double FTSound::getLastSampleTime() const {
