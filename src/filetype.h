@@ -25,6 +25,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QColor>
 #include <QAction>
 #include <QListWidgetItem>
+#include <QDateTime>
 
 class WMainWindow;
 
@@ -32,6 +33,8 @@ class FileType : public QListWidgetItem
 {
 protected:
     virtual void load(const QString& _fileName) =0;
+
+    QDateTime m_lastreadtime;
 
 public:
     enum FILETYPE {FTUNSET, FTSOUND, FTFZERO, FTLABELS};

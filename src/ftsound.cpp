@@ -85,6 +85,8 @@ void FTSound::load_finalize() {
         FTSound::setAvoidClicksWindowDuration(WMainWindow::getMW()->m_dlgSettings->ui->sbAvoidClicksWindowDuration->value());
 
     std::cout << "INFO: " << wav.size() << " samples loaded (" << wav.size()/fs << "s max amplitude=" << m_wavmaxamp << ")" << endl;
+
+    m_lastreadtime = QDateTime::currentDateTime();
 }
 
 void FTSound::reload() {
@@ -112,6 +114,9 @@ void FTSound::reload() {
 
 QString FTSound::info() const {
     QString str = "";
+
+    str += "Loaded at "+m_lastreadtime.toString("HH:mm:ss ddMMM")+"<br/>";
+
     QString codecname = m_fileaudioformat.codec();
 //    if(codecname.isEmpty()) codecname = "unknown type";
 //    str += "Codec: "+codecname+"<br/>";

@@ -73,6 +73,7 @@ protected:
 private slots:
     void openFile();
     void closeSelectedFile();
+    void fileInfoUpdate();
     void play();
     void enablePlay();
     void localEnergyChanged(double);

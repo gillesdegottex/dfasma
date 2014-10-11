@@ -130,6 +130,8 @@ void FTLabels::load(const QString& _fileName) {
             ends.push_back(starts.back() + 0.01); // fix the duration of the last segment to 10ms
     }
 #endif
+
+    m_lastreadtime = QDateTime::currentDateTime();
 }
 
 void FTLabels::reload() {
@@ -145,7 +147,9 @@ void FTLabels::reload() {
 }
 
 QString FTLabels::info() const {
-    return "";
+    QString str = "";
+    str += "Loaded at "+m_lastreadtime.toString("HH:mm:ss ddMMM")+"<br/>";
+    return str;
 }
 
 double FTLabels::getLastSampleTime() const {

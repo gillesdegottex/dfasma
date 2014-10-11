@@ -549,10 +549,16 @@ void WMainWindow::fileSelectionChanged() {
     for(int i=0; i<list.size(); i++) {
         connect(ui->actionMultiShow, SIGNAL(triggered()), ((FileType*)list.at(i))->m_actionShow, SLOT(toggle()));
         connect(ui->actionMultiReload, SIGNAL(triggered()), ((FileType*)list.at(i))->m_actionReload, SLOT(trigger()));
+        connect(ui->actionMultiReload, SIGNAL(triggered()), this, SLOT(fileInfoUpdate()));
     }
 
     connect(ui->actionMultiShow, SIGNAL(triggered()), this, SLOT(toggleSoundShown()));
     connect(ui->actionMultiReload, SIGNAL(triggered()), this, SLOT(soundsChanged()));
+
+    fileInfoUpdate();
+}
+void WMainWindow::fileInfoUpdate() {
+    QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
 
     // If only one file selected
     // Display Basic information of it

@@ -117,6 +117,8 @@ void FTFZero::load(const QString& _fileName) {
             throw QString("SDIF: ")+e;
         }
     #endif
+
+    m_lastreadtime = QDateTime::currentDateTime();
 }
 
 void FTFZero::reload() {
@@ -131,7 +133,9 @@ void FTFZero::reload() {
 }
 
 QString FTFZero::info() const {
-    return "";
+    QString str = "";
+    str += "Loaded at "+m_lastreadtime.toString("HH:mm:ss ddMMM")+"<br/>";
+    return str;
 }
 
 double FTFZero::getLastSampleTime() const {
