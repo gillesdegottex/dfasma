@@ -736,10 +736,14 @@ void WMainWindow::play()
 
                 try {
                     QString playinfo = "";
-                    if(fstart!=0.0 || fstop!=getFs())
+                    if(fstart!=0.0 || fstop!=getFs()){
                         playinfo =  "Filtering and playing ... ";
-                    else
+                        currentftsound->setBackground(QBrush(QColor(255, 192, 192)));
+                    }
+                    else {
                         playinfo =  "Playing ... ";
+                        currentftsound->setBackground(QBrush(QColor(255, 255, 255)));
+                    }
                     if(!currentftsound->m_actionShow->isChecked())
                         playinfo += "WARNING: Playing a hidden waveform!";
                     statusBar()->showMessage(playinfo);

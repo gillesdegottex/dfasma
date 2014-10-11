@@ -1029,8 +1029,6 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
         painter->setPen(outlinePen);
         painter->setOpacity(1.0);
 
-//        draw_spectrum(painter, m_filterresponse, fs, 1.0, rect);
-
         int dftlen = (m_filterresponse.size()-1)*2; // The dftlen of the filter response is a fixed one ! It is not the same as the other spectra
         int kmin = std::max(0, int(dftlen*rect.left()/fs));
         int kmax = std::min(dftlen/2, int(1+dftlen*rect.right()/fs));
