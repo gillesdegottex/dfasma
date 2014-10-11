@@ -999,14 +999,22 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
             double s2p = -a*fullpixrect.height()/viewrect.height(); // Scene to pixel
             double p2s = viewrect.width()/fullpixrect.width(); // Pixel to scene
+//            cout << int(fs*p2s) << endl;
             double yzero = fullpixrect.height()/2;
 
             WAVTYPE* yp = WMainWindow::getMW()->ftsnds[fi]->wavtoplay->data();
 
+//            cout << pixrect.left() << " " << pixrect.right() << endl;
+
             for(int i=pixrect.left(); i<=pixrect.right(); i++) {
 
-                int ns = int(fs*(viewrect.left()+i*p2s))-WMainWindow::getMW()->ftsnds[fi]->m_delay;
-                int ne = int(fs*(viewrect.left()+(i+1)*p2s))-WMainWindow::getMW()->ftsnds[fi]->m_delay;
+                int delay = WMainWindow::getMW()->ftsnds[fi]->m_delay; // TODO put it back in the formula
+
+                int b = int(fs*p2s);
+
+                int ns = int((fs*viewrect.left())/b)*b + int((fs*i*p2s)/b)*b;
+                ns -= delay;
+                int ne = ns + b;
 
                 if(ns>=0 && ne<int(WMainWindow::getMW()->ftsnds[fi]->wav.size())) {
                     WAVTYPE ymin = 1.0;
