@@ -244,31 +244,36 @@ void WMainWindow::execAbout(){
     QString curdate = QString(__DATE__)+" at "+__TIME__;
     QString txt = QString("\
     <h1>DFasma</h1>\
-    ")+dfasmaversion+"<br/>(compiled on "+curdate+")";
+    ")+dfasmaversion+" (compiled on "+curdate+")";
 
     txt += "<h4>Purpose</h4>";
-    txt += "<p><i>DFasma</i> is an open-source software whose main purpose is to compare waveforms in time and spectral domains. Even though there are a few scaling functionalities, DFasma is basically <u>not</u> a sound editor.</p>";
-    txt += "<p>Its purpose and design are inspired by the Xspect software which was developed at <a href='http://www.ircam.fr'>Ircam</a>.</p>";
-	// <a href='http://recherche.ircam.fr/equipes/analyse-synthese/DOCUMENTATIONS/xspect/xsintro1.2.html'>Xspect software</a>
+    txt += "<i>DFasma</i> is an open-source software whose main purpose is to compare waveforms in time and spectral domains. "; //  Even though there are a few scaling functionalities, DFasma is basically <u>not</u> a sound editor
+    txt += "Its design is inspired by the <i>Xspect</i> software which was developed at <a href='http://www.ircam.fr'>Ircam</a>.</p>";
+    // <a href='http://recherche.ircam.fr/equipes/analyse-synthese/DOCUMENTATIONS/xspect/xsintro1.2.html'>Xspect software</a>
 
-//    txt += "<br/>";
+    txt += "<p>To suggest a new functionality or report a bug, do not hesitate to <a href='https://github.com/gillesdegottex/dfasma/issues'>raise an issue on GitHub.</a></p>";
 
     txt += "<h4>Legal</h4>\
-            <p>Copyright &copy; 2014 Gilles Degottex <a href='mailto:gilles.degottex@gmail.com'>&lt;gilles.degottex@gmail.com&gt;</a></p>\
-    <p>It is coded in C++/<a href='http://qt-project.org'>Qt</a> under the <a href='http://www.gnu.org/licenses/gpl.html'>GPL (v3) License</a>.\
-    <br/>The source code is hosted on <a href='https://github.com/gillesdegottex/dfasma'>GitHub</a>.</p>";
+            Copyright &copy; 2014 Gilles Degottex <a href='mailto:gilles.degottex@gmail.com'>&lt;gilles.degottex@gmail.com&gt;</a><br/>\
+            <i>DFasma</i> is coded in C++/<a href='http://qt-project.org'>Qt</a> under the <a href='http://www.gnu.org/licenses/gpl.html'>GPL (v3) License</a>.\
+            The source code is hosted on <a href='https://github.com/gillesdegottex/dfasma'>GitHub</a>.";
 
+    txt += "<h4>Disclaimer</h4>\
+            All the functionalities of <i>DFasma</i> and its code are provided WITHOUT ANY WARRANTY \
+            (e.g. there is NO WARRANTY OF MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE). \
+            Also, the author does NOT TAKE ANY LEGAL RESPONSIBILITY regarding <i>DFasma</i> or its code \
+            (e.g. consequences of bugs or erroneous implementation).";
 
     txt += "<h4>Credits</h4>\
-            Most open-source softwares are infeasible without indirect contributions provided through libraries, open code, etc.\
-            Thus, thanks to the following geeks:<br/>\
-            - A. J. Fisher for the Butterworth\'s filter design<br/>\
-            - Laurent de Soras for the FFTReal<br/>\
-            - FFTW3\'s team<br/>\
-            - Erik de Castro Lopo for the libsndfile library<br/>\
-            - SOX\'s team for the audio file library<br/>\
-            - Ircam\'s team for the SDIF format library<br/>\
-            - Qt\'s team\
+            Most open-source softwares are infeasible without indirect contributions provided through libraries. \
+            Thus, thanks to the following geeks: \
+            A. J. Fisher (Butterworth\'s filter design); \
+            Laurent de Soras (FFTReal); \
+            FFTW3\'s team; \
+            Erik de Castro Lopo (libsndfile); \
+            SOX\'s team (libsox); \
+            Ircam\'s team (SDIF format); \
+            Qt\'s team.\
             ";
 
     txt += "<p>Any contribution of any sort is very welcome and will be rewarded by your name in this about box, in addition to a pint of your favorite beer during the next signal processing <a href='http://www.obsessedwithsports.com/wp-content/uploads/2013/03/revenge-of-the-nerds-sloan-conference.png'>conference</a>!</p>";
@@ -738,7 +743,6 @@ void WMainWindow::play()
                     QString playinfo = "";
                     if(fstart!=0.0 || fstop!=getFs()){
                         playinfo =  "Filtering and playing ... ";
-
                         for(size_t fi=0; fi<ftsnds.size(); fi++)
                             ftsnds[fi]->setBackground(QBrush(QColor(255, 255, 255)));
                         currentftsound->setBackground(QBrush(QColor(255, 192, 192)));
