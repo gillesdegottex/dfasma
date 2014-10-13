@@ -269,10 +269,15 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
 
     if(m_start<0) m_start=0;
     if(m_start>wav.size()-1) m_start=wav.size()-1;
-
     if(m_end<0) m_end=0;
     if(m_end>wav.size()-1) m_end=wav.size()-1;
 
+    int delayedstart = m_start-m_delay;
+    if(delayedstart<0) delayedstart=0;
+    if(delayedstart>wavtoplay->size()-1) delayedstart=wavtoplay->size()-1;
+    int delayedend = m_end-m_delay;
+    if(delayedend<0) delayedend=0;
+    if(delayedend>wavtoplay->size()-1) delayedend=wavtoplay->size()-1;
 
     // Fix frequency cutoffs
     if(fstart>fstop){
@@ -321,15 +326,17 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
                 cout << "LP-filtering (cutoff=" << fstop << ", size=" << wavfiltered.size() << ")" << endl;
                 // Filter the signal
                 for(size_t bi=0; bi<num.size(); bi++)
-                    sigproc::filtfilt<WAVTYPE>(wavfiltered, num[bi], den[bi], wavfiltered, m_start, m_end);
+                    sigproc::filtfilt<WAVTYPE>(wavfiltered, num[bi], den[bi], wavfiltered, delayedstart, delayedend);
 
                 WMainWindow::getMW()->m_globalWaitingBarLabel->hide();
                 WMainWindow::getMW()->m_globalWaitingBar->hide();
             }
 
             if (doHighPass) {
+                // Compute the Butterworth filter coefficients
                 mkfilter::make_butterworth_filter_biquad(butterworth_order, fstart/fs, false, num, den, &filterresponse, BUTTERRESPONSEDFTLEN);
 
+                // Update the filter response
                 for(size_t k=0; k<filterresponse.size(); k++){
                     if(filterresponse[k] < 2*std::numeric_limits<FFTTYPE>::min())
                         filterresponse[k] = std::numeric_limits<FFTTYPE>::min();
@@ -345,8 +352,9 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
 
                 cout << "HP-filtering (cutoff=" << fstart << ", size=" << wavfiltered.size() << ")" << endl;
 
+                // Filter the signal
                 for(size_t bi=0; bi<num.size(); bi++)
-                    sigproc::filtfilt<WAVTYPE>(wavfiltered, num[bi], den[bi], wavfiltered, m_start, m_end);
+                    sigproc::filtfilt<WAVTYPE>(wavfiltered, num[bi], den[bi], wavfiltered, delayedstart, delayedend);
 
                 WMainWindow::getMW()->m_globalWaitingBarLabel->hide();
                 WMainWindow::getMW()->m_globalWaitingBar->hide();
