@@ -301,8 +301,10 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
             std::vector<double> filterresponse;
 
             if (doLowPass) {
+                // Compute the Butterworth filter coefficients
                 mkfilter::make_butterworth_filter_biquad(butterworth_order, fstop/fs, true, num, den, &filterresponse, BUTTERRESPONSEDFTLEN);
 
+                // Update the filter response
                 for(size_t k=0; k<filterresponse.size(); k++){
                     if(filterresponse[k] < 2*std::numeric_limits<FFTTYPE>::min())
                         filterresponse[k] = std::numeric_limits<FFTTYPE>::min();
@@ -317,6 +319,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
                 WMainWindow::getMW()->ui->statusBar->repaint();
 
                 cout << "LP-filtering (cutoff=" << fstop << ", size=" << wavfiltered.size() << ")" << endl;
+                // Filter the signal
                 for(size_t bi=0; bi<num.size(); bi++)
                     sigproc::filtfilt<WAVTYPE>(wavfiltered, num[bi], den[bi], wavfiltered, m_start, m_end);
 
@@ -405,8 +408,13 @@ qint64 FTSound::readData(char *data, qint64 askedlen)
     qint64 writtenbytes = 0; // [bytes]
 
     const int channelBytes = m_outputaudioformat.sampleSize() / 8;
-
     unsigned char *ptr = reinterpret_cast<unsigned char *>(data);
+    int delayedstart = m_start-m_delay;
+    if(delayedstart<0) delayedstart=0;
+    if(delayedstart>wavtoplay->size()-1) delayedstart=wavtoplay->size()-1;
+    int delayedend = m_end-m_delay;
+    if(delayedend<0) delayedend=0;
+    if(delayedend>wavtoplay->size()-1) delayedend=wavtoplay->size()-1;
 
     // Polarity apparently matters in very particular cases
     // so take it into account when playing.
@@ -419,30 +427,30 @@ qint64 FTSound::readData(char *data, qint64 askedlen)
         qint16 value = 0;
 
         if(sm_playwin_use && (m_avoidclickswinpos<(sm_avoidclickswindow.size()-1)/2)) {
-            value = qint16((gain*(*wavtoplay)[m_start]*sm_avoidclickswindow[m_avoidclickswinpos++])*32767);
+            value = qint16((gain*(*wavtoplay)[delayedstart]*sm_avoidclickswindow[m_avoidclickswinpos++])*32767);
         }
         else if(sm_playwin_use && (m_pos>m_end) && m_avoidclickswinpos<sm_avoidclickswindow.size()-1) {
-            value = qint16((gain*(*wavtoplay)[m_end]*sm_avoidclickswindow[1+m_avoidclickswinpos++])*32767);
+            value = qint16((gain*(*wavtoplay)[delayedend]*sm_avoidclickswindow[1+m_avoidclickswinpos++])*32767);
         }
         else if (m_pos<=m_end) {
-            int depos = m_pos - m_delay;
-            if(depos>=0 && depos<int((*wavtoplay).size())){
+            int delayedpos = m_pos - m_delay;
+            if(delayedpos>=0 && delayedpos<int(wavtoplay->size())){
         //        WAVTYPE e = samples[m_pos]*samples[m_pos];
         //        s_play_power += e;
-                WAVTYPE e = abs(gain*(*wavtoplay)[depos]);
+                WAVTYPE e = abs(gain*(*wavtoplay)[delayedpos]);
                 s_play_power_values.push_front(e);
                 while(s_play_power_values.size()/fs>0.1){
                     s_play_power -= s_play_power_values.back();
                     s_play_power_values.pop_back();
                 }
-            }
 
         //        cout << 20*log10(sqrt(s_play_power/s_play_power_values.size())) << endl;
 
             // Assuming the output audio device has been open in 16bits ...
             // TODO Manage more output formats
-            if(depos>=0 && depos<int((*wavtoplay).size()) && m_pos<=m_end)
-                value=qint16((gain*(*wavtoplay)[depos])*32767);
+            if(m_pos<=m_end)
+                value=qint16((gain*(*wavtoplay)[delayedpos])*32767);
+            }
 
             m_pos++;
         }
