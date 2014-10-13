@@ -478,7 +478,7 @@ void WMainWindow::addFile(const QString& filepath) {
             ftsnds.push_back(ftsnd);
             ft = ftsnd;
 
-            // The first sound will determine the common fs for the audio output
+            // The first sound determines the common fs for the audio output
             if(ftsnds.size()==1)
                 initializeSoundSystem(ftsnds[0]->fs);
 
@@ -738,6 +738,9 @@ void WMainWindow::play()
                     QString playinfo = "";
                     if(fstart!=0.0 || fstop!=getFs()){
                         playinfo =  "Filtering and playing ... ";
+
+                        for(size_t fi=0; fi<ftsnds.size(); fi++)
+                            ftsnds[fi]->setBackground(QBrush(QColor(255, 255, 255)));
                         currentftsound->setBackground(QBrush(QColor(255, 192, 192)));
                     }
                     else {
@@ -804,10 +807,8 @@ void WMainWindow::audioStateChanged(QAudio::State state){
 
 void WMainWindow::localEnergyChanged(double e){
 
-    if(e==0)
-        ui->pbVolume->setValue(ui->pbVolume->minimum());
-    else
-        ui->pbVolume->setValue(20*log10(e)); // In dB
+    if(e==0) ui->pbVolume->setValue(ui->pbVolume->minimum());
+    else     ui->pbVolume->setValue(20*log10(e)); // In dB
 
     ui->pbVolume->repaint();
 }
