@@ -62,7 +62,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
 
     m_gridFontPen.setColor(QColor(128,128,128));
     m_gridFontPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-    m_gridFont.setPointSize(6);
+    m_gridFont.setPixelSize(12);
     m_gridFont.setFamily("Helvetica");
 
     m_aShowGrid = new QAction(tr("Show &grid"), this);
@@ -94,7 +94,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_giCursorVert->hide();
     m_scene->addItem(m_giCursorVert);
     QFont font;
-    font.setPointSize(8);
+    font.setPixelSize(14);
     m_giCursorPositionXTxt = new QGraphicsSimpleTextItem();
     m_giCursorPositionXTxt->setBrush(QColor(64, 64, 64));
     m_giCursorPositionXTxt->setFont(font);

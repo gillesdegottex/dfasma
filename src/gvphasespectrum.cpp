@@ -68,7 +68,7 @@ QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
     m_giCursorVert->hide();
     m_scene->addItem(m_giCursorVert);
     QFont font;
-    font.setPointSize(8);
+    font.setPixelSize(14);
     m_giCursorPositionXTxt = new QGraphicsSimpleTextItem();
     m_giCursorPositionXTxt->setBrush(QColor(64, 64, 64));
     m_giCursorPositionXTxt->setFont(font);
@@ -808,7 +808,7 @@ void QGVPhaseSpectrum::draw_grid(QPainter* painter, const QRectF& rect){
     QPen gridFontPen(QColor(128,128,128));
     gridFontPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
     QFont font;
-    font.setPointSize(6);
+    font.setPixelSize(12);
     painter->setFont(font);
 
     // Horizontal lines

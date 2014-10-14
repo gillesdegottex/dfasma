@@ -61,7 +61,7 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_gridPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
     m_gridFontPen.setColor(QColor(128,128,128));
     m_gridFontPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-    m_gridFont.setPointSize(6);
+    m_gridFont.setPixelSize(12);
     m_gridFont.setFamily("Helvetica");
     m_aShowGrid = new QAction(tr("Show &grid"), this);
     m_aShowGrid->setStatusTip(tr("Show &grid"));
@@ -80,7 +80,7 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_giCursorPositionTxt = new QGraphicsSimpleTextItem();
     m_giCursorPositionTxt->setBrush(QColor(64, 64, 64));
     QFont font;
-    font.setPointSize(8);
+    font.setPixelSize(14);
     m_giCursorPositionTxt->setFont(font);
     m_scene->addItem(m_giCursorPositionTxt);
 
