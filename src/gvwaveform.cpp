@@ -1001,23 +1001,29 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
             QRect fullpixrect = mapFromScene(viewrect).boundingRect();
 
             double s2p = -a*fullpixrect.height()/viewrect.height(); // Scene to pixel
-            double p2s = viewrect.width()/fullpixrect.width(); // Pixel to scene
-//            cout << int(fs*p2s) << endl;
+            double p2s = double(viewrect.width())/double(fullpixrect.width()); // Pixel to scene
+//            double p2n = WMainWindow::getMW()->ftsnds[fi]->wav.size()/double(fullpixrect.width());
             double yzero = fullpixrect.height()/2;
 
             WAVTYPE* yp = WMainWindow::getMW()->ftsnds[fi]->wavtoplay->data();
 
-//            cout << pixrect.left() << " " << pixrect.right() << endl;
+//            cout << "fullpixrect: " << fullpixrect.left() << " " << fullpixrect.right() << endl;
+//            cout << "fullpixrect.width()=" << fullpixrect.width() << endl;
+//            cout << "pixrect: " << pixrect.left() << " " << pixrect.right() << endl;
+//            cout << "viewrect: " << viewrect.left() << " " << viewrect.right() << endl;
+//            cout << "p2s=" << p2s << endl;
+//            cout << "p2n=" << p2n << endl;
 
+            double p2n = fs*p2s;
+            int windelay = viewrect.left()/p2s;
+
+            int delay = WMainWindow::getMW()->ftsnds[fi]->m_delay; // TODO put it back in the formula
+
+            int ns = int((pixrect.left()+windelay)*p2n)-delay;
+//            for(int i=fullpixrect.left(); i<=fullpixrect.right(); i++) {
             for(int i=pixrect.left(); i<=pixrect.right(); i++) {
 
-                int delay = WMainWindow::getMW()->ftsnds[fi]->m_delay; // TODO put it back in the formula
-
-                int b = int(fs*p2s);
-
-                int ns = int((fs*viewrect.left())/b)*b + int((fs*i*p2s)/b)*b;
-                ns -= delay;
-                int ne = ns + b;
+                int ne = int((i+1+windelay)*p2n)-delay;
 
                 if(ns>=0 && ne<int(WMainWindow::getMW()->ftsnds[fi]->wav.size())) {
                     WAVTYPE ymin = 1.0;
@@ -1034,6 +1040,8 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
                     ymax *= s2p;
                     painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
                 }
+
+                ns = ne;
             }
         }
 
