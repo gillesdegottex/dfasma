@@ -1021,9 +1021,9 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
             int ns = int((pixrect.left()+windelay)*p2n)-delay;
 //            for(int i=fullpixrect.left(); i<=fullpixrect.right(); i++) {
-            for(int i=pixrect.left(); i<=pixrect.right(); i++) {
+            for(int i=pixrect.left()-1; i<=pixrect.right()+1; i++) {
 
-                int ne = int((i+1+windelay)*p2n)-delay;
+                int ne = int((i+1+windelay)*p2n+1)-delay;
 
                 if(ns>=0 && ne<int(WMainWindow::getMW()->ftsnds[fi]->wav.size())) {
                     WAVTYPE ymin = 1.0;
