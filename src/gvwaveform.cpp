@@ -416,9 +416,14 @@ void QGVWaveform::resizeEvent(QResizeEvent* event){
 
 void QGVWaveform::scrollContentsBy(int dx, int dy){
 
+    std::cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVWaveform::scrollContentsBy [" << dx << "," << dy << "]" << endl;
+
+    scrollContentsBy_dx = dx;
+
     // Ensure the y ticks labels will be redrawn
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-    m_scene->invalidate(QRectF(viewrect.left(), -1.05, 5*14/transform().m11(), 2.10));
+//    m_scene->invalidate(QRectF(viewrect.left(), -1.05, 5*14/transform().m11(), 2.10));
+    m_scene->invalidate();
 
     cursorUpdate(-1);
 
@@ -559,6 +564,7 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
         // When scrolling the waveform
         cursorUpdate(-1);
         QGraphicsView::mouseMoveEvent(event);
+        m_scene->invalidate();
     }
     else if(m_currentAction==CAZooming) {
         double dx = -(event->pos()-m_pressed_mouseinviewport).x()/100.0;
@@ -916,6 +922,8 @@ void QGVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
 
 void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
+//    std::cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVWaveform::draw_waveform [" << rect.width() << "]" << endl;
+
     double fs = WMainWindow::getMW()->getFs();
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
@@ -1010,21 +1018,28 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
             WAVTYPE* yp = WMainWindow::getMW()->ftsnds[fi]->wavtoplay->data();
 
+            pixrect = fullpixrect;
+
 //            cout << "fullpixrect: " << fullpixrect.left() << " " << fullpixrect.right() << endl;
 //            cout << "fullpixrect.width()=" << fullpixrect.width() << endl;
-//            cout << "pixrect: " << pixrect.left() << " " << pixrect.right() << endl;
+            cout << "pixrect: " << pixrect.left() << " " << pixrect.right() << endl;
 //            cout << "viewrect: " << viewrect.left() << " " << viewrect.right() << endl;
+//            cout << "viewport: " << viewport()->rect().left() << " " << viewport()->rect().right() << endl;
 //            cout << "p2s=" << p2s << endl;
 //            cout << "p2n=" << p2n << endl;
+//            cout << "scrollContentsBy_dx=" << scrollContentsBy_dx << endl;
+//            cout << "int(viewrect.left()/p2s)=" << int(viewrect.left()/p2s) << endl;
 
             double p2n = fs*p2s;
+//            int windelay = -scrollContentsBy_dx; //viewrect.left()/p2s; // TODO This might not correspond to the one chosed by Qt
+//            scrollContentsBy_dx = 0;
             int windelay = viewrect.left()/p2s;
 
             int delay = WMainWindow::getMW()->ftsnds[fi]->m_delay; // TODO put it back in the formula
 
             int ns = int((pixrect.left()+windelay)*p2n)-delay;
 //            for(int i=fullpixrect.left(); i<=fullpixrect.right(); i++) {
-            for(int i=pixrect.left()-1; i<=pixrect.right()+1; i++) {
+            for(int i=pixrect.left(); i<=pixrect.right(); i++) {
 
                 int ne = int((i+1+windelay)*p2n+1)-delay;
 
