@@ -416,7 +416,7 @@ void QGVWaveform::resizeEvent(QResizeEvent* event){
 
 void QGVWaveform::scrollContentsBy(int dx, int dy){
 
-    std::cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVWaveform::scrollContentsBy [" << dx << "," << dy << "]" << endl;
+//    std::cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVWaveform::scrollContentsBy [" << dx << "," << dy << "]" << endl;
 
     scrollContentsBy_dx = dx;
 
@@ -1018,11 +1018,11 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
             WAVTYPE* yp = WMainWindow::getMW()->ftsnds[fi]->wavtoplay->data();
 
-            pixrect = fullpixrect;
+//            pixrect = fullpixrect;
 
 //            cout << "fullpixrect: " << fullpixrect.left() << " " << fullpixrect.right() << endl;
 //            cout << "fullpixrect.width()=" << fullpixrect.width() << endl;
-            cout << "pixrect: " << pixrect.left() << " " << pixrect.right() << endl;
+//            cout << "pixrect: " << pixrect.left() << " " << pixrect.right() << endl;
 //            cout << "viewrect: " << viewrect.left() << " " << viewrect.right() << endl;
 //            cout << "viewport: " << viewport()->rect().left() << " " << viewport()->rect().right() << endl;
 //            cout << "p2s=" << p2s << endl;
@@ -1033,7 +1033,9 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
             double p2n = fs*p2s;
 //            int windelay = -scrollContentsBy_dx; //viewrect.left()/p2s; // TODO This might not correspond to the one chosed by Qt
 //            scrollContentsBy_dx = 0;
-            int windelay = viewrect.left()/p2s;
+            int windelay = horizontalScrollBar()->value(); //viewrect.left()/p2s;
+//            cout << "windelay=" << windelay << endl;
+//            cout << "horizontalScrollBar()->value()=" << horizontalScrollBar()->value() << endl;
 
             int delay = WMainWindow::getMW()->ftsnds[fi]->m_delay; // TODO put it back in the formula
 
@@ -1041,7 +1043,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 //            for(int i=fullpixrect.left(); i<=fullpixrect.right(); i++) {
             for(int i=pixrect.left(); i<=pixrect.right(); i++) {
 
-                int ne = int((i+1+windelay)*p2n+1)-delay;
+                int ne = int((i+1+windelay)*p2n)-delay;
 
                 if(ns>=0 && ne<int(WMainWindow::getMW()->ftsnds[fi]->wav.size())) {
                     WAVTYPE ymin = 1.0;
