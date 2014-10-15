@@ -501,8 +501,6 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
                 m_mouseSelection.setRight(m_selection_pressedx);
                 selectionClipAndSet(m_mouseSelection);
                 m_giSelection->show();
-                // Put the play cursor
-                playCursorSet(p.x());
             }
         }
         else if(WMainWindow::getMW()->ui->actionEditMode->isChecked()){
@@ -811,7 +809,7 @@ void QGVWaveform::selectionClipAndSet(QRectF selection, bool winforceupdate){
 
     m_giSelection->show();
 
-    playCursorSet(m_selection.left());
+    playCursorSet(m_selection.left()); // Put the play cursor
 
     if(m_selection.width()>0){
         m_aZoomOnSelection->setEnabled(true);
