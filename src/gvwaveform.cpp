@@ -795,7 +795,8 @@ void QGVWaveform::selectionClipAndSet(QRectF selection, bool winforceupdate){
         else if(m_currentAction==CAModifSelectionRight)
             m_selection.setRight(m_selection.right()-1.0/fs);
         else {
-            if(m_selection.left()==0)
+//            cout << "here ? " << m_mouseSelection.left() << " " << m_mouseSelection.right() << endl;
+            if(m_mouseSelection.right()>m_mouseSelection.left())
                 m_selection.setRight(m_selection.right()-1.0/fs);
             else
                 m_selection.setLeft(m_selection.left()+1.0/fs);
