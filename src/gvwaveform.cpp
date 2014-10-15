@@ -930,7 +930,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
 //    samppixdensity=0.01;
     if(samppixdensity<4) {
-        // cout << "Draw lines between each sample in the updated rect" << endl;
+//         cout << "Draw lines between each sample in the updated rect" << endl;
 
         for(size_t fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++){
             if(!WMainWindow::getMW()->ftsnds[fi]->m_actionShow->isChecked())
@@ -1010,18 +1010,18 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
             QRect fullpixrect = mapFromScene(viewrect).boundingRect();
 
             double s2p = -a*fullpixrect.height()/viewrect.height(); // Scene to pixel
-            double p2n = fs*double(viewrect.width())/double(fullpixrect.width()); // Pixel to scene
+            double p2n = fs*double(viewrect.width())/double(fullpixrect.width()-1); // Pixel to scene
             double yzero = fullpixrect.height()/2;
 
             WAVTYPE* yp = WMainWindow::getMW()->ftsnds[fi]->wavtoplay->data();
 
-            int windelay = horizontalScrollBar()->value(); // The magic value to make everything plot at the same place whatever the scroll
-            int snddelay = WMainWindow::getMW()->ftsnds[fi]->m_delay;
+            int winpixdelay = horizontalScrollBar()->value(); // - 1.0/p2n; // The magic value to make everything plot at the same place whatever the scroll
 
-            int ns = int((pixrect.left()+windelay)*p2n)-snddelay;
+            int snddelay = WMainWindow::getMW()->ftsnds[fi]->m_delay;
+            int ns = int((pixrect.left()+winpixdelay)*p2n)-snddelay;
             for(int i=pixrect.left(); i<=pixrect.right(); i++) {
 
-                int ne = int((i+1+windelay)*p2n)-snddelay;
+                int ne = int((i+1+winpixdelay)*p2n)-snddelay;
 
                 if(ns>=0 && ne<int(WMainWindow::getMW()->ftsnds[fi]->wav.size())) {
                     WAVTYPE ymin = 1.0;
