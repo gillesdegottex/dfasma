@@ -418,12 +418,9 @@ void QGVWaveform::scrollContentsBy(int dx, int dy){
 
 //    std::cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVWaveform::scrollContentsBy [" << dx << "," << dy << "]" << endl;
 
-    scrollContentsBy_dx = dx;
-
     // Ensure the y ticks labels will be redrawn
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-//    m_scene->invalidate(QRectF(viewrect.left(), -1.05, 5*14/transform().m11(), 2.10));
-    m_scene->invalidate();
+    m_scene->invalidate(QRectF(viewrect.left(), -1.05, 5*14/transform().m11(), 2.10));
 
     cursorUpdate(-1);
 
@@ -1012,38 +1009,18 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
             QRect fullpixrect = mapFromScene(viewrect).boundingRect();
 
             double s2p = -a*fullpixrect.height()/viewrect.height(); // Scene to pixel
-            double p2s = double(viewrect.width())/double(fullpixrect.width()); // Pixel to scene
-//            double p2n = WMainWindow::getMW()->ftsnds[fi]->wav.size()/double(fullpixrect.width());
+            double p2n = fs*double(viewrect.width())/double(fullpixrect.width()); // Pixel to scene
             double yzero = fullpixrect.height()/2;
 
             WAVTYPE* yp = WMainWindow::getMW()->ftsnds[fi]->wavtoplay->data();
 
-//            pixrect = fullpixrect;
+            int windelay = horizontalScrollBar()->value(); // The magic value to make everything plot at the same place whatever the scroll
+            int snddelay = WMainWindow::getMW()->ftsnds[fi]->m_delay;
 
-//            cout << "fullpixrect: " << fullpixrect.left() << " " << fullpixrect.right() << endl;
-//            cout << "fullpixrect.width()=" << fullpixrect.width() << endl;
-//            cout << "pixrect: " << pixrect.left() << " " << pixrect.right() << endl;
-//            cout << "viewrect: " << viewrect.left() << " " << viewrect.right() << endl;
-//            cout << "viewport: " << viewport()->rect().left() << " " << viewport()->rect().right() << endl;
-//            cout << "p2s=" << p2s << endl;
-//            cout << "p2n=" << p2n << endl;
-//            cout << "scrollContentsBy_dx=" << scrollContentsBy_dx << endl;
-//            cout << "int(viewrect.left()/p2s)=" << int(viewrect.left()/p2s) << endl;
-
-            double p2n = fs*p2s;
-//            int windelay = -scrollContentsBy_dx; //viewrect.left()/p2s; // TODO This might not correspond to the one chosed by Qt
-//            scrollContentsBy_dx = 0;
-            int windelay = horizontalScrollBar()->value(); //viewrect.left()/p2s;
-//            cout << "windelay=" << windelay << endl;
-//            cout << "horizontalScrollBar()->value()=" << horizontalScrollBar()->value() << endl;
-
-            int delay = WMainWindow::getMW()->ftsnds[fi]->m_delay; // TODO put it back in the formula
-
-            int ns = int((pixrect.left()+windelay)*p2n)-delay;
-//            for(int i=fullpixrect.left(); i<=fullpixrect.right(); i++) {
+            int ns = int((pixrect.left()+windelay)*p2n)-snddelay;
             for(int i=pixrect.left(); i<=pixrect.right(); i++) {
 
-                int ne = int((i+1+windelay)*p2n)-delay;
+                int ne = int((i+1+windelay)*p2n)-snddelay;
 
                 if(ns>=0 && ne<int(WMainWindow::getMW()->ftsnds[fi]->wav.size())) {
                     WAVTYPE ymin = 1.0;

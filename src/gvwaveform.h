@@ -74,7 +74,6 @@ public:
 
     explicit QGVWaveform(WMainWindow* parent);
 
-    int scrollContentsBy_dx;
     void scrollContentsBy(int dx, int dy);
     void wheelEvent(QWheelEvent* event);
     void resizeEvent(QResizeEvent* event);
