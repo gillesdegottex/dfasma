@@ -25,6 +25,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "gvamplitudespectrum.h"
 #include "gvamplitudespectrumwdialogsettings.h"
 #include "ui_gvamplitudespectrumwdialogsettings.h"
+#include "gvphasespectrum.h"
 #include "ftsound.h"
 #include "ftlabels.h"
 
@@ -748,6 +749,8 @@ void QGVWaveform::selectionClear(){
     m_aZoomOnSelection->setEnabled(false);
     WMainWindow::getMW()->ui->lblSelectionTxt->setText("No selection");
     m_aSelectionClear->setEnabled(false);
+    WMainWindow::getMW()->m_gvSpectrum->m_scene->update();
+    WMainWindow::getMW()->m_gvPhaseSpectrum->m_scene->update();
 }
 
 void QGVWaveform::selectionClipAndSet(QRectF selection, bool winforceupdate){

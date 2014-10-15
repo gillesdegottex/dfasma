@@ -672,23 +672,6 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
     if(WMainWindow::getMW()->m_gvSpectrum->m_aShowGrid->isChecked())
         draw_grid(painter, rect);
 
-    // Draw the phase spectrum
-    for(unsigned int fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++){
-
-        if(!WMainWindow::getMW()->ftsnds[fi]->m_actionShow->isChecked())
-            continue;
-
-        if(WMainWindow::getMW()->ftsnds[fi]->m_dft.size()<1)
-            continue;
-
-        QPen outlinePen(WMainWindow::getMW()->ftsnds[fi]->color);
-        outlinePen.setWidth(0);
-        painter->setPen(outlinePen);
-        painter->setBrush(QBrush(WMainWindow::getMW()->ftsnds[fi]->color));
-
-        draw_spectrum(painter, WMainWindow::getMW()->ftsnds[fi]->m_dft, WMainWindow::getMW()->getFs(), (WMainWindow::getMW()->m_gvSpectrum->m_winlen-1)/2.0, rect);
-    }
-
     // Draw the f0 grids
     if(!WMainWindow::getMW()->ftfzeros.empty()) {
 
@@ -720,6 +703,25 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
             for(int h=2; h<int(0.5*WMainWindow::getMW()->getFs()/cf0)+1; h++)
                 painter->drawLine(QLineF(h*cf0, -M_PI, h*cf0, M_PI));
         }
+    }
+
+    if (WMainWindow::getMW()->m_gvWaveform->m_selection.width()==0) return;
+
+    // Draw the phase spectrum
+    for(unsigned int fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++){
+
+        if(!WMainWindow::getMW()->ftsnds[fi]->m_actionShow->isChecked())
+            continue;
+
+        if(WMainWindow::getMW()->ftsnds[fi]->m_dft.size()<1)
+            continue;
+
+        QPen outlinePen(WMainWindow::getMW()->ftsnds[fi]->color);
+        outlinePen.setWidth(0);
+        painter->setPen(outlinePen);
+        painter->setBrush(QBrush(WMainWindow::getMW()->ftsnds[fi]->color));
+
+        draw_spectrum(painter, WMainWindow::getMW()->ftsnds[fi]->m_dft, WMainWindow::getMW()->getFs(), (WMainWindow::getMW()->m_gvSpectrum->m_winlen-1)/2.0, rect);
     }
 
 //    cout << "QGVPhaseSpectrum::~drawBackground" << endl;

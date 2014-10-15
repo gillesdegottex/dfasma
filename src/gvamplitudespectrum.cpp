@@ -1022,6 +1022,7 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
     // Draw the spectra
     // TODO should draw spectra only if m_fft is not touching m_dft variables (it doesnt crash ??)
     if (WMainWindow::getMW()->ftsnds.size()==0) return;
+    if (WMainWindow::getMW()->m_gvWaveform->m_selection.width()==0) return;
 
     // Draw the filter response
     if(m_filterresponse.size()>0) {
