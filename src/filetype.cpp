@@ -109,6 +109,11 @@ FileType::FileType(FILETYPE _type, const QString& _fileName, QObject * parent)
 //    QIODevice::open(QIODevice::ReadOnly);
 }
 
+void FileType::checkFileExists(const QString& fullfilepath) {
+    if(!QFileInfo::exists(fileFullPath))
+        throw QString("The file: ")+fileFullPath+" doesn't seems to exist";
+}
+
 void FileType::setColor(const QColor& _color) {
     color = _color;
     QPixmap pm(32,32);

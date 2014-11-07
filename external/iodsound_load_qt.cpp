@@ -189,6 +189,8 @@ void AudioDecoder::updateProgress()
 
 void FTSound::load(const QString& _fileName){
 
+    checkFileExists(_fileName);
+
     // Load audio file
     fileFullPath = _fileName;
 

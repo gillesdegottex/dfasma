@@ -49,6 +49,8 @@ QString FTSound::getAudioFileReadingDescription(){
 }
 
 void FTSound::load(const QString& _fileName){
+    checkFileExists(_fileName);
+
     cout << 1 << endl;
     // Load audio file
     fileName = _fileName;

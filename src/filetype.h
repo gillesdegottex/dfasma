@@ -36,6 +36,9 @@ protected:
 
     QDateTime m_lastreadtime;
 
+protected:
+    void checkFileExists(const QString& fullfilepath);
+
 public:
     enum FILETYPE {FTUNSET, FTSOUND, FTFZERO, FTLABELS};
 

@@ -56,6 +56,8 @@ QString FTSound::getAudioFileReadingDescription(){
 
 void FTSound::load(const QString& _fileName){
 
+    checkFileExists(_fileName);
+
     // Load audio file
     fileFullPath = _fileName;
 
@@ -66,7 +68,9 @@ void FTSound::load(const QString& _fileName){
     size_t readcount;
 
     // Open the input file (with default parameters)
-    assert(in = sox_open_read(fileFullPath.toLocal8Bit().constData(), NULL, NULL, NULL));
+    in = sox_open_read(fileFullPath.toLocal8Bit().constData(), NULL, NULL, NULL);
+    if(in==NULL)
+        throw QString("libsox: Cannot open input file");
 
     if(in->signal.channels>1)
         throw QString("libsox: This audio file has multiple audio channel, whereas DFasma is not designed for this. Please convert this file into a mono audio file before re-opening it with DFasma.");

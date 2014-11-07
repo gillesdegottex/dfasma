@@ -42,6 +42,9 @@ FTFZero::FTFZero(const QString& _fileName, QObject *parent)
 }
 
 void FTFZero::load(const QString& _fileName) {
+
+    checkFileExists(_fileName);
+
     fileFullPath = _fileName;
 
     // TODO load text files

@@ -47,6 +47,8 @@ FTLabels::FTLabels(const QString& _fileName, QObject *parent)
 
 void FTLabels::load(const QString& _fileName) {
 
+    checkFileExists(_fileName);
+
     fileFullPath = _fileName;
 
 #ifdef SUPPORT_SDIF

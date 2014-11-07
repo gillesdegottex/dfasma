@@ -85,6 +85,8 @@ QString FTSound::getAudioFileReadingDescription(){
 
 void FTSound::load(const QString& _fileName){
 
+    checkFileExists(_fileName);
+
     // Load audio file
     fileFullPath = _fileName;
 
@@ -115,7 +117,7 @@ void FTSound::load(const QString& _fileName){
     */
     if( !(infile = sf_open(fileFullPath.toLocal8Bit().constData(), SFM_READ, &sfinfo)) ) {
         /* Open failed so print an error message. */
-        throw QString("libsndfile: Not able to open input file");
+        throw QString("libsndfile: Cannot open input file");
     }
 
     if(sfinfo.channels>1){
