@@ -29,6 +29,7 @@ using namespace std;
 #include <qendian.h>
 #include <QMenu>
 #include <QMessageBox>
+#include <QFileInfo>
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "gvamplitudespectrum.h"
@@ -95,6 +96,11 @@ void FTSound::reload() {
 //    cout << "FTSound::reload" << endl;
 
     stop();
+
+    if(!QFileInfo::exists(fileFullPath)){
+        QMessageBox::critical(NULL, "Cannot reload file", QString("The file: ")+fileFullPath+" cannot be reloaded (has it been deleted after being loaded?)");
+        return;
+    }
 
     // Reset everything ...
     wavtoplay = &wav;

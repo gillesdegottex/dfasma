@@ -29,6 +29,8 @@ using namespace Easdif;
 #endif
 
 #include <QMenu>
+#include <QFileInfo>
+#include <QMessageBox>
 #include <qmath.h>
 #include <qendian.h>
 
@@ -146,6 +148,11 @@ void FTLabels::load(const QString& _fileName) {
 
 void FTLabels::reload() {
 //    cout << "FTLabels::reload" << endl;
+
+    if(!QFileInfo::exists(fileFullPath)){
+        QMessageBox::critical(NULL, "Cannot reload file", QString("The file: ")+fileFullPath+" cannot be reloaded (has it been deleted after being loaded?)");
+        return;
+    }
 
     // Reset everything ...
     starts.clear();

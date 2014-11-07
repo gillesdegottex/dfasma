@@ -28,6 +28,8 @@ using namespace std;
 using namespace Easdif;
 #endif
 
+#include <QFileInfo>
+#include <QMessageBox>
 #include <qmath.h>
 #include <qendian.h>
 
@@ -123,6 +125,11 @@ void FTFZero::load(const QString& _fileName) {
 
 void FTFZero::reload() {
 //    cout << "FTFZero::reload" << endl;
+
+    if(!QFileInfo::exists(fileFullPath)){
+        QMessageBox::critical(NULL, "Cannot reload file", QString("The file: ")+fileFullPath+" cannot be reloaded (has it been deleted after being loaded?)");
+        return;
+    }
 
     // Reset everything ...
     ts.clear();
