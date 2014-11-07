@@ -301,16 +301,16 @@ void QGVAmplitudeSpectrum::computeDFTs(){
         m_minsy = std::numeric_limits<double>::infinity();
         m_maxsy = -std::numeric_limits<double>::infinity();
         for(unsigned int fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++){
-            int pol = 1;
+            WAVTYPE gain = WMainWindow::getMW()->ftsnds[fi]->m_ampscale;
             if(WMainWindow::getMW()->ftsnds[fi]->m_actionInvPolarity->isChecked())
-                pol = -1;
+                gain *= -1;
 
             int n = 0;
             int wn = 0;
             for(; n<m_winlen; n++){
                 wn = m_nl+n - WMainWindow::getMW()->ftsnds[fi]->m_delay;
                 if(wn>=0 && wn<int(WMainWindow::getMW()->ftsnds[fi]->wavtoplay->size()))
-                    m_fft->in[n] = pol*(*(WMainWindow::getMW()->ftsnds[fi]->wavtoplay))[wn]*m_win[n];
+                    m_fft->in[n] = gain*(*(WMainWindow::getMW()->ftsnds[fi]->wavtoplay))[wn]*m_win[n];
                 else
                     m_fft->in[n] = 0.0;
             }
@@ -319,10 +319,11 @@ void QGVAmplitudeSpectrum::computeDFTs(){
 
             m_fft->execute(); // Compute the DFT
 
+            std::vector<std::complex<WAVTYPE> >* pdft = &(WMainWindow::getMW()->ftsnds[fi]->m_dft);
             WMainWindow::getMW()->ftsnds[fi]->m_dft.resize(dftlen/2+1);
             for(n=0; n<dftlen/2+1; n++) {
-                WMainWindow::getMW()->ftsnds[fi]->m_dft[n] = std::complex<WAVTYPE>(std::log(std::abs(m_fft->out[n])),std::arg(m_fft->out[n]));
-                double y = WMainWindow::getMW()->ftsnds[fi]->m_dft[n].real();
+                (*pdft)[n] = std::complex<WAVTYPE>(std::log(std::abs(m_fft->out[n])),std::arg(m_fft->out[n]));
+                double y = (*pdft)[n].real();
                 m_minsy = std::min(m_minsy, y);
                 m_maxsy = std::max(m_maxsy, y);
             }
@@ -1071,7 +1072,7 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
         painter->setBrush(QBrush(WMainWindow::getMW()->ftsnds[fi]->color));
         painter->setOpacity(1);
 
-        draw_spectrum(painter, WMainWindow::getMW()->ftsnds[fi]->m_dft, fs, WMainWindow::getMW()->ftsnds[fi]->m_ampscale, rect);
+        draw_spectrum(painter, WMainWindow::getMW()->ftsnds[fi]->m_dft, fs, 1.0, rect);
     }
 
 //    cout << "QGVAmplitudeSpectrum::~drawBackground" << endl;
