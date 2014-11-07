@@ -36,6 +36,8 @@ class FTLabels : public QObject, public FileType
 
     void load(const QString& _fileName);
 
+    QAction* m_actionSave;
+
 public:
     FTLabels(const QString& _fileName, QObject* parent);
 
@@ -45,6 +47,7 @@ public:
 
     virtual QString info() const;
     virtual double getLastSampleTime() const;
+    virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
 
     ~FTLabels();
 

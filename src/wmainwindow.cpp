@@ -525,6 +525,15 @@ FTSound* WMainWindow::getCurrentFTSound() {
     return NULL;
 }
 
+FTLabels* WMainWindow::getCurrentFTLabels() {
+    FileType* currenItem = (FileType*)(ui->listSndFiles->currentItem());
+
+    if(currenItem && currenItem->type==FileType::FTLABELS)
+        return (FTLabels*)currenItem;
+
+    return NULL;
+}
+
 void WMainWindow::showFileContextMenu(const QPoint& pos) {
 
     QMenu contextmenu(this);

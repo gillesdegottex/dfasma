@@ -504,22 +504,37 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
             }
         }
         else if(WMainWindow::getMW()->ui->actionEditMode->isChecked()){
-            if(event->modifiers().testFlag(Qt::ShiftModifier)){
-                // cout << "Scaling the waveform" << endl;
-                m_currentAction = CAWaveformDelay;
-                m_selection_pressedx = p.x();
-                FTSound* currentftsound = WMainWindow::getMW()->getCurrentFTSound();
-                if(currentftsound)
-                    m_tmpdelay = currentftsound->m_delay/WMainWindow::getMW()->getFs();
-                setCursor(Qt::SizeHorCursor);
+
+            // Look for a nearby marker to modify
+            m_ca_pressed_index=-1;
+            FTLabels* ftl = WMainWindow::getMW()->getCurrentFTLabels();
+            for(size_t lli=0; m_ca_pressed_index==-1 && lli<ftl->labels.size(); lli++) {
+    //                cout << ftl->labels[lli].toLatin1().data() << ": " << ftl->starts[lli] << ":" << ftl->ends[lli] << endl;
+                QPoint slp = mapFromScene(QPointF(ftl->starts[lli],0));
+                if(std::abs(slp.x()-event->x())<5) {
+                    m_ca_pressed_index = lli;
+                    m_currentAction = CALabelModifPosition;
+                }
             }
-            else if(event->modifiers().testFlag(Qt::ControlModifier)){
-            }
-            else{
-                // cout << "Scaling the waveform" << endl;
-                m_currentAction = CAWaveformScale;
-                m_selection_pressedx = p.y();
-                setCursor(Qt::SizeVerCursor);
+
+            if(m_ca_pressed_index==0) {
+                if(event->modifiers().testFlag(Qt::ShiftModifier)){
+                    // cout << "Scaling the waveform" << endl;
+                    m_currentAction = CAWaveformDelay;
+                    m_selection_pressedx = p.x();
+                    FTSound* currentftsound = WMainWindow::getMW()->getCurrentFTSound();
+                    if(currentftsound)
+                        m_tmpdelay = currentftsound->m_delay/WMainWindow::getMW()->getFs();
+                    setCursor(Qt::SizeHorCursor);
+                }
+                else if(event->modifiers().testFlag(Qt::ControlModifier)){
+                }
+                else{
+                    // cout << "Scaling the waveform" << endl;
+                    m_currentAction = CAWaveformScale;
+                    m_selection_pressedx = p.y();
+                    setCursor(Qt::SizeVerCursor);
+                }
             }
         }
     }
@@ -651,6 +666,16 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
             }
         }
     }
+    else if(m_currentAction==CALabelModifPosition) {
+        FTLabels* ftl = WMainWindow::getMW()->getCurrentFTLabels();
+        if(ftl) {
+            ftl->starts[m_ca_pressed_index] = p.x();
+            if(m_ca_pressed_index-1>=0)
+                ftl->ends[m_ca_pressed_index-1] = p.x();
+            soundsChanged();
+            cursorUpdate(p.x());
+        }
+    }
     else{
         QRect selview = mapFromScene(m_selection).boundingRect();
 
@@ -671,13 +696,29 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
             }
         }
         else if(WMainWindow::getMW()->ui->actionEditMode->isChecked()){
+
+            // Check if a marker is close and show the horiz split cursor if true
+            bool foundclosemarker = false;
+            FTLabels* ftl = WMainWindow::getMW()->getCurrentFTLabels();
+            if(ftl) {
+                for(size_t lli=0; !foundclosemarker && lli<ftl->labels.size(); lli++) {
+                    // cout << ftl->labels[lli].toLatin1().data() << ": " << ftl->starts[lli] << ":" << ftl->ends[lli] << endl;
+                    QPoint slp = mapFromScene(QPointF(ftl->starts[lli],0));
+                    foundclosemarker = std::abs(slp.x()-event->x())<5;
+                }
+            }
+            if(foundclosemarker)     setCursor(Qt::SplitHCursor);
+            else                     setCursor(Qt::CrossCursor);
+
             if(event->modifiers().testFlag(Qt::ShiftModifier)){
-                setCursor(Qt::SizeHorCursor);
+                if(!foundclosemarker)
+                    setCursor(Qt::SizeHorCursor);
             }
             else if(event->modifiers().testFlag(Qt::ControlModifier)){
             }
             else{
-                setCursor(Qt::SizeVerCursor);
+                if(!foundclosemarker)
+                    setCursor(Qt::SizeVerCursor);
             }
         }
 
@@ -1066,7 +1107,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
             painter->drawLine(QLineF(end, -1.0, end, 1.0));
 
             painter->save();
-            painter->translate(QPointF(start+2.0/trans.m11(), viewrect.top()));
+            painter->translate(QPointF(start+2.0/trans.m11(), viewrect.top()+12/trans.m22()));
             painter->scale(1.0/trans.m11(), 1.0/trans.m22());
             painter->drawStaticText(QPointF(0, 0), QStaticText(WMainWindow::getMW()->ftlabels[fi]->labels[li]));
             painter->restore();

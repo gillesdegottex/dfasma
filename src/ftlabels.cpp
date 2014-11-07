@@ -28,6 +28,7 @@ using namespace std;
 using namespace Easdif;
 #endif
 
+#include <QMenu>
 #include <qmath.h>
 #include <qendian.h>
 
@@ -35,6 +36,9 @@ FTLabels::FTLabels(const QString& _fileName, QObject *parent)
     : FileType(FTLABELS, _fileName, this)
 {
     Q_UNUSED(parent)
+
+    m_actionSave = new QAction("Save", this);
+    m_actionSave->setStatusTip(tr("Save the labels times (overwrite the file !)"));
 
     load(_fileName);
 }
@@ -153,7 +157,49 @@ void FTLabels::reload() {
 }
 
 void FTLabels::save() {
-    cout << "SAVE Labels" << endl;
+
+#ifdef SUPPORT_SDIF
+    // TODO load .lab files
+
+    size_t generalHeaderw;
+    size_t asciiChunksw;
+
+    SdifFileT* filew = SdifFOpen ("ecr.sdif", eWriteFile);
+    generalHeaderw = SdifFWriteGeneralHeader(filew);
+    asciiChunksw = SdifFWriteAllASCIIChunks(filew);
+
+    for(size_t li=0; li<labels.size(); li++) {
+        // cout << labels[li].toLatin1().constData() << ": " << starts[li] << ":" << ends[li] << endl;
+
+        // Prepare the frame
+        SDIFFrame frameToWrite;
+        /*set the header of the frame*/
+        frameToWrite.SetStreamID(0); // TODO Ok ??
+        frameToWrite.SetTime(starts[li]);
+        frameToWrite.SetSignature("1MRK");
+
+        // Fill the matrix
+        SDIFMatrix tmpMatrix("1LAB");
+        tmpMatrix.Set(std::string(labels[li].toLatin1().constData()));
+        frameToWrite.AddMatrix(tmpMatrix);
+
+        frameToWrite.Write(filew);
+        frameToWrite.ClearData();
+    }
+
+    // Write a last empty frame for the last time
+    SDIFFrame frameToWrite;
+    frameToWrite.SetStreamID(0); // TODO Ok ??
+    frameToWrite.SetTime(ends.back());
+    frameToWrite.SetSignature("1MRK");
+    SDIFMatrix tmpMatrix("1LAB", 0, 0);
+    frameToWrite.AddMatrix(tmpMatrix);
+    frameToWrite.Write(filew);
+
+    SdifFClose(filew);
+
+#endif
+    m_lastreadtime = QDateTime::currentDateTime();
 }
 
 
@@ -161,6 +207,15 @@ QString FTLabels::info() const {
     QString str = "";
     str += "Loaded at "+m_lastreadtime.toString("HH:mm:ss ddMMM")+"<br/>";
     return str;
+}
+
+void FTLabels::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
+    FileType::fillContextMenu(contextmenu, mainwindow);
+
+    contextmenu.setTitle("Labels");
+
+    contextmenu.addAction(m_actionSave);
+    connect(m_actionSave, SIGNAL(triggered()), this, SLOT(save()));
 }
 
 double FTLabels::getLastSampleTime() const {
