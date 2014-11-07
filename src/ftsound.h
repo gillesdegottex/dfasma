@@ -52,6 +52,8 @@ class FTSound : public QIODevice, public FileType
 
     void setSamplingRate(double _fs); // Used by implementations of load
 
+    bool m_isfiltered;
+
 public:
 
     FTSound(const QString& _fileName, QObject* parent);
@@ -92,11 +94,13 @@ public:
     QAudioFormat format() const {return m_fileaudioformat;}
     virtual QString info() const;
     static QString getAudioFileReadingDescription();
+    void setFiltered(bool filtered);
 
     double getDuration() const {return wav.size()/fs;}
     virtual double getLastSampleTime() const;
     virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
     virtual bool isModified();
+    virtual void setStatus();
 
     double setPlay(const QAudioFormat& format, double tstart=0.0, double tstop=0.0, double fstart=0.0, double fstop=0.0);
     void stop();

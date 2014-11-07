@@ -61,7 +61,7 @@ public:
     virtual double getLastSampleTime() const =0;
     virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
 
-    void setTexts();
+    virtual void setStatus();
 };
 
 #endif // FILETYPE_H

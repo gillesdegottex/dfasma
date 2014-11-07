@@ -622,7 +622,7 @@ void WMainWindow::resetAmpScale(){
     if(currentftsound) {
         currentftsound->m_ampscale = 1.0;
 
-        currentftsound->setTexts();
+        currentftsound->setStatus();
 
         soundsChanged();
     }
@@ -632,7 +632,7 @@ void WMainWindow::resetDelay(){
     if(currentftsound) {
         currentftsound->m_delay = 0.0;
 
-        currentftsound->setTexts();
+        currentftsound->setStatus();
 
         soundsChanged();
     }
@@ -774,12 +774,12 @@ void WMainWindow::play()
                     if(fstart!=0.0 || fstop!=getFs()){
                         playinfo =  "Filtering and playing ... ";
                         for(size_t fi=0; fi<ftsnds.size(); fi++)
-                            ftsnds[fi]->setBackground(QBrush(QColor(255, 255, 255)));
-                        currentftsound->setBackground(QBrush(QColor(255, 192, 192)));
+                            ftsnds[fi]->setFiltered(false);
+                        currentftsound->setFiltered(true);
                     }
                     else {
                         playinfo =  "Playing ... ";
-                        currentftsound->setBackground(QBrush(QColor(255, 255, 255)));
+                        currentftsound->setFiltered(false);
                     }
                     if(!currentftsound->m_actionShow->isChecked())
                         playinfo += "WARNING: Playing a hidden waveform!";

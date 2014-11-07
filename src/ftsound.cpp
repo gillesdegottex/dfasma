@@ -49,6 +49,7 @@ std::deque<WAVTYPE> FTSound::s_play_power_values;
 FTSound::FTSound(const QString& _fileName, QObject *parent)
     : QIODevice(parent)
     , FileType(FTSOUND, _fileName, this)
+    , m_isfiltered(false)
     , wavtoplay(&wav)
     , m_ampscale(1.0)
     , m_delay(0)
@@ -57,6 +58,7 @@ FTSound::FTSound(const QString& _fileName, QObject *parent)
     , m_end(0)
     , m_avoidclickswinpos(0)
 {
+
     m_actionInvPolarity = new QAction("Inverse polarity", this);
     m_actionInvPolarity->setStatusTip(tr("Inverse the polarity of the sound"));
     m_actionInvPolarity->setCheckable(true);
@@ -109,7 +111,7 @@ void FTSound::reload() {
     load(fileFullPath);
     load_finalize();
 
-    setTexts();
+    setStatus();
 }
 
 QString FTSound::info() const {
@@ -193,10 +195,15 @@ void FTSound::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
     connect(m_actionResetDelay, SIGNAL(triggered()), this, SLOT(resetDelay()));
 }
 
+void FTSound::setFiltered(bool filtered){
+    m_isfiltered = filtered;
+    setStatus();
+}
+
 void FTSound::resetAmpScale(){
     m_ampscale = 1.0;
 
-    setTexts();
+    setStatus();
 
     WMainWindow::getMW()->soundsChanged();
     WMainWindow::getMW()->fileInfoUpdate();
@@ -204,7 +211,7 @@ void FTSound::resetAmpScale(){
 void FTSound::resetDelay(){
     m_delay = 0.0;
 
-    setTexts();
+    setStatus();
 
     WMainWindow::getMW()->soundsChanged();
     WMainWindow::getMW()->fileInfoUpdate();
@@ -215,6 +222,17 @@ double FTSound::getLastSampleTime() const {
 }
 bool FTSound::isModified() {
     return m_delay!=0.0 || m_ampscale!=1.0;
+}
+
+void FTSound::setStatus(){
+    FileType::setStatus();
+
+    if(m_wavmaxamp*m_ampscale>1.0)
+        setBackgroundColor(QColor(255,0,0));
+    else if(m_isfiltered)
+        setBackgroundColor(QColor(255,192,192));
+    else
+        setBackgroundColor(QColor(255,255,255));
 }
 
 void FTSound::setSamplingRate(double _fs){
@@ -454,10 +472,14 @@ qint64 FTSound::readData(char *data, qint64 askedlen)
 
         //        cout << 20*log10(sqrt(s_play_power/s_play_power_values.size())) << endl;
 
-            // Assuming the output audio device has been open in 16bits ...
-            // TODO Manage more output formats
-            if(m_pos<=m_end)
-                value=qint16((gain*(*wavtoplay)[delayedpos])*32767);
+                // Assuming the output audio device has been open in 16bits ...
+                // TODO Manage more output formats
+                WAVTYPE w = gain*(*wavtoplay)[delayedpos];
+
+                if(w>1.0)       w = 1.0;
+                else if(w<-1.0) w = -1.0;
+
+                value=qint16(w*32767);
             }
 
             m_pos++;

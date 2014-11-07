@@ -309,8 +309,15 @@ void QGVAmplitudeSpectrum::computeDFTs(){
             int wn = 0;
             for(; n<m_winlen; n++){
                 wn = m_nl+n - WMainWindow::getMW()->ftsnds[fi]->m_delay;
-                if(wn>=0 && wn<int(WMainWindow::getMW()->ftsnds[fi]->wavtoplay->size()))
-                    m_fft->in[n] = gain*(*(WMainWindow::getMW()->ftsnds[fi]->wavtoplay))[wn]*m_win[n];
+
+                if(wn>=0 && wn<int(WMainWindow::getMW()->ftsnds[fi]->wavtoplay->size())) {
+                    WAVTYPE value = gain*(*(WMainWindow::getMW()->ftsnds[fi]->wavtoplay))[wn];
+
+                    if(value>1.0)       value = 1.0;
+                    else if(value<-1.0) value = -1.0;
+
+                    m_fft->in[n] = value*m_win[n];
+                }
                 else
                     m_fft->in[n] = 0.0;
             }
@@ -637,7 +644,7 @@ void QGVAmplitudeSpectrum::mouseMoveEvent(QMouseEvent* event){
                 m_currentAction = CANothing;
             }
             else {
-                currentftsound->m_ampscale *= pow(10, -(p.y()-m_selection_pressedp.y())/20.0);
+                currentftsound->m_ampscale *= std::pow(10, -(p.y()-m_selection_pressedp.y())/20.0);
                 m_selection_pressedp = p;
 
                 if(currentftsound->m_ampscale>1e10)
@@ -645,7 +652,7 @@ void QGVAmplitudeSpectrum::mouseMoveEvent(QMouseEvent* event){
                 else if(currentftsound->m_ampscale<1e-10)
                     currentftsound->m_ampscale = 1e-10;
 
-                currentftsound->setTexts();
+                currentftsound->setStatus();
 
                 WMainWindow::getMW()->fileInfoUpdate();
                 soundsChanged();

@@ -144,10 +144,10 @@ void FileType::setShown(bool shown) {
         // TODO add diagonal gray stripes in the icon
         setForeground(QBrush(QColor(168,168,168)));
     }
-    setTexts();
+    setStatus();
 }
 
-void FileType::setTexts() {
+void FileType::setStatus() {
     QFileInfo fileInfo(fileFullPath);
 
     QString liststr = fileInfo.fileName();
@@ -156,7 +156,7 @@ void FileType::setTexts() {
     if(isModified()) {
         liststr = '*'+liststr;
         tooltipstr = "(modified)"+tooltipstr;
-        // TODO Set plain icon
+        // TODO Set plain icon in the square ?
     }
     if(!m_actionShow->isChecked()) {
         liststr = '('+liststr+')';
