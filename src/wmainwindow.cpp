@@ -210,6 +210,11 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 
 void WMainWindow::viewsDisplayedChanged() {
     ui->wSpectra->setVisible(ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked());
+
+    if(ui->actionShowPhaseSpectrum->isChecked())
+        m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    else
+        m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 }
 
 void WMainWindow::settingsSave() {
