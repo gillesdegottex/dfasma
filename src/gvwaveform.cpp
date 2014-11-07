@@ -772,6 +772,35 @@ void QGVWaveform::mouseReleaseEvent(QMouseEvent* event){
 //    std::cout << "~QGVWaveform::mouseReleaseEvent " << endl;
 }
 
+void QGVWaveform::mouseDoubleClickEvent(QMouseEvent* event){
+
+    QPointF p = mapToScene(event->pos());
+
+    if(WMainWindow::getMW()->ui->actionSelectionMode->isChecked()){
+        if(event->modifiers().testFlag(Qt::ShiftModifier)){
+        }
+        else if(event->modifiers().testFlag(Qt::ControlModifier)){
+        }
+        else{
+            // Check if a marker is close and show the horiz split cursor if true
+            bool foundclosemarker = false;
+            FTLabels* ftl = WMainWindow::getMW()->getCurrentFTLabels(true);
+            if(ftl) {
+                for(size_t lli=0; !foundclosemarker && lli<ftl->labels.size(); lli++) {
+                    if(p.x()>ftl->starts[lli] && p.x()<ftl->ends[lli]) {
+                        selectionClipAndSet(QRectF(ftl->starts[lli], -1.0, ftl->ends[lli]-ftl->starts[lli], 2.0), true);
+                        m_giSelection->show();
+                    }
+                }
+            }
+        }
+    }
+    else if(WMainWindow::getMW()->ui->actionEditMode->isChecked()){
+    }
+
+}
+
+
 void QGVWaveform::keyPressEvent(QKeyEvent* event){
 
 //    cout << "QGVWaveform::keyPressEvent " << endl;

@@ -517,23 +517,38 @@ void WMainWindow::dragEnterEvent(QDragEnterEvent *event){
     event->acceptProposedAction();
 }
 
-FTSound* WMainWindow::getCurrentFTSound() {
+FTSound* WMainWindow::getCurrentFTSound(bool defselectfirst) {
+
+    if(ftsnds.empty())
+        return NULL;
+
     FileType* currenItem = (FileType*)(ui->listSndFiles->currentItem());
 
     if(currenItem && currenItem->type==FileType::FTSOUND)
         return (FTSound*)currenItem;
 
+    if(defselectfirst)
+        return ftsnds[0];
+
     return NULL;
 }
 
-FTLabels* WMainWindow::getCurrentFTLabels() {
+FTLabels* WMainWindow::getCurrentFTLabels(bool defselectfirst) {
+
+    if(ftlabels.empty())
+        return NULL;
+
     FileType* currenItem = (FileType*)(ui->listSndFiles->currentItem());
 
     if(currenItem && currenItem->type==FileType::FTLABELS)
         return (FTLabels*)currenItem;
 
+    if(defselectfirst)
+        return ftlabels[0];
+
     return NULL;
 }
+
 
 void WMainWindow::showFileContextMenu(const QPoint& pos) {
 
