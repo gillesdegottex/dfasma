@@ -50,6 +50,7 @@ public:
 
 public slots:
     void reload();
+    void save();
 };
 
 #endif // FTLABELS_H

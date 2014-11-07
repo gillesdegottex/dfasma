@@ -57,7 +57,7 @@ void FTLabels::load(const QString& _fileName) {
         throw QString("SDIF: bad header");
     }
 
-    readentity.ChangeSelection("/1LAB.1_1"); // Select directly the character values
+    readentity.ChangeSelection("/1LAB"); // Select directly the character values
 
     SDIFFrame frame;
     try{
@@ -75,29 +75,35 @@ void FTLabels::load(const QString& _fileName) {
 
                 double t = frame.GetTime();
 
-                // cout << tmpMatrix.GetNbRows() << " " << tmpMatrix.GetNbCols() << endl;
+//                 cout << tmpMatrix.GetNbRows() << " " << tmpMatrix.GetNbCols() << endl;
 
-                if(tmpMatrix.GetNbRows()==0) {
-                    cout << "add last marker" << endl;
+                if(tmpMatrix.GetNbRows()*tmpMatrix.GetNbCols() == 0) {
+//                    cout << "add last marker" << endl;
                     // We reached an ending marker (without char) closing the previous segment
                     ends.push_back(t);
                 }
                 else { // There should be a char
                     if(tmpMatrix.GetNbCols()==0)
                         throw QString("label value is missing in the 1LAB frame at time ")+QString::number(t);
-                    char c = tmpMatrix.GetUChar(0,0);
 
-//                    cout << "'" << int(c) << "'" << endl;
+                    // Read the label (try both directions)
+                    QString str(tmpMatrix.GetUChar(0,0));
+                    for(int ci=1; ci<tmpMatrix.GetNbCols(); ci++)
+                        str += tmpMatrix.GetUChar(0,ci);
+                    for(int ri=1; ri<tmpMatrix.GetNbRows(); ri++)
+                        str += tmpMatrix.GetUChar(ri,0);
 
-                    if(int(c)==0) {
+//                    cout << str.toLatin1().constData() << endl;
+
+                    if(str.size()==0) {
                         // No char given, assume an ending marker closing the previous segment
                         ends.push_back(t);
                     }
                     else {
                         if(!starts.empty())
-                            ends.push_back(starts.back());
+                            ends.push_back(t);
                         starts.push_back(t);
-                        labels.push_back(QString(c));
+                        labels.push_back(str);
                     }
                 }
             }
@@ -145,6 +151,11 @@ void FTLabels::reload() {
     // ... and reload the data from the file
     load(fileFullPath);
 }
+
+void FTLabels::save() {
+    cout << "SAVE Labels" << endl;
+}
+
 
 QString FTLabels::info() const {
     QString str = "";
