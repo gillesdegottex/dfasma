@@ -492,6 +492,7 @@ void WMainWindow::addFile(const QString& filepath) {
         }
 
         ui->listSndFiles->addItem(ft);
+        m_gvWaveform->updateSceneRect();
         soundsChanged();
         ui->actionCloseFile->setEnabled(true);
         ui->splitterViews->show();
