@@ -790,6 +790,8 @@ void QGVPhaseSpectrum::draw_spectrum(QPainter* painter, std::vector<std::complex
                 }
                 ymin *= s2p;
                 ymax *= s2p;
+                ymin = int(ymin+0.5);
+                ymax = int(ymax+0.5);
                 painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
             }
         }

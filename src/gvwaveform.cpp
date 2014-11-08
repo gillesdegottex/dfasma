@@ -1103,6 +1103,8 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
                     }
                     ymin *= s2p;
                     ymax *= s2p;
+                    ymin = int(ymin+0.5);
+                    ymax = int(ymax+0.5);
                     painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
                 }
 

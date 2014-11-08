@@ -1148,6 +1148,8 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
                 ymax = sigproc::log2db*(ymax);
                 ymin *= s2p;
                 ymax *= s2p;
+                ymin = int(ymin+0.5);
+                ymax = int(ymax+0.5);
                 if(ymin>fullpixrect.height()+1-yzero) ymin=fullpixrect.height()+1-yzero;
                 if(ymax>fullpixrect.height()+1-yzero) ymax=fullpixrect.height()+1-yzero;
                 painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
