@@ -171,6 +171,13 @@
             </item>
            </layout>
           </item>
+          <item>
+           <widget class="QCheckBox" name="cbFilteringCompensateEnergy">
+            <property name="text">
+             <string>Compensate for the energy loss</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

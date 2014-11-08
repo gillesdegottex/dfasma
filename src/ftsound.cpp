@@ -344,6 +344,12 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
         try{
             wavfiltered = wav;
 
+            // Compute the energy of the non-filtered signal
+            double enerwav = 0.0;
+            for(int n=delayedstart; n<=delayedend; n++)
+                enerwav += wav[n]*wav[n];
+            enerwav = std::sqrt(enerwav);
+
             int butterworth_order = WMainWindow::getMW()->m_dlgSettings->ui->sbButterworthOrder->value();
             WMainWindow::getMW()->m_gvSpectrum->m_filterresponse = std::vector<FFTTYPE>(BUTTERRESPONSEDFTLEN/2+1,1.0);
             std::vector< std::vector<double> > num, den;
@@ -402,6 +408,19 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
 
                 WMainWindow::getMW()->m_globalWaitingBarLabel->hide();
                 WMainWindow::getMW()->m_globalWaitingBar->hide();
+            }
+
+            if(WMainWindow::getMW()->m_dlgSettings->ui->cbFilteringCompensateEnergy->isChecked()){
+                // Compute the energy of the filtered signal ...
+                double enerfilt = 0.0;
+                for(int n=delayedstart; n<=delayedend; n++)
+                    enerfilt += wavfiltered[n]*wavfiltered[n];
+                enerfilt = std::sqrt(enerfilt);
+
+                // ... and equalize the energy with the non-filtered signal
+                enerwav = enerwav/enerfilt; // Pre-compute the ratio
+                for(int n=delayedstart; n<=delayedend; n++)
+                    wavfiltered[n] *= enerwav;
             }
 
             // Convert to dB and multiply by 2 bcs of the filtfilt

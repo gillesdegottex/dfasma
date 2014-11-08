@@ -46,6 +46,7 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
 
     QSettings settings;
     ui->sbButterworthOrder->setValue(settings.value("playback/sbButterworthOrder", 32).toInt());
+    ui->cbFilteringCompensateEnergy->setChecked(settings.value("playback/cbFilteringCompensateEnergy", false).toBool());
     ui->ckAvoidClicksAddWindows->setChecked(settings.value("playback/ckAvoidClicksAddWindows", false).toBool());
     ui->sbAvoidClicksWindowDuration->setValue(settings.value("playback/sbAvoidClicksWindowDuration", 0.050).toDouble());
 }
@@ -70,6 +71,7 @@ void WDialogSettings::settingsSave() {
     QSettings settings;
     settings.setValue("playback/AudioOutputDeviceName", ui->cbAudioOutputDevices->currentText());
     settings.setValue("playback/sbButterworthOrder", ui->sbButterworthOrder->value());
+    settings.setValue("playback/cbFilteringCompensateEnergy", ui->cbFilteringCompensateEnergy->isChecked());
     settings.setValue("playback/ckAvoidClicksAddWindows", ui->ckAvoidClicksAddWindows->isChecked());
     settings.setValue("playback/sbAvoidClicksWindowDuration", ui->sbAvoidClicksWindowDuration->value());
     WMainWindow::getMW()->settingsSave();
