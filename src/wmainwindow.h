@@ -90,6 +90,7 @@ private slots:
     void viewsDisplayedChanged();
 
 public slots:
+    void updateWindowTitle();
     void fileInfoUpdate();
     void soundsChanged();
     void selectAudioOutputDevice(int di);

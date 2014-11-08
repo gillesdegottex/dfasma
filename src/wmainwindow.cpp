@@ -508,6 +508,7 @@ void WMainWindow::addFile(const QString& filepath) {
         soundsChanged();
         ui->actionCloseFile->setEnabled(true);
         ui->splitterViews->show();
+        updateWindowTitle();
 //        WMainWindow::getMW()->ui->splitterViews->handle(2)->hide();
     }
     catch (QString err)
@@ -516,6 +517,14 @@ void WMainWindow::addFile(const QString& filepath) {
 
         return;
     }
+}
+
+void WMainWindow::updateWindowTitle() {
+    int count = ui->listSndFiles->count();
+    if(count>0)
+        setWindowTitle("DFasma ("+QString::number(count)+")");
+    else
+        setWindowTitle("DFasma");
 }
 
 void WMainWindow::dropEvent(QDropEvent *event){
@@ -671,6 +680,8 @@ void WMainWindow::closeSelectedFile() {
             ftfzeros.erase(std::find(ftfzeros.begin(), ftfzeros.end(), (FTFZero*)ft));
         else if(ft->type==FileType::FTLABELS)
             ftlabels.erase(std::find(ftlabels.begin(), ftlabels.end(), (FTLabels*)ft));
+
+        updateWindowTitle();
     }
 
     // If there is no more files, put the interface in a waiting-for-file state.
