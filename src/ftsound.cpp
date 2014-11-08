@@ -30,6 +30,7 @@ using namespace std;
 #include <QMenu>
 #include <QMessageBox>
 #include <QFileInfo>
+#include <QGraphicsRectItem>
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "gvamplitudespectrum.h"
@@ -70,6 +71,10 @@ FTSound::FTSound(const QString& _fileName, QObject *parent)
 
     m_actionResetDelay = new QAction("Reset the delay", this);
     m_actionResetDelay->setStatusTip(tr("Reset the delay to 0s"));
+
+    m_actionResetFiltering = new QAction("Remove filtering effects", this);
+    m_actionResetFiltering->setStatusTip(tr("Reset to original signal without filtering effects"));
+    connect(m_actionResetFiltering, SIGNAL(triggered()), this, SLOT(resetFiltering()));
 
     connect(m_actionReload, SIGNAL(triggered()), this, SLOT(reload()));
 
@@ -189,6 +194,7 @@ void FTSound::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
     contextmenu.setTitle("Sound");
 
     contextmenu.addAction(mainwindow->ui->actionPlay);
+    contextmenu.addAction(m_actionResetFiltering);
     contextmenu.addAction(m_actionInvPolarity);
     connect(m_actionInvPolarity, SIGNAL(toggled(bool)), mainwindow, SLOT(soundsChanged()));
     m_actionResetAmpScale->setText(QString("Reset amplitude scaling (%1dB) to 0dB").arg(20*log10(m_ampscale), 0, 'g', 3));
@@ -204,6 +210,16 @@ void FTSound::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
 void FTSound::setFiltered(bool filtered){
     m_isfiltered = filtered;
     setStatus();
+}
+
+void FTSound::resetFiltering(){
+    wavtoplay = &wav;
+    WMainWindow::getMW()->m_gvWaveform->m_giFilteredSelection->hide();
+//    WMainWindow::getMW()->m_gvWaveform->m_scene->invalidate();
+    WMainWindow::getMW()->m_gvSpectrum->computeDFTs();
+//    WMainWindow::getMW()->m_gvSpectrum->m_scene->invalidate();
+    WMainWindow::getMW()->m_gvSpectrum->m_filterresponse.clear();
+    setFiltered(false);
 }
 
 void FTSound::resetAmpScale(){
@@ -262,11 +278,6 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
 {
 //    cout << "FTSound::setPlay" << endl;
 
-    // Start by reseting any other filtered sounds
-    for(size_t fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++)
-        if(WMainWindow::getMW()->ftsnds[fi]!=this)
-            WMainWindow::getMW()->ftsnds[fi]->wavtoplay = &(WMainWindow::getMW()->ftsnds[fi]->wav);
-
     m_outputaudioformat = format;
 
     s_play_power = 0;
@@ -298,10 +309,10 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
 
     int delayedstart = m_start-m_delay;
     if(delayedstart<0) delayedstart=0;
-    if(delayedstart>wavtoplay->size()-1) delayedstart=wavtoplay->size()-1;
+    if(delayedstart>int(wavtoplay->size()-1)) delayedstart=wavtoplay->size()-1;
     int delayedend = m_end-m_delay;
     if(delayedend<0) delayedend=0;
-    if(delayedend>wavtoplay->size()-1) delayedend=wavtoplay->size()-1;
+    if(delayedend>int(wavtoplay->size()-1)) delayedend=wavtoplay->size()-1;
 
     // Fix frequency cutoffs
     if(fstart>fstop){
@@ -443,10 +454,10 @@ qint64 FTSound::readData(char *data, qint64 askedlen)
     unsigned char *ptr = reinterpret_cast<unsigned char *>(data);
     int delayedstart = m_start-m_delay;
     if(delayedstart<0) delayedstart=0;
-    if(delayedstart>wavtoplay->size()-1) delayedstart=wavtoplay->size()-1;
+    if(delayedstart>int(wavtoplay->size()-1)) delayedstart=wavtoplay->size()-1;
     int delayedend = m_end-m_delay;
     if(delayedend<0) delayedend=0;
-    if(delayedend>wavtoplay->size()-1) delayedend=wavtoplay->size()-1;
+    if(delayedend>int(wavtoplay->size()-1)) delayedend=wavtoplay->size()-1;
 
     // Polarity apparently matters in very particular cases
     // so take it into account when playing.

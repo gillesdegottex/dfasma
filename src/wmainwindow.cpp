@@ -350,6 +350,13 @@ void WMainWindow::keyPressEvent(QKeyEvent* event){
             m_gvSpectrum->setCursor(Qt::OpenHandCursor);
         }
     }
+    else{
+        if(event->key()==Qt::Key_Escape){
+            FTSound* currentftsound = getCurrentFTSound();
+            if(currentftsound && currentftsound->isFiltered())
+                currentftsound->resetFiltering();
+        }
+    }
 }
 
 void WMainWindow::keyReleaseEvent(QKeyEvent* event){
@@ -754,6 +761,11 @@ void WMainWindow::play()
             FTSound* currentftsound = getCurrentFTSound();
             if(currentftsound) {
 
+                // Start by reseting any filtered sounds
+                for(size_t fi=0; fi<ftsnds.size(); fi++)
+                    if(ftsnds[fi]!=currentftsound)
+                        ftsnds[fi]->wavtoplay = &(ftsnds[fi]->wav);
+
                 double tstart = m_gvWaveform->m_giPlayCursor->pos().x();
                 double tstop = getMaxLastSampleTime();
                 if(m_gvWaveform->m_selection.width()>0){
@@ -796,9 +808,8 @@ void WMainWindow::play()
                     }
 
                     ui->actionPlay->setEnabled(false);
-
                     // Delay the stop and re-play,
-                    // in order to avoid the audio engine to crash hysterically.
+                    // to avoid the audio engine to got hysterical and crash.
                     QTimer::singleShot(250, this, SLOT(enablePlay()));
                 }
                 catch(QString err) {

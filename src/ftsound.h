@@ -89,12 +89,14 @@ public:
     QAction* m_actionInvPolarity;
     QAction* m_actionResetAmpScale;
     QAction* m_actionResetDelay;
+    QAction* m_actionResetFiltering;
 
     // To keep public
     QAudioFormat format() const {return m_fileaudioformat;}
     virtual QString info() const;
     static QString getAudioFileReadingDescription();
     void setFiltered(bool filtered);
+    inline bool isFiltered() const {return m_isfiltered;}
 
     double getDuration() const {return wav.size()/fs;}
     virtual double getLastSampleTime() const;
@@ -111,6 +113,7 @@ public:
 
 public slots:
     void reload();
+    void resetFiltering();
     void resetAmpScale();
     void resetDelay();
 };
