@@ -388,6 +388,13 @@
         </item>
        </layout>
       </item>
+      <item>
+       <widget class="QCheckBox" name="cbShowMusicNoteNames">
+        <property name="text">
+         <string>Show music note names aside frequencies in Hertz</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

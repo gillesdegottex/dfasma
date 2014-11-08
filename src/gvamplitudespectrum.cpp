@@ -377,6 +377,7 @@ void QGVAmplitudeSpectrum::settingsSave() {
     settings.setValue("qgvamplitudespectrum/spWindowNormPower", m_dlgSettings->ui->spWindowNormPower->value());
     settings.setValue("qgvamplitudespectrum/spWindowNormSigma", m_dlgSettings->ui->spWindowNormSigma->value());
     settings.setValue("qgvamplitudespectrum/spWindowExpDecay", m_dlgSettings->ui->spWindowExpDecay->value());
+    settings.setValue("qgvamplitudespectrum/cbShowMusicNoteNames", m_dlgSettings->ui->cbShowMusicNoteNames->isChecked());
 }
 
 void QGVAmplitudeSpectrum::updateSceneRect() {
@@ -972,7 +973,11 @@ void QGVAmplitudeSpectrum::cursorFixAndRefresh() {
         QRectF br = m_giCursorPositionXTxt->boundingRect();
         qreal x = m_giCursorVert->line().x1()+1/trans.m11();
         x = min(x, viewrect.right()-br.width()/trans.m11());
-        m_giCursorPositionXTxt->setText(QString("%1Hz").arg(m_giCursorVert->line().x1()));
+
+        QString freqstr = QString("%1Hz").arg(m_giCursorVert->line().x1());
+        if(m_dlgSettings->ui->cbShowMusicNoteNames->isChecked())
+            freqstr += "("+sigproc::h2n(sigproc::f2h(m_giCursorVert->line().x1()))+")";
+        m_giCursorPositionXTxt->setText(freqstr);
         m_giCursorPositionXTxt->setPos(x, viewrect.top());
 
         m_giCursorPositionYTxt->setText(QString("%1dB").arg(-m_giCursorHoriz->line().y1()));
