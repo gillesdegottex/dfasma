@@ -521,10 +521,17 @@ void WMainWindow::addFile(const QString& filepath) {
 
 void WMainWindow::updateWindowTitle() {
     int count = ui->listSndFiles->count();
-    if(count>0)
-        setWindowTitle("DFasma ("+QString::number(count)+")");
-    else
-        setWindowTitle("DFasma");
+    if(count>0) setWindowTitle("DFasma ("+QString::number(count)+")");
+    else        setWindowTitle("DFasma");
+}
+
+void WMainWindow::checkFileModifications(){
+    for(size_t fi=0; fi<ftsnds.size(); fi++)
+        ftsnds[fi]->checkFileStatus();
+    for(size_t fi=0; fi<ftfzeros.size(); fi++)
+        ftfzeros[fi]->checkFileStatus();
+    for(size_t fi=0; fi<ftlabels.size(); fi++)
+        ftlabels[fi]->checkFileStatus();
 }
 
 void WMainWindow::dropEvent(QDropEvent *event){

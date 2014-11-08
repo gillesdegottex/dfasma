@@ -42,14 +42,13 @@ FTLabels::FTLabels(const QString& _fileName, QObject *parent)
     m_actionSave = new QAction("Save", this);
     m_actionSave->setStatusTip(tr("Save the labels times (overwrite the file !)"));
 
-    load(_fileName);
+    if(!fileFullPath.isEmpty()){
+        checkFileStatus(CFSMEXCEPTION);
+        load();
+    }
 }
 
-void FTLabels::load(const QString& _fileName) {
-
-    checkFileExists(_fileName);
-
-    fileFullPath = _fileName;
+void FTLabels::load() {
 
 #ifdef SUPPORT_SDIF
     // TODO load .lab files
@@ -146,15 +145,14 @@ void FTLabels::load(const QString& _fileName) {
 #endif
 
     m_lastreadtime = QDateTime::currentDateTime();
+    setStatus();
 }
 
 void FTLabels::reload() {
 //    cout << "FTLabels::reload" << endl;
 
-    if(!QFileInfo::exists(fileFullPath)){
-        QMessageBox::critical(NULL, "Cannot reload file", QString("The file: ")+fileFullPath+" cannot be reloaded (has it been deleted after being loaded?)");
+    if(!checkFileStatus(CFSMMESSAGEBOX))
         return;
-    }
 
     // Reset everything ...
     starts.clear();
@@ -162,7 +160,7 @@ void FTLabels::reload() {
     labels.clear();
 
     // ... and reload the data from the file
-    load(fileFullPath);
+    load();
 }
 
 void FTLabels::save() {

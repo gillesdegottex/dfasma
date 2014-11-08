@@ -60,7 +60,6 @@ FTSound::FTSound(const QString& _fileName, QObject *parent)
     , m_end(0)
     , m_avoidclickswinpos(0)
 {
-
     m_actionInvPolarity = new QAction("Inverse polarity", this);
     m_actionInvPolarity->setStatusTip(tr("Inverse the polarity of the sound"));
     m_actionInvPolarity->setCheckable(true);
@@ -78,8 +77,11 @@ FTSound::FTSound(const QString& _fileName, QObject *parent)
 
     connect(m_actionReload, SIGNAL(triggered()), this, SLOT(reload()));
 
-    load(_fileName);
-    load_finalize();
+    if(!fileFullPath.isEmpty()){
+        checkFileStatus(CFSMEXCEPTION);
+        load();
+        load_finalize();
+    }
 
 //    QIODevice::open(QIODevice::ReadOnly);
 }
@@ -95,6 +97,7 @@ void FTSound::load_finalize() {
     std::cout << "INFO: " << wav.size() << " samples loaded (" << wav.size()/fs << "s max amplitude=" << m_wavmaxamp << ")" << endl;
 
     m_lastreadtime = QDateTime::currentDateTime();
+    setStatus();
 }
 
 void FTSound::reload() {
@@ -102,10 +105,8 @@ void FTSound::reload() {
 
     stop();
 
-    if(!QFileInfo::exists(fileFullPath)){
-        QMessageBox::critical(NULL, "Cannot reload file", QString("The file: ")+fileFullPath+" cannot be reloaded (has it been deleted after being loaded?)");
+    if(!checkFileStatus(CFSMMESSAGEBOX))
         return;
-    }
 
     // Reset everything ...
     wavtoplay = &wav;
@@ -119,16 +120,24 @@ void FTSound::reload() {
     wavfiltered.clear();
 
     // ... and reload the data from the file
-    load(fileFullPath);
+    load();
     load_finalize();
-
-    setStatus();
 }
 
 QString FTSound::info() const {
     QString str = "";
 
-    str += "Loaded at "+m_lastreadtime.toString("HH:mm:ss ddMMM")+"<br/>";
+    QString datestr = m_lastreadtime.toString("HH:mm:ss ddMMM");
+    if(m_modifiedtime>m_lastreadtime) datestr = "<b>"+datestr+"</b>";
+    str += "Loaded at "+datestr+"<br/>";
+
+    if(m_modifiedtime==QDateTime())
+        str += "<b>Inaccessible</b><br/>";
+    else{
+        datestr = m_modifiedtime.toString("HH:mm:ss ddMMM");
+        if(m_modifiedtime>m_lastreadtime) datestr = "<b>"+datestr+"</b>";
+        str += "Modified at "+datestr+"<br/>";
+    }
 
     str += "Duration: "+QString::number(getDuration())+"s ("+QString::number(wav.size())+")<br/>";
 

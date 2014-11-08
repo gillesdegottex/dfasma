@@ -27,11 +27,7 @@ QString FTSound::getAudioFileReadingDescription(){
     return QString("<p>Using a built-in minimal WAV file reader (supports only PCM 16 bit signed LE mono format)</p>");
 }
 
-void FTSound::load(const QString& _fileName){
-    checkFileExists(_fileName);
-
-    // Load audio file
-    fileFullPath = _fileName;
+void FTSound::load(){
 
     m_fileaudioformat = QAudioFormat(); // Clear the format
 

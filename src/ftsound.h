@@ -43,7 +43,7 @@ class FTSound : public QIODevice, public FileType
 {
     Q_OBJECT
 
-    void load(const QString& _fileName);
+    void load();
     void load_finalize();
 
     QAudioFormat m_fileaudioformat;   // Format of the audio data

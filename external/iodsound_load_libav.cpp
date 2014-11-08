@@ -48,8 +48,7 @@ QString FTSound::getAudioFileReadingDescription(){
     return QString("<p>Using <a href='https://libav.org/'>libav</a></p>");
 }
 
-void FTSound::load(const QString& _fileName){
-    checkFileExists(_fileName);
+void FTSound::load(){
 
     cout << 1 << endl;
     // Load audio file

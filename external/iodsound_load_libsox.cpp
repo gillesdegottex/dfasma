@@ -54,12 +54,7 @@ QString FTSound::getAudioFileReadingDescription(){
 }
 
 
-void FTSound::load(const QString& _fileName){
-
-    checkFileExists(_fileName);
-
-    // Load audio file
-    fileFullPath = _fileName;
+void FTSound::load(){
 
     m_fileaudioformat = QAudioFormat(); // Clear the format
 

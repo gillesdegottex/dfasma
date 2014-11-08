@@ -34,7 +34,7 @@ class FTFZero : public QObject, public FileType
 {
     Q_OBJECT
 
-    void load(const QString& _fileName);
+    void load();
 
 public:
     FTFZero(const QString& _fileName, QObject* parent);

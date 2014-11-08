@@ -32,12 +32,10 @@ class WMainWindow;
 class FileType : public QListWidgetItem
 {
 protected:
-    virtual void load(const QString& _fileName) =0;
+    virtual void load() =0;
 
+    QDateTime m_modifiedtime;
     QDateTime m_lastreadtime;
-
-protected:
-    void checkFileExists(const QString& fullfilepath);
 
 public:
     enum FILETYPE {FTUNSET, FTSOUND, FTFZERO, FTLABELS};
@@ -64,6 +62,8 @@ public:
     virtual double getLastSampleTime() const =0;
     virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
 
+    enum CHECKFILESTATUSMGT {CFSMQUIET, CFSMMESSAGEBOX, CFSMEXCEPTION};
+    bool checkFileStatus(CHECKFILESTATUSMGT cfsmgt=CFSMQUIET);
     virtual void setStatus();
 };
 

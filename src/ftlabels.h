@@ -34,7 +34,7 @@ class FTLabels : public QObject, public FileType
 {
     Q_OBJECT
 
-    void load(const QString& _fileName);
+    void load();
 
     QAction* m_actionSave;
 

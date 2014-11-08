@@ -83,12 +83,7 @@ QString FTSound::getAudioFileReadingDescription(){
 ///* libsndfile can handle more than 6 channels but we'll restrict it to 6. */
 //#define    MAX_CHANNELS    6
 
-void FTSound::load(const QString& _fileName){
-
-    checkFileExists(_fileName);
-
-    // Load audio file
-    fileFullPath = _fileName;
+void FTSound::load(){
 
     m_fileaudioformat = QAudioFormat(); // Clear the format
 

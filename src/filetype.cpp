@@ -27,6 +27,7 @@ using namespace std;
 #include <QMenu>
 #include <QFileInfo>
 #include <QColorDialog>
+#include <QMessageBox>
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "gvamplitudespectrum.h"
@@ -105,13 +106,27 @@ FileType::FileType(FILETYPE _type, const QString& _fileName, QObject * parent)
 
     m_actionReload = new QAction("Reload", parent);
     m_actionReload->setStatusTip("Reload data from the file");
-
 //    QIODevice::open(QIODevice::ReadOnly);
 }
 
-void FileType::checkFileExists(const QString& fullfilepath) {
-    if(!QFileInfo::exists(fileFullPath))
-        throw QString("The file: ")+fileFullPath+" doesn't seems to exist";
+bool FileType::checkFileStatus(CHECKFILESTATUSMGT cfsmgt){
+    if(!QFileInfo::exists(fileFullPath)){
+        if(cfsmgt==CFSMEXCEPTION)
+            throw QString("The file: ")+fileFullPath+" doesn't seem to exist.";
+        else if(cfsmgt==CFSMMESSAGEBOX)
+            QMessageBox::critical(NULL, "Cannot load file", QString("The file: ")+fileFullPath+" doesn't seem to exist.");
+
+        m_modifiedtime = QDateTime();
+        setStatus();
+        return false;
+    }
+    else{
+        QFileInfo fi(fileFullPath);
+        m_modifiedtime = fi.lastModified();
+        setStatus();
+    }
+
+    return true;
 }
 
 void FileType::setColor(const QColor& _color) {
@@ -158,6 +173,16 @@ void FileType::setStatus() {
     QString liststr = fileInfo.fileName();
     QString tooltipstr = fileInfo.absoluteFilePath();
 
+//    cout << m_lastreadtime.toString().toLatin1().constData() << ":" << m_modifiedtime.toString().toLatin1().constData() << endl;
+    if(m_lastreadtime<m_modifiedtime || m_modifiedtime==QDateTime()){
+        liststr = '!'+liststr;
+        if(m_lastreadtime==QDateTime())
+            tooltipstr = "(unread)"+tooltipstr;
+        else if(m_modifiedtime==QDateTime())
+            tooltipstr = "(Inaccessible)"+tooltipstr;
+        else if(m_lastreadtime<m_modifiedtime)
+            tooltipstr = "(external modification)"+tooltipstr;
+    }
     if(isModified()) {
         liststr = '*'+liststr;
         tooltipstr = "(modified)"+tooltipstr;

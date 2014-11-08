@@ -38,14 +38,13 @@ FTFZero::FTFZero(const QString& _fileName, QObject *parent)
 {
     Q_UNUSED(parent)
 
-    load(_fileName);
+    if(!fileFullPath.isEmpty()){
+        checkFileStatus(CFSMEXCEPTION);
+        load();
+    }
 }
 
-void FTFZero::load(const QString& _fileName) {
-
-    checkFileExists(_fileName);
-
-    fileFullPath = _fileName;
+void FTFZero::load() {
 
     // TODO load text files
 
@@ -124,22 +123,21 @@ void FTFZero::load(const QString& _fileName) {
     #endif
 
     m_lastreadtime = QDateTime::currentDateTime();
+    setStatus();
 }
 
 void FTFZero::reload() {
 //    cout << "FTFZero::reload" << endl;
 
-    if(!QFileInfo::exists(fileFullPath)){
-        QMessageBox::critical(NULL, "Cannot reload file", QString("The file: ")+fileFullPath+" cannot be reloaded (has it been deleted after being loaded?)");
+    if(!checkFileStatus(CFSMMESSAGEBOX))
         return;
-    }
 
     // Reset everything ...
     ts.clear();
     f0s.clear();
 
     // ... and reload the data from the file
-    load(fileFullPath);
+    load();
 }
 
 QString FTFZero::info() const {
