@@ -196,6 +196,8 @@ void FileType::setStatus() {
 
     setText(liststr);
     setToolTip(tooltipstr);
+
+    WMainWindow::getMW()->fileInfoUpdate();
 }
 
 FileType::~FileType() {

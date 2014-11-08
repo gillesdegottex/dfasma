@@ -20,6 +20,7 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "wmainwindow.h"
 #include <QApplication>
+#include <QObject>
 
 #ifdef AUDIOFILEREADING_LIBAV
 extern "C" {
@@ -59,7 +60,6 @@ int main(int argc, char *argv[])
     #endif
 
     QApplication a(argc, argv);
-
     QCoreApplication::setOrganizationName("DFasma");
     QCoreApplication::setOrganizationDomain("gillesdegottex.eu");
     QCoreApplication::setApplicationName("DFasma");
@@ -70,6 +70,7 @@ int main(int argc, char *argv[])
     filestoload.removeAt(0);
 
     WMainWindow w(filestoload);
+    QObject::connect(&a, SIGNAL(focusWindowChanged(QWindow*)), &w, SLOT(checkFileModifications()));
     w.show();
 
     return a.exec();

@@ -526,6 +526,7 @@ void WMainWindow::updateWindowTitle() {
 }
 
 void WMainWindow::checkFileModifications(){
+//    cout << "GET FOCUS " << QDateTime::currentMSecsSinceEpoch() << endl;
     for(size_t fi=0; fi<ftsnds.size(); fi++)
         ftsnds[fi]->checkFileStatus();
     for(size_t fi=0; fi<ftfzeros.size(); fi++)
