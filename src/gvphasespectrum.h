@@ -62,7 +62,8 @@ public:
     QRectF m_wavselection_pressed;
     QPointF m_pressed_mouseinviewport;
     QRectF m_pressed_viewrect;
-    enum CurrentAction {CANothing, CAMoving, CAZooming, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight, CAModifSelectionTop, CAModifSelectionBottom, CAMovingWaveformSelection};
+    qint64 m_pressed_delay;
+    enum CurrentAction {CANothing, CAMoving, CAZooming, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight, CAModifSelectionTop, CAModifSelectionBottom, CAMovingWaveformSelection, CAWaveformDelay};
     int m_currentAction;
 
     QRectF m_selection, m_mouseSelection;

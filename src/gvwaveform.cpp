@@ -457,7 +457,7 @@ void QGVWaveform::wheelEvent(QWheelEvent* event){
 }
 
 void QGVWaveform::mousePressEvent(QMouseEvent* event){
-//    std::cout << "QGVWaveform::mousePressEvent" << endl;
+    // std::cout << "QGVWaveform::mousePressEvent" << endl;
 
     QPointF p = mapToScene(event->pos());
     QRect selview = mapFromScene(m_selection).boundingRect();
@@ -507,16 +507,17 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
             // Look for a nearby marker to modify
             m_ca_pressed_index=-1;
             FTLabels* ftl = WMainWindow::getMW()->getCurrentFTLabels();
-            for(size_t lli=0; m_ca_pressed_index==-1 && lli<ftl->labels.size(); lli++) {
-    //                cout << ftl->labels[lli].toLatin1().data() << ": " << ftl->starts[lli] << ":" << ftl->ends[lli] << endl;
-                QPoint slp = mapFromScene(QPointF(ftl->starts[lli],0));
-                if(std::abs(slp.x()-event->x())<5) {
-                    m_ca_pressed_index = lli;
-                    m_currentAction = CALabelModifPosition;
+            if(ftl){
+                for(size_t lli=0; m_ca_pressed_index==-1 && lli<ftl->labels.size(); lli++) {
+                    QPoint slp = mapFromScene(QPointF(ftl->starts[lli],0));
+                    if(std::abs(slp.x()-event->x())<5) {
+                        m_ca_pressed_index = lli;
+                        m_currentAction = CALabelModifPosition;
+                    }
                 }
             }
 
-            if(m_ca_pressed_index==0) {
+            if(m_ca_pressed_index==-1) {
                 if(event->modifiers().testFlag(Qt::ShiftModifier)){
                     // cout << "Scaling the waveform" << endl;
                     m_currentAction = CAWaveformDelay;
@@ -559,7 +560,7 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
     }
 
     QGraphicsView::mousePressEvent(event);
-//    std::cout << "~QGVWaveform::mousePressEvent " << p.x() << endl;
+    // std::cout << "~QGVWaveform::mousePressEvent " << p.x() << endl;
 }
 
 void QGVWaveform::mouseMoveEvent(QMouseEvent* event){

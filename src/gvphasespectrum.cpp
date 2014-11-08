@@ -349,13 +349,17 @@ void QGVPhaseSpectrum::mousePressEvent(QMouseEvent* event){
             }
         }
         else if(WMainWindow::getMW()->ui->actionEditMode->isChecked()){
-            if(event->modifiers().testFlag(Qt::ShiftModifier)){
-                // TODO ? Using the same idea as in the shifting of the waveform's selection ?
+            if(kctrl && kshift) {
+                m_currentAction = CAWaveformDelay;
+                m_selection_pressedp = p;
+                FTSound* currentftsound = WMainWindow::getMW()->getCurrentFTSound();
+                if(currentftsound)
+                    m_pressed_delay = currentftsound->m_delay;
             }
         }
     }
     else if(event->buttons()&Qt::RightButton) {
-        if (event->modifiers().testFlag(Qt::ShiftModifier)) {
+        if (kshift && !kctrl) {
             setCursor(Qt::CrossCursor);
             m_currentAction = CAZooming;
             m_selection_pressedp = p;
@@ -431,6 +435,18 @@ void QGVPhaseSpectrum::mouseMoveEvent(QMouseEvent* event){
         wavsel.setLeft(wavsel.left()+dt);
         wavsel.setRight(wavsel.right()+dt);
         WMainWindow::getMW()->m_gvWaveform->selectionClipAndSet(wavsel);
+    }
+    else if(m_currentAction==CAWaveformDelay) {
+        double dy = -(p.y()-m_selection_pressedp.y());
+        // cout << "CAWaveformDelay at " << m_selection_pressedp.x() << " " << dy << "rad" << endl;
+        double dt = ((WMainWindow::getMW()->getFs()/m_selection_pressedp.x())*dy/(2*M_PI))/WMainWindow::getMW()->getFs();
+        FTSound* currentftsound = WMainWindow::getMW()->getCurrentFTSound();
+        if(currentftsound){
+            currentftsound->m_delay = m_pressed_delay - dt*WMainWindow::getMW()->getFs();
+            WMainWindow::getMW()->m_gvWaveform->soundsChanged();
+            WMainWindow::getMW()->m_gvSpectrum->soundsChanged();
+            WMainWindow::getMW()->fileInfoUpdate();
+        }
     }
     else{
         QRect selview = mapFromScene(m_selection).boundingRect();
