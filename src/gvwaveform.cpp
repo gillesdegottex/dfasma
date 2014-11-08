@@ -491,7 +491,6 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
                 m_selection_pressedx = p.x();
                 m_mouseSelection = m_selection;
                 setCursor(Qt::ClosedHandCursor);
-                WMainWindow::getMW()->ui->lblSelectionTxt->setText(QString("[%1").arg(m_selection.left()).append(",%1] ").arg(m_selection.right()).append("%1 s").arg(m_selection.width()));
             }
             else if(!event->modifiers().testFlag(Qt::ControlModifier)){
                 // When selecting
