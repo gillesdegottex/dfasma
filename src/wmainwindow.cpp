@@ -770,20 +770,16 @@ void WMainWindow::play()
                 }
 
                 try {
-                    QString playinfo = "";
                     if(fstart!=0.0 || fstop!=getFs()){
-                        playinfo =  "Filtering and playing ... ";
                         for(size_t fi=0; fi<ftsnds.size(); fi++)
                             ftsnds[fi]->setFiltered(false);
                         currentftsound->setFiltered(true);
                     }
-                    else {
-                        playinfo =  "Playing ... ";
+                    else
                         currentftsound->setFiltered(false);
-                    }
+
                     if(!currentftsound->m_actionShow->isChecked())
-                        playinfo += "WARNING: Playing a hidden waveform!";
-                    statusBar()->showMessage(playinfo);
+                        statusBar()->showMessage("WARNING: Playing a hidden waveform!");
 
                     m_gvWaveform->m_initialPlayPosition = tstart;
                     m_audioengine->startPlayback(currentftsound, tstart, tstop, fstart, fstop);
