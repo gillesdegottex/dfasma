@@ -147,6 +147,7 @@ void FTSound::reload() {
     m_avoidclickswinpos = 0;
     wav.clear();
     wavfiltered.clear();
+    resetFiltering();
 
     // ... and reload the data from the file
     load();
@@ -184,8 +185,10 @@ QString FTSound::info() const {
     QString codecname = m_fileaudioformat.codec();
 //    if(codecname.isEmpty()) codecname = "unknown type";
 //    str += "Codec: "+codecname+"<br/>";
-    if(m_channelid>0)         str += "Channel: "+QString::number(m_channelid)+"/"+QString::number(m_fileaudioformat.channelCount())+"<br/>";
-    else if(m_channelid==-2)  str += "Channel: "+QString::number(m_fileaudioformat.channelCount())+" summed<br/>";
+    if(m_fileaudioformat.channelCount()>1){
+        if(m_channelid>0)         str += "Channel: "+QString::number(m_channelid)+"/"+QString::number(m_fileaudioformat.channelCount())+"<br/>";
+        else if(m_channelid==-2)  str += "Channel: "+QString::number(m_fileaudioformat.channelCount())+" summed<br/>";
+    }
     str += "Sampling: "+QString::number(fs)+"Hz<br/>";
     if(m_fileaudioformat.sampleSize()!=-1) {
         str += "Sample type: "+QString::number(m_fileaudioformat.sampleSize())+"b ";

@@ -495,8 +495,10 @@ void WMainWindow::addFile(const QString& filepath) {
 
             if(nchan==0)
                 throw QString("There is not even a single channel.");
-            else if(nchan==1)
+            else if(nchan==1){
                 ft = new FTSound(filepath, this);
+                ui->listSndFiles->addItem(ft);
+            }
             else{
                 WDialogSelectChannel dlg(filepath, nchan, this);
                 dlg.exec();
