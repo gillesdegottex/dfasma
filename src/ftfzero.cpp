@@ -33,15 +33,44 @@ using namespace Easdif;
 #include <qmath.h>
 #include <qendian.h>
 
+#include "wmainwindow.h"
+
+void FTFZero::init(){
+
+}
+
 FTFZero::FTFZero(const QString& _fileName, QObject *parent)
     : FileType(FTFZERO, _fileName, this)
 {
     Q_UNUSED(parent)
 
+    init();
+
     if(!fileFullPath.isEmpty()){
         checkFileStatus(CFSMEXCEPTION);
         load();
     }
+
+    WMainWindow::getMW()->ftfzeros.push_back(this);
+}
+
+FTFZero::FTFZero(const FTFZero& ft)
+    : QObject(ft.parent())
+    , FileType(FTFZERO, ft.fileFullPath, this)
+{
+    init();
+
+    ts = ft.ts;
+    f0s = ft.f0s;
+
+    m_lastreadtime = ft.m_lastreadtime;
+    m_modifiedtime = ft.m_modifiedtime;
+
+    WMainWindow::getMW()->ftfzeros.push_back(this);
+}
+
+FileType* FTFZero::duplicate(){
+    return new FTFZero(*this);
 }
 
 void FTFZero::load() {

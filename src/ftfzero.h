@@ -34,10 +34,14 @@ class FTFZero : public QObject, public FileType
 {
     Q_OBJECT
 
+    void init();
+
     void load();
 
 public:
     FTFZero(const QString& _fileName, QObject* parent);
+    FTFZero(const FTFZero& ft);
+    virtual FileType* duplicate();
 
     std::deque<double> ts;
     std::deque<double> f0s;

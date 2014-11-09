@@ -48,6 +48,7 @@ public:
 
     QAction* m_actionShow;
     QAction* m_actionReload;
+    QAction* m_actionDuplicate;
 
     ~FileType();
 
@@ -61,6 +62,7 @@ public:
     void setColor(const QColor& _color);
     virtual double getLastSampleTime() const =0;
     virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
+    virtual FileType* duplicate();
 
     enum CHECKFILESTATUSMGT {CFSMQUIET, CFSMMESSAGEBOX, CFSMEXCEPTION};
     bool checkFileStatus(CHECKFILESTATUSMGT cfsmgt=CFSMQUIET);

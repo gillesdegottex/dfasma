@@ -474,16 +474,10 @@ void WMainWindow::addFile(const QString& filepath) {
             //if(!SdifCheckFileFormat(filepath.toLocal8Bit()))
             //    throw QString("This file looks like an SDIF file, but it does not contain SDIF data.");
 
-            if(FileType::SDIF_hasFrame(filepath, "1FQ0")) {
-                FTFZero* ftf0 = new FTFZero(filepath, this);
-                ftfzeros.push_back(ftf0);
-                ft = ftf0;
-            }
-            else if (FileType::SDIF_hasFrame(filepath, "1MRK")) {
-                FTLabels* ftlabel = new FTLabels(filepath, this);
-                ftlabels.push_back(ftlabel);
-                ft = ftlabel;
-            }
+            if(FileType::SDIF_hasFrame(filepath, "1FQ0"))
+                ft = new FTFZero(filepath, this);
+            else if (FileType::SDIF_hasFrame(filepath, "1MRK"))
+                ft = new FTLabels(filepath, this);
             else
                 throw QString("Unsupported SDIF data.");
             #else
@@ -491,9 +485,7 @@ void WMainWindow::addFile(const QString& filepath) {
             #endif
         }
         else { // Assume it is an audio file
-            FTSound* ftsnd = new FTSound(filepath, this);
-            ftsnds.push_back(ftsnd);
-            ft = ftsnd;
+            ft = new FTSound(filepath, this);
 
             // The first sound determines the common fs for the audio output
             if(ftsnds.size()==1)
@@ -533,6 +525,21 @@ void WMainWindow::checkFileModifications(){
         ftfzeros[fi]->checkFileStatus();
     for(size_t fi=0; fi<ftlabels.size(); fi++)
         ftlabels[fi]->checkFileStatus();
+}
+
+void WMainWindow::duplicateCurrentFile(){
+    FileType* currenItem = (FileType*)(ui->listSndFiles->currentItem());
+    if(currenItem){
+        FileType* ft = currenItem->duplicate();
+        if(ft){
+            ui->listSndFiles->addItem(ft);
+            m_gvWaveform->updateSceneRect();
+            soundsChanged();
+            ui->actionCloseFile->setEnabled(true);
+            ui->splitterViews->show();
+            updateWindowTitle();
+        }
+    }
 }
 
 void WMainWindow::dropEvent(QDropEvent *event){

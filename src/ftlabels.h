@@ -34,12 +34,16 @@ class FTLabels : public QObject, public FileType
 {
     Q_OBJECT
 
+    void init();
+
     void load();
 
     QAction* m_actionSave;
 
 public:
     FTLabels(const QString& _fileName, QObject* parent);
+    FTLabels(const FTLabels& ft);
+    virtual FileType* duplicate();
 
     std::deque<double> starts;
     std::deque<double> ends;

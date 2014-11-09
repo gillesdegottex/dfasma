@@ -48,20 +48,18 @@ double FTSound::fs_common = 0; // Initially, fs is undefined TODO put in wmainwi
 WAVTYPE FTSound::s_play_power = 0;
 std::deque<WAVTYPE> FTSound::s_play_power_values;
 
-FTSound::FTSound(const QString& _fileName, QObject *parent)
-    : QIODevice(parent)
-    , FileType(FTSOUND, _fileName, this)
-    , m_isclipped(false)
-    , m_isfiltered(false)
-    , wavtoplay(&wav)
-    , m_filteredmaxamp(0.0)
-    , m_ampscale(1.0)
-    , m_delay(0)
-    , m_start(0)
-    , m_pos(0)
-    , m_end(0)
-    , m_avoidclickswinpos(0)
-{
+void FTSound::init(){
+    m_isclipped = false;
+    m_isfiltered = false;
+    wavtoplay  = &wav;
+    m_filteredmaxamp = 0.0;
+    m_ampscale = 1.0;
+    m_delay = 0;
+    m_start = 0;
+    m_pos = 0;
+    m_end = 0;
+    m_avoidclickswinpos = 0;
+
     m_actionInvPolarity = new QAction("Inverse polarity", this);
     m_actionInvPolarity->setStatusTip(tr("Inverse the polarity of the sound"));
     m_actionInvPolarity->setCheckable(true);
@@ -78,6 +76,13 @@ FTSound::FTSound(const QString& _fileName, QObject *parent)
     connect(m_actionResetFiltering, SIGNAL(triggered()), this, SLOT(resetFiltering()));
 
     connect(m_actionReload, SIGNAL(triggered()), this, SLOT(reload()));
+}
+
+FTSound::FTSound(const QString& _fileName, QObject *parent)
+    : QIODevice(parent)
+    , FileType(FTSOUND, _fileName, this)
+{
+    init();
 
     if(!fileFullPath.isEmpty()){
         checkFileStatus(CFSMEXCEPTION);
@@ -85,7 +90,28 @@ FTSound::FTSound(const QString& _fileName, QObject *parent)
         load_finalize();
     }
 
+    WMainWindow::getMW()->ftsnds.push_back(this);
+
 //    QIODevice::open(QIODevice::ReadOnly);
+}
+
+FTSound::FTSound(const FTSound& ft)
+    : QIODevice(ft.parent())
+    , FileType(FTSOUND, ft.fileFullPath, this)
+{
+    init();
+
+    wav = ft.wav;
+    m_wavmaxamp = ft.m_wavmaxamp;
+    fs = ft.fs;
+    m_fileaudioformat.setSampleRate(fs);
+    m_fileaudioformat.setSampleType(QAudioFormat::Float);
+    m_fileaudioformat.setSampleSize(8*sizeof(WAVTYPE));
+
+    m_lastreadtime = ft.m_lastreadtime;
+    m_modifiedtime = ft.m_modifiedtime;
+
+    WMainWindow::getMW()->ftsnds.push_back(this);
 }
 
 void FTSound::load_finalize() {
@@ -126,6 +152,10 @@ void FTSound::reload() {
     load_finalize();
 }
 
+FileType* FTSound::duplicate(){
+    return new FTSound(*this);
+}
+
 QString FTSound::info() const {
     QString str = "";
 
@@ -155,7 +185,7 @@ QString FTSound::info() const {
 //    str += "Codec: "+codecname+"<br/>";
 //    if(m_fileaudioformat.channelCount()!=-1)
 //        str += "Channels: "+QString::number(m_fileaudioformat.channelCount())+" channel<br/>";
-    str += "Sampling: "+QString::number(m_fileaudioformat.sampleRate())+"Hz<br/>";
+    str += "Sampling: "+QString::number(fs)+"Hz<br/>";
     if(m_fileaudioformat.sampleSize()!=-1) {
         str += "Sample type: "+QString::number(m_fileaudioformat.sampleSize())+"b ";
         QAudioFormat::SampleType sampletype = m_fileaudioformat.sampleType();

@@ -34,18 +34,46 @@ using namespace Easdif;
 #include <qmath.h>
 #include <qendian.h>
 
+#include "wmainwindow.h"
+
+void FTLabels::init(){
+    m_actionSave = new QAction("Save", this);
+    m_actionSave->setStatusTip(tr("Save the labels times (overwrite the file !)"));
+}
+
 FTLabels::FTLabels(const QString& _fileName, QObject *parent)
     : FileType(FTLABELS, _fileName, this)
 {
     Q_UNUSED(parent)
 
-    m_actionSave = new QAction("Save", this);
-    m_actionSave->setStatusTip(tr("Save the labels times (overwrite the file !)"));
+    init();
 
     if(!fileFullPath.isEmpty()){
         checkFileStatus(CFSMEXCEPTION);
         load();
     }
+
+    WMainWindow::getMW()->ftlabels.push_back(this);
+}
+
+FTLabels::FTLabels(const FTLabels& ft)
+    : QObject(ft.parent())
+    , FileType(FTLABELS, ft.fileFullPath, this)
+{
+    init();
+
+    starts = ft.starts;
+    ends = ft.ends;
+    labels = ft.labels;
+
+    m_lastreadtime = ft.m_lastreadtime;
+    m_modifiedtime = ft.m_modifiedtime;
+
+    WMainWindow::getMW()->ftlabels.push_back(this);
+}
+
+FileType* FTLabels::duplicate(){
+    return new FTLabels(*this);
 }
 
 void FTLabels::load() {

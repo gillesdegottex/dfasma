@@ -43,6 +43,8 @@ class FTSound : public QIODevice, public FileType
 {
     Q_OBJECT
 
+    void init();
+
     void load();
     void load_finalize();
 
@@ -58,6 +60,9 @@ class FTSound : public QIODevice, public FileType
 public:
 
     FTSound(const QString& _fileName, QObject* parent);
+    FTSound(const FTSound& ft);
+    virtual FileType* duplicate();
+
     static double fs_common;  // [Hz] Sampling frequency of the sound player
     static std::vector<WAVTYPE> sm_avoidclickswindow;
 

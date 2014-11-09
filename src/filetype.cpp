@@ -103,9 +103,15 @@ FileType::FileType(FILETYPE _type, const QString& _fileName, QObject * parent)
     m_actionShow->setStatusTip("Show the sound in the views");
     m_actionShow->setCheckable(true);
     m_actionShow->setChecked(true);
+    WMainWindow::getMW()->connect(m_actionShow, SIGNAL(toggled(bool)), WMainWindow::getMW(), SLOT(toggleSoundShown()));
 
     m_actionReload = new QAction("Reload", parent);
     m_actionReload->setStatusTip("Reload data from the file");
+
+    m_actionDuplicate = new QAction("Duplicate", parent);
+    m_actionDuplicate->setStatusTip("Duplicate the file content");
+    WMainWindow::getMW()->connect(m_actionDuplicate, SIGNAL(triggered()), WMainWindow::getMW(), SLOT(duplicateCurrentFile()));
+
 //    QIODevice::open(QIODevice::ReadOnly);
 }
 
@@ -138,8 +144,8 @@ void FileType::setColor(const QColor& _color) {
 
 void FileType::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
     contextmenu.addAction(m_actionShow);
-    mainwindow->connect(m_actionShow, SIGNAL(toggled(bool)), mainwindow, SLOT(toggleSoundShown()));
     contextmenu.addAction(m_actionReload);
+    contextmenu.addAction(m_actionDuplicate);
     QColorDialog* colordialog = new QColorDialog(&contextmenu);
     QObject::connect(colordialog, SIGNAL(colorSelected(const QColor &)), WMainWindow::getMW(), SLOT(colorSelected(const QColor &)));
 //    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), WMainWindow::getMW(), SLOT(colorSelected(const QColor &)));
@@ -153,6 +159,10 @@ void FileType::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
     contextmenu.addAction("Color ...", colordialog, SLOT(exec()));
     contextmenu.addAction(mainwindow->ui->actionCloseFile);
     contextmenu.addSeparator();
+}
+
+FileType* FileType::duplicate(){
+    return NULL;
 }
 
 void FileType::setShown(bool shown) {
