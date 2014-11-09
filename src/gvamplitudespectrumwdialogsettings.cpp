@@ -33,6 +33,7 @@ GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(QGVAmplit
     ui->spWindowExpDecay->setValue(settings.value("qgvamplitudespectrum/spWindowExpDecay", 60.0).toDouble());
 
     ui->cbShowMusicNoteNames->setChecked(settings.value("qgvamplitudespectrum/cbShowMusicNoteNames", false).toBool());
+    ui->cbAddMarginsOnSelection->setChecked(settings.value("qgvamplitudespectrum/cbAddMarginsOnSelection", true).toBool());
 
     ui->lblWindowNormSigma->hide();
     ui->spWindowNormSigma->hide();

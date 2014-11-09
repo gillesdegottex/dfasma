@@ -378,6 +378,7 @@ void QGVAmplitudeSpectrum::settingsSave() {
     settings.setValue("qgvamplitudespectrum/spWindowNormSigma", m_dlgSettings->ui->spWindowNormSigma->value());
     settings.setValue("qgvamplitudespectrum/spWindowExpDecay", m_dlgSettings->ui->spWindowExpDecay->value());
     settings.setValue("qgvamplitudespectrum/cbShowMusicNoteNames", m_dlgSettings->ui->cbShowMusicNoteNames->isChecked());
+    settings.setValue("qgvamplitudespectrum/cbAddMarginsOnSelection", m_dlgSettings->ui->cbAddMarginsOnSelection->isChecked());
 }
 
 void QGVAmplitudeSpectrum::updateSceneRect() {
@@ -868,10 +869,12 @@ void QGVAmplitudeSpectrum::viewUpdateTexts() {
 void QGVAmplitudeSpectrum::selectionZoomOn(){
     if(m_selection.width()>0 && m_selection.height()>0){
         QRectF zoomonrect = m_selection;
-        zoomonrect.setTop(zoomonrect.top()-0.1*zoomonrect.height());
-        zoomonrect.setBottom(zoomonrect.bottom()+0.1*zoomonrect.height());
-        zoomonrect.setLeft(zoomonrect.left()-0.1*zoomonrect.width());
-        zoomonrect.setRight(zoomonrect.right()+0.1*zoomonrect.width());
+        if(m_dlgSettings->ui->cbAddMarginsOnSelection->isChecked()){
+            zoomonrect.setTop(zoomonrect.top()-0.1*zoomonrect.height());
+            zoomonrect.setBottom(zoomonrect.bottom()+0.1*zoomonrect.height());
+            zoomonrect.setLeft(zoomonrect.left()-0.1*zoomonrect.width());
+            zoomonrect.setRight(zoomonrect.right()+0.1*zoomonrect.width());
+        }
         viewSet(zoomonrect);
 
         viewUpdateTexts();

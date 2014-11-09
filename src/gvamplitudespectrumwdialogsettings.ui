@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>539</width>
-    <height>397</height>
+    <width>575</width>
+    <height>519</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -392,6 +392,16 @@
        <widget class="QCheckBox" name="cbShowMusicNoteNames">
         <property name="text">
          <string>Show music note names aside frequencies in Hertz</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="cbAddMarginsOnSelection">
+        <property name="text">
+         <string>Add margins around selection when zoom on selection</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
