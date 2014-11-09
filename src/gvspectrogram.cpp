@@ -26,7 +26,6 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "ui_gvspectrogramwdialogsettings.h"
 #include "gvwaveform.h"
 #include "fftresizethread.h"
-#include "../external/FFTwrapper.h"
 #include "gvamplitudespectrum.h"
 #include "gvphasespectrum.h"
 #include "ftsound.h"
@@ -75,7 +74,7 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_aShowGrid->setChecked(settings.value("qgvspectrogram/m_aShowGrid", true).toBool());
     connect(m_aShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
 
-    m_fft = new FFTwrapper();
+    m_fft = new sigproc::FFTwrapper();
     m_fftresizethread = new FFTResizeThread(m_fft, this);
 
     // Cursor

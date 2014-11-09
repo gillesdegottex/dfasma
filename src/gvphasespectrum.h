@@ -29,7 +29,7 @@ file provided in the source code of DFasma. Another copy can be found at
 
 //#include "wmainwindow.h"
 
-#include "external/FFTwrapper.h"
+#include "sigproc.h"
 #include "ftsound.h"
 
 //class GVPhaseSpectrumWDialogSettings;

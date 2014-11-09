@@ -79,7 +79,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_aShowWindow->setChecked(settings.value("qgvamplitudespectrum/m_aShowWindow", true).toBool());
     connect(m_aShowWindow, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
 
-    m_fft = new FFTwrapper();
+    m_fft = new sigproc::FFTwrapper();
     m_fftresizethread = new FFTResizeThread(m_fft, this);
 
     // Cursor

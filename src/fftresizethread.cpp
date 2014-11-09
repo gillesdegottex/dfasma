@@ -1,8 +1,8 @@
 #include "fftresizethread.h"
 
-#include "../external/FFTwrapper.h"
+#include "sigproc.h"
 
-FFTResizeThread::FFTResizeThread(FFTwrapper* fft, QObject* parent)
+FFTResizeThread::FFTResizeThread(sigproc::FFTwrapper* fft, QObject* parent)
     : QThread(parent)
     , m_fft(fft)
     , m_size_resizing(-1)

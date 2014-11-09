@@ -30,7 +30,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "wmainwindow.h"
 #include "fftresizethread.h"
 
-#include "external/FFTwrapper.h"
+#include "sigproc.h"
 #include "ftsound.h"
 
 class GVAmplitudeSpectrumWDialogSettings;
@@ -55,7 +55,7 @@ public:
 
     GVAmplitudeSpectrumWDialogSettings* m_dlgSettings;
 
-    FFTwrapper* m_fft;
+    sigproc::FFTwrapper* m_fft;
     FFTResizeThread* m_fftresizethread;
 
     QGraphicsScene* m_scene;

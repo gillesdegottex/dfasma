@@ -43,7 +43,6 @@ int FTSound::getNumberOfChannels(const QString& filePath){
         throw QString("The file: ")+filePath+" doesn't seem to exist.";
 
     sox_format_t* in; // input and output files
-    size_t readcount;
 
     // Open the input file (with default parameters)
     in = sox_open_read(filePath.toLocal8Bit().constData(), NULL, NULL, NULL);
@@ -94,7 +93,7 @@ void FTSound::load(int channelid){
     if(in==NULL)
         throw QString("libsox: Cannot open input file");
 
-    if(!sumchannels && m_channelid>in->signal.channels)
+    if(!sumchannels && m_channelid>int(in->signal.channels))
         throw QString("libsox: The requested channel ID is higher than the number of channels in the file.");
 
     m_fileaudioformat.setChannelCount(in->signal.channels);

@@ -35,7 +35,6 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "ftfzero.h"
 #include "ftlabels.h"
 #include "../external/audioengine/audioengine.h"
-#include "../external/FFTwrapper.h"
 
 #include "qtextedit.h"
 
