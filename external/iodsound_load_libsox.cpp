@@ -33,7 +33,31 @@ extern "C" {
 #include <sox.h>
 }
 
+#include <QFileInfo>
+
 #define BUFFER_LEN      1024
+
+int FTSound::getNumberOfChannels(const QString& filePath){
+
+    if(!QFileInfo::exists(filePath))
+        throw QString("The file: ")+filePath+" doesn't seem to exist.";
+
+    sox_format_t* in; // input and output files
+    size_t readcount;
+
+    // Open the input file (with default parameters)
+    in = sox_open_read(filePath.toLocal8Bit().constData(), NULL, NULL, NULL);
+
+    if(in==NULL)
+        throw QString("libsox: Cannot open input file");
+
+    int nbchannels = in->signal.channels;
+
+    sox_close(in);
+
+    return nbchannels;
+}
+
 
 QString FTSound::getAudioFileReadingDescription(){
 
@@ -54,9 +78,11 @@ QString FTSound::getAudioFileReadingDescription(){
 }
 
 
-void FTSound::load(){
+void FTSound::load(int channelid){
 
     m_fileaudioformat = QAudioFormat(); // Clear the format
+    m_channelid = channelid;
+    bool sumchannels = m_channelid==-2;
 
     sox_format_t* in; // input and output files
     sox_sample_t* buf;
@@ -64,13 +90,14 @@ void FTSound::load(){
 
     // Open the input file (with default parameters)
     in = sox_open_read(fileFullPath.toLocal8Bit().constData(), NULL, NULL, NULL);
+
     if(in==NULL)
         throw QString("libsox: Cannot open input file");
 
-    if(in->signal.channels>1)
-        throw QString("libsox: This audio file has multiple audio channel, whereas DFasma is not designed for this. Please convert this file into a mono audio file before re-opening it with DFasma.");
+    if(!sumchannels && m_channelid>in->signal.channels)
+        throw QString("libsox: The requested channel ID is higher than the number of channels in the file.");
 
-    m_fileaudioformat.setChannelCount(1);
+    m_fileaudioformat.setChannelCount(in->signal.channels);
 
     setSamplingRate(in->signal.rate);
 
@@ -91,6 +118,10 @@ void FTSound::load(){
 
     // Read and process blocks of audio until EOF:
     double sample;
+    double sum = 0.0;
+    channelid--; // Move indices [1,N] to [0,N-1] to avoid computing -1 to often
+    int nbchan = in->signal.channels;
+    int curchannelid = 0;
     while((readcount=sox_read(in, buf, BUFFER_LEN))) {
 
         for(size_t i = 0; i < readcount; ++i) {
@@ -99,7 +130,17 @@ void FTSound::load(){
             // processing in this application:
             sample = SOX_SAMPLE_TO_FLOAT_64BIT(buf[i],);
 
-            wav.push_back(sample);
+            if(sumchannels){
+                sum += sample;
+                if(curchannelid==nbchan-1){
+                    wav.push_back(sum/nbchan);
+                    sum = 0.0;
+                }
+            }
+            else if(curchannelid==channelid)
+                wav.push_back(sample);
+
+            curchannelid = (curchannelid+1)%nbchan;
         }
     }
 

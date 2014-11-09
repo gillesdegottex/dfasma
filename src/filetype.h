@@ -32,8 +32,6 @@ class WMainWindow;
 class FileType : public QListWidgetItem
 {
 protected:
-    virtual void load() =0;
-
     QDateTime m_modifiedtime;
     QDateTime m_lastreadtime;
 

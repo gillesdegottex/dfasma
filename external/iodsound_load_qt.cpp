@@ -187,7 +187,7 @@ void AudioDecoder::updateProgress()
 }
 
 
-void FTSound::load(){
+void FTSound::load(int channelid){
 
     m_fileaudioformat = QAudioFormat(); // Clear the format
 

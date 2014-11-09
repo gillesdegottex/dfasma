@@ -27,7 +27,7 @@ QString FTSound::getAudioFileReadingDescription(){
     return QString("<p>Using a built-in minimal WAV file reader (supports only PCM 16 bit signed LE mono format)</p>");
 }
 
-void FTSound::load(){
+void FTSound::load(int channelid){
 
     m_fileaudioformat = QAudioFormat(); // Clear the format
 
@@ -43,7 +43,7 @@ void FTSound::load(){
         throw QString("built-in WAV file reader: Format is invalid.");
 
     if(m_fileaudioformat.channelCount()>1)
-        throw QString("built-in WAV file reader: This audio file has multiple audio channel, whereas DFasma is not designed for this. Please convert this file into a mono audio file before re-opening it with DFasma.");
+        throw QString("built-in WAV file reader: This audio file has multiple audio channel, whereas the built-in reader can read files with only a single channel. Please convert this file into a mono audio file before re-opening it.");
 
     if(!((m_fileaudioformat.codec() == "audio/pcm") &&
          m_fileaudioformat.sampleType() == QAudioFormat::SignedInt &&

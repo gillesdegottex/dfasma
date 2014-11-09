@@ -24,6 +24,9 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "wdialogsettings.h"
 #include "ui_wdialogsettings.h"
 
+#include "wdialogselectchannel.h"
+#include "ui_wdialogselectchannel.h"
+
 #include "gvwaveform.h"
 #include "gvamplitudespectrum.h"
 #include "gvphasespectrum.h"
@@ -483,9 +486,36 @@ void WMainWindow::addFile(const QString& filepath) {
             #else
             throw QString("Support of SDIF files not compiled in this version.");
             #endif
+
+            ui->listSndFiles->addItem(ft);
         }
         else { // Assume it is an audio file
-            ft = new FTSound(filepath, this);
+
+            int nchan = FTSound::getNumberOfChannels(filepath);
+
+            if(nchan==0)
+                throw QString("There is not even a single channel.");
+            else if(nchan==1)
+                ft = new FTSound(filepath, this);
+            else{
+                WDialogSelectChannel dlg(filepath, nchan, this);
+                dlg.exec();
+
+                if(dlg.ui->rdbImportEachChannel->isChecked()){
+                    for(int ci=1; ci<=nchan; ci++){
+                        ft = new FTSound(filepath, this, ci);
+                        ui->listSndFiles->addItem(ft);
+                    }
+                }
+                else if(dlg.ui->rdbImportOnlyOneChannel->isChecked()){
+                    ft = new FTSound(filepath, this, dlg.ui->sbChannelID->value());
+                    ui->listSndFiles->addItem(ft);
+                }
+                else if(dlg.ui->rdbMergeAllChannels->isChecked()){
+                    ft = new FTSound(filepath, this, -2); // -2 is a code for merging the channels
+                    ui->listSndFiles->addItem(ft);
+                }
+            }
 
             // The first sound determines the common fs for the audio output
             if(ftsnds.size()==1)
@@ -495,7 +525,6 @@ void WMainWindow::addFile(const QString& filepath) {
         //    cout << "~MainWindow::addFile" << endl;
         }
 
-        ui->listSndFiles->addItem(ft);
         m_gvWaveform->updateSceneRect();
         soundsChanged();
         ui->actionCloseFile->setEnabled(true);

@@ -49,6 +49,7 @@ WAVTYPE FTSound::s_play_power = 0;
 std::deque<WAVTYPE> FTSound::s_play_power_values;
 
 void FTSound::init(){
+    m_channelid = 0;
     m_isclipped = false;
     m_isfiltered = false;
     wavtoplay  = &wav;
@@ -78,7 +79,7 @@ void FTSound::init(){
     connect(m_actionReload, SIGNAL(triggered()), this, SLOT(reload()));
 }
 
-FTSound::FTSound(const QString& _fileName, QObject *parent)
+FTSound::FTSound(const QString& _fileName, QObject *parent, int channelid)
     : QIODevice(parent)
     , FileType(FTSOUND, _fileName, this)
 {
@@ -86,7 +87,7 @@ FTSound::FTSound(const QString& _fileName, QObject *parent)
 
     if(!fileFullPath.isEmpty()){
         checkFileStatus(CFSMEXCEPTION);
-        load();
+        load(channelid);
         load_finalize();
     }
 
@@ -183,8 +184,8 @@ QString FTSound::info() const {
     QString codecname = m_fileaudioformat.codec();
 //    if(codecname.isEmpty()) codecname = "unknown type";
 //    str += "Codec: "+codecname+"<br/>";
-//    if(m_fileaudioformat.channelCount()!=-1)
-//        str += "Channels: "+QString::number(m_fileaudioformat.channelCount())+" channel<br/>";
+    if(m_channelid>0)         str += "Channel: "+QString::number(m_channelid)+"/"+QString::number(m_fileaudioformat.channelCount())+"<br/>";
+    else if(m_channelid==-2)  str += "Channel: "+QString::number(m_fileaudioformat.channelCount())+" summed<br/>";
     str += "Sampling: "+QString::number(fs)+"Hz<br/>";
     if(m_fileaudioformat.sampleSize()!=-1) {
         str += "Sample type: "+QString::number(m_fileaudioformat.sampleSize())+"b ";

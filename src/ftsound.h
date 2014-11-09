@@ -45,7 +45,7 @@ class FTSound : public QIODevice, public FileType
 
     void init();
 
-    void load();
+    void load(int channelid=1);
     void load_finalize();
 
     QAudioFormat m_fileaudioformat;   // Format of the audio data
@@ -54,12 +54,13 @@ class FTSound : public QIODevice, public FileType
 
     void setSamplingRate(double _fs); // Used by implementations of load
 
+    int m_channelid;  //-2:channels merged; -1:error; 0:no channel; >0:id
     bool m_isclipped;
     bool m_isfiltered;
 
 public:
 
-    FTSound(const QString& _fileName, QObject* parent);
+    FTSound(const QString& _fileName, QObject* parent, int channelid=1);
     FTSound(const FTSound& ft);
     virtual FileType* duplicate();
 
@@ -101,7 +102,6 @@ public:
     // To keep public
     QAudioFormat format() const {return m_fileaudioformat;}
     virtual QString info() const;
-    static QString getAudioFileReadingDescription();
     void setFiltered(bool filtered);
     inline bool isFiltered() const {return m_isfiltered;}
     void updateClippedState();
@@ -117,6 +117,8 @@ public:
     void stop();
 
     static void setAvoidClicksWindowDuration(double halfduration);
+    static QString getAudioFileReadingDescription();
+    static int getNumberOfChannels(const QString& filePath);
 
     ~FTSound();
 

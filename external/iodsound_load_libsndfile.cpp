@@ -83,7 +83,7 @@ QString FTSound::getAudioFileReadingDescription(){
 ///* libsndfile can handle more than 6 channels but we'll restrict it to 6. */
 //#define    MAX_CHANNELS    6
 
-void FTSound::load(){
+void FTSound::load(int channelid){
 
     m_fileaudioformat = QAudioFormat(); // Clear the format
 
@@ -116,7 +116,7 @@ void FTSound::load(){
     }
 
     if(sfinfo.channels>1){
-        throw QString("libsndfile: This audio file has multiple audio channel, whereas DFasma is not designed for this. Please convert this file into a mono audio file before re-opening it with DFasma.");
+        throw QString("libsndfile: Multiple channels are not yet managed by DFasma when using libsndfile (because of DFasma, not because libsndfile ...).");
     }
 
     m_fileaudioformat.setChannelCount(1);
