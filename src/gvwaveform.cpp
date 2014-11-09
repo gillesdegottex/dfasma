@@ -875,7 +875,7 @@ void QGVWaveform::selectionClipAndSet(QRectF selection, bool winforceupdate){
     m_giSelection->setRect(m_selection.left()-0.5/fs, -1, m_selection.width()+1.0/fs, 2);
 
     // WMainWindow::getMW()->ui->lblSelectionTxt->setText(QString("[%1").arg(m_selection.left()).append(",%1] ").arg(m_selection.right()).append("%1 s").arg(m_selection.width())); // start, end and duration
-    WMainWindow::getMW()->ui->lblSelectionTxt->setText(QString("%1s window ").arg(m_selection.width(), 0,'f',4).append(" at %1s").arg(m_selection.center().x(), 0,'f',4)); // duration and center
+    WMainWindow::getMW()->ui->lblSelectionTxt->setText(QString("%1s selection ").arg(m_selection.width(), 0,'f',4).append(" at %1s").arg(m_selection.center().x(), 0,'f',4)); // duration and center
 
     m_giSelection->show();
 

@@ -27,6 +27,9 @@ GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(QGVAmplit
     ui->sbFFTW3ResizingMaxTimeSpent->setValue(settings.value("qgvamplitudespectrum/sbFFTW3ResizingMaxTimeSpent", 1).toDouble());
 
     ui->cbWindowSizeForcedOdd->setChecked(settings.value("qgvamplitudespectrum/cbWindowSizeForcedOdd", false).toBool());
+    ui->cbSpectrumAmplitudeLimitWindowDuration->setChecked(settings.value("qgvamplitudespectrum/cbSpectrumAmplitudeLimitWindowDuration", true).toBool());
+    ui->sbSpectrumAmplitudeWindowDurationLimit->setValue(settings.value("qgvamplitudespectrum/sbSpectrumAmplitudeWindowDurationLimit", 1.0).toDouble());
+
     ui->cbSpectrumWindowType->setCurrentIndex(settings.value("qgvamplitudespectrum/cbSpectrumWindowType", 0).toInt());
     ui->spWindowNormPower->setValue(settings.value("qgvamplitudespectrum/spWindowNormPower", 2.0).toDouble());
     ui->spWindowNormSigma->setValue(settings.value("qgvamplitudespectrum/spWindowNormSigma", 0.3).toDouble());

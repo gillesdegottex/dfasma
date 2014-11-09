@@ -224,8 +224,15 @@ void QGVAmplitudeSpectrum::fftResizing(int prevSize, int newSize){
 void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend, bool winforceupdate){
     if(tstart==tend) return;
 
+    if(m_dlgSettings->ui->cbSpectrumAmplitudeLimitWindowDuration->isChecked() && (tend-tstart)>m_dlgSettings->ui->sbSpectrumAmplitudeWindowDurationLimit->value())
+        tend = tstart+m_dlgSettings->ui->sbSpectrumAmplitudeWindowDurationLimit->value();
+
     m_nl = std::max(0, int(0.5+tstart*WMainWindow::getMW()->getFs()));
     m_nr = int(0.5+std::min(WMainWindow::getMW()->getMaxLastSampleTime(),tend)*WMainWindow::getMW()->getFs());
+
+    if((m_nr-m_nl+1)%2==0 && m_dlgSettings->ui->cbWindowSizeForcedOdd->isChecked())
+        m_nr++;
+
     if(m_nl==m_nr) return;
 
     int winlen_prev = m_winlen;
@@ -373,6 +380,8 @@ void QGVAmplitudeSpectrum::settingsSave() {
     settings.setValue("qgvamplitudespectrum/sbSpectrumOversamplingFactor", m_dlgSettings->ui->sbSpectrumOversamplingFactor->value());
     settings.setValue("qgvamplitudespectrum/sbFFTW3ResizingMaxTimeSpent", m_dlgSettings->ui->sbFFTW3ResizingMaxTimeSpent->value());
     settings.setValue("qgvamplitudespectrum/cbWindowSizeForcedOdd", m_dlgSettings->ui->cbWindowSizeForcedOdd->isChecked());
+    settings.setValue("qgvamplitudespectrum/cbSpectrumAmplitudeLimitWindowDuration", m_dlgSettings->ui->cbSpectrumAmplitudeLimitWindowDuration->isChecked());
+    settings.setValue("qgvamplitudespectrum/sbSpectrumAmplitudeWindowDurationLimit", m_dlgSettings->ui->sbSpectrumAmplitudeWindowDurationLimit->value());
     settings.setValue("qgvamplitudespectrum/cbSpectrumWindowType", m_dlgSettings->ui->cbSpectrumWindowType->currentIndex());
     settings.setValue("qgvamplitudespectrum/spWindowNormPower", m_dlgSettings->ui->spWindowNormPower->value());
     settings.setValue("qgvamplitudespectrum/spWindowNormSigma", m_dlgSettings->ui->spWindowNormSigma->value());
