@@ -52,6 +52,7 @@ class FTSound : public QIODevice, public FileType
 
     void setSamplingRate(double _fs); // Used by implementations of load
 
+    bool m_isclipped;
     bool m_isfiltered;
 
 public:
@@ -64,6 +65,7 @@ public:
     std::vector<WAVTYPE> wavfiltered;
     std::vector<WAVTYPE>* wavtoplay;
     WAVTYPE m_wavmaxamp;
+    WAVTYPE m_filteredmaxamp;
     double fs; // [Hz] Sampling frequency of this specific wav file
 
     qreal m_ampscale; // [linear]
@@ -97,6 +99,8 @@ public:
     static QString getAudioFileReadingDescription();
     void setFiltered(bool filtered);
     inline bool isFiltered() const {return m_isfiltered;}
+    void updateClippedState();
+    inline bool isClipped() const {return m_isclipped;}
 
     double getDuration() const {return wav.size()/fs;}
     virtual double getLastSampleTime() const;

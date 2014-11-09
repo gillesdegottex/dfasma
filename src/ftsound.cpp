@@ -51,8 +51,10 @@ std::deque<WAVTYPE> FTSound::s_play_power_values;
 FTSound::FTSound(const QString& _fileName, QObject *parent)
     : QIODevice(parent)
     , FileType(FTSOUND, _fileName, this)
+    , m_isclipped(false)
     , m_isfiltered(false)
     , wavtoplay(&wav)
+    , m_filteredmaxamp(0.0)
     , m_ampscale(1.0)
     , m_delay(0)
     , m_start(0)
@@ -143,6 +145,8 @@ QString FTSound::info() const {
 
     if(m_ampscale!=1.0)
         str += "Scaled: "+QString::number(20*std::log10(m_ampscale), 'f', 4)+"dB ("+QString::number(m_ampscale, 'f', 4)+")<br/>";
+    if(isClipped())
+        str += "<font color=\"red\"><b>CLIPPED</b></font><br/>";
     if(m_delay!=0.0)
         str += "Delayed: "+QString::number(double(m_delay)/fs, 'f', 4)+"s ("+QString::number(m_delay)+")<br/>";
 
@@ -229,6 +233,8 @@ void FTSound::resetFiltering(){
 //    WMainWindow::getMW()->m_gvSpectrum->m_scene->invalidate();
     WMainWindow::getMW()->m_gvSpectrum->m_filterresponse.clear();
     setFiltered(false);
+    m_filteredmaxamp = 0.0;
+    updateClippedState();
 }
 
 void FTSound::resetAmpScale(){
@@ -258,12 +264,18 @@ bool FTSound::isModified() {
 void FTSound::setStatus(){
     FileType::setStatus();
 
-    if(m_wavmaxamp*m_ampscale>1.0)
+    updateClippedState();
+}
+void FTSound::updateClippedState(){
+    m_isclipped = (m_wavmaxamp*m_ampscale>1.0) | (m_filteredmaxamp*m_ampscale>1.0);
+    if(m_isclipped)
         setBackgroundColor(QColor(255,0,0));
     else if(m_isfiltered)
         setBackgroundColor(QColor(255,192,192));
     else
         setBackgroundColor(QColor(255,255,255));
+
+    WMainWindow::getMW()->fileInfoUpdate();
 }
 
 void FTSound::setSamplingRate(double _fs){
@@ -346,9 +358,11 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
 
             // Compute the energy of the non-filtered signal
             double enerwav = 0.0;
-            for(int n=delayedstart; n<=delayedend; n++)
-                enerwav += wav[n]*wav[n];
-            enerwav = std::sqrt(enerwav);
+            if(WMainWindow::getMW()->m_dlgSettings->ui->cbFilteringCompensateEnergy->isChecked()){
+                for(int n=delayedstart; n<=delayedend; n++)
+                    enerwav += wav[n]*wav[n];
+                enerwav = std::sqrt(enerwav);
+            }
 
             int butterworth_order = WMainWindow::getMW()->m_dlgSettings->ui->sbButterworthOrder->value();
             WMainWindow::getMW()->m_gvSpectrum->m_filterresponse = std::vector<FFTTYPE>(BUTTERRESPONSEDFTLEN/2+1,1.0);
@@ -419,9 +433,13 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
 
                 // ... and equalize the energy with the non-filtered signal
                 enerwav = enerwav/enerfilt; // Pre-compute the ratio
-                for(int n=delayedstart; n<=delayedend; n++)
+                m_filteredmaxamp = 0.0;
+                for(int n=delayedstart; n<=delayedend; n++){
                     wavfiltered[n] *= enerwav;
+                    m_filteredmaxamp = std::max(m_filteredmaxamp, std::abs(wavfiltered[n]));
+                }
             }
+            updateClippedState();
 
             // Convert to dB and multiply by 2 bcs of the filtfilt
             for(size_t k=0; k<WMainWindow::getMW()->m_gvSpectrum->m_filterresponse.size(); k++)
