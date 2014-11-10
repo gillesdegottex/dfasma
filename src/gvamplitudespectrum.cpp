@@ -185,22 +185,25 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
 
     // Fill the toolbar
     m_toolBar = new QToolBar(this);
-    m_toolBar->addAction(m_aShowProperties);
-    m_toolBar->addAction(m_aAutoUpdateDFT);
-    m_toolBar->addSeparator();
-    m_toolBar->addAction(m_aZoomIn);
-    m_toolBar->addAction(m_aZoomOut);
+//    m_toolBar->addAction(m_aAutoUpdateDFT);
+//    m_toolBar->addSeparator();
+//    m_toolBar->addAction(m_aZoomIn);
+//    m_toolBar->addAction(m_aZoomOut);
     m_toolBar->addAction(m_aUnZoom);
-    m_toolBar->addSeparator();
+//    m_toolBar->addSeparator();
     m_toolBar->addAction(m_aZoomOnSelection);
     m_toolBar->addAction(m_aSelectionClear);
     m_toolBar->setIconSize(QSize(WMainWindow::getMW()->m_dlgSettings->ui->sbToolBarSizes->value(),WMainWindow::getMW()->m_dlgSettings->ui->sbToolBarSizes->value()));
-    WMainWindow::getMW()->ui->lSpectrumToolBar->addWidget(m_toolBar);
+    m_toolBar->setOrientation(Qt::Vertical);
+    WMainWindow::getMW()->ui->lSpectraToolBar->addWidget(m_toolBar);
 
     // Build the context menu
     m_contextmenu.addAction(m_aShowGrid);
     m_contextmenu.addAction(m_aShowWindow);
     m_contextmenu.addSeparator();
+    m_contextmenu.addAction(m_aAutoUpdateDFT);
+    m_contextmenu.addSeparator();
+    m_contextmenu.addAction(m_aShowProperties);
     connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
     connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(settingsModified()));
 }

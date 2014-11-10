@@ -14,14 +14,11 @@
    <string>DFasma</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_4">
+   <layout class="QVBoxLayout" name="verticalLayout_10">
     <item>
      <widget class="QSplitter" name="splitterMain">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="childrenCollapsible">
-       <bool>false</bool>
       </property>
       <widget class="QWidget" name="wFiles" native="true">
        <layout class="QVBoxLayout" name="verticalLayout">
@@ -76,9 +73,6 @@
        <property name="orientation">
         <enum>Qt::Vertical</enum>
        </property>
-       <property name="childrenCollapsible">
-        <bool>false</bool>
-       </property>
        <widget class="QWidget" name="wWaveform" native="true">
         <layout class="QVBoxLayout" name="vLayout_2">
          <property name="spacing">
@@ -98,9 +92,6 @@
          </property>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_3">
-           <item>
-            <layout class="QHBoxLayout" name="lWaveformToolBar"/>
-           </item>
            <item>
             <spacer name="horizontalSpacer_2">
              <property name="orientation">
@@ -137,6 +128,9 @@
          </item>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <layout class="QVBoxLayout" name="lWaveformToolBar"/>
+           </item>
            <item>
             <widget class="QSlider" name="sldWaveformAmplitude">
              <property name="maximumSize">
@@ -203,10 +197,7 @@
         </layout>
        </widget>
        <widget class="QWidget" name="wSpectra" native="true">
-        <layout class="QVBoxLayout" name="verticalLayout_9">
-         <property name="spacing">
-          <number>0</number>
-         </property>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
          <property name="leftMargin">
           <number>0</number>
          </property>
@@ -246,7 +237,26 @@
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_2">
               <item>
-               <layout class="QHBoxLayout" name="lSpectrumToolBar"/>
+               <widget class="QLabel" name="lblSpectrumSelectionTxt">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Monospace</family>
+                  <pointsize>8</pointsize>
+                  <weight>50</weight>
+                  <italic>false</italic>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>&lt;selection&gt;</string>
+                </property>
+               </widget>
               </item>
               <item>
                <spacer name="horizontalSpacer_3">
@@ -308,92 +318,74 @@
               </item>
              </layout>
             </item>
-            <item>
-             <widget class="QLabel" name="lblSpectrumSelectionTxt">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="font">
-               <font>
-                <family>Monospace</family>
-                <pointsize>8</pointsize>
-                <weight>50</weight>
-                <italic>false</italic>
-                <bold>false</bold>
-               </font>
-              </property>
-              <property name="text">
-               <string>&lt;selection&gt;</string>
-              </property>
-             </widget>
-            </item>
            </layout>
           </widget>
          </item>
          <item>
-          <widget class="QSplitter" name="splitterSpectra">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="childrenCollapsible">
-            <bool>false</bool>
-           </property>
-           <widget class="QWidget" name="wAmplitudeSpectrum" native="true">
-            <layout class="QVBoxLayout" name="verticalLayout_5">
-             <property name="spacing">
-              <number>0</number>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <layout class="QVBoxLayout" name="lSpectraToolBar"/>
+           </item>
+           <item>
+            <widget class="QSplitter" name="splitterSpectra">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
              </property>
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-             <item>
-              <layout class="QVBoxLayout" name="verticalLayout_4">
+             <widget class="QWidget" name="wAmplitudeSpectrum" native="true">
+              <layout class="QVBoxLayout" name="verticalLayout_5">
                <property name="spacing">
                 <number>0</number>
                </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <layout class="QVBoxLayout" name="verticalLayout_4">
+                 <property name="spacing">
+                  <number>0</number>
+                 </property>
+                </layout>
+               </item>
               </layout>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="wPhaseSpectrum" native="true">
-            <layout class="QVBoxLayout" name="verticalLayout_7">
-             <property name="spacing">
-              <number>0</number>
-             </property>
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-             <item>
-              <layout class="QVBoxLayout" name="verticalLayout_6">
+             </widget>
+             <widget class="QWidget" name="wPhaseSpectrum" native="true">
+              <layout class="QVBoxLayout" name="verticalLayout_7">
                <property name="spacing">
                 <number>0</number>
                </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <layout class="QVBoxLayout" name="verticalLayout_6">
+                 <property name="spacing">
+                  <number>0</number>
+                 </property>
+                </layout>
+               </item>
               </layout>
-             </item>
-            </layout>
-           </widget>
-          </widget>
+             </widget>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>
@@ -417,7 +409,26 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_5">
            <item>
-            <layout class="QHBoxLayout" name="lSpectrogramToolBar"/>
+            <widget class="QLabel" name="lblSpectrogramSelectionTxt">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <family>Monospace</family>
+               <pointsize>8</pointsize>
+               <weight>50</weight>
+               <italic>false</italic>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>&lt;selection&gt;</string>
+             </property>
+            </widget>
            </item>
            <item>
             <spacer name="horizontalSpacer_4">
@@ -474,26 +485,14 @@
           </layout>
          </item>
          <item>
-          <widget class="QLabel" name="lblSpectrogramSelectionTxt">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="font">
-            <font>
-             <family>Monospace</family>
-             <pointsize>8</pointsize>
-             <weight>50</weight>
-             <italic>false</italic>
-             <bold>false</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>&lt;selection&gt;</string>
-           </property>
-          </widget>
+          <layout class="QHBoxLayout" name="lSpectrogramH">
+           <item>
+            <layout class="QVBoxLayout" name="lSpectrogramToolBar"/>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="lSpectrogramGraphicsView"/>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>

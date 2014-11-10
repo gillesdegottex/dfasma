@@ -164,7 +164,7 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     ui->wPhaseSpectrum->layout()->addWidget(m_gvPhaseSpectrum);
 
     m_gvSpectrogram = new QGVSpectrogram(this);
-    ui->wSpectrogram->layout()->addWidget(m_gvSpectrogram);
+    ui->lSpectrogramGraphicsView->addWidget(m_gvSpectrogram);
     ui->wSpectrogram->hide();
 
     ui->splitterMain->setStretchFactor(1, 1);

@@ -131,24 +131,27 @@ RC_ICONS = icons/dfasma.ico
 
 SOURCES   += src/main.cpp\
              src/wmainwindow.cpp \
+             src/wdialogselectchannel.cpp \
              src/filetype.cpp \
              src/ftsound.cpp \
-             external/mkfilter/mkfilter.cpp \
              src/ftfzero.cpp \
              src/ftlabels.cpp \
              src/gvwaveform.cpp \
              src/gvamplitudespectrum.cpp \
              src/gvamplitudespectrumwdialogsettings.cpp \
+             src/fftresizethread.cpp \
              src/gvphasespectrum.cpp \
              src/wdialogsettings.cpp \
              src/gvspectrogram.cpp \
              src/gvspectrogramwdialogsettings.cpp \
-             external/audioengine/audioengine.cpp \
-             external/FFTwrapper.cpp \
-    src/fftresizethread.cpp
+             src/sigproc.cpp \
+             external/mkfilter/mkfilter.cpp \
+             external/audioengine/audioengine.cpp
 
 HEADERS   += src/wmainwindow.h \
+             src/wdialogselectchannel.h \
              src/sigproc.h \
+             external/mkfilter/mkfilter.h \
              src/filetype.h \
              src/ftsound.h \
              src/ftfzero.h \
@@ -161,10 +164,10 @@ HEADERS   += src/wmainwindow.h \
              src/gvspectrogram.h \
              src/gvspectrogramwdialogsettings.h \
              src/fftresizethread.h \
-             external/audioengine/audioengine.h \
-             external/FFTwrapper.h
+             external/audioengine/audioengine.h
 
 FORMS     += src/wmainwindow.ui \
+             src/wdialogselectchannel.ui \
              src/wdialogsettings.ui \
              src/gvamplitudespectrumwdialogsettings.ui \
              src/gvspectrogramwdialogsettings.ui

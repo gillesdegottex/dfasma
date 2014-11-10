@@ -206,14 +206,16 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
 //    m_toolBar->addAction(m_aShowGrid);
 //    m_toolBar->addAction(m_aShowWindow);
 //    m_toolBar->addSeparator();
-    m_toolBar->addAction(m_aZoomIn);
-    m_toolBar->addAction(m_aZoomOut);
+//    m_toolBar->addAction(m_aZoomIn);
+//    m_toolBar->addAction(m_aZoomOut);
     m_toolBar->addAction(m_aUnZoom);
     m_toolBar->addAction(m_aFitViewToSoundsAmplitude);
-    m_toolBar->addSeparator();
+//    m_toolBar->addSeparator();
     m_toolBar->addAction(m_aZoomOnSelection);
     m_toolBar->addAction(m_aSelectionClear);
     m_toolBar->setIconSize(QSize(WMainWindow::getMW()->m_dlgSettings->ui->sbToolBarSizes->value(),WMainWindow::getMW()->m_dlgSettings->ui->sbToolBarSizes->value()));
+//    WMainWindow::getMW()->ui->lWaveformToolBar->addWidget(m_toolBar);
+    m_toolBar->setOrientation(Qt::Vertical);
     WMainWindow::getMW()->ui->lWaveformToolBar->addWidget(m_toolBar);
 
     cursorUpdate(-1);
