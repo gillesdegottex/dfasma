@@ -512,23 +512,25 @@ void WMainWindow::addFile(const QString& filepath) {
                 ui->listSndFiles->addItem(ft);
             }
             else{
-                WDialogSelectChannel dlg(filepath, nchan, this);
-                dlg.exec();
+                WDialogSelectChannel* dlg = new WDialogSelectChannel(filepath, nchan, this);
+                dlg->exec();
 
-                if(dlg.ui->rdbImportEachChannel->isChecked()){
+                if(dlg->ui->rdbImportEachChannel->isChecked()){
                     for(int ci=1; ci<=nchan; ci++){
                         ft = new FTSound(filepath, this, ci);
                         ui->listSndFiles->addItem(ft);
                     }
                 }
-                else if(dlg.ui->rdbImportOnlyOneChannel->isChecked()){
-                    ft = new FTSound(filepath, this, dlg.ui->sbChannelID->value());
+                else if(dlg->ui->rdbImportOnlyOneChannel->isChecked()){
+                    ft = new FTSound(filepath, this, dlg->ui->sbChannelID->value());
                     ui->listSndFiles->addItem(ft);
                 }
-                else if(dlg.ui->rdbMergeAllChannels->isChecked()){
+                else if(dlg->ui->rdbMergeAllChannels->isChecked()){
                     ft = new FTSound(filepath, this, -2); // -2 is a code for merging the channels
                     ui->listSndFiles->addItem(ft);
                 }
+
+                delete dlg;
             }
 
             // The first sound determines the common fs for the audio output
