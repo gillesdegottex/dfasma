@@ -98,9 +98,9 @@ void FTSound::load(int channelid){
 
     m_fileaudioformat.setChannelCount(in->signal.channels);
 
+    m_fileaudioformat.setSampleRate(in->signal.rate);
     setSamplingRate(in->signal.rate);
 
-    m_fileaudioformat.setSampleRate(in->signal.rate);
     m_fileaudioformat.setSampleSize(in->encoding.bits_per_sample);
     // TODO Check with known examples
     if(in->encoding.encoding==SOX_ENCODING_SIGN2)

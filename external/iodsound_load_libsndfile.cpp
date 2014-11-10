@@ -32,6 +32,25 @@ extern "C" {
 #include    <sndfile.h>
 }
 
+#include <QFileInfo>
+
+int FTSound::getNumberOfChannels(const QString& filePath){
+
+    if(!QFileInfo::exists(filePath))
+        throw QString("The file: ")+filePath+" doesn't seem to exist.";
+
+    SNDFILE* in;
+    SF_INFO sfinfo;
+    in = sf_open(filePath.toLocal8Bit().constData(), SFM_READ, &sfinfo);
+
+    if(in==NULL)
+        throw QString("libsndfile: Cannot open input file");
+
+    sf_close(in);
+
+    return sfinfo.channels;
+}
+
 QString FTSound::getAudioFileReadingDescription(){
 
     QString txt = QString("<p>Using <a href='http://www.mega-nerd.com/libsndfile'>libsndfile</a>");
@@ -86,6 +105,8 @@ QString FTSound::getAudioFileReadingDescription(){
 void FTSound::load(int channelid){
 
     m_fileaudioformat = QAudioFormat(); // Clear the format
+    m_channelid = channelid;
+    bool sumchannels = m_channelid==-2;
 
     /* This is a buffer of double precision floating point values
     ** which will hold our data while we process it.
@@ -115,15 +136,13 @@ void FTSound::load(int channelid){
         throw QString("libsndfile: Cannot open input file");
     }
 
-    if(sfinfo.channels>1){
-        throw QString("libsndfile: Multiple channels are not yet managed by DFasma when using libsndfile (because of DFasma, not because libsndfile ...).");
-    }
+    if(!sumchannels && m_channelid>int(sfinfo.channels))
+        throw QString("libsndfile: The requested channel ID is higher than the number of channels in the file.");
 
-    m_fileaudioformat.setChannelCount(1);
-
-    setSamplingRate(sfinfo.samplerate);
+    m_fileaudioformat.setChannelCount(sfinfo.channels);
 
     m_fileaudioformat.setSampleRate(sfinfo.samplerate);
+    setSamplingRate(sfinfo.samplerate);
 
     // TODO Fill the codec name based on:
     //      http://www.mega-nerd.com/libsndfile/api.html
@@ -165,9 +184,25 @@ void FTSound::load(int channelid){
     /* While there are samples in the input file, read them, process
     ** them and write them to the output file.
     */
+    double sum = 0.0;
+    channelid--; // Move indices [1,N] to [0,N-1] to avoid computing -1 to often
+    int nbchan = sfinfo.channels;
+    int curchannelid = 0;
     while((readcount = sf_read_double (infile, data, BUFFER_LEN))) {
-        for(int n=0; n<readcount; n++)
-            wav.push_back(data[n]);
+        for(int n=0; n<readcount; n++){
+
+            if(sumchannels){
+                sum += data[n];
+                if(curchannelid==nbchan-1){
+                    wav.push_back(sum/nbchan);
+                    sum = 0.0;
+                }
+            }
+            else if(curchannelid==channelid)
+                wav.push_back(data[n]);
+
+            curchannelid = (curchannelid+1)%nbchan;
+        }
     };
 
     /* Close input and output files. */
