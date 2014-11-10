@@ -49,6 +49,9 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     ui->cbFilteringCompensateEnergy->setChecked(settings.value("playback/cbFilteringCompensateEnergy", false).toBool());
     ui->ckAvoidClicksAddWindows->setChecked(settings.value("playback/ckAvoidClicksAddWindows", false).toBool());
     ui->sbAvoidClicksWindowDuration->setValue(settings.value("playback/sbAvoidClicksWindowDuration", 0.050).toDouble());
+
+    ui->cbShowMusicNoteNames->setChecked(settings.value("cbShowMusicNoteNames", false).toBool());
+    ui->sbToolBarSizes->setValue(settings.value("sbToolBarSizes", 32).toInt());
 }
 
 void WDialogSettings::setSBButterworthOrderChangeValue(int order) {
@@ -74,6 +77,10 @@ void WDialogSettings::settingsSave() {
     settings.setValue("playback/cbFilteringCompensateEnergy", ui->cbFilteringCompensateEnergy->isChecked());
     settings.setValue("playback/ckAvoidClicksAddWindows", ui->ckAvoidClicksAddWindows->isChecked());
     settings.setValue("playback/sbAvoidClicksWindowDuration", ui->sbAvoidClicksWindowDuration->value());
+
+    settings.setValue("cbShowMusicNoteNames", ui->cbShowMusicNoteNames->isChecked());
+    settings.setValue("sbToolBarSizes", ui->sbToolBarSizes->value());
+
     WMainWindow::getMW()->settingsSave();
 }
 void WDialogSettings::settingsClear() {

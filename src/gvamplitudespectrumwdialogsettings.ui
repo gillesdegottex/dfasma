@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>575</width>
-    <height>555</height>
+    <height>523</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -429,13 +429,6 @@
          </widget>
         </item>
        </layout>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="cbShowMusicNoteNames">
-        <property name="text">
-         <string>Show music note names aside frequencies in Hertz</string>
-        </property>
-       </widget>
       </item>
       <item>
        <widget class="QCheckBox" name="cbAddMarginsOnSelection">

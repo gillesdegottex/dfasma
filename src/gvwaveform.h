@@ -25,6 +25,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QMenu>
 
 class WMainWindow;
+class QToolBar;
 
 class QGVWaveform : public QGraphicsView
 {
@@ -37,6 +38,8 @@ class QGVWaveform : public QGraphicsView
     void viewSet(QRectF viewrect);
 
 public:
+
+    QToolBar* m_toolBar;
 
     bool m_first_start;
 

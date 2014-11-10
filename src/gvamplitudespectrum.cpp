@@ -22,8 +22,13 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
+
+#include "wdialogsettings.h"
+#include "ui_wdialogsettings.h"
+
 #include "gvamplitudespectrumwdialogsettings.h"
 #include "ui_gvamplitudespectrumwdialogsettings.h"
+
 #include "gvwaveform.h"
 #include "gvphasespectrum.h"
 #include "ftsound.h"
@@ -189,6 +194,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_toolBar->addSeparator();
     m_toolBar->addAction(m_aZoomOnSelection);
     m_toolBar->addAction(m_aSelectionClear);
+    m_toolBar->setIconSize(QSize(WMainWindow::getMW()->m_dlgSettings->ui->sbToolBarSizes->value(),WMainWindow::getMW()->m_dlgSettings->ui->sbToolBarSizes->value()));
     WMainWindow::getMW()->ui->lSpectrumToolBar->addWidget(m_toolBar);
 
     // Build the context menu
@@ -386,7 +392,6 @@ void QGVAmplitudeSpectrum::settingsSave() {
     settings.setValue("qgvamplitudespectrum/spWindowNormPower", m_dlgSettings->ui->spWindowNormPower->value());
     settings.setValue("qgvamplitudespectrum/spWindowNormSigma", m_dlgSettings->ui->spWindowNormSigma->value());
     settings.setValue("qgvamplitudespectrum/spWindowExpDecay", m_dlgSettings->ui->spWindowExpDecay->value());
-    settings.setValue("qgvamplitudespectrum/cbShowMusicNoteNames", m_dlgSettings->ui->cbShowMusicNoteNames->isChecked());
     settings.setValue("qgvamplitudespectrum/cbAddMarginsOnSelection", m_dlgSettings->ui->cbAddMarginsOnSelection->isChecked());
 }
 
@@ -987,7 +992,7 @@ void QGVAmplitudeSpectrum::cursorFixAndRefresh() {
         x = min(x, viewrect.right()-br.width()/trans.m11());
 
         QString freqstr = QString("%1Hz").arg(m_giCursorVert->line().x1());
-        if(m_dlgSettings->ui->cbShowMusicNoteNames->isChecked())
+        if(WMainWindow::getMW()->m_dlgSettings->ui->cbShowMusicNoteNames->isChecked())
             freqstr += "("+sigproc::h2n(sigproc::f2h(m_giCursorVert->line().x1()))+")";
         m_giCursorPositionXTxt->setText(freqstr);
         m_giCursorPositionXTxt->setPos(x, viewrect.top());

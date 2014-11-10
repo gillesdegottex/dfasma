@@ -91,6 +91,9 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     m_dlgSettings->ui->lblAudioOutputDeviceFormat->hide();
     m_dlgSettings->adjustSize();
 
+    ui->mainToolBar->setIconSize(QSize(1.5*m_dlgSettings->ui->sbToolBarSizes->value(),1.5*m_dlgSettings->ui->sbToolBarSizes->value()));
+
+
     QString sdifinfostr = "";
     #ifdef SUPPORT_SDIF
         sdifinfostr = "<br/><i>SDIF file format:</i> <a href=\"http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/\">Easdif</a> version "+QString(EASDIF_VERSION_STRING);
@@ -172,6 +175,7 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     ui->splitterSpectra->setStretchFactor(1, 1);
 
     // Link axis' views
+
     connect(m_gvSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvPhaseSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
     connect(m_gvPhaseSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
 
@@ -206,8 +210,17 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
         connect(m_dlgSettings->ui->cbAudioOutputDevices, SIGNAL(currentIndexChanged(int)), this, SLOT(selectAudioOutputDevice(int)));
     }
 
+    connect(m_dlgSettings->ui->sbToolBarSizes, SIGNAL(valueChanged(int)), this, SLOT(changeToolBarSizes(int)));
+
     for(int f=0; f<sndfiles.size(); f++)
         addFile(sndfiles[f]);
+}
+
+void WMainWindow::changeToolBarSizes(int size) {
+    WMainWindow::getMW()->m_gvWaveform->m_toolBar->setIconSize(QSize(size,size));
+    WMainWindow::getMW()->m_gvSpectrum->m_toolBar->setIconSize(QSize(size,size));
+    WMainWindow::getMW()->m_gvSpectrogram->m_toolBar->setIconSize(QSize(size,size));
+    ui->mainToolBar->setIconSize(QSize(1.5*size,1.5*size));
 }
 
 void WMainWindow::viewsDisplayedChanged() {

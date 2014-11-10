@@ -22,6 +22,9 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
+#include "wdialogsettings.h"
+#include "ui_wdialogsettings.h"
+
 #include "gvspectrogramwdialogsettings.h"
 #include "ui_gvspectrogramwdialogsettings.h"
 #include "gvwaveform.h"
@@ -176,6 +179,7 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_toolBar->addSeparator();
     m_toolBar->addAction(m_aZoomOnSelection);
     m_toolBar->addAction(m_aSelectionClear);
+    m_toolBar->setIconSize(QSize(WMainWindow::getMW()->m_dlgSettings->ui->sbToolBarSizes->value(),WMainWindow::getMW()->m_dlgSettings->ui->sbToolBarSizes->value()));
     WMainWindow::getMW()->ui->lSpectrogramToolBar->addWidget(m_toolBar);
 
     // Build the context menu
@@ -256,11 +260,11 @@ void QGVSpectrogram::updateDFTSettings(){
     // Set the DFT length
     m_dftlen = pow(2, std::ceil(log2(float(m_winlen)))+m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());
 
-//    computeDFTs();
+    computeDFTs();
 }
 
 void QGVSpectrogram::computeDFTs(){
-    std::cout << "QGVSpectrogram::computeDFTs " << m_winlen << endl;
+//    std::cout << "QGVSpectrogram::computeDFTs " << m_winlen << endl;
 
     if(m_winlen<2)
         return;
@@ -323,7 +327,7 @@ void QGVSpectrogram::computeDFTs(){
             m_minsy = sigproc::log2db*m_minsy;
             m_maxsy = sigproc::log2db*m_maxsy;
 
-            m_imgSTFT = m_imgSTFT.mirrored(false, true);
+            m_imgSTFT.mirrored(false, true);
 
             m_fftresizethread->m_mutex_resizing.unlock();
 
@@ -331,7 +335,7 @@ void QGVSpectrogram::computeDFTs(){
         }
     }
 
-    std::cout << "~QGVSpectrogram::computeDFTs" << endl;
+//    std::cout << "~QGVSpectrogram::computeDFTs" << endl;
 }
 
 void QGVSpectrogram::settingsSave() {

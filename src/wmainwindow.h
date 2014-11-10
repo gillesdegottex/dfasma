@@ -88,6 +88,7 @@ private slots:
     void execAbout();
     void fileSelectionChanged();
     void viewsDisplayedChanged();
+    void changeToolBarSizes(int size);
 
 public slots:
     void updateWindowTitle();
