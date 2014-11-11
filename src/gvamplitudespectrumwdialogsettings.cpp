@@ -21,8 +21,6 @@ GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(QGVAmplit
 
     // Load the settings
     QSettings settings;
-    ui->sbSpectrumAmplitudeRangeMin->setValue(settings.value("qgvamplitudespectrum/sbSpectrumAmplitudeRangeMin", -215).toInt());
-    ui->sbSpectrumAmplitudeRangeMax->setValue(settings.value("qgvamplitudespectrum/sbSpectrumAmplitudeRangeMax", 10).toInt());
     ui->sbSpectrumOversamplingFactor->setValue(settings.value("qgvamplitudespectrum/sbSpectrumOversamplingFactor", 1).toInt());
     ui->sbFFTW3ResizingMaxTimeSpent->setValue(settings.value("qgvamplitudespectrum/sbFFTW3ResizingMaxTimeSpent", 1).toDouble());
 
@@ -49,8 +47,6 @@ GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(QGVAmplit
     connect(ui->cbSpectrumWindowType, SIGNAL(currentIndexChanged(QString)), this, SLOT(CBSpectrumWindowTypeCurrentIndexChanged(QString)));
 
     // Update the DFT view automatically
-    connect(ui->sbSpectrumAmplitudeRangeMin, SIGNAL(valueChanged(double)), m_ampspec, SLOT(settingsModified()));
-    connect(ui->sbSpectrumAmplitudeRangeMax, SIGNAL(valueChanged(double)), m_ampspec, SLOT(settingsModified()));
     connect(ui->sbSpectrumOversamplingFactor, SIGNAL(valueChanged(int)), m_ampspec, SLOT(settingsModified()));
     connect(ui->cbWindowSizeForcedOdd, SIGNAL(toggled(bool)), m_ampspec, SLOT(settingsModified()));
     connect(ui->cbSpectrumWindowType, SIGNAL(currentIndexChanged(int)), m_ampspec, SLOT(settingsModified()));

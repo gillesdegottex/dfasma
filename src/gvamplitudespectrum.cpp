@@ -61,6 +61,8 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
 
     QSettings settings;
 
+    WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->setValue(settings.value("qgvamplitudespectrum/sldSpectrumAmplitudeMin", -215).toInt());
+
     m_aShowProperties = new QAction(tr("&Properties"), this);
     m_aShowProperties->setStatusTip(tr("Open the properties configuration panel of the spectrum view"));
     m_aShowProperties->setIcon(QIcon(":/icons/settings.svg"));
@@ -179,8 +181,8 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     connect(m_fftresizethread, SIGNAL(fftResized(int,int)), this, SLOT(computeDFTs()));
     connect(m_fftresizethread, SIGNAL(fftResizing(int,int)), this, SLOT(fftResizing(int,int)));
 
-    m_minsy = m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value();
-    m_maxsy = m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value();
+    m_maxsy = 10;
+    m_minsy = WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->value();
     updateSceneRect();
 
     // Fill the toolbar
@@ -206,6 +208,8 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_contextmenu.addAction(m_aShowProperties);
     connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
     connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(settingsModified()));
+
+    connect(WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin, SIGNAL(valueChanged(int)), this, SLOT(updateSceneRect()));
 }
 
 // Remove hard coded margin (Bug 11945)
@@ -221,6 +225,27 @@ void QGVAmplitudeSpectrum::settingsModified(){
     updateSceneRect();
     if(WMainWindow::getMW()->m_gvWaveform)
         WMainWindow::getMW()->m_gvWaveform->selectionClipAndSet(WMainWindow::getMW()->m_gvWaveform->m_mouseSelection, true);
+}
+
+void QGVAmplitudeSpectrum::updateAmplitudeExtent(){
+    if(WMainWindow::getMW()->ftsnds.size()>0){
+        qreal min = -1e32;
+        for(unsigned int si=0; si<WMainWindow::getMW()->ftsnds.size(); si++)
+            min = std::max(min, 20*std::log10(std::pow(2,WMainWindow::getMW()->ftsnds[si]->format().sampleSize())));
+
+        WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->setMaximum(0);
+        WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->setMinimum(-2*min);
+    }
+}
+
+void QGVAmplitudeSpectrum::updateSceneRect() {
+
+    m_scene->setSceneRect(0.0, -10, WMainWindow::getMW()->getFs()/2, (10-WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->value()));
+
+    viewSet(m_scene->sceneRect(), false);
+
+    if(WMainWindow::getMW()->m_gvPhaseSpectrum)
+        WMainWindow::getMW()->m_gvPhaseSpectrum->updateSceneRect();
 }
 
 void QGVAmplitudeSpectrum::fftResizing(int prevSize, int newSize){
@@ -384,8 +409,7 @@ void QGVAmplitudeSpectrum::settingsSave() {
     QSettings settings;
     settings.setValue("qgvamplitudespectrum/m_aShowGrid", m_aShowGrid->isChecked());
     settings.setValue("qgvamplitudespectrum/m_aShowWindow", m_aShowWindow->isChecked());
-    settings.setValue("qgvamplitudespectrum/sbSpectrumAmplitudeRangeMin", m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value());
-    settings.setValue("qgvamplitudespectrum/sbSpectrumAmplitudeRangeMax", m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value());
+    settings.setValue("qgvamplitudespectrum/sldSpectrumAmplitudeMin", WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->value());
     settings.setValue("qgvamplitudespectrum/sbSpectrumOversamplingFactor", m_dlgSettings->ui->sbSpectrumOversamplingFactor->value());
     settings.setValue("qgvamplitudespectrum/sbFFTW3ResizingMaxTimeSpent", m_dlgSettings->ui->sbFFTW3ResizingMaxTimeSpent->value());
     settings.setValue("qgvamplitudespectrum/cbWindowSizeForcedOdd", m_dlgSettings->ui->cbWindowSizeForcedOdd->isChecked());
@@ -396,14 +420,6 @@ void QGVAmplitudeSpectrum::settingsSave() {
     settings.setValue("qgvamplitudespectrum/spWindowNormSigma", m_dlgSettings->ui->spWindowNormSigma->value());
     settings.setValue("qgvamplitudespectrum/spWindowExpDecay", m_dlgSettings->ui->spWindowExpDecay->value());
     settings.setValue("qgvamplitudespectrum/cbAddMarginsOnSelection", m_dlgSettings->ui->cbAddMarginsOnSelection->isChecked());
-}
-
-void QGVAmplitudeSpectrum::updateSceneRect() {
-//    cout << "QGVAmplitudeSpectrum::updateSceneRect" << endl;
-    m_scene->setSceneRect(0.0, -m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value(), WMainWindow::getMW()->getFs()/2, (m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value()-m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value()));
-
-    if(WMainWindow::getMW()->m_gvPhaseSpectrum)
-        WMainWindow::getMW()->m_gvPhaseSpectrum->updateSceneRect();
 }
 
 void QGVAmplitudeSpectrum::soundsChanged(){
@@ -422,9 +438,9 @@ void QGVAmplitudeSpectrum::viewSet(QRectF viewrect, bool sync) {
             viewrect = currentviewrect;
 
         if(viewrect.top()<=m_scene->sceneRect().top())
-            viewrect.setTop(m_scene->sceneRect().top()-2);
+            viewrect.setTop(m_scene->sceneRect().top());
         if(viewrect.bottom()>=m_scene->sceneRect().bottom())
-            viewrect.setBottom(m_scene->sceneRect().bottom()+2);
+            viewrect.setBottom(m_scene->sceneRect().bottom());
         if(viewrect.left()<m_scene->sceneRect().left())
             viewrect.setLeft(m_scene->sceneRect().left());
         if(viewrect.right()>m_scene->sceneRect().right())
@@ -933,10 +949,10 @@ void QGVAmplitudeSpectrum::aunzoom(){
 
     QRectF rect = QRectF(0.0, -m_maxsy, WMainWindow::getMW()->getFs()/2, (m_maxsy-m_minsy));
 
-    if(rect.bottom()>(-m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value()))
-        rect.setBottom(-m_dlgSettings->ui->sbSpectrumAmplitudeRangeMin->value());
-    if(rect.top()<(-m_maxsy>m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value()))
-        rect.setTop(-m_dlgSettings->ui->sbSpectrumAmplitudeRangeMax->value());
+    if(rect.bottom()>(-WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->value()))
+        rect.setBottom(-WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->value());
+    if(rect.top()<(-m_maxsy>10))
+        rect.setTop(-10);
 
     viewSet(rect, false);
 

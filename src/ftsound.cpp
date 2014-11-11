@@ -202,24 +202,24 @@ QString FTSound::info() const {
         else if(sampletype==QAudioFormat::Float)
             str += "float";
         str += "<br/>";
-//        str += "SQNR="+QString::number(20*std::log10(std::pow(2,m_fileaudioformat.sampleSize())))+"dB<br/>";
-        if(sampletype!=QAudioFormat::Unknown) {
-            double smallest=1.0;
-            if(sampletype==QAudioFormat::SignedInt)
-                smallest = 1.0/std::pow(2.0,m_fileaudioformat.sampleSize()-1);
-            else if(sampletype==QAudioFormat::UnSignedInt)
-                smallest = 2.0/std::pow(2.0,m_fileaudioformat.sampleSize());
-            else if(sampletype==QAudioFormat::Float) {
-                if(m_fileaudioformat.sampleSize()==8*sizeof(float))
-                    smallest = std::numeric_limits<float>::min();
-                else if(m_fileaudioformat.sampleSize()==8*sizeof(double))
-                    smallest = std::numeric_limits<double>::min();
-                else if(m_fileaudioformat.sampleSize()==8*sizeof(long double))
-                    smallest = std::numeric_limits<long double>::min();
-            }
-            if(smallest!=1.0)
-                str += "Smallest amplitude: "+QString::number(20*log10(smallest))+"dB";
-        }
+        str += "SQNR="+QString::number(20*std::log10(std::pow(2,m_fileaudioformat.sampleSize())))+"dB<br/>";
+//        if(sampletype!=QAudioFormat::Unknown) {
+//            double smallest=1.0;
+//            if(sampletype==QAudioFormat::SignedInt)
+//                smallest = 1.0/std::pow(2.0,m_fileaudioformat.sampleSize()-1);
+//            else if(sampletype==QAudioFormat::UnSignedInt)
+//                smallest = 2.0/std::pow(2.0,m_fileaudioformat.sampleSize());
+//            else if(sampletype==QAudioFormat::Float) {
+//                if(m_fileaudioformat.sampleSize()==8*sizeof(float))
+//                    smallest = std::numeric_limits<float>::min();
+//                else if(m_fileaudioformat.sampleSize()==8*sizeof(double))
+//                    smallest = std::numeric_limits<double>::min();
+//                else if(m_fileaudioformat.sampleSize()==8*sizeof(long double))
+//                    smallest = std::numeric_limits<long double>::min();
+//            }
+//            if(smallest!=1.0)
+//                str += "Smallest amplitude: "+QString::number(20*log10(smallest))+"dB";
+//        }
     }
 
     return str;
@@ -301,7 +301,7 @@ void FTSound::setStatus(){
     updateClippedState();
 }
 void FTSound::updateClippedState(){
-    m_isclipped = (m_wavmaxamp*m_ampscale>1.0) | (m_filteredmaxamp*m_ampscale>1.0);
+    m_isclipped = (m_wavmaxamp*m_ampscale>1.0) || (m_isfiltered && (m_filteredmaxamp*m_ampscale>1.0));
     if(m_isclipped)
         setBackgroundColor(QColor(255,0,0));
     else if(m_isfiltered)

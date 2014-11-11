@@ -538,6 +538,7 @@ void WMainWindow::addFile(const QString& filepath) {
                 initializeSoundSystem(ftsnds[0]->fs);
 
             m_gvWaveform->fitViewToSoundsAmplitude();
+            m_gvSpectrum->updateAmplitudeExtent();
         //    cout << "~MainWindow::addFile" << endl;
         }
 
@@ -835,7 +836,7 @@ void WMainWindow::play()
                 // Start by reseting any filtered sounds
                 for(size_t fi=0; fi<ftsnds.size(); fi++)
                     if(ftsnds[fi]!=currentftsound)
-                        ftsnds[fi]->wavtoplay = &(ftsnds[fi]->wav);
+                        ftsnds[fi]->resetFiltering();
 
                 double tstart = m_gvWaveform->m_giPlayCursor->pos().x();
                 double tstop = getMaxLastSampleTime();

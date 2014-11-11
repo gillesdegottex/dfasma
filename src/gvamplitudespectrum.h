@@ -123,6 +123,7 @@ signals:
 public slots:
     void settingsSave();
     void soundsChanged();
+    void updateAmplitudeExtent();
 
     void setWindowRange(double tstart, double tend, bool winforceupdate);
     void updateSceneRect(); // To call when fs has changed and limits in dB
