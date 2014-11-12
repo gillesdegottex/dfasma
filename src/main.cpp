@@ -41,6 +41,8 @@ extern "C" {
 #include <easdif/easdif.h>
 #endif
 
+#include <iostream>
+
 int main(int argc, char *argv[])
 {
     #ifdef AUDIOFILEREADING_LIBAV
@@ -73,5 +75,9 @@ int main(int argc, char *argv[])
     QObject::connect(&a, SIGNAL(focusWindowChanged(QWindow*)), &w, SLOT(checkFileModifications()));
     w.show();
 
-    return a.exec();
+    int ret = a.exec();
+
+    exit(0); // BUGFIX: won't quit otherwise
+
+    return ret;
 }
