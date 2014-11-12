@@ -103,7 +103,6 @@ public slots:
     void settingsSave();
     void soundsChanged();
     void updateSceneRect();
-    void viewFixAndRefresh();
     void azoomin();
     void azoomout();
     void aunzoom();

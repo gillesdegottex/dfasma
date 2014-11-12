@@ -253,7 +253,7 @@ void QGVWaveform::fitViewToSoundsAmplitude(){
 }
 
 void QGVWaveform::updateSceneRect() {
-    cout << "QGVWaveform::updateSceneRect" << endl;
+//    cout << "QGVWaveform::updateSceneRect" << endl;
 
     m_scene->setSceneRect(-1.0/WMainWindow::getMW()->getFs(), -1.05*m_ampzoom, WMainWindow::getMW()->getMaxDuration()+1.0/WMainWindow::getMW()->getFs(), 2.1*m_ampzoom);
 
@@ -262,33 +262,10 @@ void QGVWaveform::updateSceneRect() {
 //    if(WMainWindow::getMW()->m_gvSpectrogram)
 //        WMainWindow::getMW()->m_gvSpectrogram->updateSceneRect();
 
-    cout << "QGVWaveform::~updateSceneRect" << endl;
-}
-void QGVWaveform::viewFixAndRefresh() { // TODO REMOVE
-
-//    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-//    cout << "QGVWaveform::viewFixAndRefresh viewrect: " << viewrect.width() << "," << viewrect.height() << endl;
-
-    QTransform trans = transform();
-    qreal h11 = trans.m11();
-    qreal h22 = trans.m22();
-
-    qreal min11 = viewport()->rect().width()/m_scene->sceneRect().width();
-    qreal min22 = viewport()->rect().height()/m_scene->sceneRect().height();
-    qreal max11 = viewport()->rect().width()/(10*1.0/WMainWindow::getMW()->getFs()); // Clip the zoom because the plot can't be infinitely precise
-    qreal max22 = viewport()->rect().height()/pow(10, -20);// Clip the zoom because the plot can't be infinitely precise
-    if(h11<min11) h11=min11;
-    if(h11>max11) h11=max11;
-    if(h22<min22) h22=min22;
-    if(h22>max22) h22=max22;
-
-    setTransformationAnchor(QGraphicsView::AnchorViewCenter);
-    setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
-
-//    viewUpdateTexts();
+//    cout << "QGVWaveform::~updateSceneRect" << endl;
 }
 void QGVWaveform::viewSet(QRectF viewrect, bool sync) {
-    cout << "QGVWaveform::viewSet" << endl;
+//    cout << "QGVWaveform::viewSet" << endl;
 
     QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
 
@@ -312,10 +289,10 @@ void QGVWaveform::viewSet(QRectF viewrect, bool sync) {
         if(sync) viewSync();
     }
 
-    cout << "QGVWaveform::~viewSet" << endl;
+//    cout << "QGVWaveform::~viewSet" << endl;
 }
 void QGVWaveform::viewSync() {
-    cout << "QGVPhaseSpectrum::viewChangesRequested" << endl;
+//    cout << "QGVPhaseSpectrum::viewChangesRequested" << endl;
 
     if(WMainWindow::getMW()->m_gvSpectrogram) {
         QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
@@ -326,7 +303,7 @@ void QGVWaveform::viewSync() {
         WMainWindow::getMW()->m_gvSpectrogram->viewSet(currect, false);
     }
 
-    cout << "QGVPhaseSpectrum::~viewChangesRequested" << endl;
+//    cout << "QGVPhaseSpectrum::~viewChangesRequested" << endl;
 }
 
 void QGVWaveform::soundsChanged(){
@@ -342,10 +319,6 @@ void QGVWaveform::sldAmplitudeChanged(int value){
     m_ampzoom = (100-value)/100.0;
 
     updateSceneRect();
-    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-    viewrect.setTop(-2);
-    viewrect.setBottom(+2);
-    viewSet(viewrect, false);
 
     cursorUpdate(-1);
 
@@ -353,7 +326,7 @@ void QGVWaveform::sldAmplitudeChanged(int value){
     m.scale(1.0, m_ampzoom);
     m_giWindow->setTransform(m);
 
-    m_scene->invalidate();
+    m_scene->update();
 }
 
 void QGVWaveform::azoomin(){
@@ -949,7 +922,7 @@ void QGVWaveform::selectionClipAndSet(QRectF selection, bool winforceupdate){
 
         // Add the vertical line
         qreal x = ((WMainWindow::getMW()->m_gvSpectrum->m_win.size()-1)/2.0)/fs;
-        path.moveTo(QPointF(x, 1.0));
+        path.moveTo(QPointF(x, 2.0));
         path.lineTo(QPointF(x, -1.0));
 
         m_giWindow->setPath(path);

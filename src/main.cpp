@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 
     int ret = a.exec();
 
-    exit(0); // BUGFIX: won't quit otherwise
+    exit(0); // WORKAROUND?: won't quit otherwise on some platform (e.g. bouzouki)
 
     return ret;
 }

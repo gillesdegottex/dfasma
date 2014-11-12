@@ -373,7 +373,7 @@ void QGVSpectrogram::soundsChanged(){
 }
 
 void QGVSpectrogram::viewSet(QRectF viewrect, bool sync) {
-    cout << "QGVSpectrogram::viewSet" << endl;
+//    cout << "QGVSpectrogram::viewSet" << endl;
 
     QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
 
@@ -395,11 +395,11 @@ void QGVSpectrogram::viewSet(QRectF viewrect, bool sync) {
         if(sync) viewSync();
     }
 
-    cout << "QGVSpectrogram::~viewSet" << endl;
+//    cout << "QGVSpectrogram::~viewSet" << endl;
 }
 
 void QGVSpectrogram::viewSync() {
-    cout << "QGVSpectrogram::viewSync" << endl;
+//    cout << "QGVSpectrogram::viewSync" << endl;
 
     if(WMainWindow::getMW()->m_gvWaveform) {
         QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
@@ -410,7 +410,7 @@ void QGVSpectrogram::viewSync() {
         WMainWindow::getMW()->m_gvWaveform->viewSet(currect, false);
     }
 
-    cout << "QGVSpectrogram::~viewSync" << endl;
+//    cout << "QGVSpectrogram::~viewSync" << endl;
 }
 
 void QGVSpectrogram::resizeEvent(QResizeEvent* event){
