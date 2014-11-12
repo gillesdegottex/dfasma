@@ -100,6 +100,7 @@ public slots:
     void colorSelected(const QColor& color);
     void checkFileModifications();
     void duplicateCurrentFile();
+    void setInWaitingForFileState();
 
 public:
     explicit WMainWindow(QStringList sndfiles, QWidget* parent=0);
