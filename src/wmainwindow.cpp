@@ -476,7 +476,7 @@ void WMainWindow::openFile() {
 }
 
 void WMainWindow::addFile(const QString& filepath) {
-    cout << "INFO: Add file: " << filepath.toLocal8Bit().constData() << endl;
+//    cout << "INFO: Add file: " << filepath.toLocal8Bit().constData() << endl;
 
     try
     {
@@ -514,29 +514,27 @@ void WMainWindow::addFile(const QString& filepath) {
                 ui->listSndFiles->addItem(ft);
             }
             else{
-                WDialogSelectChannel* dlg = new WDialogSelectChannel(filepath, nchan, this);
-                dlg->exec();
-
-                if(dlg->ui->rdbImportEachChannel->isChecked()){
-                    for(int ci=1; ci<=nchan; ci++){
-                        ft = new FTSound(filepath, this, ci);
+                WDialogSelectChannel dlg(filepath, nchan, this);
+                if(dlg.exec()) {
+                    if(dlg.ui->rdbImportEachChannel->isChecked()){
+                        for(int ci=1; ci<=nchan; ci++){
+                            ft = new FTSound(filepath, this, ci);
+                            ui->listSndFiles->addItem(ft);
+                        }
+                    }
+                    else if(dlg.ui->rdbImportOnlyOneChannel->isChecked()){
+                        ft = new FTSound(filepath, this, dlg.ui->sbChannelID->value());
+                        ui->listSndFiles->addItem(ft);
+                    }
+                    else if(dlg.ui->rdbMergeAllChannels->isChecked()){
+                        ft = new FTSound(filepath, this, -2); // -2 is a code for merging the channels
                         ui->listSndFiles->addItem(ft);
                     }
                 }
-                else if(dlg->ui->rdbImportOnlyOneChannel->isChecked()){
-                    ft = new FTSound(filepath, this, dlg->ui->sbChannelID->value());
-                    ui->listSndFiles->addItem(ft);
-                }
-                else if(dlg->ui->rdbMergeAllChannels->isChecked()){
-                    ft = new FTSound(filepath, this, -2); // -2 is a code for merging the channels
-                    ui->listSndFiles->addItem(ft);
-                }
-
-                delete dlg;
             }
 
             // The first sound determines the common fs for the audio output
-            if(initializethesoundsystem)
+            if(initializethesoundsystem && ftsnds.size()>0)
                 initializeSoundSystem(ftsnds[0]->fs);
 
             m_gvWaveform->fitViewToSoundsAmplitude();
@@ -544,12 +542,16 @@ void WMainWindow::addFile(const QString& filepath) {
         //    cout << "~MainWindow::addFile" << endl;
         }
 
-        m_gvWaveform->updateSceneRect();
-        soundsChanged();
-        ui->actionCloseFile->setEnabled(true);
-        ui->splitterViews->show();
-        updateWindowTitle();
+        if(ui->listSndFiles->count()==0)
+            setInWaitingForFileState();
+        else {
+            m_gvWaveform->updateSceneRect();
+            soundsChanged();
+            ui->actionCloseFile->setEnabled(true);
+            ui->splitterViews->show();
+            updateWindowTitle();
 //        WMainWindow::getMW()->ui->splitterViews->handle(2)->hide();
+        }
     }
     catch (QString err)
     {
@@ -732,7 +734,7 @@ void WMainWindow::closeSelectedFile() {
 
         FileType* ft = (FileType*)l.at(i);
 
-        cout << "Closing file: \"" << ft->fileFullPath.toLocal8Bit().constData() << "\"" << endl;
+//        cout << "INFO: Closing file: \"" << ft->fileFullPath.toLocal8Bit().constData() << "\"" << endl;
 
         delete ft; // Remove it from the listview
 
@@ -748,14 +750,20 @@ void WMainWindow::closeSelectedFile() {
     }
 
     // If there is no more files, put the interface in a waiting-for-file state.
-    if(ui->listSndFiles->count()==0){
-        ui->splitterViews->hide();
-        FTSound::fs_common = 0;
-        ui->actionCloseFile->setEnabled(false);
-        ui->actionPlay->setEnabled(false);
-    }
+    if(ui->listSndFiles->count()==0)
+        setInWaitingForFileState();
     else
         soundsChanged();
+}
+
+void WMainWindow::setInWaitingForFileState(){
+    if(ui->listSndFiles->count()>0)
+        return;
+
+    ui->splitterViews->hide();
+    FTSound::fs_common = 0;
+    ui->actionCloseFile->setEnabled(false);
+    ui->actionPlay->setEnabled(false);
 }
 
 // Audio management ============================================================
@@ -791,14 +799,11 @@ void WMainWindow::selectAudioOutputDevice(const QString& devicename) {
 }
 
 void WMainWindow::audioOutputFormatChanged(const QAudioFormat &format) {
-    cout << "WMainWindow::audioOutputFormatChanged" << endl;
+//    cout << "WMainWindow::audioOutputFormatChanged" << endl;
     if(format.sampleRate()==-1) {
-        cout << "WMainWindow::audioOutputFormatChanged " << 1 << endl;
         m_dlgSettings->ui->lblAudioOutputDeviceFormat->hide();
-        cout << "WMainWindow::audioOutputFormatChanged " << 2 << endl;
     }
     else {
-        cout << "WMainWindow::audioOutputFormatChanged " << 3 << endl;
         QAudioDeviceInfo adinfo = m_audioengine->audioOutputDevice();
         cout << "INFO: Audio output format changed: " << adinfo.deviceName().toLocal8Bit().constData() << " fs=" << format.sampleRate() << "Hz" << endl;
 
@@ -826,7 +831,7 @@ void WMainWindow::audioOutputFormatChanged(const QAudioFormat &format) {
         m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText(str);
         m_dlgSettings->ui->lblAudioOutputDeviceFormat->show();
     }
-    cout << "WMainWindow::~audioOutputFormatChanged" << endl;
+//    cout << "WMainWindow::~audioOutputFormatChanged" << endl;
 }
 
 void WMainWindow::play()
