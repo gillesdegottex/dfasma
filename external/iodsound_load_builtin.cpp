@@ -27,6 +27,18 @@ QString FTSound::getAudioFileReadingDescription(){
     return QString("<p>Using a built-in minimal WAV file reader (supports only PCM 16 bit signed LE mono format)</p>");
 }
 
+int FTSound::getNumberOfChannels(const QString &filePath){
+    WavFile* pfile = new WavFile(NULL);
+    if(!pfile->open(filePath))
+        throw QString("built-in WAV file reader: Cannot open the file.");
+
+    int nchan = pfile->fileFormat().channelCount();
+
+    delete pfile;
+
+    return nchan;
+}
+
 void FTSound::load(int channelid){
 
     m_fileaudioformat = QAudioFormat(); // Clear the format
