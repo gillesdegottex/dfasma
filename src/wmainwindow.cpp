@@ -44,6 +44,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <limits>
 using namespace std;
 
+#include <QGraphicsWidget>
 #include <QToolBar>
 #include <QGraphicsItem>
 #include <QGraphicsRectItem>
@@ -153,6 +154,18 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     ui->actionPlay->setEnabled(false);
     connect(ui->actionPlay, SIGNAL(triggered()), this, SLOT(play()));
     connect(ui->actionPlayFiltered, SIGNAL(triggered()), this, SLOT(play()));
+    m_pbVolume = new QProgressBar(this);
+    m_pbVolume->setOrientation(Qt::Vertical);
+    m_pbVolume->setTextVisible(false);
+//    m_pbVolume->setMaximumWidth(75);
+    m_pbVolume->setMaximumWidth(m_dlgSettings->ui->sbToolBarSizes->value()/2);
+    m_pbVolume->setMaximum(0);
+//    m_pbVolume->setMaximumHeight(ui->mainToolBar->height()/2);
+    m_pbVolume->setMaximumHeight(ui->mainToolBar->height());
+    m_pbVolume->setMinimum(-100);
+    m_pbVolume->setValue(-100);
+    ui->mainToolBar->insertWidget(ui->actionSettings, m_pbVolume);
+    ui->mainToolBar->insertSeparator(ui->actionSettings);
 
     m_gvWaveform = new QGVWaveform(this);
     ui->lWaveformGraphicsView->addWidget(m_gvWaveform);
@@ -175,9 +188,13 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     ui->splitterSpectra->setStretchFactor(1, 1);
 
     // Link axis' views
-
     connect(m_gvSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvPhaseSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
     connect(m_gvPhaseSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
+    connect(m_gvWaveform->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrogram->horizontalScrollBar(), SLOT(setValue(int)));
+    connect(m_gvSpectrogram->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvWaveform->horizontalScrollBar(), SLOT(setValue(int)));
+
+    // TODO Link spectra with spectrogram ?
+
 
     // Set visible views
     connect(ui->actionShowAmplitudeSpectrum, SIGNAL(toggled(bool)), this, SLOT(viewsDisplayedChanged()));
@@ -221,6 +238,10 @@ void WMainWindow::changeToolBarSizes(int size) {
     WMainWindow::getMW()->m_gvSpectrum->m_toolBar->setIconSize(QSize(size,size));
     WMainWindow::getMW()->m_gvSpectrogram->m_toolBar->setIconSize(QSize(size,size));
     ui->mainToolBar->setIconSize(QSize(1.5*size,1.5*size));
+//    m_pbVolume->setMaximumWidth(75);
+    m_pbVolume->setMaximumWidth(m_dlgSettings->ui->sbToolBarSizes->value()/2);
+//    m_pbVolume->setMaximumHeight(ui->mainToolBar->height()/2);
+    m_pbVolume->setMaximumHeight(ui->mainToolBar->height());
 }
 
 void WMainWindow::viewsDisplayedChanged() {
@@ -750,7 +771,7 @@ void WMainWindow::closeSelectedFile() {
         ui->splitterViews->hide();
         FTSound::fs_common = 0;
         ui->actionCloseFile->setEnabled(false);
-        ui->actionPlay->setEnabled(false);
+        ui->actionPlay->setEnabled(false);        
     }
     else
         soundsChanged();
@@ -920,8 +941,8 @@ void WMainWindow::audioStateChanged(QAudio::State state){
 
 void WMainWindow::localEnergyChanged(double e){
 
-    if(e==0) ui->pbVolume->setValue(ui->pbVolume->minimum());
-    else     ui->pbVolume->setValue(20*log10(e)); // In dB
+    if(e==0) m_pbVolume->setValue(m_pbVolume->minimum());
+    else     m_pbVolume->setValue(20*log10(e)); // In dB
 
-    ui->pbVolume->repaint();
+    m_pbVolume->repaint();
 }

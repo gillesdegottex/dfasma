@@ -30,6 +30,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "gvamplitudespectrumwdialogsettings.h"
 #include "ui_gvamplitudespectrumwdialogsettings.h"
 #include "gvphasespectrum.h"
+#include "gvspectrogram.h"
 #include "ftsound.h"
 #include "ftlabels.h"
 
@@ -151,7 +152,7 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     playCursorSet(0.0);
     m_scene->addItem(m_giPlayCursor);
 
-    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     setResizeAnchor(QGraphicsView::AnchorViewCenter);
     setMouseTracking(true);
@@ -193,8 +194,10 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_aFitViewToSoundsAmplitude = new QAction(tr("Fit the view's amplitude to the max value"), this);
     m_aFitViewToSoundsAmplitude->setIcon(QIcon(":/icons/unzoomy.svg"));
     m_aFitViewToSoundsAmplitude->setStatusTip(tr("Change the amplitude zoom so that to fit to the maximum of amplitude among all sounds"));
+    m_contextmenu.addAction(m_aFitViewToSoundsAmplitude);
+    connect(WMainWindow::getMW()->ui->btnFitViewToSoundsAmplitude, SIGNAL(clicked()), m_aFitViewToSoundsAmplitude, SLOT(trigger()));
+    WMainWindow::getMW()->ui->btnFitViewToSoundsAmplitude->setIcon(QIcon(":/icons/unzoomy.svg"));
     connect(m_aFitViewToSoundsAmplitude, SIGNAL(triggered()), this, SLOT(fitViewToSoundsAmplitude()));
-//    m_contextmenu.addAction(m_aFitViewToSoundsAmplitude);
 
     connect(WMainWindow::getMW()->ui->sldWaveformAmplitude, SIGNAL(valueChanged(int)), this, SLOT(sldAmplitudeChanged(int)));
 
@@ -209,7 +212,7 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
 //    m_toolBar->addAction(m_aZoomIn);
 //    m_toolBar->addAction(m_aZoomOut);
     m_toolBar->addAction(m_aUnZoom);
-    m_toolBar->addAction(m_aFitViewToSoundsAmplitude);
+//    m_toolBar->addAction(m_aFitViewToSoundsAmplitude);
 //    m_toolBar->addSeparator();
     m_toolBar->addAction(m_aZoomOnSelection);
     m_toolBar->addAction(m_aSelectionClear);
@@ -250,11 +253,18 @@ void QGVWaveform::fitViewToSoundsAmplitude(){
 }
 
 void QGVWaveform::updateSceneRect() {
+    cout << "QGVWaveform::updateSceneRect" << endl;
+
     m_scene->setSceneRect(-1.0/WMainWindow::getMW()->getFs(), -1.05*m_ampzoom, WMainWindow::getMW()->getMaxDuration()+1.0/WMainWindow::getMW()->getFs(), 2.1*m_ampzoom);
 
-    viewFixAndRefresh();
+    viewSet(m_scene->sceneRect(), false);
+
+//    if(WMainWindow::getMW()->m_gvSpectrogram)
+//        WMainWindow::getMW()->m_gvSpectrogram->updateSceneRect();
+
+    cout << "QGVWaveform::~updateSceneRect" << endl;
 }
-void QGVWaveform::viewFixAndRefresh() {
+void QGVWaveform::viewFixAndRefresh() { // TODO REMOVE
 
 //    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 //    cout << "QGVWaveform::viewFixAndRefresh viewrect: " << viewrect.width() << "," << viewrect.height() << endl;
@@ -275,15 +285,17 @@ void QGVWaveform::viewFixAndRefresh() {
     setTransformationAnchor(QGraphicsView::AnchorViewCenter);
     setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
 
-    playCursorUpdate();
-
 //    viewUpdateTexts();
 }
-void QGVWaveform::viewSet(QRectF viewrect) {
-//    cout << "QGVWaveform::viewSet" << endl;
+void QGVWaveform::viewSet(QRectF viewrect, bool sync) {
+    cout << "QGVWaveform::viewSet" << endl;
 
     QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
-    if(viewrect!=currentviewrect) {
+
+    if(viewrect==QRect() || viewrect!=currentviewrect) {
+        if(viewrect==QRectF())
+            viewrect = currentviewrect;
+
         if(viewrect.top()>m_scene->sceneRect().top())
             viewrect.setTop(m_scene->sceneRect().top()-0.01);
         if(viewrect.bottom()<m_scene->sceneRect().bottom())
@@ -292,23 +304,33 @@ void QGVWaveform::viewSet(QRectF viewrect) {
             viewrect.setLeft(m_scene->sceneRect().left());
         if(viewrect.right()>m_scene->sceneRect().right())
             viewrect.setRight(m_scene->sceneRect().right());
+
         fitInView(removeHiddenMargin(viewrect));
-        viewFixAndRefresh();
+
+        playCursorUpdate();
+
+        if(sync) viewSync();
     }
 
-//    cout << "QGVWaveform::~viewSet" << endl;
+    cout << "QGVWaveform::~viewSet" << endl;
 }
-void QGVWaveform::viewChangesRequested() {
-//    cout << "QGVPhaseSpectrum::viewChangesRequested" << endl;
+void QGVWaveform::viewSync() {
+    cout << "QGVPhaseSpectrum::viewChangesRequested" << endl;
 
-    viewFixAndRefresh();
+    if(WMainWindow::getMW()->m_gvSpectrogram) {
+        QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
-    // TODO Should contain some stuff for view synchro with the spectrogram
+        QRectF currect = WMainWindow::getMW()->m_gvSpectrogram->mapToScene(WMainWindow::getMW()->m_gvSpectrogram->viewport()->rect()).boundingRect();
+        currect.setLeft(viewrect.left());
+        currect.setRight(viewrect.right());
+        WMainWindow::getMW()->m_gvSpectrogram->viewSet(currect, false);
+    }
 
-//    cout << "QGVPhaseSpectrum::~viewChangesRequested" << endl;
+    cout << "QGVPhaseSpectrum::~viewChangesRequested" << endl;
 }
 
 void QGVWaveform::soundsChanged(){
+
     if(WMainWindow::getMW()->ftsnds.size()>0)
         updateSceneRect();
 
@@ -323,7 +345,7 @@ void QGVWaveform::sldAmplitudeChanged(int value){
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
     viewrect.setTop(-2);
     viewrect.setBottom(+2);
-    viewSet(viewrect);
+    viewSet(viewrect, false);
 
     cursorUpdate(-1);
 
@@ -450,7 +472,7 @@ void QGVWaveform::wheelEvent(QWheelEvent* event){
         h11 += 0.01*h11*numDegrees.y();
         setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
         setTransform(QTransform(h11, trans.m12(), trans.m21(), trans.m22(), 0, 0));
-        viewChangesRequested();
+        viewSet();
 
         QPointF p = mapToScene(QPoint(event->x(),0));
         cursorUpdate(p.x());

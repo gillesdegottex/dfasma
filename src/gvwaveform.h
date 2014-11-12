@@ -35,8 +35,6 @@ class QGVWaveform : public QGraphicsView
 
     QRectF removeHiddenMargin(const QRectF& sceneRect);
 
-    void viewSet(QRectF viewrect);
-
 public:
 
     QToolBar* m_toolBar;
@@ -96,6 +94,9 @@ public:
     void draw_grid(QPainter* painter, const QRectF& rect);
     void draw_waveform(QPainter* painter, const QRectF& rect);
 
+    void viewSet(QRectF viewrect=QRectF(), bool sync=true);
+    void viewSync();
+
 signals:
 
 public slots:
@@ -103,7 +104,6 @@ public slots:
     void soundsChanged();
     void updateSceneRect();
     void viewFixAndRefresh();
-    void viewChangesRequested();
     void azoomin();
     void azoomout();
     void aunzoom();

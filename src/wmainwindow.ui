@@ -74,7 +74,7 @@
         <enum>Qt::Vertical</enum>
        </property>
        <widget class="QWidget" name="wWaveform" native="true">
-        <layout class="QVBoxLayout" name="vLayout_2">
+        <layout class="QVBoxLayout" name="verticalLayout_13">
          <property name="spacing">
           <number>0</number>
          </property>
@@ -92,19 +92,6 @@
          </property>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_3">
-           <item>
-            <spacer name="horizontalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
            <item>
             <widget class="QLabel" name="lblSelectionTxt">
              <property name="font">
@@ -124,6 +111,19 @@
              </property>
             </widget>
            </item>
+           <item>
+            <spacer name="horizontalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
           </layout>
          </item>
          <item>
@@ -132,65 +132,46 @@
             <layout class="QVBoxLayout" name="lWaveformToolBar"/>
            </item>
            <item>
-            <widget class="QSlider" name="sldWaveformAmplitude">
-             <property name="maximumSize">
-              <size>
-               <width>16</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="tickPosition">
-              <enum>QSlider::NoTicks</enum>
-             </property>
-             <property name="tickInterval">
-              <number>10</number>
-             </property>
-            </widget>
+            <layout class="QVBoxLayout" name="verticalLayout_12">
+             <item>
+              <widget class="QSlider" name="sldWaveformAmplitude">
+               <property name="maximumSize">
+                <size>
+                 <width>16</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="tickPosition">
+                <enum>QSlider::NoTicks</enum>
+               </property>
+               <property name="tickInterval">
+                <number>10</number>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btnFitViewToSoundsAmplitude">
+               <property name="maximumSize">
+                <size>
+                 <width>18</width>
+                 <height>18</height>
+                </size>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>16</width>
+                 <height>16</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
            <item>
             <layout class="QHBoxLayout" name="lWaveformGraphicsView"/>
-           </item>
-           <item>
-            <widget class="QProgressBar" name="pbVolume">
-             <property name="maximumSize">
-              <size>
-               <width>14</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>8</pointsize>
-               <weight>50</weight>
-               <italic>false</italic>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="minimum">
-              <number>-100</number>
-             </property>
-             <property name="maximum">
-              <number>0</number>
-             </property>
-             <property name="value">
-              <number>-100</number>
-             </property>
-             <property name="textVisible">
-              <bool>true</bool>
-             </property>
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="invertedAppearance">
-              <bool>false</bool>
-             </property>
-             <property name="textDirection">
-              <enum>QProgressBar::BottomToTop</enum>
-             </property>
-             <property name="format">
-              <string>Volume</string>
-             </property>
-            </widget>
            </item>
           </layout>
          </item>
@@ -612,9 +593,9 @@
    <addaction name="separator"/>
    <addaction name="actionShowAmplitudeSpectrum"/>
    <addaction name="actionShowPhaseSpectrum"/>
+   <addaction name="actionShowSpectrogram"/>
    <addaction name="separator"/>
    <addaction name="actionPlay"/>
-   <addaction name="separator"/>
    <addaction name="actionSettings"/>
    <addaction name="actionAbout"/>
   </widget>

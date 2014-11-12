@@ -155,7 +155,7 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     WMainWindow::getMW()->ui->lblSpectrogramSelectionTxt->setText("No selection");
 
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     setResizeAnchor(QGraphicsView::AnchorViewCenter);
     setMouseTracking(true);
 
@@ -317,10 +317,13 @@ void QGVSpectrogram::computeDFTs(){
 
                 for(n=0; n<dftlen/2+1; n++) {
                     double y = std::log(std::abs(m_fft->out[n]));
-                    int color = 256*(sigproc::log2db*y-m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMin->value())/(m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMax->value()-m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMin->value());
+//                    int color = 256*(sigproc::log2db*y-m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMin->value())/(m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMax->value()-m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMin->value());
+
+                    int color = 256-(256*(sigproc::log2db*y-m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMin->value())/(m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMax->value()-m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMin->value()));
+
                     if(color<0) color = 0;
                     else if(color>255) color = 255;
-                    m_imgSTFT.setPixel(QPoint(si,n), QColor(color, color, color).rgb());
+                    m_imgSTFT.setPixel(QPoint(si,dftlen/2-n), QColor(color, color, color).rgb());
                     m_minsy = std::min(m_minsy, y);
                     m_maxsy = std::max(m_maxsy, y);
                 }
@@ -329,7 +332,7 @@ void QGVSpectrogram::computeDFTs(){
             m_minsy = sigproc::log2db*m_minsy;
             m_maxsy = sigproc::log2db*m_maxsy;
 
-            m_imgSTFT.mirrored(false, true);
+//            m_imgSTFT.mirrored(false, true);
 
             m_fftresizethread->m_mutex_resizing.unlock();
 
@@ -370,7 +373,7 @@ void QGVSpectrogram::soundsChanged(){
 }
 
 void QGVSpectrogram::viewSet(QRectF viewrect, bool sync) {
-//    cout << "QGVSpectrogram::viewSet" << endl;
+    cout << "QGVSpectrogram::viewSet" << endl;
 
     QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
 
@@ -392,23 +395,22 @@ void QGVSpectrogram::viewSet(QRectF viewrect, bool sync) {
         if(sync) viewSync();
     }
 
-//    cout << "QGVSpectrogram::~viewSet" << endl;
+    cout << "QGVSpectrogram::~viewSet" << endl;
 }
 
 void QGVSpectrogram::viewSync() {
+    cout << "QGVSpectrogram::viewSync" << endl;
 
-//    if(WMainWindow::getMW()->m_gvPhaseSpectrum) {
-//        QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+    if(WMainWindow::getMW()->m_gvWaveform) {
+        QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
-//        QRectF currect = WMainWindow::getMW()->m_gvPhaseSpectrum->mapToScene(WMainWindow::getMW()->m_gvPhaseSpectrum->viewport()->rect()).boundingRect();
-//        currect.setLeft(viewrect.left());
-//        currect.setRight(viewrect.right());
-//        WMainWindow::getMW()->m_gvPhaseSpectrum->viewSet(currect, false);
+        QRectF currect = WMainWindow::getMW()->m_gvWaveform->mapToScene(WMainWindow::getMW()->m_gvWaveform->viewport()->rect()).boundingRect();
+        currect.setLeft(viewrect.left());
+        currect.setRight(viewrect.right());
+        WMainWindow::getMW()->m_gvWaveform->viewSet(currect, false);
+    }
 
-////        QPointF p = WMainWindow::getMW()->m_gvPhaseSpectrum->mapToScene(WMainWindow::getMW()->m_gvPhaseSpectrum->viewport()->rect()).boundingRect().center();
-////        p.setX(viewrect.center().x());
-////        WMainWindow::getMW()->m_gvPhaseSpectrum->centerOn(p);
-//    }
+    cout << "QGVSpectrogram::~viewSync" << endl;
 }
 
 void QGVSpectrogram::resizeEvent(QResizeEvent* event){
@@ -889,7 +891,7 @@ void QGVSpectrogram::aunzoom(){
     if(rect.top()<(-m_maxsy>m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMax->value()))
         rect.setTop(-m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMax->value());
 
-    viewSet(rect, false);
+    viewSet(rect);
 
 //    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 //    cout << "QGVSpectrogram::aunzoom viewrect: " << viewrect.left() << "," << viewrect.right() << " X " << viewrect.top() << "," << viewrect.bottom() << endl;
@@ -978,7 +980,10 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 //    }
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-//    cout << viewrect.width() << " " << viewrect.height() << endl;
+//    cout << "viewport rect:" << viewport()->rect().width() << " " << viewport()->rect().height() << endl;
+//    cout << "scene view rect: " << viewrect.width() << " " << viewrect.height() << endl;
+//    cout << "scene view rect: " << viewrect.left() << ", " << viewrect.right() << "; " << viewrect.top() << ", " << viewrect.bottom() << endl;
+
 
     // Draw the sound's spectra
     // TODO only the current one
@@ -988,8 +993,17 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 
 //        cout << m_nbsteps << " " << m_dftlen << endl;
 
+        QRectF srcrect;// TODO Check time synchro
+        srcrect.setLeft(m_imgSTFT.rect().width()*viewrect.left()/m_scene->sceneRect().width());
+        srcrect.setRight(m_imgSTFT.rect().width()*viewrect.right()/m_scene->sceneRect().width());
+        srcrect.setTop(m_imgSTFT.rect().height()*viewrect.top()/m_scene->sceneRect().height());
+        srcrect.setBottom(m_imgSTFT.rect().height()*viewrect.bottom()/m_scene->sceneRect().height());
+
+//        cout << "img src: " << srcrect.left() << ", " << srcrect.right() << "; " << srcrect.top() << ", " << srcrect.bottom() << endl;
+
+//        cout << m_imgSTFT.rect().width() << " " << m_imgSTFT.rect().height() << endl;
         // TODO Set source rect according to viewrect
-        painter->drawImage(viewrect, m_imgSTFT, m_imgSTFT.rect());
+        painter->drawImage(viewrect, m_imgSTFT, srcrect);
     }
 
     // Draw the grid above the spectrogram

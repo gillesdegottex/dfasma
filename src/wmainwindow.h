@@ -64,6 +64,8 @@ class WMainWindow : public QMainWindow
     void connectModes();
     void disconnectModes();
 
+    QProgressBar* m_pbVolume;
+
 protected:
     void keyPressEvent(QKeyEvent* event);
     void keyReleaseEvent(QKeyEvent* event);
