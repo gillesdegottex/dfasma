@@ -123,7 +123,7 @@ void FTSound::load_finalize() {
     if(sm_avoidclickswindow.size()==0)
         FTSound::setAvoidClicksWindowDuration(WMainWindow::getMW()->m_dlgSettings->ui->sbAvoidClicksWindowDuration->value());
 
-    std::cout << "INFO: " << wav.size() << " samples loaded (" << wav.size()/fs << "s max amplitude=" << m_wavmaxamp << ")" << endl;
+//    std::cout << "INFO: " << wav.size() << " samples loaded (" << wav.size()/fs << "s max amplitude=" << m_wavmaxamp << ")" << endl;
 
     m_lastreadtime = QDateTime::currentDateTime();
     setStatus();
@@ -358,9 +358,9 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
     }
 
     if(m_start<0) m_start=0;
-    if(m_start>wav.size()-1) m_start=wav.size()-1;
+    if(m_start>qint64(wav.size()-1)) m_start=wav.size()-1;
     if(m_end<0) m_end=0;
-    if(m_end>wav.size()-1) m_end=wav.size()-1;
+    if(m_end>qint64(wav.size()-1)) m_end=wav.size()-1;
 
     int delayedstart = m_start-m_delay;
     if(delayedstart<0) delayedstart=0;
@@ -549,10 +549,10 @@ qint64 FTSound::readData(char *data, qint64 askedlen)
     while(writtenbytes<askedlen) {
         qint16 value = 0;
 
-        if(sm_playwin_use && (m_avoidclickswinpos<(sm_avoidclickswindow.size()-1)/2)) {
+        if(sm_playwin_use && (m_avoidclickswinpos<qint64(sm_avoidclickswindow.size()-1)/2)) {
             value = qint16((gain*(*wavtoplay)[delayedstart]*sm_avoidclickswindow[m_avoidclickswinpos++])*32767);
         }
-        else if(sm_playwin_use && (m_pos>m_end) && m_avoidclickswinpos<sm_avoidclickswindow.size()-1) {
+        else if(sm_playwin_use && (m_pos>m_end) && m_avoidclickswinpos<qint64(sm_avoidclickswindow.size()-1)) {
             value = qint16((gain*(*wavtoplay)[delayedend]*sm_avoidclickswindow[1+m_avoidclickswinpos++])*32767);
         }
         else if (m_pos<=m_end) {
