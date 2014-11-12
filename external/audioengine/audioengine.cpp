@@ -121,7 +121,7 @@ void AudioEngine::selectAudioOutputDevice(const QString& devicename) {
 
 AudioEngine::~AudioEngine()
 {
-
+    delete m_audioOutput;
 }
 
 //-----------------------------------------------------------------------------
