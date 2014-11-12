@@ -503,6 +503,8 @@ void WMainWindow::addFile(const QString& filepath) {
         }
         else { // Assume it is an audio file
 
+            bool initializethesoundsystem = ftsnds.size()==0;
+
             int nchan = FTSound::getNumberOfChannels(filepath);
 
             if(nchan==0)
@@ -534,7 +536,7 @@ void WMainWindow::addFile(const QString& filepath) {
             }
 
             // The first sound determines the common fs for the audio output
-            if(ftsnds.size()==1)
+            if(initializethesoundsystem)
                 initializeSoundSystem(ftsnds[0]->fs);
 
             m_gvWaveform->fitViewToSoundsAmplitude();
@@ -789,10 +791,14 @@ void WMainWindow::selectAudioOutputDevice(const QString& devicename) {
 }
 
 void WMainWindow::audioOutputFormatChanged(const QAudioFormat &format) {
+    cout << "WMainWindow::audioOutputFormatChanged" << endl;
     if(format.sampleRate()==-1) {
+        cout << "WMainWindow::audioOutputFormatChanged " << 1 << endl;
         m_dlgSettings->ui->lblAudioOutputDeviceFormat->hide();
+        cout << "WMainWindow::audioOutputFormatChanged " << 2 << endl;
     }
     else {
+        cout << "WMainWindow::audioOutputFormatChanged " << 3 << endl;
         QAudioDeviceInfo adinfo = m_audioengine->audioOutputDevice();
         cout << "INFO: Audio output format changed: " << adinfo.deviceName().toLocal8Bit().constData() << " fs=" << format.sampleRate() << "Hz" << endl;
 
@@ -820,6 +826,7 @@ void WMainWindow::audioOutputFormatChanged(const QAudioFormat &format) {
         m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText(str);
         m_dlgSettings->ui->lblAudioOutputDeviceFormat->show();
     }
+    cout << "WMainWindow::~audioOutputFormatChanged" << endl;
 }
 
 void WMainWindow::play()
