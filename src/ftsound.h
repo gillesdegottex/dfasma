@@ -58,27 +58,34 @@ class FTSound : public QIODevice, public FileType
     bool m_isclipped;
     bool m_isfiltered;
 
+
 public:
 
     FTSound(const QString& _fileName, QObject* parent, int channelid=1);
     FTSound(const FTSound& ft);
     virtual FileType* duplicate();
 
-    static double fs_common;  // [Hz] Sampling frequency of the sound player
+    static double fs_common;  // [Hz] Sampling frequency of the sound player // TODO put in sound player
     static std::vector<WAVTYPE> sm_avoidclickswindow;
 
+    double fs; // [Hz] Sampling frequency of this specific wav file
     std::vector<WAVTYPE> wav;
     std::vector<WAVTYPE> wavfiltered;
     std::vector<WAVTYPE>* wavtoplay;
     WAVTYPE m_wavmaxamp;
     WAVTYPE m_filteredmaxamp;
-    double fs; // [Hz] Sampling frequency of this specific wav file
+
+    std::vector<std::vector<WAVTYPE> > m_stft;
+    int m_stft_nbsteps;
+    qreal m_stft_min;
+    qreal m_stft_max;
 
     qreal m_ampscale; // [linear]
     qint64 m_delay;   // [sample index]
 
     // Spectrum
     std::vector<std::complex<WAVTYPE> > m_dft; // Store the _log_ of the dft
+    void computeSTFT(int winlen, double stepsize, int dftlen);
 
     // QIODevice
     qint64 readData(char *data, qint64 maxlen);

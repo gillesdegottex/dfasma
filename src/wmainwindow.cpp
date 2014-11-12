@@ -743,6 +743,7 @@ void WMainWindow::resetDelay(){
 void WMainWindow::soundsChanged(){
     m_gvWaveform->soundsChanged();
     m_gvSpectrum->soundsChanged();
+    m_gvSpectrogram->soundsChanged();
 }
 
 void WMainWindow::closeSelectedFile() {

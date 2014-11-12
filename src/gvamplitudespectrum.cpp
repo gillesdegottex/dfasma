@@ -256,7 +256,8 @@ void QGVAmplitudeSpectrum::fftResizing(int prevSize, int newSize){
 }
 
 void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend, bool winforceupdate){
-    if(tstart==tend) return;
+    if(tstart==tend)
+        return;
 
     if(m_dlgSettings->ui->cbSpectrumAmplitudeLimitWindowDuration->isChecked() && (tend-tstart)>m_dlgSettings->ui->sbSpectrumAmplitudeWindowDurationLimit->value())
         tend = tstart+m_dlgSettings->ui->sbSpectrumAmplitudeWindowDurationLimit->value();

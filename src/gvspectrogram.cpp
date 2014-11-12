@@ -266,31 +266,20 @@ void QGVSpectrogram::updateDFTSettings(){
 }
 
 void QGVSpectrogram::computeDFTs(){
-//    std::cout << "QGVSpectrogram::computeDFTs " << m_winlen << endl;
 
-    if(m_winlen<2)
-        return;
+    FTSound* csnd = WMainWindow::getMW()->getCurrentFTSound(true);
+//    std::cout << "QGVSpectrogram::computeDFTs " << csnd << endl;
+    if(csnd) {
+        int stepsize = std::floor(0.5+WMainWindow::getMW()->getFs()*m_dlgSettings->ui->sbStepSize->value());
+        csnd->computeSTFT(m_winlen, stepsize, m_dftlen);
 
-    m_fftresizethread->resize(m_dftlen);
+        if(csnd->m_stft_nbsteps>0){
+//        cout << "computeDFTs: " << csnd->m_stft_nbsteps << "x" << m_dftlen << endl;
 
-    if(m_fftresizethread->m_mutex_resizing.tryLock()){
+        // Update the image from the sound's STFT
+            m_imgSTFT = QImage(csnd->m_stft_nbsteps, m_dftlen/2+1, QImage::Format_RGB32);
 
-        int dftlen = m_fft->size(); // Local copy of the actual dftlen
-
-        FTSound* csnd = WMainWindow::getMW()->getCurrentFTSound();
-        if(csnd) {
-
-            double fs = WMainWindow::getMW()->getFs();
-            int stepsize = std::floor(0.5+fs*m_dlgSettings->ui->sbStepSize->value());
-            m_nbsteps = std::floor((WMainWindow::getMW()->getMaxLastSampleTime()*fs - (m_winlen-1)/2)/stepsize);
-
-            m_imgSTFT = QImage(m_nbsteps, m_dftlen/2+1, QImage::Format_RGB32);
-
-            WMainWindow::getMW()->ui->pgbSpectrogramFFTResize->hide();
-            WMainWindow::getMW()->ui->lblSpectrogramInfoTxt->setText(QString("DFT size=%1").arg(dftlen));
-
-            m_minsy = std::numeric_limits<double>::infinity();
-            m_maxsy = -std::numeric_limits<double>::infinity();
+    //        cout << "computeDFTs: " << m_imgSTFT.size().width() << "x" << m_imgSTFT.size().height() << endl;
 
             QPainter imgpaint(&m_imgSTFT);
             QPen outlinePen(QColor(255, 0, 0));
@@ -299,44 +288,19 @@ void QGVSpectrogram::computeDFTs(){
             imgpaint.setOpacity(1);
             m_imgSTFT.fill(QColor(0,0,255));
 
-            for(int si=0; si<m_nbsteps; si++){
-                int n = 0;
-                int wn = 0;
-//                cout << si*stepsize/WMainWindow::getMW()->getFs() << endl;
-                for(; n<m_winlen; n++){
-                    wn = si*stepsize+n - csnd->m_delay;
-                    if(wn>=0 && wn<int(csnd->wavtoplay->size()))
-                        m_fft->in[n] = (*(csnd->wavtoplay))[wn]*m_win[n];
-                    else
-                        m_fft->in[n] = 0.0;
-                }
-                for(; n<dftlen; n++)
-                    m_fft->in[n] = 0.0;
+            for(int si=0; si<csnd->m_stft_nbsteps; si++){
+                for(int n=0; n<m_dftlen/2+1; n++) {
+                    double y = csnd->m_stft[si][n];
 
-                m_fft->execute(); // Compute the DFT
-
-                for(n=0; n<dftlen/2+1; n++) {
-                    double y = std::log(std::abs(m_fft->out[n]));
-//                    int color = 256*(sigproc::log2db*y-m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMin->value())/(m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMax->value()-m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMin->value());
-
-                    int color = 256-(256*(sigproc::log2db*y-m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMin->value())/(m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMax->value()-m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMin->value()));
+                    int color = 256-(256*(y-m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMin->value())/(m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMax->value()-m_dlgSettings->ui->sbSpectrogramAmplitudeRangeMin->value()));
 
                     if(color<0) color = 0;
                     else if(color>255) color = 255;
-                    m_imgSTFT.setPixel(QPoint(si,dftlen/2-n), QColor(color, color, color).rgb());
-                    m_minsy = std::min(m_minsy, y);
-                    m_maxsy = std::max(m_maxsy, y);
+                    m_imgSTFT.setPixel(QPoint(si,m_dftlen/2-n), QColor(color, color, color).rgb());
                 }
             }
 
-            m_minsy = sigproc::log2db*m_minsy;
-            m_maxsy = sigproc::log2db*m_maxsy;
-
-//            m_imgSTFT.mirrored(false, true);
-
-            m_fftresizethread->m_mutex_resizing.unlock();
-
-            m_scene->invalidate();
+            m_scene->update();
         }
     }
 
@@ -367,9 +331,9 @@ void QGVSpectrogram::updateSceneRect() {
 }
 
 void QGVSpectrogram::soundsChanged(){
-//    if(WMainWindow::getMW()->ftsnds.size()>0)
-//        computeDFTs();
-//    m_scene->update();
+//    cout << "QGVSpectrogram::soundsChanged" << endl;
+    if(WMainWindow::getMW()->ftsnds.size()>0)
+        computeDFTs();
 }
 
 void QGVSpectrogram::viewSet(QRectF viewrect, bool sync) {
@@ -986,12 +950,10 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 
 
     // Draw the sound's spectra
-    // TODO only the current one
-    for(size_t fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++){
-        if(!WMainWindow::getMW()->ftsnds[fi]->m_actionShow->isChecked())
-            continue;
+    FTSound* csnd = WMainWindow::getMW()->getCurrentFTSound();
+    if(csnd && csnd->m_actionShow->isChecked()) {
 
-//        cout << m_nbsteps << " " << m_dftlen << endl;
+//        cout << m_imgSTFT.size().width() << "x" << m_imgSTFT.size().height() << endl;
 
         QRectF srcrect;// TODO Check time synchro
         srcrect.setLeft(m_imgSTFT.rect().width()*viewrect.left()/m_scene->sceneRect().width());

@@ -66,7 +66,6 @@ public:
 
     int m_winlen;
     int m_dftlen; // The dftlen set through the settings
-    int m_nbsteps;
 //    unsigned int m_nl;
 //    unsigned int m_nr;
     std::vector<FFTTYPE> m_win;
