@@ -26,7 +26,7 @@ void FFTResizeThread::resize(int newsize) {
 
     m_mutex_changingsizes.lock();
 
-//    std::cout << "FFTResizeThread::resize resizing=" << m_size_resizing << " todo=" << newsize << endl;
+//    std::cout << "FFTResizeThread::resize resizing=" << m_size_resizing << " todo=" << newsize << std::endl;
 
     if(m_mutex_resizing.tryLock()){
         // Not resizing
@@ -49,22 +49,23 @@ void FFTResizeThread::resize(int newsize) {
         }
     }
 
-//    std::cout << "~FFTResizeThread::resize" << endl;
+//    std::cout << "~FFTResizeThread::resize" << std::endl;
 
     m_mutex_changingsizes.unlock();
 }
 
 void FFTResizeThread::run() {
+//    std::cout << "FFTResizeThread::run" << std::endl;
 
     bool resize = true;
     do{
         int prevSize = m_fft->size();
 
-//        std::cout << "FFTResizeThread::run " << prevSize << "=>" << m_size_resizing << endl;
+//        std::cout << "FFTResizeThread::run " << prevSize << "=>" << m_size_resizing << std::endl;
 
         m_fft->resize(m_size_resizing);
 
-//        std::cout << "FFTResizeThread::run resize finished" << endl;
+//        std::cout << "FFTResizeThread::run resize finished" << std::endl;
 
         // Check if it has to be resized again
         m_mutex_changingsizes.lock();
@@ -73,7 +74,7 @@ void FFTResizeThread::run() {
             m_size_resizing = m_size_todo;
             m_size_todo = -1;
             m_mutex_changingsizes.unlock();
-    //        cout << "FFTResizeThread::run emit fftResizing " << m_size_resizing << endl;
+//            std::cout << "FFTResizeThread::run emit fftResizing " << m_size_resizing << std::endl;
     //        emit fftResizing(m_cfftw3->size(), m_size_resizing);
         }
         else{
@@ -88,5 +89,5 @@ void FFTResizeThread::run() {
     while(resize);
     m_mutex_resizing.unlock();
 
-//    std::cout << "~FFTResizeThread::run m_size_resizing=" << m_size_resizing << " m_size_todo=" << m_size_todo << endl;
+//    std::cout << "FFTResizeThread::~run m_size_resizing=" << m_size_resizing << " m_size_todo=" << m_size_todo << std::endl;
 }
