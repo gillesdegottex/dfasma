@@ -15,15 +15,12 @@ GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(QGVSpectrogram* paren
 
     // Load the settings
     QSettings settings;
-    ui->sbSpectrogramAmplitudeRangeMin->setValue(settings.value("qgvspectrogram/sbSpectrogramAmplitudeRangeMin", -215).toInt());
-    ui->sbSpectrogramAmplitudeRangeMax->setValue(settings.value("qgvspectrogram/sbSpectrogramAmplitudeRangeMax", 10).toInt());
-    ui->sbSpectrogramOversamplingFactor->setValue(settings.value("qgvspectrogram/sbSpectrogramOversamplingFactor", 1).toInt());
-
     ui->cbWindowSizeForcedOdd->setChecked(settings.value("qgvspectrogram/cbWindowSizeForcedOdd", false).toBool());
     ui->cbSpectrogramWindowType->setCurrentIndex(settings.value("qgvspectrogram/cbSpectrogramWindowType", 0).toInt());
     ui->spWindowNormPower->setValue(settings.value("qgvspectrogram/spWindowNormPower", 2.0).toDouble());
     ui->spWindowNormSigma->setValue(settings.value("qgvspectrogram/spWindowNormSigma", 0.3).toDouble());
     ui->spWindowExpDecay->setValue(settings.value("qgvspectrogram/spWindowExpDecay", 60.0).toDouble());
+    ui->sbSpectrogramOversamplingFactor->setValue(settings.value("qgvspectrogram/sbSpectrogramOversamplingFactor", 1).toInt());
 
     ui->lblWindowNormSigma->hide();
     ui->spWindowNormSigma->hide();
@@ -37,8 +34,6 @@ GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(QGVSpectrogram* paren
     connect(ui->cbSpectrogramWindowType, SIGNAL(currentIndexChanged(QString)), this, SLOT(CBSpectrumWindowTypeCurrentIndexChanged(QString)));
 
     // Update the DFT view automatically
-    connect(ui->sbSpectrogramAmplitudeRangeMin, SIGNAL(valueChanged(double)), m_spectrogram, SLOT(settingsModified()));
-    connect(ui->sbSpectrogramAmplitudeRangeMax, SIGNAL(valueChanged(double)), m_spectrogram, SLOT(settingsModified()));
     connect(ui->sbSpectrogramOversamplingFactor, SIGNAL(valueChanged(int)), m_spectrogram, SLOT(settingsModified()));
     connect(ui->cbWindowSizeForcedOdd, SIGNAL(toggled(bool)), m_spectrogram, SLOT(settingsModified()));
     connect(ui->cbSpectrogramWindowType, SIGNAL(currentIndexChanged(int)), m_spectrogram, SLOT(settingsModified()));
@@ -80,7 +75,6 @@ void GVSpectrogramWDialogSettings::CBSpectrumWindowTypeCurrentIndexChanged(QStri
 
     adjustSize();
 }
-
 GVSpectrogramWDialogSettings::~GVSpectrogramWDialogSettings()
 {
     delete ui;

@@ -229,12 +229,12 @@ void QGVAmplitudeSpectrum::settingsModified(){
 
 void QGVAmplitudeSpectrum::updateAmplitudeExtent(){
     if(WMainWindow::getMW()->ftsnds.size()>0){
-        qreal min = -1e32;
+        qreal maxsqnr = -1e300;
         for(unsigned int si=0; si<WMainWindow::getMW()->ftsnds.size(); si++)
-            min = std::max(min, 20*std::log10(std::pow(2,WMainWindow::getMW()->ftsnds[si]->format().sampleSize())));
+            maxsqnr = std::max(maxsqnr, 20*std::log10(std::pow(2,WMainWindow::getMW()->ftsnds[si]->format().sampleSize())));
 
         WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->setMaximum(0);
-        WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->setMinimum(-2*min);
+        WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->setMinimum(-2*maxsqnr);
     }
 }
 

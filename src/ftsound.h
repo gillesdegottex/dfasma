@@ -75,17 +75,19 @@ public:
     WAVTYPE m_wavmaxamp;
     WAVTYPE m_filteredmaxamp;
 
-    std::vector<std::vector<WAVTYPE> > m_stft;
-    int m_stft_nbsteps;
-    qreal m_stft_min;
-    qreal m_stft_max;
 
     qreal m_ampscale; // [linear]
     qint64 m_delay;   // [sample index]
 
     // Spectrum
     std::vector<std::complex<WAVTYPE> > m_dft; // Store the _log_ of the dft
+
+    // Spectrogram
     void computeSTFT(int winlen, double stepsize, int dftlen);
+    std::vector<std::vector<WAVTYPE> > m_stft;
+    int m_stft_nbsteps;
+    qreal m_stft_min;
+    qreal m_stft_max;
 
     // QIODevice
     qint64 readData(char *data, qint64 maxlen);

@@ -121,10 +121,12 @@ public slots:
     void settingsSave();
     void soundsChanged();
 
+    void updateAmplitudeExtent();
     void updateSceneRect(); // To call when fs has changed and limits in dB
     void updateDFTSettings();
     void settingsModified();
-    void computeDFTs();
+    void computeSTFT();
+    void updateSTFTPlot();
     void fftResizing(int prevSize, int newSize);
 
     void selectionZoomOn();

@@ -63,7 +63,10 @@ void FTSound::init(){
     m_pos = 0;
     m_end = 0;
     m_avoidclickswinpos = 0;
+
     m_stft_nbsteps = 0;
+    m_stft_min = std::numeric_limits<double>::infinity();
+    m_stft_max = -std::numeric_limits<double>::infinity();
 
     m_actionInvPolarity = new QAction("Inverse polarity", this);
     m_actionInvPolarity->setStatusTip(tr("Inverse the polarity of the sound"));
