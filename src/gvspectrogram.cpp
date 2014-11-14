@@ -135,11 +135,6 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_aZoomOut->setShortcut(Qt::Key_Minus);
     m_aZoomOut->setIcon(QIcon(":/icons/zoomout.svg"));
     connect(m_aZoomOut, SIGNAL(triggered()), this, SLOT(azoomout()));
-    m_aUnZoom = new QAction(tr("Un-Zoom"), this);
-    m_aUnZoom->setStatusTip(tr("Un-Zoom"));
-    m_aUnZoom->setShortcut(Qt::Key_Z);
-    m_aUnZoom->setIcon(QIcon(":/icons/unzoomxy.svg"));
-    connect(m_aUnZoom, SIGNAL(triggered()), this, SLOT(aunzoom()));
     m_aZoomOnSelection = new QAction(tr("&Zoom on selection"), this);
     m_aZoomOnSelection->setStatusTip(tr("Zoom on selection"));
     m_aZoomOnSelection->setEnabled(false);
@@ -173,7 +168,6 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
 //    m_toolBar->addSeparator();
 //    m_toolBar->addAction(m_aZoomIn);
 //    m_toolBar->addAction(m_aZoomOut);
-    m_toolBar->addAction(m_aUnZoom);
 //    m_toolBar->addSeparator();
     m_toolBar->addAction(m_aZoomOnSelection);
     m_toolBar->addAction(m_aSelectionClear);
@@ -285,8 +279,8 @@ void QGVSpectrogram::updateAmplitudeExtent(){
     FTSound* csnd = WMainWindow::getMW()->getCurrentFTSound(true);
     if(csnd) {
         WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->setMaximum(csnd->m_stft_max);
-        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->setMinimum(csnd->m_stft_min);
-        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMaximum(csnd->m_stft_max);
+        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->setMinimum(csnd->m_stft_min+1);
+        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMaximum(csnd->m_stft_max-1);
         WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMinimum(csnd->m_stft_min);
     }
 
@@ -308,6 +302,11 @@ void QGVSpectrogram::updateAmplitudeExtent(){
 //    }
 }
 void QGVSpectrogram::updateSTFTPlot(){
+
+    // Fix limits between min and max sliders
+    WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->setMinimum(WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value()+1);
+    WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMaximum(WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->value()-1);
+
     FTSound* csnd = WMainWindow::getMW()->getCurrentFTSound(true);
     if(csnd) {
         // Update the image from the sound's STFT
@@ -876,27 +875,6 @@ void QGVSpectrogram::azoomout(){
 
     cursorUpdate(QPointF(-1,0));
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
-}
-void QGVSpectrogram::aunzoom(){
-
-    QRectF rect = QRectF(0.0, -m_maxsy, WMainWindow::getMW()->getFs()/2, (m_maxsy-m_minsy));
-
-    if(rect.bottom()>(-WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value()))
-        rect.setBottom(-WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value());
-    if(rect.top()<(-m_maxsy>WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->value()))
-        rect.setTop(-WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->value());
-
-    viewSet(rect);
-
-//    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-//    cout << "QGVSpectrogram::aunzoom viewrect: " << viewrect.left() << "," << viewrect.right() << " X " << viewrect.top() << "," << viewrect.bottom() << endl;
-
-//    if(WMainWindow::getMW()->m_gvPhaseSpectrum) {
-//        WMainWindow::getMW()->m_gvPhaseSpectrum->viewSet(QRectF(0.0, -M_PI, WMainWindow::getMW()->getFs()/2, 2*M_PI), false);
-//    }
-
-//    cursorUpdate(QPointF(-1,0));
-//    m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
 }
 
 void QGVSpectrogram::cursorUpdate(QPointF p) {

@@ -112,7 +112,6 @@ public:
     QAction* m_aSelectionClear;
     QAction* m_aZoomIn;
     QAction* m_aZoomOut;
-    QAction* m_aUnZoom;
     QAction* m_aShowProperties;
 
 signals:
@@ -133,7 +132,6 @@ public slots:
     void selectionClear();
     void azoomin();
     void azoomout();
-    void aunzoom();
 };
 
 #endif // QGVSPECTROGRAM_H
