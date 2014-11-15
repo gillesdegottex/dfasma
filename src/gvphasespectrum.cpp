@@ -98,8 +98,6 @@ QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
     m_giShownSelection->setOpacity(0.5);
     WMainWindow::getMW()->ui->lblSpectrumSelectionTxt->setText("No selection");
 
-//    updateSceneRect();
-
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     setResizeAnchor(QGraphicsView::AnchorViewCenter);
@@ -124,30 +122,6 @@ QRectF QGVPhaseSpectrum::removeHiddenMargin(const QRectF& sceneRect){
     const double mx = sceneRect.width()/viewport()->size().width()*bugMargin;
     const double my = sceneRect.height()/viewport()->size().height()*bugMargin;
     return sceneRect.adjusted(mx, my, -mx, -my);
-}
-
-void QGVPhaseSpectrum::showPhase(bool hastoshow) {
-    Q_UNUSED(hastoshow)
-    // TODO Doesnt work
-    // Once the phase view is hidden, the free space is not distributed
-    // among the other views
-////    cout << "QGVPhaseSpectrum::showPhase " << hastoshow << endl;
-
-//    if(hastoshow) {
-//        WMainWindow::getMW()->m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
-////        WMainWindow::getMW()->ui->lPhaseSpectrumGraphicsView->hide();
-//        show();
-//    }
-//    else {
-//        WMainWindow::getMW()->m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-
-////        WMainWindow::getMW()->ui->splitterViews->setStretchFactor(2, 0);
-
-////        WMainWindow::getMW()->ui->lPhaseSpectrumGraphicsView->;
-//        hide();
-//        WMainWindow::getMW()->ui->splitterViews->refresh();
-//    }
 }
 
 void QGVPhaseSpectrum::settingsSave() {
@@ -210,41 +184,38 @@ void QGVPhaseSpectrum::resizeEvent(QResizeEvent* event) {
 
     QRectF oldviewrect = mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect();
 
-//    cout << oldviewrect.width() << " x " << oldviewrect.height() << endl;
+    if((event->oldSize().width()*event->oldSize().height()==0) && (event->size().width()*event->size().height()>0)) {
 
-    if(oldviewrect.width()==0 && oldviewrect.height()==0) {
         updateSceneRect();
-        QRectF rect = m_scene->sceneRect();
-        QRectF curspecvrect = WMainWindow::getMW()->m_gvSpectrum->mapToScene(WMainWindow::getMW()->m_gvSpectrum->viewport()->rect()).boundingRect();
-        rect.setLeft(curspecvrect.left());
-        rect.setRight(curspecvrect.right());
-        viewSet(rect, false);
-    }
-    else {
-        if(event->size().height()>0) {
-            QRectF curspecvrect = WMainWindow::getMW()->m_gvSpectrum->mapToScene(WMainWindow::getMW()->m_gvSpectrum->viewport()->rect()).boundingRect();
-            QRectF rect = oldviewrect;
-            rect.setLeft(curspecvrect.left());
-            rect.setRight(curspecvrect.right());
-            viewSet(rect, false);
+
+        if(WMainWindow::getMW()->m_gvSpectrum->viewport()->rect().width()*WMainWindow::getMW()->m_gvSpectrum->viewport()->rect().height()>0){
+            QRectF phaserect = WMainWindow::getMW()->m_gvSpectrum->mapToScene(WMainWindow::getMW()->m_gvSpectrum->viewport()->rect()).boundingRect();
+
+            QRectF viewrect;
+            viewrect.setLeft(phaserect.left());
+            viewrect.setRight(phaserect.right());
+            viewrect.setTop(-M_PI);
+            viewrect.setBottom(+M_PI);
+            viewSet(viewrect, false);
         }
+        else
+            viewSet(m_scene->sceneRect(), false);
+    }
+    else if((event->oldSize().width()*event->oldSize().height()>0) && (event->size().width()*event->size().height()>0))
+    {
+        viewSet(oldviewrect, false);
     }
 
     // Set the scroll bars in the amplitude and phase views
-    if(event->size().height()==0) {
-        // cout << "Hide Phase Spectrum View" << endl;
+    if(event->size().height()==0)
         WMainWindow::getMW()->m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    }
-    else {
-        // cout << "Show Phase Spectrum View" << endl;
+    else
         WMainWindow::getMW()->m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    }
 
     viewUpdateTexts();
-
     cursorUpdate(QPointF(-1,0));
 
-//    cout << "QGVPhaseSpectrum::~resizeEvent" << endl;
+////    cout << "QGVPhaseSpectrum::~resizeEvent" << endl;
 }
 
 void QGVPhaseSpectrum::scrollContentsBy(int dx, int dy){

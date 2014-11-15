@@ -103,11 +103,11 @@ public slots:
     void settingsSave();
     void soundsChanged();
     void updateSceneRect();
+    void sldAmplitudeChanged(int value);
+    void fitViewToSoundsAmplitude();
     void azoomin();
     void azoomout();
     void aunzoom();
-    void sldAmplitudeChanged(int value);
-    void fitViewToSoundsAmplitude();
     void selectionClipAndSet(QRectF selection, bool winforceupdate=false);
     void selectionClear();
     void selectionZoomOn();

@@ -351,23 +351,15 @@ void QGVSpectrogram::settingsSave() {
 }
 
 void QGVSpectrogram::updateSceneRect() {
-//    cout << "QGVSpectrogram::updateSceneRect" << endl;
-    m_scene->setSceneRect(0.0, 0.0, WMainWindow::getMW()->getMaxLastSampleTime(), WMainWindow::getMW()->getFs()/2);
-
-//    if(WMainWindow::getMW()->m_gvPhaseSpectrum)
-//        WMainWindow::getMW()->m_gvPhaseSpectrum->updateSceneRect();
-//    if(WMainWindow::getMW()->m_gvSpectrum)
-//        WMainWindow::getMW()->m_gvSpectrum->updateSceneRect();
+    m_scene->setSceneRect(-1.0/WMainWindow::getMW()->getFs(), 0.0, WMainWindow::getMW()->getMaxDuration()+1.0/WMainWindow::getMW()->getFs(), WMainWindow::getMW()->getFs()/2);
 }
 
 void QGVSpectrogram::soundsChanged(){
-//    cout << "QGVSpectrogram::soundsChanged" << endl;
     if(WMainWindow::getMW()->ftsnds.size()>0)
-        computeSTFT();
+        computeSTFT(); // TODO can be very heavy, should update only the necessary part
 }
 
 void QGVSpectrogram::viewSet(QRectF viewrect, bool sync) {
-//    cout << "QGVSpectrogram::viewSet" << endl;
 
     QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
 
@@ -388,13 +380,9 @@ void QGVSpectrogram::viewSet(QRectF viewrect, bool sync) {
 
         if(sync) viewSync();
     }
-
-//    cout << "QGVSpectrogram::~viewSet" << endl;
 }
 
 void QGVSpectrogram::viewSync() {
-//    cout << "QGVSpectrogram::viewSync" << endl;
-
     if(WMainWindow::getMW()->m_gvWaveform) {
         QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
@@ -403,27 +391,35 @@ void QGVSpectrogram::viewSync() {
         currect.setRight(viewrect.right());
         WMainWindow::getMW()->m_gvWaveform->viewSet(currect, false);
     }
-
-//    cout << "QGVSpectrogram::~viewSync" << endl;
 }
 
 void QGVSpectrogram::resizeEvent(QResizeEvent* event){
     // Note: Resized is called for all views so better to not forward modifications
 //    cout << "QGVSpectrogram::resizeEvent" << endl;
 
-    QRectF oldviewrect = mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect();
+    if((event->oldSize().width()*event->oldSize().height()==0) && (event->size().width()*event->size().height()>0)) {
 
-//    cout << "QGVSpectrogram::resizeEvent old viewrect: " << oldviewrect.left() << "," << oldviewrect.right() << " X " << oldviewrect.top() << "," << oldviewrect.bottom() << endl;
-
-    if(oldviewrect.width()==0 && oldviewrect.height()==0) {
         updateSceneRect();
-        viewSet(m_scene->sceneRect(), false);
+
+        if(WMainWindow::getMW()->m_gvWaveform->viewport()->rect().width()*WMainWindow::getMW()->m_gvWaveform->viewport()->rect().height()>0){
+            QRectF spectrorect = WMainWindow::getMW()->m_gvWaveform->mapToScene(WMainWindow::getMW()->m_gvWaveform->viewport()->rect()).boundingRect();
+
+            QRectF viewrect;
+            viewrect.setLeft(spectrorect.left());
+            viewrect.setRight(spectrorect.right());
+            viewrect.setTop(0);
+            viewrect.setBottom(WMainWindow::getMW()->getFs()/2);
+            viewSet(viewrect, false);
+        }
+        else
+            viewSet(m_scene->sceneRect(), false);
     }
-    else
-        viewSet(oldviewrect, false);
+    else if((event->oldSize().width()*event->oldSize().height()>0) && (event->size().width()*event->size().height()>0))
+    {
+        viewSet(mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect(), false);
+    }
 
     viewUpdateTexts();
-
     cursorUpdate(QPointF(-1,0));
 //    cout << "QGVSpectrogram::~resizeEvent" << endl;
 }

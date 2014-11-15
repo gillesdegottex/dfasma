@@ -501,6 +501,8 @@ void WMainWindow::addFile(const QString& filepath) {
 
     try
     {
+        bool isfirsts = ftsnds.size()==0;
+
         FileType* ft = NULL;
 
         QFileInfo fileinfo(filepath);
@@ -523,8 +525,6 @@ void WMainWindow::addFile(const QString& filepath) {
             ui->listSndFiles->addItem(ft);
         }
         else { // Assume it is an audio file
-
-            bool initializethesoundsystem = ftsnds.size()==0;
 
             int nchan = FTSound::getNumberOfChannels(filepath);
 
@@ -555,7 +555,7 @@ void WMainWindow::addFile(const QString& filepath) {
             }
 
             // The first sound determines the common fs for the audio output
-            if(initializethesoundsystem && ftsnds.size()>0)
+            if(isfirsts && ftsnds.size()>0)
                 initializeSoundSystem(ftsnds[0]->fs);
 
             m_gvWaveform->fitViewToSoundsAmplitude();
@@ -566,12 +566,20 @@ void WMainWindow::addFile(const QString& filepath) {
         if(ui->listSndFiles->count()==0)
             setInWaitingForFileState();
         else {
-            m_gvWaveform->updateSceneRect();
-            soundsChanged();
             ui->actionCloseFile->setEnabled(true);
             ui->splitterViews->show();
             updateWindowTitle();
-//        WMainWindow::getMW()->ui->splitterViews->handle(2)->hide();
+            m_gvWaveform->updateSceneRect();
+            m_gvSpectrogram->updateSceneRect();
+            m_gvSpectrum->updateSceneRect();
+            m_gvPhaseSpectrum->updateSceneRect();
+            if(isfirsts){
+                m_gvWaveform->viewSet(m_gvWaveform->m_scene->sceneRect(), false);
+                m_gvSpectrogram->viewSet(m_gvSpectrogram->m_scene->sceneRect(), false);
+                m_gvSpectrum->viewSet(m_gvSpectrum->m_scene->sceneRect(), false);
+                m_gvPhaseSpectrum->viewSet(m_gvPhaseSpectrum->m_scene->sceneRect(), false);
+            }
+            soundsChanged();
         }
     }
     catch (QString err)

@@ -88,7 +88,6 @@ public:
     void draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& ldft, double fs, double delay, const QRectF& rect);
     void draw_grid(QPainter* painter, const QRectF& rect);
 
-    QAction* m_aShowPhase;
 //    QAction* m_aShowProperties;
 
     ~QGVPhaseSpectrum();
@@ -96,8 +95,6 @@ public:
 signals:
     
 public slots:
-    void showPhase(bool hastoshow);
-
     void settingsSave();
     void soundsChanged();
     void updateSceneRect();

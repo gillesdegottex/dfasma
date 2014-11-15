@@ -183,7 +183,6 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
 
     m_maxsy = 10;
     m_minsy = WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->value();
-    updateSceneRect();
 
     // Fill the toolbar
     m_toolBar = new QToolBar(this);
@@ -209,7 +208,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
     connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(settingsModified()));
 
-    connect(WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin, SIGNAL(valueChanged(int)), this, SLOT(updateSceneRect()));
+    connect(WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin, SIGNAL(valueChanged(int)), this, SLOT(amplitudeMinChanged()));
 }
 
 // Remove hard coded margin (Bug 11945)
@@ -222,30 +221,30 @@ QRectF QGVAmplitudeSpectrum::removeHiddenMargin(const QRectF& sceneRect){
 }
 
 void QGVAmplitudeSpectrum::settingsModified(){
-    updateSceneRect();
     if(WMainWindow::getMW()->m_gvWaveform)
         WMainWindow::getMW()->m_gvWaveform->selectionClipAndSet(WMainWindow::getMW()->m_gvWaveform->m_mouseSelection, true);
 }
 
 void QGVAmplitudeSpectrum::updateAmplitudeExtent(){
     if(WMainWindow::getMW()->ftsnds.size()>0){
-        qreal maxsqnr = -1e300;
+        float maxsqnr = -std::numeric_limits<float>::infinity();
         for(unsigned int si=0; si<WMainWindow::getMW()->ftsnds.size(); si++)
-            maxsqnr = std::max(maxsqnr, 20*std::log10(std::pow(2,WMainWindow::getMW()->ftsnds[si]->format().sampleSize())));
+            maxsqnr = std::max(maxsqnr, 20*std::log10(std::pow(2.0f,WMainWindow::getMW()->ftsnds[si]->format().sampleSize())));
 
         WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->setMaximum(0);
         WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->setMinimum(-2*maxsqnr);
+
+        updateSceneRect();
     }
 }
 
-void QGVAmplitudeSpectrum::updateSceneRect() {
-
-    m_scene->setSceneRect(0.0, -10, WMainWindow::getMW()->getFs()/2, (10-WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->value()));
-
+void QGVAmplitudeSpectrum::amplitudeMinChanged() {
+    updateSceneRect();
     viewSet(m_scene->sceneRect(), false);
+}
 
-    if(WMainWindow::getMW()->m_gvPhaseSpectrum)
-        WMainWindow::getMW()->m_gvPhaseSpectrum->updateSceneRect();
+void QGVAmplitudeSpectrum::updateSceneRect() {
+    m_scene->setSceneRect(0.0, -10, WMainWindow::getMW()->getFs()/2, (10-WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->value()));
 }
 
 void QGVAmplitudeSpectrum::fftResizing(int prevSize, int newSize){
@@ -280,8 +279,6 @@ void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend, bool winforc
 }
 
 void QGVAmplitudeSpectrum::updateDFTSettings(){
-
-    updateSceneRect();
 
     if(m_winlen<2) return;
 
@@ -447,6 +444,13 @@ void QGVAmplitudeSpectrum::viewSet(QRectF viewrect, bool sync) {
         if(viewrect.right()>m_scene->sceneRect().right())
             viewrect.setRight(m_scene->sceneRect().right());
 
+        // This is not perfect and might never be because:
+        // 1) The workaround removeHiddenMargin is apparently simplistic
+        // 2) This position in real coordinates involves also the position of the
+        //    scrollbars which fit integers only. Thus the final position is always
+        //    aproximative.
+        // A solution would be to subclass QSplitter, catch the view when the
+        // splitter's handle is clicked, and repeat this view until button released.
         fitInView(removeHiddenMargin(viewrect));
 
         if(sync) viewSync();
@@ -456,7 +460,6 @@ void QGVAmplitudeSpectrum::viewSet(QRectF viewrect, bool sync) {
 }
 
 void QGVAmplitudeSpectrum::viewSync() {
-
     if(WMainWindow::getMW()->m_gvPhaseSpectrum) {
         QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
@@ -464,35 +467,40 @@ void QGVAmplitudeSpectrum::viewSync() {
         currect.setLeft(viewrect.left());
         currect.setRight(viewrect.right());
         WMainWindow::getMW()->m_gvPhaseSpectrum->viewSet(currect, false);
-
-//        QPointF p = WMainWindow::getMW()->m_gvPhaseSpectrum->mapToScene(WMainWindow::getMW()->m_gvPhaseSpectrum->viewport()->rect()).boundingRect().center();
-//        p.setX(viewrect.center().x());
-//        WMainWindow::getMW()->m_gvPhaseSpectrum->centerOn(p);
     }
 }
 
 void QGVAmplitudeSpectrum::resizeEvent(QResizeEvent* event){
     // Note: Resized is called for all views so better to not forward modifications
-//    cout << "QGVAmplitudeSpectrum::resizeEvent" << endl;
 
-    QRectF oldviewrect = mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect();
+    if((event->oldSize().width()*event->oldSize().height()==0) && (event->size().width()*event->size().height()>0)) {
 
-//    cout << "QGVAmplitudeSpectrum::resizeEvent old viewrect: " << oldviewrect.left() << "," << oldviewrect.right() << " X " << oldviewrect.top() << "," << oldviewrect.bottom() << endl;
-
-    if(oldviewrect.width()==0 && oldviewrect.height()==0) {
         updateSceneRect();
-        viewSet(m_scene->sceneRect(), false);
+
+        if(WMainWindow::getMW()->m_gvPhaseSpectrum->viewport()->rect().width()*WMainWindow::getMW()->m_gvPhaseSpectrum->viewport()->rect().height()>0){
+            QRectF phaserect = WMainWindow::getMW()->m_gvPhaseSpectrum->mapToScene(WMainWindow::getMW()->m_gvPhaseSpectrum->viewport()->rect()).boundingRect();
+
+            QRectF viewrect;
+            viewrect.setLeft(phaserect.left());
+            viewrect.setRight(phaserect.right());
+            viewrect.setTop(-10);
+            viewrect.setBottom(-WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->value());
+            viewSet(viewrect, false);
+        }
+        else
+            viewSet(m_scene->sceneRect(), false);
     }
-    else
-        viewSet(oldviewrect, false);
+    else if((event->oldSize().width()*event->oldSize().height()>0) && (event->size().width()*event->size().height()>0))
+    {
+        viewSet(mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect(), false);
+    }
 
     viewUpdateTexts();
-
     cursorUpdate(QPointF(-1,0));
-//    cout << "QGVAmplitudeSpectrum::~resizeEvent" << endl;
 }
 
 void QGVAmplitudeSpectrum::scrollContentsBy(int dx, int dy) {
+//    cout << "QGVAmplitudeSpectrum::scrollContentsBy" << endl;
 
     // Invalidate the necessary parts
     // Ensure the y ticks labels will be redrawn
@@ -613,7 +621,7 @@ void QGVAmplitudeSpectrum::mousePressEvent(QMouseEvent* event){
 }
 
 void QGVAmplitudeSpectrum::mouseMoveEvent(QMouseEvent* event){
-//    std::cout << "QGVWaveform::mouseMoveEvent" << selection.width() << endl;
+//    std::cout << "QGVAmplitudeSpectrum::mouseMoveEvent" << endl;
 
     QPointF p = mapToScene(event->pos());
 

@@ -201,7 +201,6 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
 
     connect(WMainWindow::getMW()->ui->sldWaveformAmplitude, SIGNAL(valueChanged(int)), this, SLOT(sldAmplitudeChanged(int)));
 
-    updateSceneRect();
 //    setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers))); // Use OpenGL
 
     // Fill the toolbar
@@ -253,19 +252,10 @@ void QGVWaveform::fitViewToSoundsAmplitude(){
 }
 
 void QGVWaveform::updateSceneRect() {
-//    cout << "QGVWaveform::updateSceneRect" << endl;
-
     m_scene->setSceneRect(-1.0/WMainWindow::getMW()->getFs(), -1.05*m_ampzoom, WMainWindow::getMW()->getMaxDuration()+1.0/WMainWindow::getMW()->getFs(), 2.1*m_ampzoom);
-
-    viewSet(m_scene->sceneRect(), false);
-
-//    if(WMainWindow::getMW()->m_gvSpectrogram)
-//        WMainWindow::getMW()->m_gvSpectrogram->updateSceneRect();
-
-//    cout << "QGVWaveform::~updateSceneRect" << endl;
 }
+
 void QGVWaveform::viewSet(QRectF viewrect, bool sync) {
-//    cout << "QGVWaveform::viewSet" << endl;
 
     QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
 
@@ -273,9 +263,9 @@ void QGVWaveform::viewSet(QRectF viewrect, bool sync) {
         if(viewrect==QRectF())
             viewrect = currentviewrect;
 
-        if(viewrect.top()>m_scene->sceneRect().top())
+        if(viewrect.top()<m_scene->sceneRect().top())
             viewrect.setTop(m_scene->sceneRect().top()-0.01);
-        if(viewrect.bottom()<m_scene->sceneRect().bottom())
+        if(viewrect.bottom()>m_scene->sceneRect().bottom())
             viewrect.setBottom(m_scene->sceneRect().bottom()+0.01);
         if(viewrect.left()<m_scene->sceneRect().left())
             viewrect.setLeft(m_scene->sceneRect().left());
@@ -288,12 +278,8 @@ void QGVWaveform::viewSet(QRectF viewrect, bool sync) {
 
         if(sync) viewSync();
     }
-
-//    cout << "QGVWaveform::~viewSet" << endl;
 }
 void QGVWaveform::viewSync() {
-//    cout << "QGVPhaseSpectrum::viewChangesRequested" << endl;
-
     if(WMainWindow::getMW()->m_gvSpectrogram) {
         QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
@@ -302,16 +288,14 @@ void QGVWaveform::viewSync() {
         currect.setRight(viewrect.right());
         WMainWindow::getMW()->m_gvSpectrogram->viewSet(currect, false);
     }
-
-//    cout << "QGVPhaseSpectrum::~viewChangesRequested" << endl;
 }
 
 void QGVWaveform::soundsChanged(){
 
     if(WMainWindow::getMW()->ftsnds.size()>0)
-        updateSceneRect();
+        updateSceneRect(); // TODO Why ?
 
-    m_scene->update(this->sceneRect());
+    m_scene->update();
 }
 
 void QGVWaveform::sldAmplitudeChanged(int value){
@@ -319,6 +303,10 @@ void QGVWaveform::sldAmplitudeChanged(int value){
     m_ampzoom = (100-value)/100.0;
 
     updateSceneRect();
+    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+    viewrect.setTop(-1.05*m_ampzoom);
+    viewrect.setBottom(1.05*m_ampzoom);
+    viewSet(viewrect, false);
 
     cursorUpdate(-1);
 
@@ -404,16 +392,29 @@ void QGVWaveform::cursorUpdate(float x){
 
 void QGVWaveform::resizeEvent(QResizeEvent* event){
 
-//    cout << "QGVWaveform::resizeEvent" << endl;
+    if((event->oldSize().width()*event->oldSize().height()==0) && (event->size().width()*event->size().height()>0)) {
 
-    QRectF viewrect = mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect();
-    if(viewrect.width()==0 && viewrect.height()==0)
-        viewrect = m_scene->sceneRect();
-    viewSet(viewrect);
+        updateSceneRect();
+
+        if(WMainWindow::getMW()->m_gvSpectrogram->viewport()->rect().width()*WMainWindow::getMW()->m_gvSpectrogram->viewport()->rect().height()>0){
+            QRectF spectrorect = WMainWindow::getMW()->m_gvSpectrogram->mapToScene(WMainWindow::getMW()->m_gvSpectrogram->viewport()->rect()).boundingRect();
+
+            QRectF viewrect;
+            viewrect.setLeft(spectrorect.left());
+            viewrect.setRight(spectrorect.right());
+            viewrect.setTop(-10);
+            viewrect.setBottom(10);
+            viewSet(viewrect, false);
+        }
+        else
+            viewSet(m_scene->sceneRect(), false);
+    }
+    else if((event->oldSize().width()*event->oldSize().height()>0) && (event->size().width()*event->size().height()>0))
+    {
+        viewSet(mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect(), false);
+    }
 
     cursorUpdate(-1);
-
-//    cout << "QGVWaveform::~resizeEvent" << endl;
 }
 
 void QGVWaveform::scrollContentsBy(int dx, int dy){

@@ -45,8 +45,6 @@ This example has been widely adapted for the purpose of the DFasma software.
 #ifndef AUDIOENGINE_H
 #define AUDIOENGINE_H
 
-#define DEBUGSTRING std::cout << QThread::currentThreadId() << " " << QDateTime::fromMSecsSinceEpoch(QDateTime::currentMSecsSinceEpoch()).toString("hh:mm:ss.zzz             ").toLocal8Bit().constData() << " "
-
 #include <deque>
 using namespace std;
 
