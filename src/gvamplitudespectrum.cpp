@@ -194,7 +194,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
 //    m_toolBar->addSeparator();
     m_toolBar->addAction(m_aZoomOnSelection);
     m_toolBar->addAction(m_aSelectionClear);
-    m_toolBar->setIconSize(QSize(WMainWindow::getMW()->m_dlgSettings->ui->sbToolBarSizes->value(),WMainWindow::getMW()->m_dlgSettings->ui->sbToolBarSizes->value()));
+    m_toolBar->setIconSize(QSize(WMainWindow::getMW()->m_dlgSettings->ui->sbToolBarSizes->value(), WMainWindow::getMW()->m_dlgSettings->ui->sbToolBarSizes->value()));
     m_toolBar->setOrientation(Qt::Vertical);
     WMainWindow::getMW()->ui->lSpectraToolBar->addWidget(m_toolBar);
 

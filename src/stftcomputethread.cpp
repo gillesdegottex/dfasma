@@ -67,9 +67,6 @@ void STFTComputeThread::run() {
 
     //        m_imgSTFT = QImage(m_nbsteps, m_dftlen/2+1, QImage::Format_RGB32);
 
-        WMainWindow::getMW()->ui->pgbSpectrogramSTFTCompute->hide();
-        WMainWindow::getMW()->ui->lblSpectrogramInfoTxt->setText(QString("DFT size=%1").arg(m_params_current.dftlen));
-
         m_params_current.snd->m_stft_min = std::numeric_limits<double>::infinity();
         m_params_current.snd->m_stft_max = -std::numeric_limits<double>::infinity();
 
@@ -124,6 +121,10 @@ void STFTComputeThread::run() {
 //        std::cout << "STFTComputeThread::run while ..." << std::endl;
     }
     while(compute);
+
+    WMainWindow::getMW()->ui->pgbSpectrogramSTFTCompute->hide();
+    WMainWindow::getMW()->ui->lblSpectrogramInfoTxt->setText(QString("DFT size=%1").arg(m_fft->size()));
+
 //    std::cout << "STFTComputeThread::run m_mutex_computing.unlock " << std::endl;
     m_mutex_computing.unlock();
 

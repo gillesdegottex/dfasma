@@ -22,6 +22,10 @@ GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(QGVSpectrogram* paren
     ui->spWindowExpDecay->setValue(settings.value("qgvspectrogram/spWindowExpDecay", 60.0).toDouble());
     ui->sbSpectrogramOversamplingFactor->setValue(settings.value("qgvspectrogram/sbSpectrogramOversamplingFactor", 1).toInt());
 
+    ui->sbStepSize->setValue(settings.value("qgvspectrogram/sbStepSize", 0.005).toDouble());
+    ui->sbWindowSize->setValue(settings.value("qgvspectrogram/sbWindowSize", 0.030).toDouble());
+    ui->sbSpectrogramOversamplingFactor->setValue(settings.value("qgvspectrogram/sbSpectrogramOversamplingFactor", 1).toInt());
+
     ui->lblWindowNormSigma->hide();
     ui->spWindowNormSigma->hide();
     ui->lblWindowNormPower->hide();
