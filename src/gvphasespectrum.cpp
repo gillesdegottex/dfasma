@@ -212,6 +212,13 @@ void QGVPhaseSpectrum::resizeEvent(QResizeEvent* event) {
     else
         WMainWindow::getMW()->m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
+    if(WMainWindow::getMW()->m_gvSpectrum->size().height()>0){
+        QList<int> ss = WMainWindow::getMW()->ui->splitterSpectra->sizes() ;
+        int height = ss[1];
+        WMainWindow::getMW()->ui->lblPhaseSpectrum->setMinimumHeight(height);
+        WMainWindow::getMW()->ui->lblPhaseSpectrum->setMaximumHeight(height);
+    }
+
     viewUpdateTexts();
     cursorUpdate(QPointF(-1,0));
 

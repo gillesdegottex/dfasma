@@ -495,6 +495,8 @@ void QGVAmplitudeSpectrum::resizeEvent(QResizeEvent* event){
         viewSet(mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect(), false);
     }
 
+    WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->setVisible(event->size().height()>0);
+
     viewUpdateTexts();
     cursorUpdate(QPointF(-1,0));
 }
