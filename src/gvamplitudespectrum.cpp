@@ -495,7 +495,15 @@ void QGVAmplitudeSpectrum::resizeEvent(QResizeEvent* event){
         viewSet(mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect(), false);
     }
 
-    WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->setVisible(event->size().height()>0);
+    // Update the slider
+    if(WMainWindow::getMW()->m_gvSpectrum->isVisible() && event->size().height()>0){
+        WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->setMaximumHeight(event->size().height());
+        WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->setMinimumHeight(event->size().height());
+        WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->show();
+    }
+    else{
+        WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->hide();
+    }
 
     viewUpdateTexts();
     cursorUpdate(QPointF(-1,0));

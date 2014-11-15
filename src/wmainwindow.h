@@ -103,6 +103,7 @@ public slots:
     void checkFileModifications();
     void duplicateCurrentFile();
     void setInWaitingForFileState();
+    void updateAmplitudeSpectrumSliderSize();
 
 public:
     explicit WMainWindow(QStringList sndfiles, QWidget* parent=0);
