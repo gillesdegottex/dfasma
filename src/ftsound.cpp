@@ -331,7 +331,7 @@ void FTSound::setSamplingRate(double _fs){
     else {
         // Check if fs is the same as that of the other files
         if(fs_common!=fs)
-            throw QString("The sampling rate is not the same as that of the files already loaded. DFasma manages only one sampling rate per instance. Please use another instance of DFasma.");
+            throw QString("The sampling rate of this file ("+QString::number(fs)+"Hz) is not the same as that of the files already loaded. DFasma manages only one sampling rate per instance. Please use another instance of DFasma.");
     }
 }
 

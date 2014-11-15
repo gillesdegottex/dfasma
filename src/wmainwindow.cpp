@@ -529,7 +529,7 @@ void WMainWindow::addFile(const QString& filepath) {
             int nchan = FTSound::getNumberOfChannels(filepath);
 
             if(nchan==0)
-                throw QString("There is not even a single channel.");
+                throw QString("There is not even a single channel in this file.");
             else if(nchan==1){
                 ft = new FTSound(filepath, this);
                 ui->listSndFiles->addItem(ft);
