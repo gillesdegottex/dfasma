@@ -37,14 +37,14 @@ file provided in the source code of DFasma. Another copy can be found at
 class GVSpectrogramWDialogSettings;
 class MainWindow;
 class QSpinBox;
-class FFTResizeThread;
+class STFTComputeThread;
 
 class QGVSpectrogram : public QGraphicsView
 {
     Q_OBJECT
 
-    qreal m_minsy;
-    qreal m_maxsy;
+//    qreal m_minsy;
+//    qreal m_maxsy;
 
     QRectF removeHiddenMargin(const QRectF& sceneRect);
 
@@ -56,19 +56,15 @@ public:
 
     GVSpectrogramWDialogSettings* m_dlgSettings;
 
-    sigproc::FFTwrapper* m_fft;
-    FFTResizeThread* m_fftresizethread;
-
     QGraphicsScene* m_scene;
 
     QToolBar* m_toolBar;
     QMenu m_contextmenu;
 
-    int m_winlen;
-    int m_dftlen; // The dftlen set through the settings
+    STFTComputeThread* m_stftcomputethread;
+    std::vector<FFTTYPE> m_win;
 //    unsigned int m_nl;
 //    unsigned int m_nr;
-    std::vector<FFTTYPE> m_win;
     QImage m_imgSTFT;
 
     QGraphicsLineItem* m_giCursorHoriz;
@@ -123,10 +119,9 @@ public slots:
     void updateAmplitudeExtent();
     void updateSceneRect(); // To call when fs has changed and limits in dB
     void updateDFTSettings();
-    void settingsModified();
     void computeSTFT();
     void updateSTFTPlot();
-    void fftResizing(int prevSize, int newSize);
+    void stftComputing();
 
     void selectionZoomOn();
     void selectionClear();

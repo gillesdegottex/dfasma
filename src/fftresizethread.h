@@ -24,9 +24,7 @@ signals:
 public:
     FFTResizeThread(sigproc::FFTwrapper* fft, QObject* parent);
 
-    void resize(int newsize);
-
-    int size();
+    void resize(int newsize); // Entry point
 
     QMutex m_mutex_resizing;      // To protect the access to the FFT transformer
     QMutex m_mutex_changingsizes; // To protect the access to the size variables above

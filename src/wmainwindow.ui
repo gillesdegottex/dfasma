@@ -244,7 +244,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QProgressBar" name="pgbSpectrogramFFTResize">
+            <widget class="QProgressBar" name="pgbSpectrogramSTFTCompute">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="Ignored">
                <horstretch>0</horstretch>

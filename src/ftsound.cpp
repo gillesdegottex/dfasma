@@ -64,7 +64,6 @@ void FTSound::init(){
     m_end = 0;
     m_avoidclickswinpos = 0;
 
-    m_stft_nbsteps = 0;
     m_stft_min = std::numeric_limits<double>::infinity();
     m_stft_max = -std::numeric_limits<double>::infinity();
 
@@ -333,63 +332,6 @@ void FTSound::setSamplingRate(double _fs){
         // Check if fs is the same as that of the other files
         if(fs_common!=fs)
             throw QString("The sampling rate is not the same as that of the files already loaded. DFasma manages only one sampling rate per instance. Please use another instance of DFasma.");
-    }
-}
-
-void FTSound::computeSTFT(int winlen, double stepsize, int dftlen){
-
-    if(winlen<2)
-        return;
-
-    WMainWindow::getMW()->m_gvSpectrogram->m_fftresizethread->resize(dftlen);
-
-    if(WMainWindow::getMW()->m_gvSpectrogram->m_fftresizethread->m_mutex_resizing.tryLock()){
-
-        int dftlen = WMainWindow::getMW()->m_gvSpectrogram->m_fft->size(); // Local copy of the actual dftlen
-
-        double fs = WMainWindow::getMW()->getFs();
-        int stepsize = std::floor(0.5+fs*WMainWindow::getMW()->m_gvSpectrogram->m_dlgSettings->ui->sbStepSize->value());
-        m_stft_nbsteps = std::floor((WMainWindow::getMW()->getMaxLastSampleTime()*fs - (winlen-1)/2)/stepsize);
-
-        m_stft.resize(m_stft_nbsteps);
-
-//        m_imgSTFT = QImage(m_nbsteps, m_dftlen/2+1, QImage::Format_RGB32);
-
-        WMainWindow::getMW()->ui->pgbSpectrogramFFTResize->hide();
-        WMainWindow::getMW()->ui->lblSpectrogramInfoTxt->setText(QString("DFT size=%1").arg(dftlen));
-
-        m_stft_min = std::numeric_limits<double>::infinity();
-        m_stft_max = -std::numeric_limits<double>::infinity();
-
-        for(int si=0; si<m_stft_nbsteps; si++){
-            m_stft[si].resize(dftlen/2+1);
-
-            int n = 0;
-            int wn = 0;
-//                cout << si*stepsize/WMainWindow::getMW()->getFs() << endl;
-            for(; n<winlen; n++){
-                wn = si*stepsize+n - m_delay;
-                if(wn>=0 && wn<int(wavtoplay->size()))
-                    WMainWindow::getMW()->m_gvSpectrogram->m_fft->in[n] = (*(wavtoplay))[wn]*WMainWindow::getMW()->m_gvSpectrogram->m_win[n];
-                else
-                    WMainWindow::getMW()->m_gvSpectrogram->m_fft->in[n] = 0.0;
-            }
-            for(; n<dftlen; n++)
-                WMainWindow::getMW()->m_gvSpectrogram->m_fft->in[n] = 0.0;
-
-            WMainWindow::getMW()->m_gvSpectrogram->m_fft->execute(); // Compute the DFT
-
-            for(n=0; n<dftlen/2+1; n++) {
-                double y = sigproc::log2db*std::log(std::abs(WMainWindow::getMW()->m_gvSpectrogram->m_fft->out[n]));
-
-                m_stft[si][n] = y;
-
-                m_stft_min = std::min(m_stft_min, y);
-                m_stft_max = std::max(m_stft_max, y);
-            }
-        }
-
-        WMainWindow::getMW()->m_gvSpectrogram->m_fftresizethread->m_mutex_resizing.unlock();
     }
 }
 

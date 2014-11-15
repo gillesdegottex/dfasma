@@ -28,7 +28,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "gvspectrogramwdialogsettings.h"
 #include "ui_gvspectrogramwdialogsettings.h"
 #include "gvwaveform.h"
-#include "fftresizethread.h"
+#include "stftcomputethread.h"
 #include "gvamplitudespectrum.h"
 #include "gvphasespectrum.h"
 #include "ftsound.h"
@@ -50,8 +50,6 @@ using namespace std;
 
 QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     : QGraphicsView(parent)
-    , m_winlen(0)
-    , m_dftlen(0)
     , m_imgSTFT(1, 1, QImage::Format_RGB32)
 {
     m_scene = new QGraphicsScene(this);
@@ -79,8 +77,7 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_aShowGrid->setChecked(settings.value("qgvspectrogram/m_aShowGrid", true).toBool());
     connect(m_aShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
 
-    m_fft = new sigproc::FFTwrapper();
-    m_fftresizethread = new FFTResizeThread(m_fft, this);
+    m_stftcomputethread = new STFTComputeThread(this);
 
     // Cursor
     m_giCursorHoriz = new QGraphicsLineItem(0, -1000, 0, 1000);
@@ -156,11 +153,12 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     setResizeAnchor(QGraphicsView::AnchorViewCenter);
     setMouseTracking(true);
 
-    WMainWindow::getMW()->ui->pgbSpectrogramFFTResize->hide();
+    WMainWindow::getMW()->ui->pgbSpectrogramSTFTCompute->hide();
     WMainWindow::getMW()->ui->lblSpectrogramInfoTxt->setText("");
 
-    connect(m_fftresizethread, SIGNAL(fftResized(int,int)), this, SLOT(computeSTFT()));
-    connect(m_fftresizethread, SIGNAL(fftResizing(int,int)), this, SLOT(fftResizing(int,int)));
+    connect(m_stftcomputethread, SIGNAL(stftComputing()), this, SLOT(stftComputing()));
+    connect(m_stftcomputethread, SIGNAL(stftComputed()), this, SLOT(updateAmplitudeExtent()));
+    connect(m_stftcomputethread, SIGNAL(stftComputed()), this, SLOT(updateSTFTPlot()));
 
     // Fill the toolbar
     m_toolBar = new QToolBar(this);
@@ -180,12 +178,12 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_contextmenu.addSeparator();
     m_contextmenu.addAction(m_aShowProperties);
     connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
-    connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(settingsModified()));
+    connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(updateDFTSettings()));
 
     connect(WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin, SIGNAL(valueChanged(int)), this, SLOT(updateSTFTPlot()));
     connect(WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax, SIGNAL(valueChanged(int)), this, SLOT(updateSTFTPlot()));
 
-    updateDFTSettings();
+    updateDFTSettings(); // Prepare a window from loaded settings
 }
 
 // Remove hard coded margin (Bug 11945)
@@ -197,85 +195,74 @@ QRectF QGVSpectrogram::removeHiddenMargin(const QRectF& sceneRect){
     return sceneRect.adjusted(mx, my, -mx, -my);
 }
 
-void QGVSpectrogram::settingsModified(){
-    updateSceneRect();
-    // TODO
-    updateDFTSettings();
-//    if(WMainWindow::getMW()->m_gvWaveform)
-//        WMainWindow::getMW()->m_gvWaveform->selectionClipAndSet(WMainWindow::getMW()->m_gvWaveform->m_mouseSelection, true);
-}
-
-void QGVSpectrogram::fftResizing(int prevSize, int newSize){
-    Q_UNUSED(prevSize);
-
-    WMainWindow::getMW()->ui->pgbSpectrogramFFTResize->show();
-    WMainWindow::getMW()->ui->lblSpectrogramInfoTxt->setText(QString("Resizing DFT to %1").arg(newSize));
+void QGVSpectrogram::stftComputing(){
+    WMainWindow::getMW()->ui->pgbSpectrogramSTFTCompute->show();
+    WMainWindow::getMW()->ui->lblSpectrogramInfoTxt->setText(QString("Computing ..."));
 }
 
 void QGVSpectrogram::updateDFTSettings(){
 
 //    cout << "QGVSpectrogram::updateDFTSettings" << endl;
 
-    updateSceneRect();
-
-    m_winlen = std::floor(0.5+WMainWindow::getMW()->getFs()*m_dlgSettings->ui->sbWindowSize->value());
+    int winlen = std::floor(0.5+WMainWindow::getMW()->getFs()*m_dlgSettings->ui->sbWindowSize->value());
+    // TODO Check for forced odd or not
 
     // Create the window
     int wintype = m_dlgSettings->ui->cbSpectrogramWindowType->currentIndex();
     if(wintype==0)
-        m_win = sigproc::hann(m_winlen);
+        m_win = sigproc::hann(winlen);
     else if(wintype==1)
-        m_win = sigproc::hamming(m_winlen);
+        m_win = sigproc::hamming(winlen);
     else if(wintype==2)
-        m_win = sigproc::blackman(m_winlen);
+        m_win = sigproc::blackman(winlen);
     else if(wintype==3)
-        m_win = sigproc::nutall(m_winlen);
+        m_win = sigproc::nutall(winlen);
     else if(wintype==4)
-        m_win = sigproc::blackmannutall(m_winlen);
+        m_win = sigproc::blackmannutall(winlen);
     else if(wintype==5)
-        m_win = sigproc::blackmanharris(m_winlen);
+        m_win = sigproc::blackmanharris(winlen);
     else if(wintype==6)
-        m_win = sigproc::flattop(m_winlen);
+        m_win = sigproc::flattop(winlen);
     else if(wintype==7)
-        m_win = sigproc::rectangular(m_winlen);
+        m_win = sigproc::rectangular(winlen);
     else if(wintype==8)
-        m_win = sigproc::normwindow(m_winlen, m_dlgSettings->ui->spWindowNormSigma->value());
+        m_win = sigproc::normwindow(winlen, m_dlgSettings->ui->spWindowNormSigma->value());
     else if(wintype==9)
-        m_win = sigproc::expwindow(m_winlen, m_dlgSettings->ui->spWindowExpDecay->value());
+        m_win = sigproc::expwindow(winlen, m_dlgSettings->ui->spWindowExpDecay->value());
     else if(wintype==10)
-        m_win = sigproc::gennormwindow(m_winlen, m_dlgSettings->ui->spWindowNormSigma->value(), m_dlgSettings->ui->spWindowNormPower->value());
+        m_win = sigproc::gennormwindow(winlen, m_dlgSettings->ui->spWindowNormSigma->value(), m_dlgSettings->ui->spWindowNormPower->value());
     else
         throw QString("No window selected");
 
     // Normalize the window energy to sum=1
     double winsum = 0.0;
-    for(int n=0; n<m_winlen; n++)
+    for(int n=0; n<winlen; n++)
         winsum += m_win[n];
-    for(int n=0; n<m_winlen; n++)
+    for(int n=0; n<winlen; n++)
         m_win[n] /= winsum;
 
-    // Set the DFT length
-    m_dftlen = pow(2, std::ceil(log2(float(m_winlen)))+m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());
-
     computeSTFT();
+
+//    cout << "QGVSpectrogram::~updateDFTSettings" << endl;
 }
 
 void QGVSpectrogram::computeSTFT(){
+//    cout << "QGVSpectrogram::computeSTFT" << endl;
 
     FTSound* csnd = WMainWindow::getMW()->getCurrentFTSound(true);
     if(csnd) {
         int stepsize = std::floor(0.5+WMainWindow::getMW()->getFs()*m_dlgSettings->ui->sbStepSize->value());
-        csnd->computeSTFT(m_winlen, stepsize, m_dftlen);
+        int dftlen = pow(2, std::ceil(log2(float(m_win.size())))+m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());
 
-        if(csnd->m_stft_nbsteps>0){
-            updateAmplitudeExtent();
-            updateSTFTPlot();
-        }
+//        cout << "QGVSpectrogram::computeSTFT compute on current sound stepsize=" << stepsize << " dftlen=" << dftlen << endl;
+
+        m_stftcomputethread->compute(csnd, m_win, stepsize, dftlen);
     }
 
-//    std::cout << "~QGVSpectrogram::computeSTFT" << endl;
+//    cout << "QGVSpectrogram::~computeSTFT" << endl;
 }
 void QGVSpectrogram::updateAmplitudeExtent(){
+//    cout << "QGVSpectrogram::updateAmplitudeExtent" << endl;
     FTSound* csnd = WMainWindow::getMW()->getCurrentFTSound(true);
     if(csnd) {
         WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->setMaximum(csnd->m_stft_max);
@@ -300,17 +287,21 @@ void QGVSpectrogram::updateAmplitudeExtent(){
 //        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMaximum(max);
 //        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMinimum(min);
 //    }
+//    cout << "QGVSpectrogram::~updateAmplitudeExtent" << endl;
 }
 void QGVSpectrogram::updateSTFTPlot(){
+//    cout << "QGVSpectrogram::updateSTFTPlot" << endl;
 
     // Fix limits between min and max sliders
     WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->setMinimum(WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value()+1);
     WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMaximum(WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->value()-1);
 
     FTSound* csnd = WMainWindow::getMW()->getCurrentFTSound(true);
-    if(csnd) {
+    if(csnd && csnd->m_stft.size()>0) {
+        int dftlen = (csnd->m_stft[0].size()-1)*2;
+
         // Update the image from the sound's STFT
-        m_imgSTFT = QImage(csnd->m_stft_nbsteps, m_dftlen/2+1, QImage::Format_RGB32);
+        m_imgSTFT = QImage(csnd->m_stft.size(), dftlen/2+1, QImage::Format_RGB32);
 
 //        cout << WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value() << ":" << WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->value() << endl;
 
@@ -321,33 +312,21 @@ void QGVSpectrogram::updateSTFTPlot(){
         imgpaint.setOpacity(1);
         m_imgSTFT.fill(QColor(0,0,255));
 
-        for(int si=0; si<csnd->m_stft_nbsteps; si++){
-            for(int n=0; n<m_dftlen/2+1; n++) {
+        for(size_t si=0; si<csnd->m_stft.size(); si++){
+            for(int n=0; n<dftlen/2+1; n++) {
                 double y = csnd->m_stft[si][n];
 
                 int color = 256-(256*(y-WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value())/(WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->value()-WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value()));
 
                 if(color<0) color = 0;
                 else if(color>255) color = 255;
-                m_imgSTFT.setPixel(QPoint(si,m_dftlen/2-n), QColor(color, color, color).rgb());
+                m_imgSTFT.setPixel(QPoint(si,dftlen/2-n), QColor(color, color, color).rgb());
             }
         }
 
         m_scene->update();
     }
-}
-
-void QGVSpectrogram::settingsSave() {
-    QSettings settings;
-    settings.setValue("qgvspectrogram/m_aShowGrid", m_aShowGrid->isChecked());
-    settings.setValue("qgvspectrogram/sldSpectrogramAmplitudeMin", WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value());
-    settings.setValue("qgvspectrogram/sldSpectrogramAmplitudeMax", WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->value());
-    settings.setValue("qgvspectrogram/sbSpectrogramOversamplingFactor", m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());
-    settings.setValue("qgvspectrogram/cbWindowSizeForcedOdd", m_dlgSettings->ui->cbWindowSizeForcedOdd->isChecked());
-    settings.setValue("qgvspectrogram/cbSpectrogramWindowType", m_dlgSettings->ui->cbSpectrogramWindowType->currentIndex());
-    settings.setValue("qgvspectrogram/spWindowNormPower", m_dlgSettings->ui->spWindowNormPower->value());
-    settings.setValue("qgvspectrogram/spWindowNormSigma", m_dlgSettings->ui->spWindowNormSigma->value());
-    settings.setValue("qgvspectrogram/spWindowExpDecay", m_dlgSettings->ui->spWindowExpDecay->value());
+//    cout << "QGVSpectrogram::~updateSTFTPlot" << endl;
 }
 
 void QGVSpectrogram::updateSceneRect() {
@@ -1065,12 +1044,24 @@ void QGVSpectrogram::draw_grid(QPainter* painter, const QRectF& rect) {
     }
 }
 
+void QGVSpectrogram::settingsSave() {
+    QSettings settings;
+    settings.setValue("qgvspectrogram/m_aShowGrid", m_aShowGrid->isChecked());
+    settings.setValue("qgvspectrogram/sldSpectrogramAmplitudeMin", WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value());
+    settings.setValue("qgvspectrogram/sldSpectrogramAmplitudeMax", WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->value());
+    settings.setValue("qgvspectrogram/sbSpectrogramOversamplingFactor", m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());
+    settings.setValue("qgvspectrogram/cbWindowSizeForcedOdd", m_dlgSettings->ui->cbWindowSizeForcedOdd->isChecked());
+    settings.setValue("qgvspectrogram/cbSpectrogramWindowType", m_dlgSettings->ui->cbSpectrogramWindowType->currentIndex());
+    settings.setValue("qgvspectrogram/spWindowNormPower", m_dlgSettings->ui->spWindowNormPower->value());
+    settings.setValue("qgvspectrogram/spWindowNormSigma", m_dlgSettings->ui->spWindowNormSigma->value());
+    settings.setValue("qgvspectrogram/spWindowExpDecay", m_dlgSettings->ui->spWindowExpDecay->value());
+}
+
 QGVSpectrogram::~QGVSpectrogram(){
-    m_fftresizethread->m_mutex_resizing.lock();
-    m_fftresizethread->m_mutex_resizing.unlock();
-    m_fftresizethread->m_mutex_changingsizes.lock();
-    m_fftresizethread->m_mutex_changingsizes.unlock();
-    delete m_fftresizethread;
-    delete m_fft;
+    m_stftcomputethread->m_mutex_computing.lock();
+    m_stftcomputethread->m_mutex_computing.unlock();
+    m_stftcomputethread->m_mutex_changingparams.lock();
+    m_stftcomputethread->m_mutex_changingparams.unlock();
+    delete m_stftcomputethread;
     delete m_dlgSettings;
 }

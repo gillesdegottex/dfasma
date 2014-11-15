@@ -33,13 +33,13 @@ GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(QGVSpectrogram* paren
 
     connect(ui->cbSpectrogramWindowType, SIGNAL(currentIndexChanged(QString)), this, SLOT(CBSpectrumWindowTypeCurrentIndexChanged(QString)));
 
-    // Update the DFT view automatically
-    connect(ui->sbSpectrogramOversamplingFactor, SIGNAL(valueChanged(int)), m_spectrogram, SLOT(settingsModified()));
-    connect(ui->cbWindowSizeForcedOdd, SIGNAL(toggled(bool)), m_spectrogram, SLOT(settingsModified()));
-    connect(ui->cbSpectrogramWindowType, SIGNAL(currentIndexChanged(int)), m_spectrogram, SLOT(settingsModified()));
-    connect(ui->spWindowNormPower, SIGNAL(valueChanged(double)), m_spectrogram, SLOT(settingsModified()));
-    connect(ui->spWindowNormSigma, SIGNAL(valueChanged(double)), m_spectrogram, SLOT(settingsModified()));
-    connect(ui->spWindowExpDecay, SIGNAL(valueChanged(double)), m_spectrogram, SLOT(settingsModified()));
+    // Update the DFT view automatically ... nope, too heavy for the spectrogram, wait for the Ok button
+//    connect(ui->sbSpectrogramOversamplingFactor, SIGNAL(valueChanged(int)), m_spectrogram, SLOT(settingsModified()));
+//    connect(ui->cbWindowSizeForcedOdd, SIGNAL(toggled(bool)), m_spectrogram, SLOT(settingsModified()));
+//    connect(ui->cbSpectrogramWindowType, SIGNAL(currentIndexChanged(int)), m_spectrogram, SLOT(settingsModified()));
+//    connect(ui->spWindowNormPower, SIGNAL(valueChanged(double)), m_spectrogram, SLOT(settingsModified()));
+//    connect(ui->spWindowNormSigma, SIGNAL(valueChanged(double)), m_spectrogram, SLOT(settingsModified()));
+//    connect(ui->spWindowExpDecay, SIGNAL(valueChanged(double)), m_spectrogram, SLOT(settingsModified()));
 }
 
 void GVSpectrogramWDialogSettings::CBSpectrumWindowTypeCurrentIndexChanged(QString txt) {
