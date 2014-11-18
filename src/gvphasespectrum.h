@@ -26,6 +26,7 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include <QGraphicsView>
 #include <QMenu>
+#include <QToolBar>
 
 //#include "wmainwindow.h"
 

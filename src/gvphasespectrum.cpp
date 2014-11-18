@@ -212,16 +212,6 @@ void QGVPhaseSpectrum::resizeEvent(QResizeEvent* event) {
     else
         WMainWindow::getMW()->m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    // Update the label
-    if(WMainWindow::getMW()->m_gvPhaseSpectrum->isVisible() && event->size().height()>0){
-        WMainWindow::getMW()->ui->lblPhaseSpectrum->setMaximumHeight(event->size().height());
-        WMainWindow::getMW()->ui->lblPhaseSpectrum->setMinimumHeight(event->size().height());
-        WMainWindow::getMW()->ui->lblPhaseSpectrum->show();
-    }
-    else{
-        WMainWindow::getMW()->ui->lblPhaseSpectrum->hide();
-    }
-
     viewUpdateTexts();
     cursorUpdate(QPointF(-1,0));
 

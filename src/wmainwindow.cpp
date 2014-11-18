@@ -171,10 +171,10 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     ui->lWaveformGraphicsView->addWidget(m_gvWaveform);
 
     m_gvSpectrum = new QGVAmplitudeSpectrum(this);
-    ui->wAmplitudeSpectrum->layout()->addWidget(m_gvSpectrum);
+    ui->lSpectrumAmplitudeGraphicsView->addWidget(m_gvSpectrum);
 
     m_gvPhaseSpectrum = new QGVPhaseSpectrum(this);
-    ui->wPhaseSpectrum->layout()->addWidget(m_gvPhaseSpectrum);
+    ui->lSpectrumPhaseGraphicsView->addWidget(m_gvPhaseSpectrum);
 
     m_gvSpectrogram = new QGVSpectrogram(this);
     ui->lSpectrogramGraphicsView->addWidget(m_gvSpectrogram);
@@ -197,9 +197,9 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 
 
     // Set visible views
-    connect(ui->actionShowAmplitudeSpectrum, SIGNAL(toggled(bool)), ui->wAmplitudeSpectrum, SLOT(setVisible(bool)));
+    connect(ui->actionShowAmplitudeSpectrum, SIGNAL(toggled(bool)), ui->wSpectrumAmplitude, SLOT(setVisible(bool)));
     connect(ui->actionShowAmplitudeSpectrum, SIGNAL(toggled(bool)), ui->sldSpectrumAmplitudeMin, SLOT(setVisible(bool)));
-    connect(ui->actionShowPhaseSpectrum, SIGNAL(toggled(bool)), ui->wPhaseSpectrum, SLOT(setVisible(bool)));
+    connect(ui->actionShowPhaseSpectrum, SIGNAL(toggled(bool)), ui->wSpectrumPhase, SLOT(setVisible(bool)));
     connect(ui->actionShowPhaseSpectrum, SIGNAL(toggled(bool)), ui->lblPhaseSpectrum, SLOT(setVisible(bool)));
     connect(ui->actionShowSpectrogram, SIGNAL(toggled(bool)), ui->wSpectrogram, SLOT(setVisible(bool)));
     connect(ui->actionShowAmplitudeSpectrum, SIGNAL(toggled(bool)), this, SLOT(viewsDisplayedChanged()));
@@ -253,22 +253,6 @@ void WMainWindow::viewsDisplayedChanged() {
         m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     else
         m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-
-    updateAmplitudeSpectrumSliderSize();
-}
-
-void WMainWindow::updateAmplitudeSpectrumSliderSize() {
-    if(m_gvSpectrum->isVisible() && (m_gvSpectrum->height()>0))
-    {
-        ui->sldSpectrumAmplitudeMin->setMaximumHeight(m_gvSpectrum->height());
-        ui->sldSpectrumAmplitudeMin->setMinimumHeight(m_gvSpectrum->height());
-    }
-
-    if(m_gvPhaseSpectrum->isVisible() && (m_gvPhaseSpectrum->height()>0))
-    {
-        ui->lblPhaseSpectrum->setMaximumHeight(m_gvPhaseSpectrum->height());
-        ui->lblPhaseSpectrum->setMinimumHeight(m_gvPhaseSpectrum->height());
-    }
 }
 
 void WMainWindow::settingsSave() {

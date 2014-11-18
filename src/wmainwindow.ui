@@ -339,7 +339,7 @@
         </layout>
        </widget>
        <widget class="QWidget" name="wSpectra" native="true">
-        <layout class="QVBoxLayout" name="verticalLayout_8">
+        <layout class="QVBoxLayout" name="verticalLayout_3">
          <property name="spacing">
           <number>0</number>
          </property>
@@ -355,6 +355,90 @@
          <property name="bottomMargin">
           <number>0</number>
          </property>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QLabel" name="lblSpectrumSelectionTxt">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <family>Monospace</family>
+               <pointsize>8</pointsize>
+               <weight>50</weight>
+               <italic>false</italic>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>&lt;selection&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_3">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>58</width>
+               <height>17</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QLabel" name="lblSpectrumInfoTxt">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>&lt;info text&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QProgressBar" name="pgbFFTResize">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>12</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
+             <property name="maximum">
+              <number>0</number>
+             </property>
+             <property name="value">
+              <number>-1</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
          <item>
           <widget class="QWidget" name="wSpectraBar" native="true">
            <property name="sizePolicy">
@@ -379,153 +463,21 @@
             <property name="bottomMargin">
              <number>0</number>
             </property>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_2">
-              <item>
-               <widget class="QLabel" name="lblSpectrumSelectionTxt">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="font">
-                 <font>
-                  <family>Monospace</family>
-                  <pointsize>8</pointsize>
-                  <weight>50</weight>
-                  <italic>false</italic>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>&lt;selection&gt;</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_3">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QLabel" name="lblSpectrumInfoTxt">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>8</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>&lt;info text&gt;</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QProgressBar" name="pgbFFTResize">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>12</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>8</pointsize>
-                 </font>
-                </property>
-                <property name="maximum">
-                 <number>0</number>
-                </property>
-                <property name="value">
-                 <number>-1</number>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
            </layout>
           </widget>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <layout class="QHBoxLayout" name="horizontalLayout_8">
            <item>
             <layout class="QVBoxLayout" name="lSpectraToolBar"/>
-           </item>
-           <item>
-            <layout class="QVBoxLayout" name="verticalLayout_3">
-             <item>
-              <widget class="QSlider" name="sldSpectrumAmplitudeMin">
-               <property name="maximumSize">
-                <size>
-                 <width>16</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="minimum">
-                <number>-500</number>
-               </property>
-               <property name="maximum">
-                <number>0</number>
-               </property>
-               <property name="value">
-                <number>-215</number>
-               </property>
-               <property name="tickPosition">
-                <enum>QSlider::NoTicks</enum>
-               </property>
-               <property name="tickInterval">
-                <number>10</number>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="lblPhaseSpectrum">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>16</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="text">
-                <string/>
-               </property>
-              </widget>
-             </item>
-            </layout>
            </item>
            <item>
             <widget class="QSplitter" name="splitterSpectra">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
-             <widget class="QWidget" name="wAmplitudeSpectrum" native="true">
-              <layout class="QVBoxLayout" name="verticalLayout_5">
+             <widget class="QWidget" name="wSpectrumAmplitude" native="true">
+              <layout class="QHBoxLayout" name="horizontalLayout_7">
                <property name="spacing">
                 <number>0</number>
                </property>
@@ -542,7 +494,32 @@
                 <number>0</number>
                </property>
                <item>
-                <layout class="QVBoxLayout" name="verticalLayout_4">
+                <widget class="QSlider" name="sldSpectrumAmplitudeMin">
+                 <property name="maximumSize">
+                  <size>
+                   <width>16</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="minimum">
+                  <number>-500</number>
+                 </property>
+                 <property name="maximum">
+                  <number>0</number>
+                 </property>
+                 <property name="value">
+                  <number>-215</number>
+                 </property>
+                 <property name="tickPosition">
+                  <enum>QSlider::NoTicks</enum>
+                 </property>
+                 <property name="tickInterval">
+                  <number>10</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QVBoxLayout" name="lSpectrumAmplitudeGraphicsView">
                  <property name="spacing">
                   <number>0</number>
                  </property>
@@ -550,8 +527,8 @@
                </item>
               </layout>
              </widget>
-             <widget class="QWidget" name="wPhaseSpectrum" native="true">
-              <layout class="QVBoxLayout" name="verticalLayout_7">
+             <widget class="QWidget" name="wSpectrumPhase" native="true">
+              <layout class="QHBoxLayout" name="horizontalLayout_4">
                <property name="spacing">
                 <number>0</number>
                </property>
@@ -568,7 +545,32 @@
                 <number>0</number>
                </property>
                <item>
-                <layout class="QVBoxLayout" name="verticalLayout_6">
+                <widget class="QLabel" name="lblPhaseSpectrum">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>16</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>16</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QVBoxLayout" name="lSpectrumPhaseGraphicsView">
                  <property name="spacing">
                   <number>0</number>
                  </property>
