@@ -172,11 +172,11 @@ QString FTSound::info() const {
     str += "Loaded at "+datestr+"<br/>";
 
     if(m_modifiedtime==QDateTime())
-        str += "<b>Inaccessible</b><br/>";
+        str += "<b>Currently inaccessible</b><br/>";
     else{
         datestr = m_modifiedtime.toString("HH:mm:ss ddMMM");
         if(m_modifiedtime>m_lastreadtime) datestr = "<b>"+datestr+"</b>";
-        str += "Modified at "+datestr+"<br/>";
+        str += "Last file modification at "+datestr+"<br/>";
     }
 
     str += "Duration: "+QString::number(getDuration())+"s ("+QString::number(wav.size())+")<br/>";
