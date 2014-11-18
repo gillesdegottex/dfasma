@@ -58,7 +58,7 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_dlgSettings = new GVSpectrogramWDialogSettings(this);
 
     QSettings settings;
-    WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setValue(settings.value("qgvspectrogram/sldSpectrogramAmplitudeMin", -250).toInt());
+    WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setValue(-settings.value("qgvspectrogram/sldSpectrogramAmplitudeMin", -250).toInt());
     WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->setValue(settings.value("qgvspectrogram/sldSpectrogramAmplitudeMax", 0).toInt());
 
     m_aShowProperties = new QAction(tr("&Properties"), this);
@@ -179,8 +179,8 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_contextmenu.addAction(m_aShowProperties);
     connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
 
-    connect(m_dlgSettings->ui->buttonBox->button(QDialogButtonBox::Close), SIGNAL(clicked()), this, SLOT(updateDFTSettings()));
-    connect(m_dlgSettings->ui->buttonBox->button(QDialogButtonBox::Close), SIGNAL(clicked()), m_dlgSettings, SLOT(close()));
+    connect(m_dlgSettings->ui->buttonBox->button(QDialogButtonBox::Ok), SIGNAL(clicked()), this, SLOT(updateDFTSettings()));
+    connect(m_dlgSettings->ui->buttonBox->button(QDialogButtonBox::Ok), SIGNAL(clicked()), m_dlgSettings, SLOT(close()));
 
     connect(m_dlgSettings->ui->buttonBox->button(QDialogButtonBox::Apply), SIGNAL(clicked()), this, SLOT(updateDFTSettings()));
 
@@ -272,8 +272,8 @@ void QGVSpectrogram::updateAmplitudeExtent(){
     if(csnd) {
         WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->setMaximum(csnd->m_stft_max);
         WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->setMinimum(csnd->m_stft_min+1);
-        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMaximum(csnd->m_stft_max-1);
-        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMinimum(csnd->m_stft_min);
+        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMinimum(-(csnd->m_stft_max-1));
+        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMaximum(-(csnd->m_stft_min));
     }
 
     // If the current is NOT opaque:
@@ -289,8 +289,8 @@ void QGVSpectrogram::updateAmplitudeExtent(){
 
 //        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->setMaximum(max);
 //        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->setMinimum(min);
-//        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMaximum(max);
-//        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMinimum(min);
+//        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMaximum(-max);
+//        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMinimum(-min);
 //    }
 //    cout << "QGVSpectrogram::~updateAmplitudeExtent" << endl;
 }
@@ -298,8 +298,8 @@ void QGVSpectrogram::updateSTFTPlot(){
 //    cout << "QGVSpectrogram::updateSTFTPlot" << endl;
 
     // Fix limits between min and max sliders
-    WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->setMinimum(WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value()+1);
-    WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMaximum(WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->value()-1);
+    WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->setMinimum(-WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value()+1);
+    WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMinimum(-(WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->value()-1));
 
     FTSound* csnd = WMainWindow::getMW()->getCurrentFTSound(true);
     if(csnd && csnd->m_stft.size()>0) {
@@ -307,8 +307,6 @@ void QGVSpectrogram::updateSTFTPlot(){
 
         // Update the image from the sound's STFT
         m_imgSTFT = QImage(csnd->m_stft.size(), dftlen/2+1, QImage::Format_RGB32);
-
-//        cout << WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value() << ":" << WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->value() << endl;
 
         QPainter imgpaint(&m_imgSTFT);
         QPen outlinePen(QColor(255, 0, 0));
@@ -321,7 +319,7 @@ void QGVSpectrogram::updateSTFTPlot(){
             for(int n=0; n<dftlen/2+1; n++) {
                 double y = csnd->m_stft[si][n];
 
-                int color = 256-(256*(y-WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value())/(WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->value()-WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value()));
+                int color = 256-(256*(y+WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value())/(WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->value()+WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value()));
 
                 if(color<0) color = 0;
                 else if(color>255) color = 255;
@@ -1052,7 +1050,7 @@ void QGVSpectrogram::draw_grid(QPainter* painter, const QRectF& rect) {
 void QGVSpectrogram::settingsSave() {
     QSettings settings;
     settings.setValue("qgvspectrogram/m_aShowGrid", m_aShowGrid->isChecked());
-    settings.setValue("qgvspectrogram/sldSpectrogramAmplitudeMin", WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value());
+    settings.setValue("qgvspectrogram/sldSpectrogramAmplitudeMin", -WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value());
     settings.setValue("qgvspectrogram/sldSpectrogramAmplitudeMax", WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->value());
     settings.setValue("qgvspectrogram/sbSpectrogramOversamplingFactor", m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());
     settings.setValue("qgvspectrogram/cbWindowSizeForcedOdd", m_dlgSettings->ui->cbWindowSizeForcedOdd->isChecked());
