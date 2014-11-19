@@ -27,7 +27,6 @@ void STFTComputeThread::compute(FTSound* snd, const std::vector<FFTTYPE>& win, i
     reqparams.win = win;
     reqparams.stepsize = stepsize;
     reqparams.dftlen = dftlen;
-    reqparams.nbsteps = std::floor((WMainWindow::getMW()->getMaxLastSampleTime()*snd->fs - (reqparams.win.size()-1)/2)/stepsize);
 
     if(m_mutex_computing.tryLock()){
         // Currently not computing, but it will be very soon ...
@@ -63,21 +62,23 @@ void STFTComputeThread::run() {
 
 //        std::cout << "STFTComputeThread::run resize finished" << std::endl;
 
-        m_params_current.snd->m_stft.resize(m_params_current.nbsteps);
+        m_params_current.snd->m_stft.clear();
+        m_params_current.snd->m_stftts.clear();
 
     //        m_imgSTFT = QImage(m_nbsteps, m_dftlen/2+1, QImage::Format_RGB32);
 
         m_params_current.snd->m_stft_min = std::numeric_limits<double>::infinity();
         m_params_current.snd->m_stft_max = -std::numeric_limits<double>::infinity();
-//        double smallestdb = -10.0*20*std::log10(std::pow(2,m_params_current.snd->format().sampleSize())), m_params_current.snd->m_stft_min;
-//        double smallestdb = -1000;
 
-        for(int si=0; si<m_params_current.nbsteps; si++){
-            m_params_current.snd->m_stft[si].resize(m_params_current.dftlen/2+1);
+        for(int si=0; true; si++){
+            if(si*m_params_current.stepsize+m_params_current.win.size()-1 > wav->size()-1)
+                break;
+
+            m_params_current.snd->m_stft.push_back(std::vector<WAVTYPE>(m_params_current.dftlen/2+1));
+            m_params_current.snd->m_stftts.push_back((si*m_params_current.stepsize+(m_params_current.win.size()-1)/2.0)/m_params_current.snd->fs);
 
             int n = 0;
             int wn = 0;
-//                cout << si*stepsize/WMainWindow::getMW()->getFs() << endl;
             for(; n<m_params_current.win.size(); n++){
                 wn = si*m_params_current.stepsize+n - m_params_current.snd->m_delay;
                 if(wn>=0 && wn<int(wav->size())) // TODO temp

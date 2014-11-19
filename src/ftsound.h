@@ -83,7 +83,8 @@ public:
     std::vector<std::complex<WAVTYPE> > m_dft; // Store the _log_ of the dft
 
     // Spectrogram
-    std::vector<std::vector<WAVTYPE> > m_stft;
+    std::deque<std::vector<WAVTYPE> > m_stft;
+    std::deque<double> m_stftts;
     qreal m_stft_min;
     qreal m_stft_max;
 

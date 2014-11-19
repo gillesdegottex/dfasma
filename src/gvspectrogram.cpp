@@ -950,11 +950,15 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
     FTSound* csnd = WMainWindow::getMW()->getCurrentFTSound();
     if(csnd && csnd->m_actionShow->isChecked()) {
 
-//        cout << m_imgSTFT.size().width() << "x" << m_imgSTFT.size().height() << endl;
+//        cout << viewrect.left() << ":" << viewrect.right() << endl;
+//        cout << m_imgSTFT.rect().left() << ":" << m_imgSTFT.rect().right() << ":" << m_imgSTFT.rect().width() << " " << csnd->m_stftts.size() <<  endl;
 
         QRectF srcrect;// TODO Check time synchro
-        srcrect.setLeft(m_imgSTFT.rect().width()*viewrect.left()/m_scene->sceneRect().width());
-        srcrect.setRight(m_imgSTFT.rect().width()*viewrect.right()/m_scene->sceneRect().width());
+
+        double stftwidth = csnd->m_stftts.back()-csnd->m_stftts.front();
+
+        srcrect.setLeft(0.5+(m_imgSTFT.rect().width()-1)*(viewrect.left()-csnd->m_stftts.front())/stftwidth);
+        srcrect.setRight(0.5+(m_imgSTFT.rect().width()-1)*(viewrect.right()-csnd->m_stftts.front())/stftwidth);
         srcrect.setTop(m_imgSTFT.rect().height()*viewrect.top()/m_scene->sceneRect().height());
         srcrect.setBottom(m_imgSTFT.rect().height()*viewrect.bottom()/m_scene->sceneRect().height());
 

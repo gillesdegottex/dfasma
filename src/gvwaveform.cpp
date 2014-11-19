@@ -137,6 +137,13 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     connect(m_aShowWindow, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
     m_contextmenu.addAction(m_aShowWindow);
 
+    m_aShowSTFTWindowCenters = new QAction(tr("Show STFT's window centers"), this);
+    m_aShowSTFTWindowCenters->setStatusTip(tr("Show STFT's window centers"));
+    m_aShowSTFTWindowCenters->setCheckable(true);
+    m_aShowSTFTWindowCenters->setChecked(settings.value("qgvwaveform/m_aShowSTFTWindowCenters", false).toBool());
+    connect(m_aShowSTFTWindowCenters, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
+    m_contextmenu.addAction(m_aShowSTFTWindowCenters);
+
     // Play Cursor
     m_giPlayCursor = new QGraphicsPathItem();
     QPen playCursorPen(QColor(255, 0, 0));
@@ -227,6 +234,7 @@ void QGVWaveform::settingsSave() {
     QSettings settings;
     settings.setValue("qgvwaveform/m_aShowGrid", m_aShowGrid->isChecked());
     settings.setValue("qgvwaveform/m_aShowWindow", m_aShowWindow->isChecked());
+    settings.setValue("qgvwaveform/m_aShowSTFTWindowCenters", m_aShowSTFTWindowCenters->isChecked());
 }
 
 // Remove hard coded margin (Bug 11945)
@@ -1119,6 +1127,20 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
         painter->setWorldMatrixEnabled(true); // Go back to scene coordinates
     }
 
+    // Plot STFT's window centers
+    if(m_aShowSTFTWindowCenters->isChecked()){
+        FTSound* currentftsound = WMainWindow::getMW()->getCurrentFTSound();
+        if(currentftsound && currentftsound->m_actionShow->isChecked()){
+            QPen outlinePen(currentftsound->color);
+            outlinePen.setWidth(0);
+            painter->setPen(outlinePen);
+//            painter->setBrush(QBrush(WMainWindow::getMW()->ftlabels[fi]->color));
+
+            for(size_t wci=0; wci<currentftsound->m_stftts.size(); wci++){
+                painter->drawLine(QLineF(currentftsound->m_stftts[wci], -1.0, currentftsound->m_stftts[wci], 1.0));
+            }
+        }
+    }
 
     // Plot labels
     QTransform trans = transform();

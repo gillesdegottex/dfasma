@@ -66,6 +66,7 @@ public:
 
     QAction* m_aShowGrid;
     QAction* m_aShowWindow;
+    QAction* m_aShowSTFTWindowCenters;
     QAction* m_aZoomOnSelection;
     QAction* m_aSelectionClear;
     QAction* m_aZoomIn;

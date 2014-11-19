@@ -29,14 +29,12 @@ public:
         std::vector<FFTTYPE> win;
         int stepsize;
         int dftlen;
-        int nbsteps;
 
         void clear(){
             snd = NULL;
             win.clear();
             stepsize = -1;
             dftlen = -1;
-            nbsteps = -1;
         }
 
         Parameters(){
@@ -49,8 +47,6 @@ public:
             if(stepsize!=param.stepsize)
                 return false;
             if(dftlen!=param.dftlen)
-                return false;
-            if(nbsteps!=param.nbsteps)
                 return false;
             if(win.size()!=param.win.size())
                 return false;
