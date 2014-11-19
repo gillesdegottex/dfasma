@@ -232,7 +232,7 @@ void QGVAmplitudeSpectrum::updateAmplitudeExtent(){
             maxsqnr = std::max(maxsqnr, 20*std::log10(std::pow(2.0f,WMainWindow::getMW()->ftsnds[si]->format().sampleSize())));
 
         WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->setMaximum(0);
-        WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->setMinimum(-2*maxsqnr);
+        WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->setMinimum(-2*maxsqnr); // 2 gives a margin
 
         updateSceneRect();
     }

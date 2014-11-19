@@ -561,7 +561,6 @@ void WMainWindow::addFile(const QString& filepath) {
                 initializeSoundSystem(ftsnds[0]->fs);
 
             m_gvWaveform->fitViewToSoundsAmplitude();
-            m_gvSpectrum->updateAmplitudeExtent();
         //    cout << "~MainWindow::addFile" << endl;
         }
 
@@ -703,6 +702,8 @@ void WMainWindow::fileSelectionChanged() {
     connect(ui->actionMultiReload, SIGNAL(triggered()), this, SLOT(soundsChanged()));
 
     fileInfoUpdate();
+
+    m_gvSpectrogram->updateSTFTPlot();
 }
 void WMainWindow::fileInfoUpdate() {
     QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();

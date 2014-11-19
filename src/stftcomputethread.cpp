@@ -69,6 +69,8 @@ void STFTComputeThread::run() {
 
         m_params_current.snd->m_stft_min = std::numeric_limits<double>::infinity();
         m_params_current.snd->m_stft_max = -std::numeric_limits<double>::infinity();
+//        double smallestdb = -10.0*20*std::log10(std::pow(2,m_params_current.snd->format().sampleSize())), m_params_current.snd->m_stft_min;
+//        double smallestdb = -1000;
 
         for(int si=0; si<m_params_current.nbsteps; si++){
             m_params_current.snd->m_stft[si].resize(m_params_current.dftlen/2+1);
@@ -97,6 +99,8 @@ void STFTComputeThread::run() {
                 m_params_current.snd->m_stft_max = std::max(m_params_current.snd->m_stft_max, y);
             }
         }
+
+        m_params_current.snd->m_stft_min = std::max(-2.0*20*std::log10(std::pow(2,m_params_current.snd->format().sampleSize())), m_params_current.snd->m_stft_min);
 //        std::cout << "STFTComputeThread::run compute finished" << std::endl;
 
 //        std::cout << "STFTComputeThread::run check for computing again ..." << std::endl;
