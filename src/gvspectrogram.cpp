@@ -948,7 +948,7 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 
 
     // Draw the sound's spectra
-    FTSound* csnd = WMainWindow::getMW()->getCurrentFTSound();
+    FTSound* csnd = WMainWindow::getMW()->getCurrentFTSound(true);
     if(csnd && csnd->m_actionShow->isChecked()) {
 
 //        cout << viewrect.left() << ":" << viewrect.right() << endl;
