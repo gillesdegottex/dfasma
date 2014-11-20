@@ -81,6 +81,7 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     , m_gvSpectrum(NULL)
     , m_gvPhaseSpectrum(NULL)
     , m_audioengine(NULL)
+    , m_lastSelectedSound(NULL)
 {
     ui->setupUi(this);
     ui->lblFileInfo->hide();
@@ -654,7 +655,7 @@ void WMainWindow::dragEnterEvent(QDragEnterEvent *event){
     event->acceptProposedAction();
 }
 
-FTSound* WMainWindow::getCurrentFTSound(bool defselectfirst) {
+FTSound* WMainWindow::getCurrentFTSound(bool forceselect) {
 
     if(ftsnds.empty())
         return NULL;
@@ -664,13 +665,17 @@ FTSound* WMainWindow::getCurrentFTSound(bool defselectfirst) {
     if(currenItem && currenItem->type==FileType::FTSOUND)
         return (FTSound*)currenItem;
 
-    if(defselectfirst)
-        return ftsnds[0];
+    if(forceselect){
+        if(m_lastSelectedSound)
+            return m_lastSelectedSound;
+        else
+            return ftsnds[0];
+    }
 
     return NULL;
 }
 
-FTLabels* WMainWindow::getCurrentFTLabels(bool defselectfirst) {
+FTLabels* WMainWindow::getCurrentFTLabels(bool forceselect) {
 
     if(ftlabels.empty())
         return NULL;
@@ -680,7 +685,7 @@ FTLabels* WMainWindow::getCurrentFTLabels(bool defselectfirst) {
     if(currenItem && currenItem->type==FileType::FTLABELS)
         return (FTLabels*)currenItem;
 
-    if(defselectfirst)
+    if(forceselect)
         return ftlabels[0];
 
     return NULL;
@@ -714,9 +719,11 @@ void WMainWindow::fileSelectionChanged() {
 
     QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
     bool selectionhassnd = false;
-    for(size_t i=0; i<list.size(); i++) {
-        if(((FileType*)list.at(i))->type == FileType::FTSOUND)
+    for(int i=0; i<list.size(); i++) {
+        if(((FileType*)list.at(i))->type == FileType::FTSOUND){
             selectionhassnd = true;
+            m_lastSelectedSound = (FTSound*)list.at(i);
+        }
         connect(ui->actionMultiShow, SIGNAL(triggered()), ((FileType*)list.at(i))->m_actionShow, SLOT(toggle()));
         connect(ui->actionMultiReload, SIGNAL(triggered()), ((FileType*)list.at(i))->m_actionReload, SLOT(trigger()));
         connect(ui->actionMultiReload, SIGNAL(triggered()), this, SLOT(fileInfoUpdate()));

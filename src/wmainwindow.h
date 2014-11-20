@@ -123,8 +123,9 @@ public:
     std::deque<FTSound*> ftsnds;
     std::deque<FTFZero*> ftfzeros;
     std::deque<FTLabels*> ftlabels;
-    FTSound* getCurrentFTSound(bool defselectfirst=false);
-    FTLabels* getCurrentFTLabels(bool defselectfirst=false);
+    FTSound* m_lastSelectedSound;
+    FTSound* getCurrentFTSound(bool forceselect=false);
+    FTLabels* getCurrentFTLabels(bool forceselect=false);
 
     double getFs();
     unsigned int getMaxWavSize();
