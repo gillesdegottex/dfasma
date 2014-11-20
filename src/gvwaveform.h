@@ -98,6 +98,8 @@ public:
     void draw_grid(QPainter* painter, const QRectF& rect);
     void draw_waveform(QPainter* painter, const QRectF& rect);
 
+    void selectSegment(double x, bool add);
+
     void viewSet(QRectF viewrect=QRectF(), bool sync=true);
     void viewSync();
 
