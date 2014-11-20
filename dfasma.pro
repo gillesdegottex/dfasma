@@ -33,7 +33,7 @@ DEFINES += FFTW3RESIZINGMAXTIMESPENT
 # Chose among: audiofilereading_libsndfile, audiofilereading_libsox,
 #              audiofilereading_libav,
 #              audiofilereading_builtin, audiofilereading_qt
-CONFIG += audiofilereading_libsox
+CONFIG += audiofilereading_libsndfile
 
 # Additional file format support
 # SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
@@ -143,6 +143,7 @@ SOURCES   += src/main.cpp\
              src/gvphasespectrum.cpp \
              src/wdialogsettings.cpp \
              src/gvspectrogram.cpp \
+             src/stftcomputethread.cpp \
              src/gvspectrogramwdialogsettings.cpp \
              src/sigproc.cpp \
              external/mkfilter/mkfilter.cpp \
@@ -162,6 +163,7 @@ HEADERS   += src/wmainwindow.h \
              src/gvphasespectrum.h \
              src/wdialogsettings.h \
              src/gvspectrogram.h \
+             src/stftcomputethread.h \
              src/gvspectrogramwdialogsettings.h \
              src/fftresizethread.h \
              external/audioengine/audioengine.h
