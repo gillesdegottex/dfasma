@@ -54,7 +54,7 @@ public:
     static bool SDIF_hasFrame(const QString& filename, const QString& framesignature);
     #endif
 
-    virtual QString info() const =0;
+    virtual QString info() const;
     void setShown(bool shown);
     virtual bool isModified() {return false;}
     void setColor(const QColor& _color);

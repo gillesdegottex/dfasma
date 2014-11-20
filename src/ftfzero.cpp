@@ -170,8 +170,7 @@ void FTFZero::reload() {
 }
 
 QString FTFZero::info() const {
-    QString str = "";
-    str += "Loaded at "+m_lastreadtime.toString("HH:mm:ss ddMMM")+"<br/>";
+    QString str = FileType::info();
     return str;
 }
 

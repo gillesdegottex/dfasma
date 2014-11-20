@@ -165,19 +165,7 @@ FileType* FTSound::duplicate(){
 }
 
 QString FTSound::info() const {
-    QString str = "";
-
-    QString datestr = m_lastreadtime.toString("HH:mm:ss ddMMM");
-    if(m_modifiedtime>m_lastreadtime) datestr = "<b>"+datestr+"</b>";
-    str += "Loaded at "+datestr+"<br/>";
-
-    if(m_modifiedtime==QDateTime())
-        str += "<b>Currently inaccessible</b><br/>";
-    else{
-        datestr = m_modifiedtime.toString("HH:mm:ss ddMMM");
-        if(m_modifiedtime>m_lastreadtime) datestr = "<b>"+datestr+"</b>";
-        str += "Last file modification at "+datestr+"<br/>";
-    }
+    QString str = FileType::info();
 
     str += "Duration: "+QString::number(getDuration())+"s ("+QString::number(wav.size())+")<br/>";
 

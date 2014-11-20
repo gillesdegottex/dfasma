@@ -49,9 +49,13 @@ public:
     std::deque<double> starts;
     std::deque<QString> labels;
 
+    bool m_isedited;
+
     virtual QString info() const;
     virtual double getLastSampleTime() const;
     virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
+
+    virtual bool isModified() {return m_isedited;}
 
     ~FTLabels();
 

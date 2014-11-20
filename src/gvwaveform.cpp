@@ -684,8 +684,9 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
         FTLabels* ftlabel = WMainWindow::getMW()->getCurrentFTLabels();
         if(ftlabel) {
             ftlabel->starts[m_ca_pressed_index] = p.x();
+            ftlabel->m_isedited = true;
+            ftlabel->setStatus();
             cursorUpdate(p.x());
-            m_scene->update();
             WMainWindow::getMW()->m_gvSpectrogram->m_scene->update();
         }
     }
@@ -891,8 +892,10 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
                         m_currentAction = CALabelWritting;
                         ftlabel->labels.push_back(event->text());
                         ftlabel->starts.push_back(m_giCursor->line().x1());
+                        ftlabel->m_isedited = true;
                         m_label_current = ftlabel->labels.end()-1;
                     }
+                    ftlabel->setStatus();
                     m_scene->update();
                     WMainWindow::getMW()->m_gvSpectrogram->m_scene->update();
                 }

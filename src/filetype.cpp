@@ -115,6 +115,25 @@ FileType::FileType(FILETYPE _type, const QString& _fileName, QObject * parent)
 //    QIODevice::open(QIODevice::ReadOnly);
 }
 
+QString FileType::info() const {
+
+    QString str;
+
+    QString datestr = m_lastreadtime.toString("HH:mm:ss ddMMM");
+    if(m_modifiedtime>m_lastreadtime) datestr = "<b>"+datestr+"</b>";
+    str += "Loaded at "+datestr+"<br/>";
+
+    if(m_modifiedtime==QDateTime())
+        str += "<b>Currently inaccessible</b><br/>";
+    else{
+        datestr = m_modifiedtime.toString("HH:mm:ss ddMMM");
+        if(m_modifiedtime>m_lastreadtime) datestr = "<b>"+datestr+"</b>";
+        str += "Last file modification at "+datestr+"<br/>";
+    }
+
+    return str;
+}
+
 bool FileType::checkFileStatus(CHECKFILESTATUSMGT cfsmgt){
     if(!QFileInfo::exists(fileFullPath)){
         if(cfsmgt==CFSMEXCEPTION)

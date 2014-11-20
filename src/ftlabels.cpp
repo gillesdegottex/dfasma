@@ -43,6 +43,7 @@ using namespace Easdif;
 #include "ui_wmainwindow.h"
 
 void FTLabels::init(){
+    m_isedited = false;
     m_actionSave = new QAction("Save", this);
     m_actionSave->setStatusTip(tr("Save the labels times (overwrite the file !)"));
     connect(m_actionSave, SIGNAL(triggered()), this, SLOT(save()));
@@ -260,12 +261,12 @@ void FTLabels::save() {
 
 #endif
     m_lastreadtime = QDateTime::currentDateTime();
+    m_isedited = false;
 }
 
 
 QString FTLabels::info() const {
-    QString str = "";
-    str += "Loaded at "+m_lastreadtime.toString("HH:mm:ss ddMMM")+"<br/>";
+    QString str = FileType::info();
     return str;
 }
 
@@ -296,6 +297,8 @@ double FTLabels::getLastSampleTime() const {
 void FTLabels::remove(int index){
     starts.erase(starts.begin()+index);
     labels.erase(labels.begin()+index);
+    m_isedited = true;
+    setStatus();
 }
 
 template <typename Container>
