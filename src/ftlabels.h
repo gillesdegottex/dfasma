@@ -39,6 +39,7 @@ class FTLabels : public QObject, public FileType
     void load();
 
     QAction* m_actionSave;
+    QAction* m_actionSaveAs;
 
 public:
     FTLabels(const QString& _fileName, QObject* parent);
@@ -46,7 +47,6 @@ public:
     virtual FileType* duplicate();
 
     std::deque<double> starts;
-    std::deque<double> ends;
     std::deque<QString> labels;
 
     virtual QString info() const;
@@ -58,6 +58,9 @@ public:
 public slots:
     void reload();
     void save();
+    void saveAs();
+    void sort();
+    void remove(int index);
 };
 
 #endif // FTLABELS_H

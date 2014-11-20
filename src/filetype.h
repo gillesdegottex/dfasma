@@ -65,6 +65,8 @@ public:
     enum CHECKFILESTATUSMGT {CFSMQUIET, CFSMMESSAGEBOX, CFSMEXCEPTION};
     bool checkFileStatus(CHECKFILESTATUSMGT cfsmgt=CFSMQUIET);
     virtual void setStatus();
+
+    void setFullPath(const QString& fp){fileFullPath = fp;}
 };
 
 #endif // FILETYPE_H

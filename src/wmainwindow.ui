@@ -601,7 +601,7 @@
      <x>0</x>
      <y>0</y>
      <width>831</width>
-     <height>31</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>
@@ -612,6 +612,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionNewFile"/>
    <addaction name="actionOpen"/>
    <addaction name="actionCloseFile"/>
    <addaction name="separator"/>
@@ -639,11 +640,6 @@
    </property>
   </action>
   <action name="actionOpen">
-   <property name="icon">
-    <iconset>
-     <normaloff/>
-    </iconset>
-   </property>
    <property name="text">
     <string>Open...</string>
    </property>
@@ -811,6 +807,17 @@
    </property>
    <property name="shortcut">
     <string>F8</string>
+   </property>
+  </action>
+  <action name="actionNewFile">
+   <property name="text">
+    <string>New...</string>
+   </property>
+   <property name="toolTip">
+    <string>Create a new file...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
    </property>
   </action>
  </widget>

@@ -144,7 +144,6 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     connect(m_aZoomOut, SIGNAL(triggered()), this, SLOT(azoomout()));
     m_aUnZoom = new QAction(tr("Un-Zoom"), this);
     m_aUnZoom->setStatusTip(tr("Un-Zoom"));
-    m_aUnZoom->setShortcut(Qt::Key_Z);
     m_aUnZoom->setIcon(QIcon(":/icons/unzoomxy.svg"));
     connect(m_aUnZoom, SIGNAL(triggered()), this, SLOT(aunzoom()));
     m_aZoomOnSelection = new QAction(tr("&Zoom on selection"), this);

@@ -139,6 +139,9 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     ui->actionAbout->setIcon(QIcon(":/icons/about.svg"));
     ui->actionSettings->setIcon(QIcon(":/icons/settings.svg"));
     ui->actionOpen->setIcon(style()->standardIcon(QStyle::SP_DialogOpenButton));
+    ui->actionNewFile->setIcon(style()->standardIcon(QStyle::SP_FileIcon));
+    connect(ui->actionNewFile, SIGNAL(triggered()), this, SLOT(newFile()));
+    ui->actionNewFile->setVisible(false);
     ui->actionCloseFile->setIcon(style()->standardIcon(QStyle::SP_DialogCloseButton));
     ui->actionCloseFile->setEnabled(false);
     connect(ui->actionSettings, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
@@ -253,6 +256,14 @@ void WMainWindow::viewsDisplayedChanged() {
         m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     else
         m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+}
+
+void WMainWindow::newFile(){
+    QMessageBox::StandardButton btn = QMessageBox::question(this, "Create a new file ...", "Do you want to create a new label file?", QMessageBox::Yes | QMessageBox::No);
+    if(btn==QMessageBox::Yes){
+        FileType* ft = new FTLabels("", this);
+        ui->listSndFiles->addItem(ft);
+    }
 }
 
 void WMainWindow::settingsSave() {
@@ -448,6 +459,7 @@ void WMainWindow::setSelectionMode(bool checked){
 
         m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
         m_gvSpectrum->setDragMode(QGraphicsView::NoDrag);
+        m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
 
         QPoint cp = QCursor::pos();
 
@@ -464,6 +476,8 @@ void WMainWindow::setSelectionMode(bool checked){
             m_gvSpectrum->setCursor(Qt::OpenHandCursor);
         else
             m_gvSpectrum->setCursor(Qt::CrossCursor);
+
+        ui->actionNewFile->setVisible(false);
     }
     else
         setSelectionMode(true);
@@ -479,6 +493,7 @@ void WMainWindow::setEditMode(bool checked){
         m_gvSpectrum->setDragMode(QGraphicsView::NoDrag);
         m_gvWaveform->setCursor(Qt::SizeVerCursor);
         m_gvSpectrum->setCursor(Qt::SizeVerCursor);
+        ui->actionNewFile->setVisible(true);
     }
     else
         setSelectionMode(true);
@@ -698,7 +713,10 @@ void WMainWindow::fileSelectionChanged() {
     ui->actionMultiReload->disconnect();
 
     QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
-    for(int i=0; i<list.size(); i++) {
+    bool selectionhassnd = false;
+    for(size_t i=0; i<list.size(); i++) {
+        if(((FileType*)list.at(i))->type == FileType::FTSOUND)
+            selectionhassnd = true;
         connect(ui->actionMultiShow, SIGNAL(triggered()), ((FileType*)list.at(i))->m_actionShow, SLOT(toggle()));
         connect(ui->actionMultiReload, SIGNAL(triggered()), ((FileType*)list.at(i))->m_actionReload, SLOT(trigger()));
         connect(ui->actionMultiReload, SIGNAL(triggered()), this, SLOT(fileInfoUpdate()));
@@ -709,7 +727,8 @@ void WMainWindow::fileSelectionChanged() {
 
     fileInfoUpdate();
 
-    m_gvSpectrogram->updateSTFTPlot();
+    if(selectionhassnd)
+        m_gvSpectrogram->updateSTFTPlot();
 }
 void WMainWindow::fileInfoUpdate() {
     QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();

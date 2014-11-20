@@ -180,7 +180,6 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     connect(m_aZoomOut, SIGNAL(triggered()), this, SLOT(azoomout()));
     m_aUnZoom = new QAction(tr("Un-Zoom"), this);
     m_aUnZoom->setStatusTip(tr("Un-Zoom"));
-    m_aUnZoom->setShortcut(Qt::Key_Z);
     QIcon unzoomicon(":/icons/unzoomx.svg");
     m_aUnZoom->setIcon(unzoomicon);
     m_aUnZoom->setEnabled(false);
@@ -677,12 +676,18 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
             }
         }
     }
+    else if(m_currentAction==CALabelWritting) {
+        FTLabels* ftlabel = WMainWindow::getMW()->getCurrentFTLabels();
+        if(ftlabel) {
+            m_label_current = std::deque<QString>::iterator();
+            ftlabel->sort();
+            m_currentAction = CANothing;
+        }
+    }
     else if(m_currentAction==CALabelModifPosition) {
-        FTLabels* ftl = WMainWindow::getMW()->getCurrentFTLabels();
-        if(ftl) {
-            ftl->starts[m_ca_pressed_index] = p.x();
-            if(m_ca_pressed_index-1>=0)
-                ftl->ends[m_ca_pressed_index-1] = p.x();
+        FTLabels* ftlabel = WMainWindow::getMW()->getCurrentFTLabels();
+        if(ftlabel) {
+            ftlabel->starts[m_ca_pressed_index] = p.x();
             soundsChanged();
             cursorUpdate(p.x());
         }
@@ -713,7 +718,7 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
             FTLabels* ftl = WMainWindow::getMW()->getCurrentFTLabels();
             if(ftl) {
                 for(size_t lli=0; !foundclosemarker && lli<ftl->labels.size(); lli++) {
-                    // cout << ftl->labels[lli].toLatin1().data() << ": " << ftl->starts[lli] << ":" << ftl->ends[lli] << endl;
+                    // cout << ftl->labels[lli].toLatin1().data() << ": " << ftl->starts[lli] << endl;
                     QPoint slp = mapFromScene(QPointF(ftl->starts[lli],0));
                     foundclosemarker = std::abs(slp.x()-event->x())<5;
                 }
@@ -742,8 +747,6 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
 void QGVWaveform::mouseReleaseEvent(QMouseEvent* event){
 //    std::cout << "QGVWaveform::mouseReleaseEvent " << m_selection.width() << endl;
 
-    m_currentAction = CANothing;
-
     // Order the mouse selection to avoid negative width
     if(m_mouseSelection.right()<m_mouseSelection.left()){
         float tmp = m_mouseSelection.left();
@@ -769,8 +772,15 @@ void QGVWaveform::mouseReleaseEvent(QMouseEvent* event){
         }
         else{
             setCursor(Qt::SizeVerCursor);
+            if(m_currentAction==CALabelModifPosition) {
+                FTLabels* ftlabel = WMainWindow::getMW()->getCurrentFTLabels();
+                if(ftlabel)
+                    ftlabel->sort();
+            }
         }
     }
+
+    m_currentAction = CANothing;
 
     if(abs(m_selection.width())==0)
         selectionClear();
@@ -794,13 +804,22 @@ void QGVWaveform::mouseDoubleClickEvent(QMouseEvent* event){
         }
         else{
             // Check if a marker is close and show the horiz split cursor if true
-            bool foundclosemarker = false;
             FTLabels* ftl = WMainWindow::getMW()->getCurrentFTLabels(true);
             if(ftl) {
-                for(size_t lli=0; !foundclosemarker && lli<ftl->labels.size(); lli++) {
-                    if(p.x()>ftl->starts[lli] && p.x()<ftl->ends[lli]) {
-                        selectionClipAndSet(QRectF(ftl->starts[lli], -1.0, ftl->ends[lli]-ftl->starts[lli], 2.0), true);
-                        m_giSelection->show();
+                if(ftl->starts.size()>0){
+                    if(p.x()<ftl->starts[0]){
+                        selectionClipAndSet(QRectF(0.0, -1.0, ftl->starts[0], 2.0), true);
+                    }
+                    else if(p.x()>ftl->starts.back()){
+                        selectionClipAndSet(QRectF(ftl->starts.back(), -1.0, WMainWindow::getMW()->getMaxLastSampleTime()-ftl->starts.back(), 2.0), true);
+                    }
+                    else{
+                        for(size_t lli=0; lli<ftl->labels.size(); lli++) {
+                            if(p.x()>ftl->starts[lli]) {
+                                selectionClipAndSet(QRectF(ftl->starts[lli], -1.0, ftl->starts[lli+1]-ftl->starts[lli], 2.0), true);
+                                m_giSelection->show();
+                            }
+                        }
                     }
                 }
             }
@@ -819,6 +838,34 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
     if(event->key()==Qt::Key_Escape) {
         selectionClear();
         playCursorSet(0.0);
+    }
+    else if(event->key()==Qt::Key_Delete) {
+        if(m_currentAction==CALabelModifPosition) {
+            FTLabels* ftlabel = WMainWindow::getMW()->getCurrentFTLabels(false);
+            if(ftlabel){
+
+                ftlabel->remove(m_ca_pressed_index);
+                ftlabel->sort();
+                m_currentAction = CANothing;
+                m_scene->update();
+            }
+        }
+    }
+    else {
+        if (WMainWindow::getMW()->ui->actionEditMode->isChecked()){
+            FTLabels* ftlabel = WMainWindow::getMW()->getCurrentFTLabels(false);
+            if(ftlabel){
+                if(m_currentAction==CALabelWritting && m_label_current!=std::deque<QString>::iterator())
+                    m_label_current->append(event->text());
+                else{
+                    m_currentAction = CALabelWritting;
+                    ftlabel->labels.push_back(event->text());
+                    ftlabel->starts.push_back(m_giCursor->line().x1());
+                    m_label_current = ftlabel->labels.end()-1;
+                }
+                m_scene->update();
+            }
+        }
     }
 
     QGraphicsView::keyPressEvent(event);
@@ -1158,9 +1205,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
         for(size_t li=0; li<WMainWindow::getMW()->ftlabels[fi]->starts.size(); li++){
             // TODO plot only labels which can be seen
             double start = WMainWindow::getMW()->ftlabels[fi]->starts[li];
-            double end = WMainWindow::getMW()->ftlabels[fi]->ends[li];
             painter->drawLine(QLineF(start, -1.0, start, 1.0));
-            painter->drawLine(QLineF(end, -1.0, end, 1.0));
 
             painter->save();
             painter->translate(QPointF(start+2.0/trans.m11(), viewrect.top()+12/trans.m22()));

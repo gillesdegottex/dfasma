@@ -21,6 +21,9 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "ftlabels.h"
 
 #include <iostream>
+#include <numeric>
+#include <algorithm>
+#include <vector>
 using namespace std;
 
 #ifdef SUPPORT_SDIF
@@ -30,15 +33,22 @@ using namespace Easdif;
 
 #include <QMenu>
 #include <QFileInfo>
+#include <QFileDialog>
 #include <QMessageBox>
+#include <QDir>
 #include <qmath.h>
 #include <qendian.h>
 
 #include "wmainwindow.h"
+#include "ui_wmainwindow.h"
 
 void FTLabels::init(){
     m_actionSave = new QAction("Save", this);
     m_actionSave->setStatusTip(tr("Save the labels times (overwrite the file !)"));
+    connect(m_actionSave, SIGNAL(triggered()), this, SLOT(save()));
+    m_actionSaveAs = new QAction("Save as...", this);
+    m_actionSaveAs->setStatusTip(tr("Save the labels times in a given file..."));
+    connect(m_actionSaveAs, SIGNAL(triggered()), this, SLOT(saveAs()));
 }
 
 FTLabels::FTLabels(const QString& _fileName, QObject *parent)
@@ -48,7 +58,10 @@ FTLabels::FTLabels(const QString& _fileName, QObject *parent)
 
     init();
 
-    if(!fileFullPath.isEmpty()){
+    if(fileFullPath.isEmpty()){
+       setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.sdif");
+    }
+    else{
         checkFileStatus(CFSMEXCEPTION);
         load();
     }
@@ -63,7 +76,7 @@ FTLabels::FTLabels(const FTLabels& ft)
     init();
 
     starts = ft.starts;
-    ends = ft.ends;
+    // ends = fr.ends;
     labels = ft.labels;
 
     m_lastreadtime = ft.m_lastreadtime;
@@ -115,7 +128,7 @@ void FTLabels::load() {
                 if(tmpMatrix.GetNbRows()*tmpMatrix.GetNbCols() == 0) {
 //                    cout << "add last marker" << endl;
                     // We reached an ending marker (without char) closing the previous segment
-                    ends.push_back(t);
+                    // ends.push_back(t);
                 }
                 else { // There should be a char
                     if(tmpMatrix.GetNbCols()==0)
@@ -132,11 +145,10 @@ void FTLabels::load() {
 
                     if(str.size()==0) {
                         // No char given, assume an ending marker closing the previous segment
-                        ends.push_back(t);
+                        // ends.push_back(t);
                     }
                     else {
-                        if(!starts.empty())
-                            ends.push_back(t);
+                        // if(!starts.empty()) ends.push_back(t);
                         starts.push_back(t);
                         labels.push_back(str);
                     }
@@ -163,13 +175,13 @@ void FTLabels::load() {
         throw QString("SDIF: ")+e;
     }
 
-    // Add the last ending time, if it was not specified in the SDIF file
-    if(ends.size() < starts.size()){
-        if(starts.size() > 1)
-            ends.push_back(starts.back() + (starts.back() - *(starts.end()-2)));
-        else
-            ends.push_back(starts.back() + 0.01); // fix the duration of the last segment to 10ms
-    }
+//    // Add the last ending time, if it was not specified in the SDIF file
+//    if(ends.size() < starts.size()){
+//        if(starts.size() > 1)
+//            ends.push_back(starts.back() + (starts.back() - *(starts.end()-2)));
+//        else
+//            ends.push_back(starts.back() + 0.01); // fix the duration of the last segment to 10ms
+//    }
 #endif
 
     m_lastreadtime = QDateTime::currentDateTime();
@@ -184,14 +196,27 @@ void FTLabels::reload() {
 
     // Reset everything ...
     starts.clear();
-    ends.clear();
+    // ends.clear();
     labels.clear();
 
     // ... and reload the data from the file
     load();
 }
 
+void FTLabels::saveAs() {
+    QString fp = QFileDialog::getSaveFileName(NULL, "Save file as...", fileFullPath);
+    if(!fp.isEmpty()){
+        setFullPath(fp);
+        save();
+    }
+}
+
 void FTLabels::save() {
+
+    if(labels.size()==0){
+        QMessageBox::warning(NULL, "Nothing to save!", "There is no content to save from this file. No file will be saved.");
+        return;
+    }
 
 #ifdef SUPPORT_SDIF
     // TODO load .lab files
@@ -199,7 +224,7 @@ void FTLabels::save() {
     size_t generalHeaderw;
     size_t asciiChunksw;
 
-    SdifFileT* filew = SdifFOpen ("ecr.sdif", eWriteFile);
+    SdifFileT* filew = SdifFOpen(fileFullPath.toLatin1().constData(), eWriteFile);
     generalHeaderw = SdifFWriteGeneralHeader(filew);
     asciiChunksw = SdifFWriteAllASCIIChunks(filew);
 
@@ -222,14 +247,14 @@ void FTLabels::save() {
         frameToWrite.ClearData();
     }
 
-    // Write a last empty frame for the last time
-    SDIFFrame frameToWrite;
-    frameToWrite.SetStreamID(0); // TODO Ok ??
-    frameToWrite.SetTime(ends.back());
-    frameToWrite.SetSignature("1MRK");
-    SDIFMatrix tmpMatrix("1LAB", 0, 0);
-    frameToWrite.AddMatrix(tmpMatrix);
-    frameToWrite.Write(filew);
+//    // Write a last empty frame for the last time
+//    SDIFFrame frameToWrite;
+//    frameToWrite.SetStreamID(0); // TODO Ok ??
+//    frameToWrite.SetTime(ends.back());
+//    frameToWrite.SetSignature("1MRK");
+//    SDIFMatrix tmpMatrix("1LAB", 0, 0);
+//    frameToWrite.AddMatrix(tmpMatrix);
+//    frameToWrite.Write(filew);
 
     SdifFClose(filew);
 
@@ -249,15 +274,71 @@ void FTLabels::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
 
     contextmenu.setTitle("Labels");
 
-    contextmenu.addAction(m_actionSave);
-    connect(m_actionSave, SIGNAL(triggered()), this, SLOT(save()));
+    if(WMainWindow::getMW()->ui->actionEditMode->isChecked()){
+        contextmenu.addAction(m_actionSave);
+        contextmenu.addAction(m_actionSaveAs);
+    }
 }
 
 double FTLabels::getLastSampleTime() const {
-    if(ends.empty())
+
+    if(starts.empty())
         return 0.0;
     else
-        return *((ends.end()-1));
+        return starts.front();
+
+//    if(ends.empty())
+//        return 0.0;
+//    else
+//        return *((ends.end()-1));
+}
+
+void FTLabels::remove(int index){
+    starts.erase(starts.begin()+index);
+    labels.erase(labels.begin()+index);
+}
+
+template <typename Container>
+struct compare_indirect_index
+  {
+  const Container& container;
+  compare_indirect_index( const Container& container ): container( container ) { }
+  bool operator () ( size_t lindex, size_t rindex ) const
+    {
+    return container[ lindex ] < container[ rindex ];
+    }
+  };
+
+void FTLabels::sort(){
+//    cout << "FTLabels::sort" << endl;
+
+//    cout << "unsorted starts: ";
+//    for(size_t u=0; u<starts.size(); ++u)
+//        cout << starts[u] << " ";
+//    cout << endl;
+
+    vector<size_t> indices(starts.size(), 0);
+    for(size_t u=0; u<indices.size(); ++u)
+        indices[u] = u;
+
+    std::sort(indices.begin(), indices.end(), compare_indirect_index < std::deque<double> >(starts));
+
+    std::deque<QString> sortedlabels(labels.size());
+    std::deque<double> sortedstarts(labels.size());
+    for(size_t u=0; u<labels.size(); ++u){
+        sortedlabels[u] = labels[indices[u]];
+        sortedstarts[u] = starts[indices[u]];
+    }
+
+    labels = sortedlabels;
+    starts = sortedstarts;
+
+//    cout << "sorted starts: ";
+//    for(size_t u=0; u<starts.size(); ++u)
+//        cout << starts[u] << " ";
+//    cout << endl;
+
+//    cout << "FTLabels::~sort" << endl;
 }
 
 FTLabels::~FTLabels() {

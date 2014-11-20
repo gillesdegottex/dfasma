@@ -21,6 +21,8 @@ file provided in the source code of DFasma. Another copy can be found at
 #ifndef QGVWAVEFORM_H
 #define QGVWAVEFORM_H
 
+#include <deque>
+
 #include <QGraphicsView>
 #include <QMenu>
 
@@ -32,6 +34,7 @@ class QGVWaveform : public QGraphicsView
     Q_OBJECT
 
     qreal m_tmpdelay;
+    std::deque<QString>::iterator m_label_current;
 
     QRectF removeHiddenMargin(const QRectF& sceneRect);
 
@@ -45,7 +48,7 @@ public:
     QPointF m_pressed_mouseinviewport;
     QRectF m_pressed_scenerect;
     int m_ca_pressed_index;
-    enum CurrentAction {CANothing, CAMoving, CAZooming, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight, CAStretchSelection, CAWaveformScale, CAWaveformDelay, CALabelModifPosition};
+    enum CurrentAction {CANothing, CAMoving, CAZooming, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight, CAStretchSelection, CAWaveformScale, CAWaveformDelay, CALabelWritting, CALabelModifPosition};
     int m_currentAction;
     QRectF m_mouseSelection; // The mouse selection. This one ignores the samples
     QRectF m_selection; // The actual selection, always at exact samples time

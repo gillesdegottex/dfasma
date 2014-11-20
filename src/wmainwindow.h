@@ -73,6 +73,7 @@ protected:
     void dragEnterEvent(QDragEnterEvent* event);
 
 private slots:
+    void newFile();
     void openFile();
     void closeSelectedFile();
     void play();
