@@ -32,6 +32,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "gvamplitudespectrum.h"
 #include "gvphasespectrum.h"
 #include "ftsound.h"
+#include "ftlabels.h"
 #include "ftfzero.h"
 #include "sigproc.h"
 
@@ -976,6 +977,33 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 //        draw_grid(painter, rect);
 
 //    cout << "QGVSpectrogram::~drawBackground" << endl;
+
+
+    // Plot labels
+    QTransform trans = transform();
+    for(size_t fi=0; fi<WMainWindow::getMW()->ftlabels.size(); fi++){
+        if(!WMainWindow::getMW()->ftlabels[fi]->m_actionShow->isChecked())
+            continue;
+
+        QPen outlinePen(WMainWindow::getMW()->ftlabels[fi]->color);
+        outlinePen.setWidth(0);
+        painter->setPen(outlinePen);
+        painter->setBrush(QBrush(WMainWindow::getMW()->ftlabels[fi]->color));
+
+//        cout << WMainWindow::getMW()->ftlabels[fi]->starts.size() << " " << WMainWindow::getMW()->ftlabels[fi]->ends.size() << endl;
+
+        for(size_t li=0; li<WMainWindow::getMW()->ftlabels[fi]->starts.size(); li++){
+            // TODO plot only labels which can be seen
+            double start = WMainWindow::getMW()->ftlabels[fi]->starts[li];
+            painter->drawLine(QLineF(start, 0.0, start, fs/2.0));
+
+            painter->save();
+            painter->translate(QPointF(start+2.0/trans.m11(), viewrect.top()+12/trans.m22()));
+            painter->scale(1.0/trans.m11(), 1.0/trans.m22());
+            painter->drawStaticText(QPointF(0, 0), QStaticText(WMainWindow::getMW()->ftlabels[fi]->labels[li]));
+            painter->restore();
+        }
+    }
 }
 
 void QGVSpectrogram::draw_grid(QPainter* painter, const QRectF& rect) {

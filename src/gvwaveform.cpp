@@ -298,10 +298,6 @@ void QGVWaveform::viewSync() {
 }
 
 void QGVWaveform::soundsChanged(){
-
-    if(WMainWindow::getMW()->ftsnds.size()>0)
-        updateSceneRect(); // TODO Why ?
-
     m_scene->update();
 }
 
@@ -688,8 +684,9 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
         FTLabels* ftlabel = WMainWindow::getMW()->getCurrentFTLabels();
         if(ftlabel) {
             ftlabel->starts[m_ca_pressed_index] = p.x();
-            soundsChanged();
             cursorUpdate(p.x());
+            m_scene->update();
+            WMainWindow::getMW()->m_gvSpectrogram->m_scene->update();
         }
     }
     else{
@@ -848,6 +845,7 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
                 ftlabel->sort();
                 m_currentAction = CANothing;
                 m_scene->update();
+                WMainWindow::getMW()->m_gvSpectrogram->m_scene->update();
             }
         }
     }
@@ -855,15 +853,18 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
         if (WMainWindow::getMW()->ui->actionEditMode->isChecked()){
             FTLabels* ftlabel = WMainWindow::getMW()->getCurrentFTLabels(false);
             if(ftlabel){
-                if(m_currentAction==CALabelWritting && m_label_current!=std::deque<QString>::iterator())
-                    m_label_current->append(event->text());
-                else{
-                    m_currentAction = CALabelWritting;
-                    ftlabel->labels.push_back(event->text());
-                    ftlabel->starts.push_back(m_giCursor->line().x1());
-                    m_label_current = ftlabel->labels.end()-1;
+                if(event->text().size()>0){
+                    if(m_currentAction==CALabelWritting && m_label_current!=std::deque<QString>::iterator())
+                        m_label_current->append(event->text());
+                    else{
+                        m_currentAction = CALabelWritting;
+                        ftlabel->labels.push_back(event->text());
+                        ftlabel->starts.push_back(m_giCursor->line().x1());
+                        m_label_current = ftlabel->labels.end()-1;
+                    }
+                    m_scene->update();
+                    WMainWindow::getMW()->m_gvSpectrogram->m_scene->update();
                 }
-                m_scene->update();
             }
         }
     }
