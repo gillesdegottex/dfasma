@@ -377,6 +377,7 @@ void WMainWindow::keyPressEvent(QKeyEvent* event){
         if(ui->actionSelectionMode->isChecked()){
             m_gvWaveform->setDragMode(QGraphicsView::ScrollHandDrag);
             m_gvSpectrum->setDragMode(QGraphicsView::ScrollHandDrag);
+            m_gvSpectrogram->setDragMode(QGraphicsView::ScrollHandDrag);
         }
         else if(ui->actionEditMode->isChecked()){
             m_gvWaveform->setCursor(Qt::SizeHorCursor);
@@ -386,6 +387,7 @@ void WMainWindow::keyPressEvent(QKeyEvent* event){
         if(ui->actionSelectionMode->isChecked()){
             m_gvWaveform->setCursor(Qt::OpenHandCursor);
             m_gvSpectrum->setCursor(Qt::OpenHandCursor);
+            m_gvSpectrogram->setCursor(Qt::OpenHandCursor);
         }
     }
     else{
@@ -406,6 +408,8 @@ void WMainWindow::keyReleaseEvent(QKeyEvent* event){
             m_gvWaveform->setCursor(Qt::CrossCursor);
             m_gvSpectrum->setDragMode(QGraphicsView::NoDrag);
             m_gvSpectrum->setCursor(Qt::CrossCursor);
+            m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrogram->setCursor(Qt::CrossCursor);
         }
         else if(ui->actionEditMode->isChecked()){
             m_gvWaveform->setCursor(Qt::SizeVerCursor);
@@ -417,6 +421,8 @@ void WMainWindow::keyReleaseEvent(QKeyEvent* event){
             m_gvWaveform->setCursor(Qt::CrossCursor);
             m_gvSpectrum->setDragMode(QGraphicsView::NoDrag);
             m_gvSpectrum->setCursor(Qt::CrossCursor);
+            m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrogram->setCursor(Qt::CrossCursor);
         }
         else {
 

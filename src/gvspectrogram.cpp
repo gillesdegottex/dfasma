@@ -665,8 +665,9 @@ void QGVSpectrogram::mouseReleaseEvent(QMouseEvent* event) {
         else{
             if(p.x()>=m_selection.left() && p.x()<=m_selection.right() && p.y()>=m_selection.top() && p.y()<=m_selection.bottom())
                 setCursor(Qt::OpenHandCursor);
-            else
+            else{
                 setCursor(Qt::CrossCursor);
+            }
         }
     }
     else if(WMainWindow::getMW()->ui->actionEditMode->isChecked()) {
