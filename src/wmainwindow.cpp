@@ -804,8 +804,11 @@ void WMainWindow::closeSelectedFile() {
         delete ft; // Remove it from the listview
 
         // Remove it from its own type-related list
-        if(ft->type==FileType::FTSOUND)
+        if(ft->type==FileType::FTSOUND){
+            if(ft==m_lastSelectedSound)
+                m_lastSelectedSound = NULL;
             ftsnds.erase(std::find(ftsnds.begin(), ftsnds.end(), (FTSound*)ft));
+        }
         else if(ft->type==FileType::FTFZERO)
             ftfzeros.erase(std::find(ftfzeros.begin(), ftfzeros.end(), (FTFZero*)ft));
         else if(ft->type==FileType::FTLABELS)
@@ -907,7 +910,7 @@ void WMainWindow::play()
         // DEBUGSTRING << "MainWindow::play QAudio::IdleState || QAudio::StoppedState" << endl;
 
             // If stopped, play the whole signal or its selection
-            FTSound* currentftsound = getCurrentFTSound();
+            FTSound* currentftsound = getCurrentFTSound(true);
             if(currentftsound) {
 
                 // Start by reseting any filtered sounds
