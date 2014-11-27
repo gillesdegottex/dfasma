@@ -68,8 +68,6 @@ using namespace std;
 
 #define QUOTE(name) #name
 #define STR(macro) QUOTE(macro)
-#define FFTREAL_VERSION "2.11" // This is the current built-in version
-#define FFTW_VERSION "3" // Used interface's version
 
 WMainWindow* WMainWindow::sm_mainwindow = NULL;
 
@@ -105,12 +103,7 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     m_dlgSettings->ui->vlLibraries->addWidget(new QLabel(sdifinfostr));
 
     QString fftinfostr = "";
-    fftinfostr += "<br/><i>Fast Fourier Transform (FFT):</i> ";
-    #ifdef FFT_FFTW3
-        fftinfostr += "<a href=\"http://www.fftw.org\">FFTW</a> version "+QString(FFTW_VERSION);
-    #elif FFT_FFTREAL
-        fftinfostr += "<a href=\"http://ldesoras.free.fr/prod.html#src_audio\">FFTReal</a> version "+QString(FFTREAL_VERSION);
-    #endif
+    fftinfostr += "<br/><i>Fast Fourier Transform (FFT):</i> "+sigproc::FFTwrapper::getLibraryInfo();
     fftinfostr += " ("+QString::number(sizeof(FFTTYPE)*8)+"bits; smallest: "+QString::number(20*log10(std::numeric_limits<FFTTYPE>::min()))+"dB)";
     fftinfostr += "</p>";
     m_dlgSettings->ui->vlLibraries->addWidget(new QLabel(fftinfostr));

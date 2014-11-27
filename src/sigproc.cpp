@@ -25,9 +25,21 @@ using namespace sigproc;
 #include <iostream>
 using namespace std;
 
-template<typename Type>	std::complex<Type> make_complex(Type value[]){return std::complex<Type>(value[0], value[1]);}
 
-template<typename Type>	std::complex<Type> make_complex(Type real, Type imag){return std::complex<Type>(real, imag);}
+#ifdef FFT_FFTW3
+    #define FFTW_VERSION "3" // Used interface's version
+#elif FFT_FFTREAL
+    #define FFTREAL_VERSION "2.11" // This is the current built-in version
+#endif
+
+
+QString FFTwrapper::getLibraryInfo(){
+    #ifdef FFT_FFTW3
+        return QString("<a href=\"http://www.fftw.org\">FFTW</a> version ")+QString(FFTW_VERSION);
+    #elif FFT_FFTREAL
+        return QString("<a href=\"http://ldesoras.free.fr/prod.html#src_audio\">FFTReal</a> version ")+QString(FFTREAL_VERSION);
+    #endif
+}
 
 FFTwrapper::FFTwrapper(bool forward)
 {

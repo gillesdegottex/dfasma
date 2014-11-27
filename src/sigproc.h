@@ -43,111 +43,122 @@ file provided in the source code of DFasma. Another copy can be found at
 
 namespace sigproc {
 
-    static const double log2db = 20.0/std::log(10);
+static const double log2db = 20.0/std::log(10);
 
-    enum NotesName{LOCAL_ANGLO, LOCAL_LATIN};
+template<typename Type>
+inline Type lin2db(Type v){return Type(20)*std::log10(std::abs(v));}
 
-    //! convert frequency to a float number of chromatic half-tones from A3
-    /*!
-    * \param freq the frequency to convert to \f$\in R+\f$ {Hz}
-    * \param AFreq tuning frequency of the A3 (Usualy 440) {Hz}
-    * \return the float number of half-tones from A3 \f$\in R\f$
-    */
-    inline double f2hf(double freq, double AFreq=440.0)
+template<typename Type>
+inline Type db2lin(Type d){return std::pow(Type(10), d/Type(20));}
+
+
+enum NotesName{LOCAL_ANGLO, LOCAL_LATIN};
+
+//! convert frequency to a float number of chromatic half-tones from A3
+/*!
+* \param freq the frequency to convert to \f$\in R+\f$ {Hz}
+* \param AFreq tuning frequency of the A3 (Usualy 440) {Hz}
+* \return the float number of half-tones from A3 \f$\in R\f$
+*/
+inline double f2hf(double freq, double AFreq=440.0)
+{
+        return 17.3123404906675624 * log(freq/AFreq); //12.0*(log(freq)-log(AFreq))/log(2.0)
+}
+//! convert frequency to number of half-tones from A3
+/*!
+* \param freq the frequency to convert to \f$\in R+\f$ {Hz}
+* \param AFreq tuning frequency of the A3 (Usualy 440) {Hz}
+* \return the number of half-tones from A3. Rounded to the nearest half-tones(
+* not a simple integer convertion of \ref f2hf ) \f$\in R\f$
+*/
+inline int f2h(double freq, double AFreq=440.0)
+{
+    double ht = f2hf(freq, AFreq);
+    if(ht>0)	return int(ht+0.5);
+    if(ht<0)	return int(ht-0.5);
+    return	0;
+}
+//! convert number of chromatic half-tones to frequency
+/*!
+* \param ht number of half-tones to convert to \f
+* \param AFreq tuning frequency of the A3 (Usualy 440) {Hz}
+* \return the converted frequency
+*/
+inline double h2f(double ht, double AFreq=440.0)
+{
+    return AFreq * pow(2.0, ht/12.0);
+}
+//! convert half-tones from A3 to the corresponding note name
+/*!
+* \param ht number of half-tone to convert to \f$\in Z\f$
+* \param local
+* \return its name (Do, Re, Mi, Fa, Sol, La, Si; with '#' or 'b' if needed)
+*/
+inline QString h2n(int ht, NotesName local=LOCAL_ANGLO, int tonality=0, bool show_oct=true)
+{
+    ht += tonality;
+
+    int oct = 4;
+    while(ht<0)
     {
-            return 17.3123404906675624 * log(freq/AFreq); //12.0*(log(freq)-log(AFreq))/log(2.0)
+        ht += 12;
+        oct--;
     }
-    //! convert frequency to number of half-tones from A3
-    /*!
-    * \param freq the frequency to convert to \f$\in R+\f$ {Hz}
-    * \param AFreq tuning frequency of the A3 (Usualy 440) {Hz}
-    * \return the number of half-tones from A3. Rounded to the nearest half-tones(
-    * not a simple integer convertion of \ref f2hf ) \f$\in R\f$
-    */
-    inline int f2h(double freq, double AFreq=440.0)
+    while(ht>11)
     {
-        double ht = f2hf(freq, AFreq);
-        if(ht>0)	return int(ht+0.5);
-        if(ht<0)	return int(ht-0.5);
-        return	0;
-    }
-    //! convert number of chromatic half-tones to frequency
-    /*!
-    * \param ht number of half-tones to convert to \f
-    * \param AFreq tuning frequency of the A3 (Usualy 440) {Hz}
-    * \return the converted frequency
-    */
-    inline double h2f(double ht, double AFreq=440.0)
-    {
-        return AFreq * pow(2.0, ht/12.0);
-    }
-    //! convert half-tones from A3 to the corresponding note name
-    /*!
-    * \param ht number of half-tone to convert to \f$\in Z\f$
-    * \param local
-    * \return its name (Do, Re, Mi, Fa, Sol, La, Si; with '#' or 'b' if needed)
-    */
-    inline QString h2n(int ht, NotesName local=LOCAL_ANGLO, int tonality=0, bool show_oct=true)
-    {
-        ht += tonality;
-
-        int oct = 4;
-        while(ht<0)
-        {
-            ht += 12;
-            oct--;
-        }
-        while(ht>11)
-        {
-            ht -= 12;
-            oct++;
-        }
-
-        if(ht>2)	oct++;	// octave start from C
-    // 	if(oct<=0)	oct--;	// skip 0-octave in occidental notations ??
-
-    //	char coct[3];
-    //	sprintf(coct, "%d", oct);
-    //	string soct = coct;
-
-        QString soct;
-        if(show_oct)
-            soct = QString::number(oct);
-
-        if(local==LOCAL_ANGLO)
-        {
-            if(ht==0)	return "A"+soct;
-            else if(ht==1)	return "Bb"+soct;
-            else if(ht==2)	return "B"+soct;
-            else if(ht==3)	return "C"+soct;
-            else if(ht==4)	return "C#"+soct;
-            else if(ht==5)	return "D"+soct;
-            else if(ht==6)	return "Eb"+soct;
-            else if(ht==7)	return "E"+soct;
-            else if(ht==8)	return "F"+soct;
-            else if(ht==9)	return "F#"+soct;
-            else if(ht==10)	return "G"+soct;
-            else if(ht==11)	return "G#"+soct;
-        }
-        else
-        {
-            if(ht==0)	return "La"+soct;
-            else if(ht==1)	return "Sib"+soct;
-            else if(ht==2)	return "Si"+soct;
-            else if(ht==3)	return "Do"+soct;
-            else if(ht==4)	return "Do#"+soct;
-            else if(ht==5)	return "Re"+soct;
-            else if(ht==6)	return "Mib"+soct;
-            else if(ht==7)	return "Mi"+soct;
-            else if(ht==8)	return "Fa"+soct;
-            else if(ht==9)	return "Fa#"+soct;
-            else if(ht==10)	return "Sol"+soct;
-            else if(ht==11)	return "Sol#"+soct;
-        }
-
-        return QString("Th#1138");
+        ht -= 12;
+        oct++;
     }
 
+    if(ht>2)	oct++;	// octave start from C
+// 	if(oct<=0)	oct--;	// skip 0-octave in occidental notations ??
+
+//	char coct[3];
+//	sprintf(coct, "%d", oct);
+//	string soct = coct;
+
+    QString soct;
+    if(show_oct)
+        soct = QString::number(oct);
+
+    if(local==LOCAL_ANGLO)
+    {
+        if(ht==0)	return "A"+soct;
+        else if(ht==1)	return "Bb"+soct;
+        else if(ht==2)	return "B"+soct;
+        else if(ht==3)	return "C"+soct;
+        else if(ht==4)	return "C#"+soct;
+        else if(ht==5)	return "D"+soct;
+        else if(ht==6)	return "Eb"+soct;
+        else if(ht==7)	return "E"+soct;
+        else if(ht==8)	return "F"+soct;
+        else if(ht==9)	return "F#"+soct;
+        else if(ht==10)	return "G"+soct;
+        else if(ht==11)	return "G#"+soct;
+    }
+    else
+    {
+        if(ht==0)	return "La"+soct;
+        else if(ht==1)	return "Sib"+soct;
+        else if(ht==2)	return "Si"+soct;
+        else if(ht==3)	return "Do"+soct;
+        else if(ht==4)	return "Do#"+soct;
+        else if(ht==5)	return "Re"+soct;
+        else if(ht==6)	return "Mib"+soct;
+        else if(ht==7)	return "Mi"+soct;
+        else if(ht==8)	return "Fa"+soct;
+        else if(ht==9)	return "Fa#"+soct;
+        else if(ht==10)	return "Sol"+soct;
+        else if(ht==11)	return "Sol#"+soct;
+    }
+
+    return QString("Th#1138");
+}
+
+
+template<typename Type>	std::complex<Type> make_complex(Type value[]){return std::complex<Type>(value[0], value[1]);}
+
+template<typename Type>	std::complex<Type> make_complex(Type real, Type imag){return std::complex<Type>(real, imag);}
 
 // Take closest value given time vector and corresponding data vector
 template<typename DataType, typename ContainerTimes, typename ContainerData>
@@ -475,6 +486,8 @@ template<typename DataType, typename ContainerIn, typename ContainerOut> inline 
 
         void execute(const std::vector<FFTTYPE>& in, std::vector<std::complex<FFTTYPE> >& out);
         void execute();
+
+        static QString getLibraryInfo();
 
         ~FFTwrapper();
     };
