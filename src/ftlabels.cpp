@@ -259,7 +259,11 @@ void FTLabels::save() {
 
     SdifFClose(filew);
 
+#else
+    QMessageBox::warning(NULL, "No way to save!", "There is no way to write down a label file (need to compile DFasma with SDIF support).");
+    return;
 #endif
+
     m_lastreadtime = QDateTime::currentDateTime();
     m_isedited = false;
 }
