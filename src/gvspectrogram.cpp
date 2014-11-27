@@ -948,9 +948,9 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 //    cout << "scene view rect: " << viewrect.left() << ", " << viewrect.right() << "; " << viewrect.top() << ", " << viewrect.bottom() << endl;
 
 
-    // Draw the sound's spectra
+    // Draw the sound's spectrogram
     FTSound* csnd = WMainWindow::getMW()->getCurrentFTSound(true);
-    if(csnd && csnd->m_actionShow->isChecked()) {
+    if(csnd && csnd->m_actionShow->isChecked() && csnd->m_stftts.size()>0) {
 
 //        cout << viewrect.left() << ":" << viewrect.right() << endl;
 //        cout << m_imgSTFT.rect().left() << ":" << m_imgSTFT.rect().right() << ":" << m_imgSTFT.rect().width() << " " << csnd->m_stftts.size() <<  endl;
