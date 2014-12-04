@@ -376,7 +376,7 @@ void QGVSpectrogram::viewSet(QRectF viewrect, bool sync) {
 }
 
 void QGVSpectrogram::viewSync() {
-    if(WMainWindow::getMW()->m_gvWaveform) {
+    if(WMainWindow::getMW()->m_gvWaveform) { // && WMainWindow::getMW()->ui->actionShowWaveform->isChecked()
         QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
         QRectF currect = WMainWindow::getMW()->m_gvWaveform->mapToScene(WMainWindow::getMW()->m_gvWaveform->viewport()->rect()).boundingRect();
@@ -1000,7 +1000,7 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
             painter->save();
             painter->translate(QPointF(start+2.0/trans.m11(), viewrect.top()+12/trans.m22()));
             painter->scale(1.0/trans.m11(), 1.0/trans.m22());
-            painter->drawStaticText(QPointF(0, 0), QStaticText(WMainWindow::getMW()->ftlabels[fi]->labels[li]));
+            painter->drawStaticText(QPointF(0, 0), QStaticText(WMainWindow::getMW()->ftlabels[fi]->labels[li]->text()));
             painter->restore();
         }
     }
