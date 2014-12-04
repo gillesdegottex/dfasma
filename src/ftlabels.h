@@ -30,6 +30,8 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "filetype.h"
 
+class QGraphicsSimpleTextItem;
+
 class FTLabels : public QObject, public FileType
 {
     Q_OBJECT
@@ -47,7 +49,7 @@ public:
     virtual FileType* duplicate();
 
     std::deque<double> starts;
-    std::deque<QString> labels;
+    std::deque<QGraphicsSimpleTextItem*> labels;
 
     bool m_isedited;
 

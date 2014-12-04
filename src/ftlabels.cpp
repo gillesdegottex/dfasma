@@ -36,6 +36,7 @@ using namespace Easdif;
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDir>
+#include <QGraphicsSimpleTextItem>
 #include <qmath.h>
 #include <qendian.h>
 
@@ -151,7 +152,7 @@ void FTLabels::load() {
                     else {
                         // if(!starts.empty()) ends.push_back(t);
                         starts.push_back(t);
-                        labels.push_back(str);
+                        labels.push_back(new QGraphicsSimpleTextItem(str));
                     }
                 }
             }
@@ -241,7 +242,7 @@ void FTLabels::save() {
 
         // Fill the matrix
         SDIFMatrix tmpMatrix("1LAB");
-        tmpMatrix.Set(std::string(labels[li].toLatin1().constData()));
+        tmpMatrix.Set(std::string(labels[li]->text().toLatin1().constData()));
         frameToWrite.AddMatrix(tmpMatrix);
 
         frameToWrite.Write(filew);
@@ -330,7 +331,7 @@ void FTLabels::sort(){
 
     std::sort(indices.begin(), indices.end(), compare_indirect_index < std::deque<double> >(starts));
 
-    std::deque<QString> sortedlabels(labels.size());
+    std::deque<QGraphicsSimpleTextItem*> sortedlabels(labels.size());
     std::deque<double> sortedstarts(labels.size());
     for(size_t u=0; u<labels.size(); ++u){
         sortedlabels[u] = labels[indices[u]];
