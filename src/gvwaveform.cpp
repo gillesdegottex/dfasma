@@ -287,7 +287,7 @@ void QGVWaveform::viewSet(QRectF viewrect, bool sync) {
     }
 }
 void QGVWaveform::viewSync() {
-    if(WMainWindow::getMW()->m_gvSpectrogram) {
+    if(WMainWindow::getMW()->m_gvSpectrogram && WMainWindow::getMW()->ui->actionShowSpectrogram->isChecked()) {
         QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
         QRectF currect = WMainWindow::getMW()->m_gvSpectrogram->mapToScene(WMainWindow::getMW()->m_gvSpectrogram->viewport()->rect()).boundingRect();
@@ -675,7 +675,7 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
     else if(m_currentAction==CALabelWritting) {
         FTLabels* ftlabel = WMainWindow::getMW()->getCurrentFTLabels();
         if(ftlabel) {
-            m_label_current = std::deque<QString>::iterator();
+            m_label_current = std::deque<QGraphicsSimpleTextItem*>::iterator();
             ftlabel->sort();
             m_currentAction = CANothing;
         }
@@ -886,11 +886,11 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
             FTLabels* ftlabel = WMainWindow::getMW()->getCurrentFTLabels(false);
             if(ftlabel){
                 if(event->text().size()>0){
-                    if(m_currentAction==CALabelWritting && m_label_current!=std::deque<QString>::iterator())
-                        m_label_current->append(event->text());
+                    if(m_currentAction==CALabelWritting && m_label_current!=std::deque<QGraphicsSimpleTextItem*>::iterator())
+                        (*m_label_current)->setText((*m_label_current)->text()+event->text());
                     else{
                         m_currentAction = CALabelWritting;
-                        ftlabel->labels.push_back(event->text());
+                        ftlabel->labels.push_back(new QGraphicsSimpleTextItem(event->text()));
                         ftlabel->starts.push_back(m_giCursor->line().x1());
                         ftlabel->m_isedited = true;
                         m_label_current = ftlabel->labels.end()-1;
@@ -1245,7 +1245,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
             painter->save();
             painter->translate(QPointF(start+2.0/trans.m11(), viewrect.top()+12/trans.m22()));
             painter->scale(1.0/trans.m11(), 1.0/trans.m22());
-            painter->drawStaticText(QPointF(0, 0), QStaticText(WMainWindow::getMW()->ftlabels[fi]->labels[li]));
+            painter->drawStaticText(QPointF(0, 0), QStaticText(WMainWindow::getMW()->ftlabels[fi]->labels[li]->text()));
             painter->restore();
         }
     }
