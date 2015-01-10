@@ -220,7 +220,7 @@ QString FTSound::info() const {
 }
 
 void FTSound::setAvoidClicksWindowDuration(double halfduration) {
-    sm_avoidclickswindow = sigproc::hann(2*int(2*halfduration*fs_common/2)+1); // Use 50ms half-windows on each side
+    sm_avoidclickswindow = sigproc::hann(2*int(2*halfduration*fs_common/2)+1); // Use Xms half-windows on each side
     double winmax = sm_avoidclickswindow[(sm_avoidclickswindow.size()-1)/2];
     for(size_t n=0; n<sm_avoidclickswindow.size(); n++)
         sm_avoidclickswindow[n] /= winmax;
@@ -382,7 +382,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
 
     if ((fstart<fstop) && (doLowPass || doHighPass)) {
         try{
-            wavfiltered = wav;
+            wavfiltered = wav; // Is it acceptable for big files ? Reason of issue #117 also ?
 
             // Compute the energy of the non-filtered signal
             double enerwav = 0.0;

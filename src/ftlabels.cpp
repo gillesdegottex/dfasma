@@ -206,29 +206,35 @@ void FTLabels::reload() {
 }
 
 void FTLabels::saveAs() {
-    QString fp = QFileDialog::getSaveFileName(NULL, "Save file as...", fileFullPath);
-    if(!fp.isEmpty()){
-        setFullPath(fp);
-        save();
-    }
-}
-
-void FTLabels::save() {
-
     if(labels.size()==0){
         QMessageBox::warning(NULL, "Nothing to save!", "There is no content to save from this file. No file will be saved.");
         return;
     }
 
+    QString fp = QFileDialog::getSaveFileName(NULL, "Save file as...", fileFullPath);
+    if(!fp.isEmpty()){
+        try{
+            setFullPath(fp);
+            save();
+        }
+        catch(QString &e) {
+            QMessageBox::critical(NULL, "Cannot save file!", e);
+        }
+    }
+}
+
+void FTLabels::save() {
+
 #ifdef SUPPORT_SDIF
     // TODO load .lab files
 
-    size_t generalHeaderw;
-    size_t asciiChunksw;
-
     SdifFileT* filew = SdifFOpen(fileFullPath.toLatin1().constData(), eWriteFile);
-    generalHeaderw = SdifFWriteGeneralHeader(filew);
-    asciiChunksw = SdifFWriteAllASCIIChunks(filew);
+
+    if (!filew)
+        throw QString("SDIF: Cannot save the data in the specified file (permission denied?)");
+
+    size_t generalHeaderw = SdifFWriteGeneralHeader(filew);
+    size_t asciiChunksw = SdifFWriteAllASCIIChunks(filew);
 
     for(size_t li=0; li<labels.size(); li++) {
         // cout << labels[li].toLatin1().constData() << ": " << starts[li] << ":" << ends[li] << endl;
