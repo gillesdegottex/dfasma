@@ -51,6 +51,8 @@ void FTLabels::init(){
     m_actionSaveAs = new QAction("Save as...", this);
     m_actionSaveAs->setStatusTip(tr("Save the labels times in a given file..."));
     connect(m_actionSaveAs, SIGNAL(triggered()), this, SLOT(saveAs()));
+
+    connect(m_actionReload, SIGNAL(triggered()), this, SLOT(reload()));
 }
 
 FTLabels::FTLabels(const QString& _fileName, QObject *parent)
@@ -191,7 +193,7 @@ void FTLabels::load() {
 }
 
 void FTLabels::reload() {
-//    cout << "FTLabels::reload" << endl;
+    // cout << "FTLabels::reload" << endl;
 
     if(!checkFileStatus(CFSMMESSAGEBOX))
         return;
