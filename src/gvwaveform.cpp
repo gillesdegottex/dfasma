@@ -389,7 +389,7 @@ void QGVWaveform::cursorUpdate(float x){
         x = min(x, float(viewrect.right()-br.width()/trans.m11()));
 //        if(x+br.width()/trans.m11()>viewrect.right())
 //            x = x - br.width()/trans.m11();
-        m_giCursorPositionTxt->setPos(x+1/trans.m11(), -1.05*m_ampzoom);
+        m_giCursorPositionTxt->setPos(x+1/trans.m11(), viewrect.top()-3/trans.m22());
     }
 }
 
@@ -1243,7 +1243,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
             painter->drawLine(QLineF(start, -1.0, start, 1.0));
 
             painter->save();
-            painter->translate(QPointF(start+2.0/trans.m11(), viewrect.top()+12/trans.m22()));
+            painter->translate(QPointF(start+2.0/trans.m11(), viewrect.top()+10/trans.m22()));
             painter->scale(1.0/trans.m11(), 1.0/trans.m22());
             painter->drawStaticText(QPointF(0, 0), QStaticText(WMainWindow::getMW()->ftlabels[fi]->labels[li]->text()));
             painter->restore();
