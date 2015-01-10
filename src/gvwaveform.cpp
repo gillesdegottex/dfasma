@@ -85,8 +85,7 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_scene->addItem(m_giCursor);
     m_giCursorPositionTxt = new QGraphicsSimpleTextItem();
     m_giCursorPositionTxt->setBrush(QColor(64, 64, 64));
-    QFont font;
-    font.setPixelSize(14);
+    QFont font("Helvetica", 10);
     m_giCursorPositionTxt->setFont(font);
     m_scene->addItem(m_giCursorPositionTxt);
 
@@ -380,12 +379,13 @@ void QGVWaveform::cursorUpdate(float x){
         QString txt = QString("%1s").arg(x);
         m_giCursorPositionTxt->setText(txt);
         QTransform trans = transform();
+
+        QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
         QTransform txttrans;
         txttrans.scale(1.0/trans.m11(),1.0/trans.m22());
         m_giCursorPositionTxt->setTransform(txttrans);
         QRectF br = m_giCursorPositionTxt->boundingRect();
 //        QRectF viewrect = mapToScene(QRect(QPoint(0,0), QSize(viewport()->rect().width(), viewport()->rect().height()))).boundingRect();
-        QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
         x = min(x, float(viewrect.right()-br.width()/trans.m11()));
 //        if(x+br.width()/trans.m11()>viewrect.right())
 //            x = x - br.width()/trans.m11();

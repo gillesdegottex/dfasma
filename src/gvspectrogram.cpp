@@ -91,8 +91,7 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_giCursorVert->setPen(cursorPen);
     m_giCursorVert->hide();
     m_scene->addItem(m_giCursorVert);
-    QFont font;
-    font.setPointSize(8);
+    QFont font("Helvetica", 10);
     m_giCursorPositionXTxt = new QGraphicsSimpleTextItem();
     m_giCursorPositionXTxt->setBrush(QColor(64, 64, 64));
     m_giCursorPositionXTxt->setFont(font);
@@ -255,7 +254,7 @@ void QGVSpectrogram::computeSTFT(){
 //    cout << "QGVSpectrogram::computeSTFT" << endl;
 
     FTSound* csnd = WMainWindow::getMW()->getCurrentFTSound(true);
-    if(csnd) {
+    if(csnd && WMainWindow::getMW()->ui->actionShowSpectrogram->isChecked()) { // Do not run the STFT if the Spectrogram view is not shown
         int stepsize = std::floor(0.5+WMainWindow::getMW()->getFs()*m_dlgSettings->ui->sbStepSize->value());
         int dftlen = pow(2, std::ceil(log2(float(m_win.size())))+m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());
 
@@ -904,17 +903,17 @@ void QGVSpectrogram::cursorFixAndRefresh() {
         m_giCursorPositionXTxt->show();
         m_giCursorPositionYTxt->show();
 
-        m_giCursorPositionXTxt->setTransform(txttrans);
-        m_giCursorPositionYTxt->setTransform(txttrans);
         QRectF br = m_giCursorPositionXTxt->boundingRect();
         qreal x = m_giCursorVert->line().x1()+1/trans.m11();
         x = min(x, viewrect.right()-br.width()/trans.m11());
         m_giCursorPositionXTxt->setText(QString("%1s").arg(m_giCursorVert->line().x1()));
         m_giCursorPositionXTxt->setPos(x, viewrect.top());
+        m_giCursorPositionXTxt->setTransform(txttrans);
 
         m_giCursorPositionYTxt->setText(QString("%1Hz").arg(0.5*WMainWindow::getMW()->getFs()-m_giCursorHoriz->line().y1()));
         br = m_giCursorPositionYTxt->boundingRect();
         m_giCursorPositionYTxt->setPos(viewrect.right()-br.width()/trans.m11(), m_giCursorHoriz->line().y1()-br.height()/trans.m22());
+        m_giCursorPositionYTxt->setTransform(txttrans);
     }
 }
 

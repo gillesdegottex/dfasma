@@ -67,8 +67,7 @@ QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
     m_giCursorVert->setPen(cursorPen);
     m_giCursorVert->hide();
     m_scene->addItem(m_giCursorVert);
-    QFont font;
-    font.setPixelSize(14);
+    QFont font("Helvetica", 10);
     m_giCursorPositionXTxt = new QGraphicsSimpleTextItem();
     m_giCursorPositionXTxt->setBrush(QColor(64, 64, 64));
     m_giCursorPositionXTxt->setFont(font);
