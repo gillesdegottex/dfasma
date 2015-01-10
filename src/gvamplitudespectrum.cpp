@@ -1007,7 +1007,7 @@ void QGVAmplitudeSpectrum::cursorFixAndRefresh() {
         m_giCursorHoriz->show();
         m_giCursorHoriz->setLine(viewrect.right()-50/trans.m11(), m_giCursorHoriz->line().y1(), WMainWindow::getMW()->getFs()/2.0, m_giCursorHoriz->line().y1());
         m_giCursorVert->show();
-        m_giCursorVert->setLine(m_giCursorVert->line().x1(), viewrect.top(), m_giCursorVert->line().x1(), viewrect.top()+18/trans.m22());
+        m_giCursorVert->setLine(m_giCursorVert->line().x1(), viewrect.top(), m_giCursorVert->line().x1(), viewrect.top()+14/trans.m22());
         m_giCursorPositionXTxt->show();
         m_giCursorPositionYTxt->show();
 
@@ -1021,7 +1021,7 @@ void QGVAmplitudeSpectrum::cursorFixAndRefresh() {
         if(WMainWindow::getMW()->m_dlgSettings->ui->cbShowMusicNoteNames->isChecked())
             freqstr += "("+sigproc::h2n(sigproc::f2h(m_giCursorVert->line().x1()))+")";
         m_giCursorPositionXTxt->setText(freqstr);
-        m_giCursorPositionXTxt->setPos(x, viewrect.top());
+        m_giCursorPositionXTxt->setPos(x, viewrect.top()-4/trans.m22());
 
         m_giCursorPositionYTxt->setText(QString("%1dB").arg(-m_giCursorHoriz->line().y1()));
         br = m_giCursorPositionYTxt->boundingRect();
