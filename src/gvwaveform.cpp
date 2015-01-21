@@ -52,6 +52,7 @@ using namespace std;
 #include <QScrollBar>
 #include <QMessageBox>
 
+#include "qthelper.h"
 
 QGVWaveform::QGVWaveform(WMainWindow* parent)
     : QGraphicsView(parent)
@@ -235,15 +236,6 @@ void QGVWaveform::settingsSave() {
     settings.setValue("qgvwaveform/m_aShowSTFTWindowCenters", m_aShowSTFTWindowCenters->isChecked());
 }
 
-// Remove hard coded margin (Bug 11945)
-// See: https://bugreports.qt-project.org/browse/QTBUG-11945
-QRectF QGVWaveform::removeHiddenMargin(const QRectF& sceneRect){
-    const int bugMargin = 2;
-    const double mx = sceneRect.width()/viewport()->size().width()*bugMargin;
-    const double my = sceneRect.height()/viewport()->size().height()*bugMargin;
-    return sceneRect.adjusted(mx, my, -mx, -my);
-}
-
 void QGVWaveform::fitViewToSoundsAmplitude(){
     if(WMainWindow::getMW()->ftsnds.size()>0){
         qreal maxwavmaxamp = 0.0;
@@ -266,8 +258,9 @@ void QGVWaveform::viewSet(QRectF viewrect, bool sync) {
     QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
 
     if(viewrect==QRect() || viewrect!=currentviewrect) {
-        if(viewrect==QRectF())
+        if(viewrect==QRectF()){
             viewrect = currentviewrect;
+        }
 
         if(viewrect.top()<m_scene->sceneRect().top())
             viewrect.setTop(m_scene->sceneRect().top()-0.01);
@@ -278,7 +271,7 @@ void QGVWaveform::viewSet(QRectF viewrect, bool sync) {
         if(viewrect.right()>m_scene->sceneRect().right())
             viewrect.setRight(m_scene->sceneRect().right());
 
-        fitInView(removeHiddenMargin(viewrect));
+        fitInView(removeHiddenMargin(this, viewrect));
 
         playCursorUpdate();
 
@@ -439,17 +432,24 @@ void QGVWaveform::wheelEvent(QWheelEvent* event){
 
 //    std::cout << "QGVWaveform::wheelEvent " << numDegrees.y() << endl;
 
+    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+
     if(event->modifiers().testFlag(Qt::ShiftModifier)){
         QScrollBar* sb = horizontalScrollBar();
         sb->setValue(sb->value()-numDegrees.y());
     }
-    else {
-        QTransform trans = transform();
-        float h11 = trans.m11();
-        h11 += 0.01*h11*numDegrees.y();
-        setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-        setTransform(QTransform(h11, trans.m12(), trans.m21(), trans.m22(), 0, 0));
-        viewSet();
+    else if((viewrect.width()>10.0/WMainWindow::getMW()->getFs() && numDegrees.y()>0) || numDegrees.y()<0) {
+
+        double g = double(mapToScene(event->pos()).x()-viewrect.left())/viewrect.width();
+        QRectF newrect = mapToScene(viewport()->rect()).boundingRect();
+        newrect.setLeft(newrect.left()+g*0.01*viewrect.width()*numDegrees.y());
+        newrect.setRight(newrect.right()-(1-g)*0.01*viewrect.width()*numDegrees.y());
+        if(newrect.width()<10.0/WMainWindow::getMW()->getFs()){
+           newrect.setLeft(newrect.center().x()-5.0/WMainWindow::getMW()->getFs());
+           newrect.setRight(newrect.center().x()+5.0/WMainWindow::getMW()->getFs());
+        }
+
+        viewSet(newrect);
 
         QPointF p = mapToScene(QPoint(event->x(),0));
         cursorUpdate(p.x());

@@ -36,8 +36,6 @@ class QGVWaveform : public QGraphicsView
     qreal m_tmpdelay;
     std::deque<QGraphicsSimpleTextItem*>::iterator m_label_current;
 
-    QRectF removeHiddenMargin(const QRectF& sceneRect);
-
 public:
 
     QToolBar* m_toolBar;
