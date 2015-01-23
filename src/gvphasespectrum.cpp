@@ -154,28 +154,20 @@ void QGVPhaseSpectrum::viewSet(QRectF viewrect, bool sync) {
 
         fitInView(removeHiddenMargin(viewrect));
 
-        if(sync) viewSync();
+        if(sync){
+            if(WMainWindow::getMW()->m_gvSpectrum) {
+                QRectF amprect = WMainWindow::getMW()->m_gvSpectrum->mapToScene(WMainWindow::getMW()->m_gvSpectrum->viewport()->rect()).boundingRect();
+                amprect.setLeft(viewrect.left());
+                amprect.setRight(viewrect.right());
+                WMainWindow::getMW()->m_gvSpectrum->viewSet(amprect, false);
+
+        //        QPointF p = WMainWindow::getMW()->m_gvSpectrum->mapToScene(WMainWindow::getMW()->m_gvSpectrum->viewport()->rect()).boundingRect().center();
+        //        p.setX(viewrect.center().x());
+        //        WMainWindow::getMW()->m_gvSpectrum->centerOn(p);
+            }
+        }
     }
 //    cout << "QGVPhaseSpectrum::~viewSet" << endl;
-}
-
-void QGVPhaseSpectrum::viewSync() {
-//    cout << "QGVPhaseSpectrum::viewSync" << endl;
-
-    if(WMainWindow::getMW()->m_gvSpectrum) {
-        QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-
-        QRectF curspecvrect = WMainWindow::getMW()->m_gvSpectrum->mapToScene(WMainWindow::getMW()->m_gvSpectrum->viewport()->rect()).boundingRect();
-        curspecvrect.setLeft(viewrect.left());
-        curspecvrect.setRight(viewrect.right());
-        WMainWindow::getMW()->m_gvSpectrum->viewSet(curspecvrect, false);
-
-//        QPointF p = WMainWindow::getMW()->m_gvSpectrum->mapToScene(WMainWindow::getMW()->m_gvSpectrum->viewport()->rect()).boundingRect().center();
-//        p.setX(viewrect.center().x());
-//        WMainWindow::getMW()->m_gvSpectrum->centerOn(p);
-    }
-
-//    cout << "QGVPhaseSpectrum::~viewSync" << endl;
 }
 
 void QGVPhaseSpectrum::resizeEvent(QResizeEvent* event) {
@@ -183,7 +175,7 @@ void QGVPhaseSpectrum::resizeEvent(QResizeEvent* event) {
 
     QRectF oldviewrect = mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect();
 
-    if((event->oldSize().width()*event->oldSize().height()==0) && (event->size().width()*event->size().height()>0)) {
+    if(event->oldSize().isEmpty() && !event->size().isEmpty()) {
 
         updateSceneRect();
 
@@ -200,16 +192,16 @@ void QGVPhaseSpectrum::resizeEvent(QResizeEvent* event) {
         else
             viewSet(m_scene->sceneRect(), false);
     }
-    else if((event->oldSize().width()*event->oldSize().height()>0) && (event->size().width()*event->size().height()>0))
+    else if(!event->oldSize().isEmpty() && !event->size().isEmpty())
     {
         viewSet(oldviewrect, false);
     }
 
-    // Set the scroll bars in the amplitude and phase views
-    if(event->size().height()==0)
-        WMainWindow::getMW()->m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    else
-        WMainWindow::getMW()->m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//    // Set the scroll bars in the amplitude and phase views
+//    if(event->size().height()==0)
+//        WMainWindow::getMW()->m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+//    else
+//        WMainWindow::getMW()->m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     viewUpdateTexts();
     cursorUpdate(QPointF(-1,0));
@@ -607,9 +599,6 @@ void QGVPhaseSpectrum::cursorUpdate(QPointF p) {
     line.setP1(QPointF(p.x(), m_giCursorVert->line().y1()));
     line.setP2(QPointF(p.x(), m_giCursorVert->line().y2()));
     WMainWindow::getMW()->m_gvSpectrum->m_giCursorVert->setLine(line);
-    line.setP1(QPointF(p.x(), m_giCursorHoriz->line().y1()));
-    line.setP2(QPointF(p.x(), m_giCursorHoriz->line().y2()));
-    WMainWindow::getMW()->m_gvSpectrum->m_giCursorHoriz->setLine(line);
     WMainWindow::getMW()->m_gvSpectrum->cursorFixAndRefresh();
 }
 

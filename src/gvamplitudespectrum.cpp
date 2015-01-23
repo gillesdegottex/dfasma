@@ -48,6 +48,9 @@ using namespace std;
 #include <QDebug>
 #include <QTime>
 #include <QMessageBox>
+#include <QScrollBar>
+
+#include "qthelper.h"
 
 QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     : QGraphicsView(parent)
@@ -209,15 +212,6 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     connect(WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin, SIGNAL(valueChanged(int)), this, SLOT(amplitudeMinChanged()));
 }
 
-// Remove hard coded margin (Bug 11945)
-// See: https://bugreports.qt-project.org/browse/QTBUG-11945
-QRectF QGVAmplitudeSpectrum::removeHiddenMargin(const QRectF& sceneRect){
-    const int bugMargin = 2;
-    const double mx = sceneRect.width()/viewport()->size().width()*bugMargin;
-    const double my = sceneRect.height()/viewport()->size().height()*bugMargin;
-    return sceneRect.adjusted(mx, my, -mx, -my);
-}
-
 void QGVAmplitudeSpectrum::settingsModified(){
     if(WMainWindow::getMW()->m_gvWaveform)
         WMainWindow::getMW()->m_gvWaveform->selectionClipAndSet(WMainWindow::getMW()->m_gvWaveform->m_mouseSelection, true);
@@ -237,8 +231,10 @@ void QGVAmplitudeSpectrum::updateAmplitudeExtent(){
 }
 
 void QGVAmplitudeSpectrum::amplitudeMinChanged() {
+//    cout << "QGVAmplitudeSpectrum::amplitudeMinChanged" << endl;
     updateSceneRect();
     viewSet(m_scene->sceneRect(), false);
+//    cout << "QGVAmplitudeSpectrum::~amplitudeMinChanged" << endl;
 }
 
 void QGVAmplitudeSpectrum::updateSceneRect() {
@@ -449,29 +445,27 @@ void QGVAmplitudeSpectrum::viewSet(QRectF viewrect, bool sync) {
         //    aproximative.
         // A solution would be to subclass QSplitter, catch the view when the
         // splitter's handle is clicked, and repeat this view until button released.
-        fitInView(removeHiddenMargin(viewrect));
+        fitInView(removeHiddenMargin(this, viewrect));
 
-        if(sync) viewSync();
+        if(sync){
+            if(WMainWindow::getMW()->m_gvPhaseSpectrum) {
+                QRectF phaserect = WMainWindow::getMW()->m_gvPhaseSpectrum->mapToScene(WMainWindow::getMW()->m_gvPhaseSpectrum->viewport()->rect()).boundingRect();
+                phaserect.setLeft(viewrect.left());
+                phaserect.setRight(viewrect.right());
+                WMainWindow::getMW()->m_gvPhaseSpectrum->viewSet(phaserect, false);
+            }
+        }
     }
 
 //    cout << "QGVAmplitudeSpectrum::~viewSet" << endl;
 }
 
-void QGVAmplitudeSpectrum::viewSync() {
-    if(WMainWindow::getMW()->m_gvPhaseSpectrum) {
-        QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-
-        QRectF currect = WMainWindow::getMW()->m_gvPhaseSpectrum->mapToScene(WMainWindow::getMW()->m_gvPhaseSpectrum->viewport()->rect()).boundingRect();
-        currect.setLeft(viewrect.left());
-        currect.setRight(viewrect.right());
-        WMainWindow::getMW()->m_gvPhaseSpectrum->viewSet(currect, false);
-    }
-}
-
 void QGVAmplitudeSpectrum::resizeEvent(QResizeEvent* event){
+//    cout << "QGVAmplitudeSpectrum::resizeEvent" << endl;
+
     // Note: Resized is called for all views so better to not forward modifications
 
-    if((event->oldSize().width()*event->oldSize().height()==0) && (event->size().width()*event->size().height()>0)) {
+    if(event->oldSize().isEmpty() && !event->size().isEmpty()) {
 
         updateSceneRect();
 
@@ -488,13 +482,15 @@ void QGVAmplitudeSpectrum::resizeEvent(QResizeEvent* event){
         else
             viewSet(m_scene->sceneRect(), false);
     }
-    else if((event->oldSize().width()*event->oldSize().height()>0) && (event->size().width()*event->size().height()>0))
+    else if(!event->oldSize().isEmpty() && !event->size().isEmpty())
     {
         viewSet(mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect(), false);
     }
 
     viewUpdateTexts();
     cursorUpdate(QPointF(-1,0));
+
+//    cout << "QGVAmplitudeSpectrum::~resizeEvent" << endl;
 }
 
 void QGVAmplitudeSpectrum::scrollContentsBy(int dx, int dy) {
@@ -524,17 +520,32 @@ void QGVAmplitudeSpectrum::wheelEvent(QWheelEvent* event) {
     if(numDegrees>90) numDegrees = 90;
     if(numDegrees<-90) numDegrees = -90;
 
-    QTransform trans = transform();
-    qreal h11 = trans.m11();
-    qreal h22 = trans.m22();
-    h11 += 0.01*h11*numDegrees;
-    h22 += 0.01*h22*numDegrees;
-    setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-    setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
-    viewSet();
+    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
-    QPointF p = mapToScene(event->pos());
-    cursorUpdate(p);
+    if((viewrect.width()>10.0/WMainWindow::getMW()->getFs() && numDegrees>0) || (viewrect.height()>10.0/WMainWindow::getMW()->getFs() && numDegrees<0)) {
+        double gx = double(mapToScene(event->pos()).x()-viewrect.left())/viewrect.width();
+        double gy = double(mapToScene(event->pos()).y()-viewrect.top())/viewrect.height();
+        QRectF newrect = mapToScene(viewport()->rect()).boundingRect();
+        newrect.setLeft(newrect.left()+gx*0.01*viewrect.width()*numDegrees);
+        newrect.setRight(newrect.right()-(1-gx)*0.01*viewrect.width()*numDegrees);
+        if(newrect.width()<10.0/WMainWindow::getMW()->getFs()){
+           newrect.setLeft(newrect.center().x()-5.0/WMainWindow::getMW()->getFs());
+           newrect.setRight(newrect.center().x()+5.0/WMainWindow::getMW()->getFs());
+        }
+        newrect.setTop(newrect.top()+gy*0.01*viewrect.height()*numDegrees);
+        newrect.setBottom(newrect.bottom()-(1-gy)*0.01*viewrect.height()*numDegrees);
+        if(newrect.height()<10.0/WMainWindow::getMW()->getFs()){
+           newrect.setTop(newrect.center().y()-5.0/WMainWindow::getMW()->getFs());
+           newrect.setBottom(newrect.center().y()+5.0/WMainWindow::getMW()->getFs());
+        }
+
+        viewSet(newrect);
+
+//        m_aZoomOnSelection->setEnabled(m_selection.width()>0);
+//        m_aZoomOut->setEnabled(true);
+//        m_aZoomIn->setEnabled(true);
+//        m_aUnZoom->setEnabled(true);
+    }
 }
 
 void QGVAmplitudeSpectrum::mousePressEvent(QMouseEvent* event){

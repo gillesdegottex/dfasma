@@ -64,11 +64,14 @@ void STFTComputeThread::run() {
 
         m_params_current.snd->m_stft.clear();
         m_params_current.snd->m_stftts.clear();
+        m_params_current.snd->m_stftparams = m_params_current;
 
     //        m_imgSTFT = QImage(m_nbsteps, m_dftlen/2+1, QImage::Format_RGB32);
 
         m_params_current.snd->m_stft_min = std::numeric_limits<double>::infinity();
         m_params_current.snd->m_stft_max = -std::numeric_limits<double>::infinity();
+
+//        std::cout << "STFTComputeThread::run stepsize=" << m_params_current.stepsize << std::endl;
 
         for(int si=0; true; si++){
             if(si*m_params_current.stepsize+m_params_current.win.size()-1 > wav->size()-1)

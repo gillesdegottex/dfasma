@@ -66,6 +66,8 @@ public:
     QMutex m_mutex_computing;      // To protect the access to the FFT and external variables
     QMutex m_mutex_changingparams; // To protect the access to the parameters above
 
+    inline const Parameters& getCurrentParameters() const {return m_params_current;}
+
 private:
     Parameters m_params_current;   // The params which are in preparation by the thread
     Parameters m_params_todo;      // The params which have to be done by the thread

@@ -98,8 +98,7 @@ public:
 
     void selectSegment(double x, bool add);
 
-    void viewSet(QRectF viewrect=QRectF(), bool sync=true);
-    void viewSync();
+    void viewSet(QRectF viewrect, bool sync=true);
 
 signals:
 

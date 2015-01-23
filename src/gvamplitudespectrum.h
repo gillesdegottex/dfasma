@@ -45,8 +45,6 @@ class QGVAmplitudeSpectrum : public QGraphicsView
     qreal m_minsy;
     qreal m_maxsy;
 
-    QRectF removeHiddenMargin(const QRectF& sceneRect);
-
     QPen m_gridFontPen;
     QFont m_gridFont;
 
@@ -100,7 +98,6 @@ public:
     void keyPressEvent(QKeyEvent* event);
 
     void viewSet(QRectF viewrect=QRectF(), bool sync=true);
-    void viewSync();
     void viewUpdateTexts();
     void drawBackground(QPainter* painter, const QRectF& rect);
     void draw_grid(QPainter* painter, const QRectF& rect);

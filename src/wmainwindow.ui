@@ -128,16 +128,26 @@
          </item>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
            <item>
-            <layout class="QVBoxLayout" name="lWaveformToolBar"/>
+            <layout class="QVBoxLayout" name="lWaveformToolBar">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+            </layout>
            </item>
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_12">
+             <property name="spacing">
+              <number>9</number>
+             </property>
              <item>
               <widget class="QSlider" name="sldWaveformAmplitude">
                <property name="maximumSize">
                 <size>
-                 <width>16</width>
+                 <width>18</width>
                  <height>16777215</height>
                 </size>
                </property>
@@ -171,7 +181,11 @@
             </layout>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="lWaveformGraphicsView"/>
+            <layout class="QHBoxLayout" name="lWaveformGraphicsView">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+            </layout>
            </item>
           </layout>
          </item>
@@ -274,8 +288,15 @@
          </item>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <property name="spacing">
+            <number>0</number>
+           </property>
            <item>
-            <layout class="QVBoxLayout" name="lSpectrogramToolBar"/>
+            <layout class="QVBoxLayout" name="lSpectrogramToolBar">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+            </layout>
            </item>
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -283,7 +304,7 @@
               <widget class="QSlider" name="sldSpectrogramAmplitudeMax">
                <property name="maximumSize">
                 <size>
-                 <width>16</width>
+                 <width>18</width>
                  <height>16777215</height>
                 </size>
                </property>
@@ -308,7 +329,7 @@
               <widget class="QSlider" name="sldSpectrogramAmplitudeMin">
                <property name="maximumSize">
                 <size>
-                 <width>16</width>
+                 <width>18</width>
                  <height>16777215</height>
                 </size>
                </property>
@@ -338,7 +359,11 @@
             </layout>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="lSpectrogramGraphicsView"/>
+            <layout class="QHBoxLayout" name="lSpectrogramGraphicsView">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+            </layout>
            </item>
           </layout>
          </item>
@@ -601,7 +626,7 @@
      <x>0</x>
      <y>0</y>
      <width>831</width>
-     <height>25</height>
+     <height>31</height>
     </rect>
    </property>
   </widget>

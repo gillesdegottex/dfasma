@@ -257,10 +257,10 @@ void QGVWaveform::viewSet(QRectF viewrect, bool sync) {
 
     QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
 
-    if(viewrect==QRect() || viewrect!=currentviewrect) {
-        if(viewrect==QRectF()){
-            viewrect = currentviewrect;
-        }
+//    cout << "QGVWaveform::viewSet: viewrect=" << viewrect << endl;
+//    cout << "QGVWaveform::viewSet: currentviewrect=" << currentviewrect << endl;
+
+    if(viewrect!=currentviewrect) {
 
         if(viewrect.top()<m_scene->sceneRect().top())
             viewrect.setTop(m_scene->sceneRect().top()-0.01);
@@ -272,20 +272,18 @@ void QGVWaveform::viewSet(QRectF viewrect, bool sync) {
             viewrect.setRight(m_scene->sceneRect().right());
 
         fitInView(removeHiddenMargin(this, viewrect));
+//        fitInView(viewrect);
 
         playCursorUpdate();
 
-        if(sync) viewSync();
-    }
-}
-void QGVWaveform::viewSync() {
-    if(WMainWindow::getMW()->m_gvSpectrogram && WMainWindow::getMW()->ui->actionShowSpectrogram->isChecked()) {
-        QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-
-        QRectF currect = WMainWindow::getMW()->m_gvSpectrogram->mapToScene(WMainWindow::getMW()->m_gvSpectrogram->viewport()->rect()).boundingRect();
-        currect.setLeft(viewrect.left());
-        currect.setRight(viewrect.right());
-        WMainWindow::getMW()->m_gvSpectrogram->viewSet(currect, false);
+        if(sync){
+            if(WMainWindow::getMW()->m_gvSpectrogram && WMainWindow::getMW()->ui->actionShowSpectrogram->isChecked()) {
+                QRectF spectrorect = WMainWindow::getMW()->m_gvSpectrogram->mapToScene(WMainWindow::getMW()->m_gvSpectrogram->viewport()->rect()).boundingRect();
+                spectrorect.setLeft(viewrect.left());
+                spectrorect.setRight(viewrect.right());
+                WMainWindow::getMW()->m_gvSpectrogram->viewSet(spectrorect, false);
+            }
+        }
     }
 }
 
@@ -383,12 +381,21 @@ void QGVWaveform::cursorUpdate(float x){
 //        if(x+br.width()/trans.m11()>viewrect.right())
 //            x = x - br.width()/trans.m11();
         m_giCursorPositionTxt->setPos(x+1/trans.m11(), viewrect.top()-3/trans.m22());
+
+        QLineF line;
+        line.setP1(QPointF(x, 0));
+        line.setP2(QPointF(x, 0));
+        WMainWindow::getMW()->m_gvSpectrogram->m_giCursorVert->setLine(line);
+        WMainWindow::getMW()->m_gvSpectrogram->cursorFixAndRefresh();
     }
 }
 
 void QGVWaveform::resizeEvent(QResizeEvent* event){
 
-    if((event->oldSize().width()*event->oldSize().height()==0) && (event->size().width()*event->size().height()>0)) {
+    // cout << "QGVWaveform::resizeEvent oldSize: " << event->oldSize().isEmpty() << endl;
+
+    if(event->oldSize().isEmpty() && !event->size().isEmpty()) {
+        // The view didn't exist (or was hidden?) and it becomes visible.
 
         updateSceneRect();
 
@@ -405,7 +412,7 @@ void QGVWaveform::resizeEvent(QResizeEvent* event){
         else
             viewSet(m_scene->sceneRect(), false);
     }
-    else if((event->oldSize().width()*event->oldSize().height()>0) && (event->size().width()*event->size().height()>0))
+    else if(!event->oldSize().isEmpty() && !event->size().isEmpty())
     {
         viewSet(mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect(), false);
     }
@@ -415,7 +422,7 @@ void QGVWaveform::resizeEvent(QResizeEvent* event){
 
 void QGVWaveform::scrollContentsBy(int dx, int dy){
 
-//    std::cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVWaveform::scrollContentsBy [" << dx << "," << dy << "]" << endl;
+    //    std::cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVWaveform::scrollContentsBy [" << dx << "," << dy << "]" << endl;
 
     // Ensure the y ticks labels will be redrawn
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
@@ -434,12 +441,13 @@ void QGVWaveform::wheelEvent(QWheelEvent* event){
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
+//    cout << "QGVWaveform::wheelEvent: " << viewrect << endl;
+
     if(event->modifiers().testFlag(Qt::ShiftModifier)){
         QScrollBar* sb = horizontalScrollBar();
         sb->setValue(sb->value()-numDegrees.y());
     }
     else if((viewrect.width()>10.0/WMainWindow::getMW()->getFs() && numDegrees.y()>0) || numDegrees.y()<0) {
-
         double g = double(mapToScene(event->pos()).x()-viewrect.left())/viewrect.width();
         QRectF newrect = mapToScene(viewport()->rect()).boundingRect();
         newrect.setLeft(newrect.left()+g*0.01*viewrect.width()*numDegrees.y());
@@ -1064,8 +1072,12 @@ void QGVWaveform::selectionZoomOn(){
 
 void QGVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
 
+//    cout << "QGVWaveform::drawBackground viewport: " << viewport()->rect() << endl;
+
 //    static QTimeTracker2 time_tracker;
 //    time_tracker.restart();
+
+//    cout << "QGVWaveform::drawBackground rect:" << rect << endl;
 
     if(m_aShowGrid->isChecked())
         draw_grid(painter, rect);
@@ -1086,6 +1098,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
     double fs = WMainWindow::getMW()->getFs();
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+//    cout << "QGVWaveform::drawBackground viewrect: " << viewrect << endl;
 
     double samppixdensity = (viewrect.right()-viewrect.left())*fs/viewport()->rect().width();
 
@@ -1258,8 +1271,6 @@ void QGVWaveform::draw_grid(QPainter* painter, const QRectF& rect){
     // Plot the grid
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-//    if(std::isnan(viewrect.width()))
-//        return;
 
     painter->setFont(m_gridFont);
     QTransform trans = transform();

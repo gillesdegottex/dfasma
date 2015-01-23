@@ -38,6 +38,7 @@ file provided in the source code of DFasma. Another copy can be found at
 
 
 class CFFTW3;
+#include "stftcomputethread.h"
 
 class FTSound : public QIODevice, public FileType
 {
@@ -85,6 +86,7 @@ public:
     // Spectrogram
     std::deque<std::vector<WAVTYPE> > m_stft;
     std::deque<double> m_stftts;
+    STFTComputeThread::Parameters m_stftparams;
     qreal m_stft_min;
     qreal m_stft_max;
 

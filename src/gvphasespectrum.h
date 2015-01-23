@@ -83,7 +83,6 @@ public:
     void keyPressEvent(QKeyEvent* event);
 
     void viewSet(QRectF viewrect=QRectF(), bool sync=true);
-    void viewSync();
     void viewUpdateTexts();
     void drawBackground(QPainter* painter, const QRectF& rect);
     void draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& ldft, double fs, double delay, const QRectF& rect);

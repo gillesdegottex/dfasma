@@ -49,6 +49,8 @@ using namespace std;
 #include <QDebug>
 #include <QTime>
 
+#include "qthelper.h"
+
 QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     : QGraphicsView(parent)
     , m_imgSTFT(1, 1, QImage::Format_RGB32)
@@ -187,15 +189,6 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     connect(WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax, SIGNAL(valueChanged(int)), this, SLOT(updateSTFTPlot()));
 
     updateDFTSettings(); // Prepare a window from loaded settings
-}
-
-// Remove hard coded margin (Bug 11945)
-// See: https://bugreports.qt-project.org/browse/QTBUG-11945
-QRectF QGVSpectrogram::removeHiddenMargin(const QRectF& sceneRect){
-    const int bugMargin = 2;
-    const double mx = sceneRect.width()/viewport()->size().width()*bugMargin;
-    const double my = sceneRect.height()/viewport()->size().height()*bugMargin;
-    return sceneRect.adjusted(mx, my, -mx, -my);
 }
 
 void QGVSpectrogram::stftComputing(){
@@ -368,20 +361,17 @@ void QGVSpectrogram::viewSet(QRectF viewrect, bool sync) {
         if(viewrect.right()>m_scene->sceneRect().right())
             viewrect.setRight(m_scene->sceneRect().right());
 
-        fitInView(removeHiddenMargin(viewrect));
+        fitInView(removeHiddenMargin(this, viewrect));
+//        fitInView(viewrect);
 
-        if(sync) viewSync();
-    }
-}
-
-void QGVSpectrogram::viewSync() {
-    if(WMainWindow::getMW()->m_gvWaveform) { // && WMainWindow::getMW()->ui->actionShowWaveform->isChecked()
-        QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-
-        QRectF currect = WMainWindow::getMW()->m_gvWaveform->mapToScene(WMainWindow::getMW()->m_gvWaveform->viewport()->rect()).boundingRect();
-        currect.setLeft(viewrect.left());
-        currect.setRight(viewrect.right());
-        WMainWindow::getMW()->m_gvWaveform->viewSet(currect, false);
+        if(sync){
+            if(WMainWindow::getMW()->m_gvWaveform) { // && WMainWindow::getMW()->ui->actionShowWaveform->isChecked()
+                QRectF currect = WMainWindow::getMW()->m_gvWaveform->mapToScene(WMainWindow::getMW()->m_gvWaveform->viewport()->rect()).boundingRect();
+                currect.setLeft(viewrect.left());
+                currect.setRight(viewrect.right());
+                WMainWindow::getMW()->m_gvWaveform->viewSet(currect, false);
+            }
+        }
     }
 }
 
@@ -389,7 +379,7 @@ void QGVSpectrogram::resizeEvent(QResizeEvent* event){
     // Note: Resized is called for all views so better to not forward modifications
 //    cout << "QGVSpectrogram::resizeEvent" << endl;
 
-    if((event->oldSize().width()*event->oldSize().height()==0) && (event->size().width()*event->size().height()>0)) {
+    if(event->oldSize().isEmpty() && !event->size().isEmpty()) {
 
         updateSceneRect();
 
@@ -406,7 +396,7 @@ void QGVSpectrogram::resizeEvent(QResizeEvent* event){
         else
             viewSet(m_scene->sceneRect(), false);
     }
-    else if((event->oldSize().width()*event->oldSize().height()>0) && (event->size().width()*event->size().height()>0))
+    else if(!event->oldSize().isEmpty() && !event->size().isEmpty())
     {
         viewSet(mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect(), false);
     }
@@ -417,6 +407,8 @@ void QGVSpectrogram::resizeEvent(QResizeEvent* event){
 }
 
 void QGVSpectrogram::scrollContentsBy(int dx, int dy) {
+
+//    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << " QGVSpectrogram::scrollContentsBy" << endl;
 
     // Invalidate the necessary parts
     // Ensure the y ticks labels will be redrawn
@@ -547,7 +539,7 @@ void QGVSpectrogram::mouseMoveEvent(QMouseEvent* event){
 
     if(m_currentAction==CAMoving) {
         // When scrolling the view around the scene
-        cursorUpdate(QPointF(-1,0));
+//        cursorUpdate(QPointF(-1,0));
     }
     else if(m_currentAction==CAZooming) {
         double dx = -(event->pos()-m_pressed_mouseinviewport).x()/100.0;
@@ -877,10 +869,7 @@ void QGVSpectrogram::cursorUpdate(QPointF p) {
     m_giCursorHoriz->setLine(line);
     cursorFixAndRefresh();
 
-    line.setP1(QPointF(p.x(), m_giCursorVert->line().y1()));
-    line.setP2(QPointF(p.x(), m_giCursorVert->line().y2()));
-//    WMainWindow::getMW()->m_gvPhaseSpectrum->m_giCursorVert->setLine(line);
-//    WMainWindow::getMW()->m_gvPhaseSpectrum->cursorFixAndRefresh();
+    WMainWindow::getMW()->m_gvWaveform->cursorUpdate(p.x());
 }
 
 void QGVSpectrogram::cursorFixAndRefresh() {
@@ -942,32 +931,28 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 //    }
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-//    cout << "viewport rect:" << viewport()->rect().width() << " " << viewport()->rect().height() << endl;
-//    cout << "scene view rect: " << viewrect.width() << " " << viewrect.height() << endl;
-//    cout << "scene view rect: " << viewrect.left() << ", " << viewrect.right() << "; " << viewrect.top() << ", " << viewrect.bottom() << endl;
-
 
     // Draw the sound's spectrogram
     FTSound* csnd = WMainWindow::getMW()->getCurrentFTSound(true);
     if(csnd && csnd->m_actionShow->isChecked() && csnd->m_stftts.size()>0) {
 
-//        cout << viewrect.left() << ":" << viewrect.right() << endl;
-//        cout << m_imgSTFT.rect().left() << ":" << m_imgSTFT.rect().right() << ":" << m_imgSTFT.rect().width() << " " << csnd->m_stftts.size() <<  endl;
-
-        QRectF srcrect;// TODO Check time synchro
-
+        // Build the piece of STFT which will be drawn in the view
+        QRectF srcrect;
         double stftwidth = csnd->m_stftts.back()-csnd->m_stftts.front();
-
         srcrect.setLeft(0.5+(m_imgSTFT.rect().width()-1)*(viewrect.left()-csnd->m_stftts.front())/stftwidth);
         srcrect.setRight(0.5+(m_imgSTFT.rect().width()-1)*(viewrect.right()-csnd->m_stftts.front())/stftwidth);
         srcrect.setTop(m_imgSTFT.rect().height()*viewrect.top()/m_scene->sceneRect().height());
         srcrect.setBottom(m_imgSTFT.rect().height()*viewrect.bottom()/m_scene->sceneRect().height());
+        QRectF trgrect = viewrect;
 
-//        cout << "img src: " << srcrect.left() << ", " << srcrect.right() << "; " << srcrect.top() << ", " << srcrect.bottom() << endl;
+        // This one is the basic time synchronized version,
+        // but it creates flickering when zooming
+        //QRectF srcrect = m_imgSTFT.rect();
+        //QRectF trgrect = m_scene->sceneRect();
+        //trgrect.setLeft(csnd->m_stftts.front()-0.5*csnd->m_stftparams.stepsize/csnd->fs);
+        //trgrect.setRight(csnd->m_stftts.back()+0.5*csnd->m_stftparams.stepsize/csnd->fs);
 
-//        cout << m_imgSTFT.rect().width() << " " << m_imgSTFT.rect().height() << endl;
-        // TODO Set source rect according to viewrect
-        painter->drawImage(viewrect, m_imgSTFT, srcrect);
+        painter->drawImage(trgrect, m_imgSTFT, srcrect);
     }
 
     // Draw the grid above the spectrogram

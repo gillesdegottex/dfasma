@@ -5,7 +5,7 @@
 
 // Remove hard coded margin (Bug 11945)
 // See: https://bugreports.qt-project.org/browse/QTBUG-11945
-QRectF removeHiddenMargin(QGraphicsView* gv, const QRectF& sceneRect){
+inline QRectF removeHiddenMargin(QGraphicsView* gv, const QRectF& sceneRect){
     const int bugMargin = 2;
     const double mx = sceneRect.width()/gv->viewport()->size().width()*bugMargin;
     const double my = sceneRect.height()/gv->viewport()->size().height()*bugMargin;
@@ -15,6 +15,13 @@ QRectF removeHiddenMargin(QGraphicsView* gv, const QRectF& sceneRect){
 template<typename streamtype>
 streamtype& operator<<(streamtype& stream, const QRectF& rectf) {
     stream << "[" << rectf.left() << "," << rectf.right() << "]x[" << rectf.top() << "," << rectf.bottom() << "]";
+
+    return stream;
+}
+
+template<typename streamtype>
+streamtype& operator<<(streamtype& stream, const QSize& size) {
+    stream << size.width() << "x" << size.height();
 
     return stream;
 }
