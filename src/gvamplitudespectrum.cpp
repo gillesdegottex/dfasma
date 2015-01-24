@@ -448,7 +448,7 @@ void QGVAmplitudeSpectrum::viewSet(QRectF viewrect, bool sync) {
         fitInView(removeHiddenMargin(this, viewrect));
 
         if(sync){
-            if(WMainWindow::getMW()->m_gvPhaseSpectrum) {
+            if(WMainWindow::getMW()->m_gvPhaseSpectrum && WMainWindow::getMW()->ui->actionShowPhaseSpectrum->isChecked()) {
                 QRectF phaserect = WMainWindow::getMW()->m_gvPhaseSpectrum->mapToScene(WMainWindow::getMW()->m_gvPhaseSpectrum->viewport()->rect()).boundingRect();
                 phaserect.setLeft(viewrect.left());
                 phaserect.setRight(viewrect.right());
@@ -520,6 +520,8 @@ void QGVAmplitudeSpectrum::wheelEvent(QWheelEvent* event) {
     if(numDegrees>90) numDegrees = 90;
     if(numDegrees<-90) numDegrees = -90;
 
+//    cout << "QGVAmplitudeSpectrum::wheelEvent " << numDegrees << endl;
+
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
     if((viewrect.width()>10.0/WMainWindow::getMW()->getFs() && numDegrees>0) || (viewrect.height()>10.0/WMainWindow::getMW()->getFs() && numDegrees<0)) {
@@ -541,10 +543,10 @@ void QGVAmplitudeSpectrum::wheelEvent(QWheelEvent* event) {
 
         viewSet(newrect);
 
-//        m_aZoomOnSelection->setEnabled(m_selection.width()>0);
-//        m_aZoomOut->setEnabled(true);
-//        m_aZoomIn->setEnabled(true);
-//        m_aUnZoom->setEnabled(true);
+        m_aZoomOnSelection->setEnabled(!m_selection.isEmpty());
+        m_aZoomOut->setEnabled(true);
+        m_aZoomIn->setEnabled(true);
+        m_aUnZoom->setEnabled(true);
     }
 }
 

@@ -155,7 +155,7 @@ void QGVPhaseSpectrum::viewSet(QRectF viewrect, bool sync) {
         fitInView(removeHiddenMargin(viewrect));
 
         if(sync){
-            if(WMainWindow::getMW()->m_gvSpectrum) {
+            if(WMainWindow::getMW()->m_gvSpectrum && WMainWindow::getMW()->ui->actionShowAmplitudeSpectrum->isChecked()) {
                 QRectF amprect = WMainWindow::getMW()->m_gvSpectrum->mapToScene(WMainWindow::getMW()->m_gvSpectrum->viewport()->rect()).boundingRect();
                 amprect.setLeft(viewrect.left());
                 amprect.setRight(viewrect.right());

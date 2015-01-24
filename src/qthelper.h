@@ -26,4 +26,11 @@ streamtype& operator<<(streamtype& stream, const QSize& size) {
     return stream;
 }
 
+template<typename streamtype>
+streamtype& operator<<(streamtype& stream, const QPoint& p) {
+    stream << "(" << p.x() << "," << p.y() << ")";
+
+    return stream;
+}
+
 #endif // QTHELPER_H

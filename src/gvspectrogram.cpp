@@ -362,10 +362,9 @@ void QGVSpectrogram::viewSet(QRectF viewrect, bool sync) {
             viewrect.setRight(m_scene->sceneRect().right());
 
         fitInView(removeHiddenMargin(this, viewrect));
-//        fitInView(viewrect);
 
         if(sync){
-            if(WMainWindow::getMW()->m_gvWaveform) { // && WMainWindow::getMW()->ui->actionShowWaveform->isChecked()
+            if(WMainWindow::getMW()->m_gvWaveform && !WMainWindow::getMW()->m_gvWaveform->viewport()->size().isEmpty()) { // && WMainWindow::getMW()->ui->actionShowWaveform->isChecked()
                 QRectF currect = WMainWindow::getMW()->m_gvWaveform->mapToScene(WMainWindow::getMW()->m_gvWaveform->viewport()->rect()).boundingRect();
                 currect.setLeft(viewrect.left());
                 currect.setRight(viewrect.right());
