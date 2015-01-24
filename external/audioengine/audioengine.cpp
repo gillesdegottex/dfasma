@@ -162,6 +162,7 @@ void AudioEngine::startPlayback(FTSound* dssound, double tstart, double tstop, d
             m_audioOutput->start(m_ftsound);
             m_rtinfo_timer.start();
             m_starttime = QDateTime::currentMSecsSinceEpoch();
+//            cout << "AudioEngine::startPlayback bufferSize: " << m_audioOutput->bufferSize() << endl;
         }
     }
 
@@ -221,6 +222,7 @@ void AudioEngine::sendRealTimeInfo(){
         else{
             emit playPositionChanged(t);
 //            emit localEnergyChanged(sqrt(FTSound::s_play_power/(m_fs*0.1)));
+//            cout << "A:" << FTSound::s_play_power << " " << flush;
             emit localEnergyChanged(FTSound::s_play_power); // For max amplitude in window
         }
     }
@@ -296,6 +298,7 @@ bool AudioEngine::initialize(int fs) {
                 qDebug() << "AudioEngine::initialize: Chosen notification intervals not used!" << m_audioOutput->notifyInterval() << "is used instead of" << NotifyIntervalMs;
             connect(m_audioOutput, SIGNAL(notify()), this, SLOT(audioNotify()));
             connect(m_audioOutput, SIGNAL(stateChanged(QAudio::State)), this, SLOT(audioStateChanged(QAudio::State)));
+//            cout << "AudioEngine::initialize periodSize: " << m_audioOutput->periodSize() << endl;
         }
     }
     else {

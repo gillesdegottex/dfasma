@@ -553,11 +553,11 @@ qint64 FTSound::readData(char *data, qint64 askedlen)
             int delayedpos = m_pos - m_delay;
             if(delayedpos>=0 && delayedpos<int(wavtoplay->size())){
         //        WAVTYPE e = samples[m_pos]*samples[m_pos];
-        //        s_play_power += e;
                 WAVTYPE e = abs(gain*(*wavtoplay)[delayedpos]);
+//                s_play_power += e;
                 s_play_power_values.push_front(e);
-                while(s_play_power_values.size()/fs>0.1){
-                    s_play_power -= s_play_power_values.back();
+                while(s_play_power_values.size()/fs>1.0){ // Has to correspond to the delay between readData calls
+//                    s_play_power -= s_play_power_values.back();
                     s_play_power_values.pop_back();
                 }
 
