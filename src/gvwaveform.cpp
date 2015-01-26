@@ -522,7 +522,7 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
             m_ca_pressed_index=-1;
             FTLabels* ftl = WMainWindow::getMW()->getCurrentFTLabels();
             if(ftl){
-                for(size_t lli=0; m_ca_pressed_index==-1 && lli<ftl->labels.size(); lli++) {
+                for(size_t lli=0; m_ca_pressed_index==-1 && lli<ftl->starts.size(); lli++) {
                     QPoint slp = mapFromScene(QPointF(ftl->starts[lli],0));
                     if(std::abs(slp.x()-event->x())<5) {
                         m_ca_pressed_index = lli;
@@ -881,7 +881,7 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
             FTLabels* ftlabel = WMainWindow::getMW()->getCurrentFTLabels(false);
             if(ftlabel){
 
-                ftlabel->remove(m_ca_pressed_index);
+                ftlabel->removeLabel(m_ca_pressed_index);
                 ftlabel->sort();
                 m_currentAction = CANothing;
                 m_scene->update();
@@ -898,12 +898,10 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
                         (*m_label_current)->setText((*m_label_current)->text()+event->text());
                     else{
                         m_currentAction = CALabelWritting;
-                        ftlabel->labels.push_back(new QGraphicsSimpleTextItem(event->text()));
-                        ftlabel->starts.push_back(m_giCursor->line().x1());
-                        ftlabel->m_isedited = true;
+                        ftlabel->addLabel(m_giCursor->line().x1(), event->text());
                         m_label_current = ftlabel->labels.end()-1;
                     }
-                    ftlabel->setStatus();
+//                    ftlabel->setStatus();
                     m_scene->update();
                     WMainWindow::getMW()->m_gvSpectrogram->m_scene->update();
                 }
@@ -1253,7 +1251,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
         for(size_t li=0; li<WMainWindow::getMW()->ftlabels[fi]->starts.size(); li++){
             // TODO plot only labels which can be seen
             double start = WMainWindow::getMW()->ftlabels[fi]->starts[li];
-            painter->drawLine(QLineF(start, -1.0, start, 1.0));
+//            painter->drawLine(QLineF(start, -1.0, start, 1.0));
 
             painter->save();
             painter->translate(QPointF(start+2.0/trans.m11(), viewrect.top()+10/trans.m22()));

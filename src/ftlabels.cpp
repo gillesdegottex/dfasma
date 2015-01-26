@@ -42,6 +42,8 @@ using namespace Easdif;
 
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
+#include "gvwaveform.h"
+#include "gvspectrogram.h"
 
 void FTLabels::init(){
     m_isedited = false;
@@ -81,7 +83,9 @@ FTLabels::FTLabels(const FTLabels& ft)
 
     starts = ft.starts;
     // ends = fr.ends;
-    labels = ft.labels;
+    labels = ft.labels; // TODO Need to duplicate the items, no ?
+    waveform_lines = ft.waveform_lines;
+    spectrogram_lines = ft.spectrogram_lines;
 
     m_lastreadtime = ft.m_lastreadtime;
     m_modifiedtime = ft.m_modifiedtime;
@@ -94,6 +98,8 @@ FileType* FTLabels::duplicate(){
 }
 
 void FTLabels::load() {
+
+    clear(); // First, ensure there is no leftover
 
 #ifdef SUPPORT_SDIF
     // TODO load .lab files
@@ -155,6 +161,8 @@ void FTLabels::load() {
                         // if(!starts.empty()) ends.push_back(t);
                         starts.push_back(t);
                         labels.push_back(new QGraphicsSimpleTextItem(str));
+                        lines.push_back(new QGraphicsLineItem(t, -1, t, -1));
+                        WMainWindow::getMW()->m_gvWaveform->m_scene->addItem(lines.back());
                     }
                 }
             }
@@ -192,18 +200,26 @@ void FTLabels::load() {
     setStatus();
 }
 
+void FTLabels::clear() {
+    starts.clear();
+    for(size_t li=0; li<labels.size(); li++)
+        delete labels[li];
+    labels.clear();
+    for(size_t li=0; li<waveform_lines.size(); li++)
+        delete waveform_lines[li];
+    waveform_lines.clear();
+    for(size_t li=0; li<spectrogram_lines.size(); li++)
+        delete spectrogram_lines[li];
+    spectrogram_lines.clear();
+}
+
 void FTLabels::reload() {
     // cout << "FTLabels::reload" << endl;
 
     if(!checkFileStatus(CFSMMESSAGEBOX))
         return;
 
-    // Reset everything ...
-    starts.clear();
-    // ends.clear();
-    labels.clear();
-
-    // ... and reload the data from the file
+    // Reload the data from the file
     load();
 }
 
@@ -307,23 +323,44 @@ double FTLabels::getLastSampleTime() const {
 //        return *((ends.end()-1));
 }
 
-void FTLabels::remove(int index){
+void FTLabels::addLabel(double position, const QString& text){
+
+    QPen pen(QColor(0,0,0));
+    pen.setWidth(0);
+
+    starts.push_back(position);
+    labels.push_back(new QGraphicsSimpleTextItem(text));
+    waveform_lines.push_back(new QGraphicsLineItem(position, -1, position, 1));
+    waveform_lines.back()->setPen(pen);
+    WMainWindow::getMW()->m_gvWaveform->m_scene->addItem(waveform_lines.back());
+    spectrogram_lines.push_back(new QGraphicsLineItem(position, 0, position, WMainWindow::getMW()->getFs()/2));
+    spectrogram_lines.back()->setPen(pen);
+    WMainWindow::getMW()->m_gvSpectrogram->m_scene->addItem(spectrogram_lines.back());
+
+    m_isedited = true;
+    setStatus();
+}
+
+void FTLabels::removeLabel(int index){
     starts.erase(starts.begin()+index);
+    QGraphicsSimpleTextItem* toremove = *(labels.begin()+index);
     labels.erase(labels.begin()+index);
+    delete toremove;
+
     m_isedited = true;
     setStatus();
 }
 
 template <typename Container>
 struct compare_indirect_index
-  {
-  const Container& container;
-  compare_indirect_index( const Container& container ): container( container ) { }
-  bool operator () ( size_t lindex, size_t rindex ) const
+{
+    const Container& container;
+    compare_indirect_index( const Container& container ): container( container ) { }
+    bool operator () ( size_t lindex, size_t rindex ) const
     {
-    return container[ lindex ] < container[ rindex ];
+        return container[ lindex ] < container[ rindex ];
     }
-  };
+};
 
 void FTLabels::sort(){
 //    cout << "FTLabels::sort" << endl;

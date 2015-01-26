@@ -31,13 +31,14 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "filetype.h"
 
 class QGraphicsSimpleTextItem;
+class QGraphicsLineItem;
 
 class FTLabels : public QObject, public FileType
 {
     Q_OBJECT
 
     void init();
-
+    void clear();
     void load();
 
     QAction* m_actionSave;
@@ -48,8 +49,10 @@ public:
     FTLabels(const FTLabels& ft);
     virtual FileType* duplicate();
 
-    std::deque<double> starts;
+    std::deque<double> starts; // TODO Get ride of
     std::deque<QGraphicsSimpleTextItem*> labels;
+    std::deque<QGraphicsLineItem*> waveform_lines;
+    std::deque<QGraphicsLineItem*> spectrogram_lines;
 
     bool m_isedited;
 
@@ -66,7 +69,8 @@ public slots:
     void save();
     void saveAs();
     void sort();
-    void remove(int index);
+    void removeLabel(int index);
+    void addLabel(double position, const QString& text);
 };
 
 #endif // FTLABELS_H
