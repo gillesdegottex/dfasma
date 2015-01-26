@@ -56,6 +56,7 @@ using namespace std;
 
 QGVWaveform::QGVWaveform(WMainWindow* parent)
     : QGraphicsView(parent)
+    , m_ftlabel_current_index(-1)
     , m_ampzoom(1.0)
 {
     m_scene = new QGraphicsScene(this);
@@ -79,16 +80,16 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_contextmenu.addAction(m_aShowGrid);
 
     // Mouse Cursor
-    m_giCursor = new QGraphicsLineItem(0, -1, 0, 1);
+    m_giMouseCursorLine = new QGraphicsLineItem(0, -1, 0, 1);
     QPen cursorPen(QColor(64, 64, 64));
     cursorPen.setWidth(0);
-    m_giCursor->setPen(cursorPen);
-    m_scene->addItem(m_giCursor);
-    m_giCursorPositionTxt = new QGraphicsSimpleTextItem();
-    m_giCursorPositionTxt->setBrush(QColor(64, 64, 64));
+    m_giMouseCursorLine->setPen(cursorPen);
+    m_scene->addItem(m_giMouseCursorLine);
+    m_giMouseCursorTxt = new QGraphicsSimpleTextItem();
+    m_giMouseCursorTxt->setBrush(QColor(64, 64, 64));
     QFont font("Helvetica", 10);
-    m_giCursorPositionTxt->setFont(font);
-    m_scene->addItem(m_giCursorPositionTxt);
+    m_giMouseCursorTxt->setFont(font);
+    m_scene->addItem(m_giMouseCursorTxt);
 
     // Selection
     m_currentAction = CANothing;
@@ -226,7 +227,7 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_toolBar->setOrientation(Qt::Vertical);
     WMainWindow::getMW()->ui->lWaveformToolBar->addWidget(m_toolBar);
 
-    cursorUpdate(-1);
+    setMouseCursorPosition(-1, false);
 }
 
 void QGVWaveform::settingsSave() {
@@ -301,7 +302,7 @@ void QGVWaveform::sldAmplitudeChanged(int value){
     viewrect.setBottom(1.05*m_ampzoom);
     viewSet(viewrect, false);
 
-    cursorUpdate(-1);
+    setMouseCursorPosition(-1, false);
 
     QTransform m;
     m.scale(1.0, m_ampzoom);
@@ -317,7 +318,7 @@ void QGVWaveform::azoomin(){
     viewrect.setRight(viewrect.right()-viewrect.width()/4);
     viewSet(viewrect);
 
-    cursorUpdate(-1);
+    setMouseCursorPosition(-1, false);
 
     m_aZoomIn->setEnabled(true);
     m_aZoomOut->setEnabled(true);
@@ -332,7 +333,7 @@ void QGVWaveform::azoomout(){
     viewrect.setRight(viewrect.right()+viewrect.width()/4);
     viewSet(viewrect);
 
-    cursorUpdate(-1);
+    setMouseCursorPosition(-1, false);
 
     m_aZoomOut->setEnabled(true);
     m_aUnZoom->setEnabled(true);
@@ -347,7 +348,7 @@ void QGVWaveform::aunzoom(){
     viewrect.setRight(m_scene->sceneRect().right());
     viewSet(viewrect);
 
-    cursorUpdate(-1);
+    setMouseCursorPosition(-1, false);
 
     m_aZoomIn->setEnabled(true);
     m_aZoomOut->setEnabled(false);
@@ -355,38 +356,34 @@ void QGVWaveform::aunzoom(){
     m_aZoomOnSelection->setEnabled(m_selection.width()>0);
 }
 
-void QGVWaveform::cursorUpdate(float x){
-    if(x==-1){
-        m_giCursor->hide();
-        m_giCursorPositionTxt->hide();
+void QGVWaveform::setMouseCursorPosition(double position, bool forwardsync) {
+    if(position==-1){
+        m_giMouseCursorLine->hide();
+        m_giMouseCursorTxt->hide();
     }
     else {
-//        giCursorPositionTxt->setText("000000000000");
-//        QRectF br = giCursorPositionTxt->boundingRect();
+        m_giMouseCursorLine->show();
+        m_giMouseCursorTxt->show();
 
-        m_giCursor->show();
-        m_giCursorPositionTxt->show();
-        m_giCursor->setLine(x, -1, x, 1);
-        QString txt = QString("%1s").arg(x);
-        m_giCursorPositionTxt->setText(txt);
+        m_giMouseCursorLine->setPos(position, 0.0);
+
+        QString txt = QString("%1s").arg(position);
+        m_giMouseCursorTxt->setText(txt);
+
         QTransform trans = transform();
-
         QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
         QTransform txttrans;
         txttrans.scale(1.0/trans.m11(),1.0/trans.m22());
-        m_giCursorPositionTxt->setTransform(txttrans);
-        QRectF br = m_giCursorPositionTxt->boundingRect();
+        m_giMouseCursorTxt->setTransform(txttrans);
+        QRectF br = m_giMouseCursorTxt->boundingRect();
 //        QRectF viewrect = mapToScene(QRect(QPoint(0,0), QSize(viewport()->rect().width(), viewport()->rect().height()))).boundingRect();
-        x = min(x, float(viewrect.right()-br.width()/trans.m11()));
+        position = min(position, double(viewrect.right()-br.width()/trans.m11()));
 //        if(x+br.width()/trans.m11()>viewrect.right())
 //            x = x - br.width()/trans.m11();
-        m_giCursorPositionTxt->setPos(x+1/trans.m11(), viewrect.top()-3/trans.m22());
+        m_giMouseCursorTxt->setPos(position+1/trans.m11(), viewrect.top()-3/trans.m22());
 
-        QLineF line;
-        line.setP1(QPointF(x, 0));
-        line.setP2(QPointF(x, 0));
-        WMainWindow::getMW()->m_gvSpectrogram->m_giCursorVert->setLine(line);
-        WMainWindow::getMW()->m_gvSpectrogram->cursorFixAndRefresh();
+        if(forwardsync)
+            WMainWindow::getMW()->m_gvSpectrogram->setMouseCursorPosition(QPointF(position, 0.0), false);
     }
 }
 
@@ -417,7 +414,7 @@ void QGVWaveform::resizeEvent(QResizeEvent* event){
         viewSet(mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect(), false);
     }
 
-    cursorUpdate(-1);
+    setMouseCursorPosition(-1, false);
 }
 
 void QGVWaveform::scrollContentsBy(int dx, int dy){
@@ -428,7 +425,7 @@ void QGVWaveform::scrollContentsBy(int dx, int dy){
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
     m_scene->invalidate(QRectF(viewrect.left(), -1.05, 5*14/transform().m11(), 2.10));
 
-    cursorUpdate(-1);
+    setMouseCursorPosition(-1, false);
 
     QGraphicsView::scrollContentsBy(dx, dy);
 }
@@ -459,8 +456,8 @@ void QGVWaveform::wheelEvent(QWheelEvent* event){
 
         viewSet(newrect);
 
-        QPointF p = mapToScene(QPoint(event->x(),0));
-        cursorUpdate(p.x());
+//        QPointF p = mapToScene(QPoint(event->x(),0));
+//        setMouseCursorPosition(p.x(), true);
         m_aZoomOnSelection->setEnabled(m_selection.width()>0);
         m_aZoomOut->setEnabled(true);
         m_aZoomIn->setEnabled(true);
@@ -483,7 +480,7 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
                 // cout << "Scrolling the waveform" << endl;
                 m_currentAction = CAMoving;
                 setDragMode(QGraphicsView::ScrollHandDrag);
-                cursorUpdate(-1);
+                setMouseCursorPosition(-1, false);
             }
             else if(!event->modifiers().testFlag(Qt::ControlModifier) && m_selection.width()>0 && abs(selview.left()-event->x())<5){
                 // Resize left boundary of the selection
@@ -582,11 +579,11 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
 
     QPointF p = mapToScene(event->pos());
 
-    cursorUpdate(p.x());
+    setMouseCursorPosition(p.x(), true);
 
     if(m_currentAction==CAMoving) {
-        // When scrolling the waveform
-        cursorUpdate(-1);
+        // When scrolling along the waveform
+        setMouseCursorPosition(-1, false);
         QGraphicsView::mouseMoveEvent(event);
         m_scene->invalidate();
     }
@@ -603,7 +600,7 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
         viewSet(newrect);
 
         QPointF p = mapToScene(event->pos());
-        cursorUpdate(p.x());
+        setMouseCursorPosition(p.x(), true);
 
         m_aUnZoom->setEnabled(true);
         m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
@@ -683,20 +680,14 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
     else if(m_currentAction==CALabelWritting) {
         FTLabels* ftlabel = WMainWindow::getMW()->getCurrentFTLabels();
         if(ftlabel) {
-            m_label_current = std::deque<QGraphicsSimpleTextItem*>::iterator();
-            ftlabel->sort();
+            m_ftlabel_current_index = -1;
             m_currentAction = CANothing;
         }
     }
     else if(m_currentAction==CALabelModifPosition) {
         FTLabels* ftlabel = WMainWindow::getMW()->getCurrentFTLabels();
-        if(ftlabel) {
-            ftlabel->starts[m_ca_pressed_index] = p.x();
-            ftlabel->m_isedited = true;
-            ftlabel->setStatus();
-            cursorUpdate(p.x());
-            WMainWindow::getMW()->m_gvSpectrogram->m_scene->update();
-        }
+        if(ftlabel)
+            ftlabel->moveLabel(m_ca_pressed_index, p.x());
     }
     else{
         QRect selview = mapFromScene(m_selection).boundingRect();
@@ -723,7 +714,7 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
             bool foundclosemarker = false;
             FTLabels* ftl = WMainWindow::getMW()->getCurrentFTLabels();
             if(ftl) {
-                for(size_t lli=0; !foundclosemarker && lli<ftl->labels.size(); lli++) {
+                for(int lli=0; !foundclosemarker && lli<ftl->getNbLabels(); lli++) {
                     // cout << ftl->labels[lli].toLatin1().data() << ": " << ftl->starts[lli] << endl;
                     QPoint slp = mapFromScene(QPointF(ftl->starts[lli],0));
                     foundclosemarker = std::abs(slp.x()-event->x())<5;
@@ -777,12 +768,6 @@ void QGVWaveform::mouseReleaseEvent(QMouseEvent* event){
         else if(event->modifiers().testFlag(Qt::ControlModifier)){
         }
         else{
-            setCursor(Qt::SizeVerCursor);
-            if(m_currentAction==CALabelModifPosition) {
-                FTLabels* ftlabel = WMainWindow::getMW()->getCurrentFTLabels();
-                if(ftlabel)
-                    ftlabel->sort();
-            }
         }
     }
 
@@ -832,7 +817,7 @@ void QGVWaveform::selectSegment(double x, bool add){
                 }
                 else{
                     int index = -1;
-                    for(size_t lli=0; lli<ftl->labels.size(); lli++)
+                    for(int lli=0; lli<ftl->getNbLabels(); lli++)
                         if(x>ftl->starts[lli])
                             index = lli;
                     selectionClipAndSet(QRectF(ftl->starts[index], -1.0, ftl->starts[index+1]-ftl->starts[index], 2.0), true);
@@ -845,7 +830,7 @@ void QGVWaveform::selectSegment(double x, bool add){
                     }
                     else{
                         int index = -1;
-                        for(size_t lli=0; lli<ftl->labels.size(); lli++)
+                        for(int lli=0; lli<ftl->getNbLabels(); lli++)
                             if(x>ftl->starts[lli])
                                 index = lli;
                         selectionClipAndSet(QRectF(ftl->starts[index], -1.0, m_selection.right()-ftl->starts[index], 2.0), true);
@@ -857,7 +842,7 @@ void QGVWaveform::selectSegment(double x, bool add){
                     }
                     else{
                         int index = -1;
-                        for(size_t lli=0; lli<ftl->labels.size(); lli++)
+                        for(int lli=0; lli<ftl->getNbLabels(); lli++)
                             if(x>ftl->starts[lli])
                                 index = lli;
                         selectionClipAndSet(QRectF(m_selection.left(), -1.0, ftl->starts[index+1]-m_selection.left(), 2.0), true);
@@ -882,7 +867,6 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
             if(ftlabel){
 
                 ftlabel->removeLabel(m_ca_pressed_index);
-                ftlabel->sort();
                 m_currentAction = CANothing;
                 m_scene->update();
                 WMainWindow::getMW()->m_gvSpectrogram->m_scene->update();
@@ -894,14 +878,13 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
             FTLabels* ftlabel = WMainWindow::getMW()->getCurrentFTLabels(false);
             if(ftlabel){
                 if(event->text().size()>0){
-                    if(m_currentAction==CALabelWritting && m_label_current!=std::deque<QGraphicsSimpleTextItem*>::iterator())
-                        (*m_label_current)->setText((*m_label_current)->text()+event->text());
+                    if(m_currentAction==CALabelWritting && m_ftlabel_current_index!=-1)
+                        ftlabel->changeText(m_ftlabel_current_index, ftlabel->waveform_labels[m_ftlabel_current_index]->text()+event->text());
                     else{
                         m_currentAction = CALabelWritting;
-                        ftlabel->addLabel(m_giCursor->line().x1(), event->text());
-                        m_label_current = ftlabel->labels.end()-1;
+                        ftlabel->addLabel(m_giMouseCursorLine->pos().x(), event->text());
+                        m_ftlabel_current_index = ftlabel->getNbLabels()-1;
                     }
-//                    ftlabel->setStatus();
                     m_scene->update();
                     WMainWindow::getMW()->m_gvSpectrogram->m_scene->update();
                 }
@@ -1041,7 +1024,7 @@ void QGVWaveform::selectionZoomOn(){
         m_aUnZoom->setEnabled(true);
         m_aZoomOnSelection->setEnabled(false);
 
-        cursorUpdate(-1);
+        setMouseCursorPosition(-1, false);
     }
 }
 
@@ -1235,31 +1218,31 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
         }
     }
 
-    // Plot labels
-    QTransform trans = transform();
-    for(size_t fi=0; fi<WMainWindow::getMW()->ftlabels.size(); fi++){
-        if(!WMainWindow::getMW()->ftlabels[fi]->m_actionShow->isChecked())
-            continue;
+//    // Plot labels
+////    QTransform trans = transform();
+//    for(size_t fi=0; fi<WMainWindow::getMW()->ftlabels.size(); fi++){
+//        if(!WMainWindow::getMW()->ftlabels[fi]->m_actionShow->isChecked())
+//            continue;
 
-        QPen outlinePen(WMainWindow::getMW()->ftlabels[fi]->color);
-        outlinePen.setWidth(0);
-        painter->setPen(outlinePen);
-        painter->setBrush(QBrush(WMainWindow::getMW()->ftlabels[fi]->color));
+//        QPen outlinePen(WMainWindow::getMW()->ftlabels[fi]->color);
+//        outlinePen.setWidth(0);
+//        painter->setPen(outlinePen);
+//        painter->setBrush(QBrush(WMainWindow::getMW()->ftlabels[fi]->color));
 
-//        cout << WMainWindow::getMW()->ftlabels[fi]->starts.size() << " " << WMainWindow::getMW()->ftlabels[fi]->ends.size() << endl;
+////        cout << WMainWindow::getMW()->ftlabels[fi]->starts.size() << " " << WMainWindow::getMW()->ftlabels[fi]->ends.size() << endl;
 
-        for(size_t li=0; li<WMainWindow::getMW()->ftlabels[fi]->starts.size(); li++){
-            // TODO plot only labels which can be seen
-            double start = WMainWindow::getMW()->ftlabels[fi]->starts[li];
-//            painter->drawLine(QLineF(start, -1.0, start, 1.0));
+////        for(int li=0; li<WMainWindow::getMW()->ftlabels[fi]->getNbLabels(); li++){
+//            // TODO plot only labels which can be seen
+////            double start = WMainWindow::getMW()->ftlabels[fi]->starts[li];
+////            painter->drawLine(QLineF(start, -1.0, start, 1.0));
 
-            painter->save();
-            painter->translate(QPointF(start+2.0/trans.m11(), viewrect.top()+10/trans.m22()));
-            painter->scale(1.0/trans.m11(), 1.0/trans.m22());
-            painter->drawStaticText(QPointF(0, 0), QStaticText(WMainWindow::getMW()->ftlabels[fi]->labels[li]->text()));
-            painter->restore();
-        }
-    }
+////            painter->save();
+////            painter->translate(QPointF(start+2.0/trans.m11(), viewrect.top()+10/trans.m22()));
+////            painter->scale(1.0/trans.m11(), 1.0/trans.m22());
+////            painter->drawStaticText(QPointF(0, 0), QStaticText(WMainWindow::getMW()->ftlabels[fi]->labels[li]->text()));
+////            painter->restore();
+////        }
+//    }
 }
 
 void QGVWaveform::draw_grid(QPainter* painter, const QRectF& rect){

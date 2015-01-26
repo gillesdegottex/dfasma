@@ -37,30 +37,39 @@ class FTLabels : public QObject, public FileType
 {
     Q_OBJECT
 
-    void init();
-    void clear();
+    void init(); // Has to be called only once, at object ctor
     void load();
+    void sort(); // For writing files in ascending order
 
     QAction* m_actionSave;
     QAction* m_actionSaveAs;
 
+    bool m_isedited;
+
+    enum FileFormat {FFNotSpecified, FFAutoDetect, FFAsciiTimeText, FFAsciiSegments, FFAsciiSegmentsHTK, FFSDIF};
+    int m_fileformat;
+
 public:
-    FTLabels(const QString& _fileName, QObject* parent);
+    FTLabels(QObject *parent);
     FTLabels(const FTLabels& ft);
+    FTLabels(const QString& _fileName, QObject* parent);
     virtual FileType* duplicate();
 
-    std::deque<double> starts; // TODO Get ride of
-    std::deque<QGraphicsSimpleTextItem*> labels;
+    std::deque<double> starts; // TODO Get ride of ?
+    std::deque<QGraphicsSimpleTextItem*> waveform_labels;
+    std::deque<QGraphicsSimpleTextItem*> spectrogram_labels;
     std::deque<QGraphicsLineItem*> waveform_lines;
     std::deque<QGraphicsLineItem*> spectrogram_lines;
-
-    bool m_isedited;
 
     virtual QString info() const;
     virtual double getLastSampleTime() const;
     virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
-
     virtual bool isModified() {return m_isedited;}
+    virtual void setShown(bool shown);
+
+    int getNbLabels() const {return starts.size();}
+    void moveLabel(int index, double position);
+    void changeText(int index, const QString& text);
 
     ~FTLabels();
 
@@ -68,7 +77,7 @@ public slots:
     void reload();
     void save();
     void saveAs();
-    void sort();
+    void clear();
     void removeLabel(int index);
     void addLabel(double position, const QString& text);
 };

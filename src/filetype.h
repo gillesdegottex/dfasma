@@ -55,7 +55,7 @@ public:
     #endif
 
     virtual QString info() const;
-    void setShown(bool shown);
+    virtual void setShown(bool shown);
     virtual bool isModified() {return false;}
     void setColor(const QColor& _color);
     virtual double getLastSampleTime() const =0;

@@ -34,7 +34,10 @@ class QGVWaveform : public QGraphicsView
     Q_OBJECT
 
     qreal m_tmpdelay;
-    std::deque<QGraphicsSimpleTextItem*>::iterator m_label_current;
+    int m_ftlabel_current_index;
+
+    QGraphicsLineItem* m_giMouseCursorLine;
+    QGraphicsSimpleTextItem* m_giMouseCursorTxt;
 
 public:
 
@@ -52,8 +55,6 @@ public:
     QRectF m_selection; // The actual selection, always at exact samples time
     QGraphicsRectItem* m_giSelection; // The shown selection, which contains the actual selection (start and end - and + 0.5 sample before and after the actual selection)
     // QGraphicsRectItem* m_giMouseSelection; // For debug purpose
-    QGraphicsLineItem* m_giCursor;
-    QGraphicsSimpleTextItem* m_giCursorPositionTxt;
 //    QGraphicsItemGroup* m_yTicksLabels; // TODO Use this instead of print them individually ?
     qreal m_initialPlayPosition;
     QGraphicsPathItem* m_giPlayCursor;
@@ -89,7 +90,7 @@ public:
 
     void drawBackground(QPainter* painter, const QRectF& rect);
 
-    void cursorUpdate(float x);
+//    void cursorUpdate(float x);
     QPen m_gridPen;
     QPen m_gridFontPen;
     QFont m_gridFont;
@@ -114,6 +115,8 @@ public slots:
     void selectionClipAndSet(QRectF selection, bool winforceupdate=false);
     void selectionClear();
     void selectionZoomOn();
+
+    void setMouseCursorPosition(double position, bool forwardsync);
 
     void playCursorUpdate();
     void playCursorSet(double t);

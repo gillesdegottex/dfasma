@@ -58,16 +58,13 @@ public:
 
     STFTComputeThread* m_stftcomputethread;
     std::vector<FFTTYPE> m_win;
-//    unsigned int m_nl;
-//    unsigned int m_nr;
     QImage m_imgSTFT;
 
-    QGraphicsLineItem* m_giCursorHoriz;
-    QGraphicsLineItem* m_giCursorVert;
-    QGraphicsSimpleTextItem* m_giCursorPositionXTxt;
-    QGraphicsSimpleTextItem* m_giCursorPositionYTxt;
-    void cursorUpdate(QPointF p);
-    void cursorFixAndRefresh();
+    QGraphicsLineItem* m_giMouseCursorLineTime;
+    QGraphicsLineItem* m_giMouseCursorLineFreq;
+    QGraphicsSimpleTextItem* m_giMouseCursorTxtTime;
+    QGraphicsSimpleTextItem* m_giMouseCursorTxtFreq;
+    void setMouseCursorPosition(QPointF p, bool forwardsync);
 
     QPointF m_selection_pressedp;
     QPointF m_pressed_mouseinviewport;

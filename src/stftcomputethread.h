@@ -53,6 +53,8 @@ public:
             for(size_t n=0; n<win.size(); n++)
                 if(win[n]!=param.win[n])
                     return false;
+
+            return true;
         }
         bool operator!=(const Parameters& param){
             return !((*this)==param);

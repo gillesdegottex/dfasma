@@ -82,7 +82,7 @@ void STFTComputeThread::run() {
 
             int n = 0;
             int wn = 0;
-            for(; n<m_params_current.win.size(); n++){
+            for(; n<int(m_params_current.win.size()); n++){
                 wn = si*m_params_current.stepsize+n - m_params_current.snd->m_delay;
                 if(wn>=0 && wn<int(wav->size())) // TODO temp
                     m_fft->in[n] = (*(wav))[wn]*m_params_current.win[n];

@@ -83,27 +83,27 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_stftcomputethread = new STFTComputeThread(this);
 
     // Cursor
-    m_giCursorHoriz = new QGraphicsLineItem(0, -1000, 0, 1000);
+    m_giMouseCursorLineTime = new QGraphicsLineItem(0, 0, 1, 1);
     QPen cursorPen(QColor(64, 64, 64));
     cursorPen.setWidth(0);
-    m_giCursorHoriz->setPen(cursorPen);
-    m_giCursorHoriz->hide();
-    m_scene->addItem(m_giCursorHoriz);
-    m_giCursorVert = new QGraphicsLineItem(0, 0, WMainWindow::getMW()->getFs()/2.0, 0);
-    m_giCursorVert->setPen(cursorPen);
-    m_giCursorVert->hide();
-    m_scene->addItem(m_giCursorVert);
+    m_giMouseCursorLineTime->setPen(cursorPen);
+    m_giMouseCursorLineTime->hide();
+    m_scene->addItem(m_giMouseCursorLineTime);
+    m_giMouseCursorLineFreq = new QGraphicsLineItem(0, 0, 1, 1);
+    m_giMouseCursorLineFreq->setPen(cursorPen);
+    m_giMouseCursorLineFreq->hide();
+    m_scene->addItem(m_giMouseCursorLineFreq);
     QFont font("Helvetica", 10);
-    m_giCursorPositionXTxt = new QGraphicsSimpleTextItem();
-    m_giCursorPositionXTxt->setBrush(QColor(64, 64, 64));
-    m_giCursorPositionXTxt->setFont(font);
-    m_giCursorPositionXTxt->hide();
-    m_scene->addItem(m_giCursorPositionXTxt);
-    m_giCursorPositionYTxt = new QGraphicsSimpleTextItem();
-    m_giCursorPositionYTxt->setBrush(QColor(64, 64, 64));
-    m_giCursorPositionYTxt->setFont(font);
-    m_giCursorPositionYTxt->hide();
-    m_scene->addItem(m_giCursorPositionYTxt);
+    m_giMouseCursorTxtTime = new QGraphicsSimpleTextItem();
+    m_giMouseCursorTxtTime->setBrush(QColor(64, 64, 64));
+    m_giMouseCursorTxtTime->setFont(font);
+    m_giMouseCursorTxtTime->hide();
+    m_scene->addItem(m_giMouseCursorTxtTime);
+    m_giMouseCursorTxtFreq = new QGraphicsSimpleTextItem();
+    m_giMouseCursorTxtFreq->setBrush(QColor(64, 64, 64));
+    m_giMouseCursorTxtFreq->setFont(font);
+    m_giMouseCursorTxtFreq->hide();
+    m_scene->addItem(m_giMouseCursorTxtFreq);
 
     // Selection
     m_currentAction = CANothing;
@@ -401,7 +401,7 @@ void QGVSpectrogram::resizeEvent(QResizeEvent* event){
     }
 
     viewUpdateTexts();
-    cursorUpdate(QPointF(-1,0));
+    setMouseCursorPosition(QPointF(-1,0), false);
 //    cout << "QGVSpectrogram::~resizeEvent" << endl;
 }
 
@@ -421,7 +421,7 @@ void QGVSpectrogram::scrollContentsBy(int dx, int dy) {
     m_scene->invalidate(r);
 
     viewUpdateTexts();
-    cursorUpdate(QPointF(-1,0));
+    setMouseCursorPosition(QPointF(-1,0), false);
 
     QGraphicsView::scrollContentsBy(dx, dy);
 }
@@ -443,7 +443,7 @@ void QGVSpectrogram::wheelEvent(QWheelEvent* event) {
     viewSet();
 
     QPointF p = mapToScene(event->pos());
-    cursorUpdate(p);
+    setMouseCursorPosition(p, true);
 }
 
 void QGVSpectrogram::mousePressEvent(QMouseEvent* event){
@@ -458,7 +458,7 @@ void QGVSpectrogram::mousePressEvent(QMouseEvent* event){
                 // When moving the spectrum's view
                 m_currentAction = CAMoving;
                 setDragMode(QGraphicsView::ScrollHandDrag);
-                cursorUpdate(QPointF(-1,0));
+                setMouseCursorPosition(QPointF(-1,0), false);
             }
             else if(!event->modifiers().testFlag(Qt::ControlModifier) && m_selection.width()>0 && m_selection.height()>0 && abs(selview.left()-event->x())<5 && event->y()>=selview.top() && event->y()<=selview.bottom()) {
                 // Resize left boundary of the selection
@@ -532,13 +532,12 @@ void QGVSpectrogram::mouseMoveEvent(QMouseEvent* event){
 
     QPointF p = mapToScene(event->pos());
 
-    cursorUpdate(p);
+    setMouseCursorPosition(p, true);
 
 //    std::cout << "QGVWaveform::mouseMoveEvent action=" << m_currentAction << " x=" << p.x() << " y=" << p.y() << endl;
 
     if(m_currentAction==CAMoving) {
         // When scrolling the view around the scene
-//        cursorUpdate(QPointF(-1,0));
     }
     else if(m_currentAction==CAZooming) {
         double dx = -(event->pos()-m_pressed_mouseinviewport).x()/100.0;
@@ -554,7 +553,6 @@ void QGVSpectrogram::mouseMoveEvent(QMouseEvent* event){
         viewSet(newrect);
 
         viewUpdateTexts();
-        cursorUpdate(mapToScene(event->pos()));
 
         m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
     }
@@ -801,8 +799,8 @@ void QGVSpectrogram::viewUpdateTexts() {
     txttrans.scale(1.0/trans.m11(), 1.0/trans.m22());
 
     // Cursor
-    m_giCursorPositionXTxt->setTransform(txttrans);
-    m_giCursorPositionYTxt->setTransform(txttrans);
+    m_giMouseCursorTxtTime->setTransform(txttrans);
+    m_giMouseCursorTxtFreq->setTransform(txttrans);
 
     // Selection
     QRectF br = m_giSelectionTxt->boundingRect();
@@ -825,7 +823,7 @@ void QGVSpectrogram::selectionZoomOn(){
 //        if(WMainWindow::getMW()->m_gvSpectrum)
 //            WMainWindow::getMW()->m_gvSpectrum->viewUpdateTexts();
 
-        cursorUpdate(QPointF(-1,0));
+        setMouseCursorPosition(QPointF(-1,0), false);
 //        m_aZoomOnSelection->setEnabled(false);
     }
 }
@@ -840,7 +838,7 @@ void QGVSpectrogram::azoomin(){
     setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
     viewSet();
 
-    cursorUpdate(QPointF(-1,0));
+    setMouseCursorPosition(QPointF(-1,0), false);
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
 }
 void QGVSpectrogram::azoomout(){
@@ -853,55 +851,48 @@ void QGVSpectrogram::azoomout(){
     setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
     viewSet();
 
-    cursorUpdate(QPointF(-1,0));
+    setMouseCursorPosition(QPointF(-1,0), false);
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
 }
 
-void QGVSpectrogram::cursorUpdate(QPointF p) {
-
-    QLineF line;
-    line.setP1(QPointF(p.x(), m_giCursorVert->line().y1()));
-    line.setP2(QPointF(p.x(), m_giCursorVert->line().y2()));
-    m_giCursorVert->setLine(line);
-    line.setP1(QPointF(m_giCursorHoriz->line().x1(), p.y()));
-    line.setP2(QPointF(m_giCursorHoriz->line().x2(), p.y()));
-    m_giCursorHoriz->setLine(line);
-    cursorFixAndRefresh();
-
-    WMainWindow::getMW()->m_gvWaveform->cursorUpdate(p.x());
-}
-
-void QGVSpectrogram::cursorFixAndRefresh() {
-    if(m_giCursorVert->line().x1()==-1){
-        m_giCursorHoriz->hide();
-        m_giCursorVert->hide();
-        m_giCursorPositionXTxt->hide();
-        m_giCursorPositionYTxt->hide();
+void QGVSpectrogram::setMouseCursorPosition(QPointF p, bool forwardsync) {
+    if(p.x()==-1){
+        m_giMouseCursorLineFreq->hide();
+        m_giMouseCursorLineTime->hide();
+        m_giMouseCursorTxtTime->hide();
+        m_giMouseCursorTxtFreq->hide();
     }
     else {
+
+        m_giMouseCursorLineTime->setPos(p.x(), 0.0);
+        m_giMouseCursorLineFreq->setPos(0.0, p.y());
+
         QTransform trans = transform();
         QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
         QTransform txttrans;
         txttrans.scale(1.0/trans.m11(),1.0/trans.m22());
 
-        m_giCursorHoriz->show();
-        m_giCursorHoriz->setLine(viewrect.right()-50/trans.m11(), m_giCursorHoriz->line().y1(), WMainWindow::getMW()->getFs()/2.0, m_giCursorHoriz->line().y1());
-        m_giCursorVert->show();
-        m_giCursorVert->setLine(m_giCursorVert->line().x1(), viewrect.top(), m_giCursorVert->line().x1(), viewrect.top()+18/trans.m22());
-        m_giCursorPositionXTxt->show();
-        m_giCursorPositionYTxt->show();
+        m_giMouseCursorLineTime->setLine(0.0, viewrect.top(), 0.0, viewrect.top()+18/trans.m22());
+        m_giMouseCursorLineTime->show();
+        m_giMouseCursorLineFreq->setLine(viewrect.right()-50/trans.m11(), 0.0, WMainWindow::getMW()->getFs()/2.0, 0.0);
+        m_giMouseCursorLineFreq->show();
 
-        QRectF br = m_giCursorPositionXTxt->boundingRect();
-        qreal x = m_giCursorVert->line().x1()+1/trans.m11();
+        QRectF br = m_giMouseCursorTxtTime->boundingRect();
+        qreal x = p.x()+1/trans.m11();
         x = min(x, viewrect.right()-br.width()/trans.m11());
-        m_giCursorPositionXTxt->setText(QString("%1s").arg(m_giCursorVert->line().x1()));
-        m_giCursorPositionXTxt->setPos(x, viewrect.top());
-        m_giCursorPositionXTxt->setTransform(txttrans);
+        m_giMouseCursorTxtTime->setText(QString("%1s").arg(p.x()));
+        m_giMouseCursorTxtTime->setPos(x, viewrect.top()-3/trans.m22());
+        m_giMouseCursorTxtTime->setTransform(txttrans);
+        m_giMouseCursorTxtTime->show();
 
-        m_giCursorPositionYTxt->setText(QString("%1Hz").arg(0.5*WMainWindow::getMW()->getFs()-m_giCursorHoriz->line().y1()));
-        br = m_giCursorPositionYTxt->boundingRect();
-        m_giCursorPositionYTxt->setPos(viewrect.right()-br.width()/trans.m11(), m_giCursorHoriz->line().y1()-br.height()/trans.m22());
-        m_giCursorPositionYTxt->setTransform(txttrans);
+        m_giMouseCursorTxtFreq->setText(QString("%1Hz").arg(0.5*WMainWindow::getMW()->getFs()-p.y()));
+        br = m_giMouseCursorTxtFreq->boundingRect();
+        m_giMouseCursorTxtFreq->setPos(viewrect.right()-br.width()/trans.m11(), p.y()-br.height()/trans.m22());
+        m_giMouseCursorTxtFreq->setTransform(txttrans);
+        m_giMouseCursorTxtFreq->show();
+
+        if(forwardsync)
+            WMainWindow::getMW()->m_gvWaveform->setMouseCursorPosition(p.x(), false);
     }
 }
 
@@ -962,31 +953,31 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 //    cout << "QGVSpectrogram::~drawBackground" << endl;
 
 
-    // Plot labels
-    QTransform trans = transform();
-    for(size_t fi=0; fi<WMainWindow::getMW()->ftlabels.size(); fi++){
-        if(!WMainWindow::getMW()->ftlabels[fi]->m_actionShow->isChecked())
-            continue;
+//    // Plot labels
+//    QTransform trans = transform();
+//    for(size_t fi=0; fi<WMainWindow::getMW()->ftlabels.size(); fi++){
+//        if(!WMainWindow::getMW()->ftlabels[fi]->m_actionShow->isChecked())
+//            continue;
 
-        QPen outlinePen(WMainWindow::getMW()->ftlabels[fi]->color);
-        outlinePen.setWidth(0);
-        painter->setPen(outlinePen);
-        painter->setBrush(QBrush(WMainWindow::getMW()->ftlabels[fi]->color));
+//        QPen outlinePen(WMainWindow::getMW()->ftlabels[fi]->color);
+//        outlinePen.setWidth(0);
+//        painter->setPen(outlinePen);
+//        painter->setBrush(QBrush(WMainWindow::getMW()->ftlabels[fi]->color));
 
-//        cout << WMainWindow::getMW()->ftlabels[fi]->starts.size() << " " << WMainWindow::getMW()->ftlabels[fi]->ends.size() << endl;
+////        cout << WMainWindow::getMW()->ftlabels[fi]->starts.size() << " " << WMainWindow::getMW()->ftlabels[fi]->ends.size() << endl;
 
-        for(size_t li=0; li<WMainWindow::getMW()->ftlabels[fi]->starts.size(); li++){
-            // TODO plot only labels which can be seen
-            double start = WMainWindow::getMW()->ftlabels[fi]->starts[li];
-            painter->drawLine(QLineF(start, 0.0, start, fs/2.0));
+////        for(size_t li=0; li<WMainWindow::getMW()->ftlabels[fi]->starts.size(); li++){
+////            // TODO plot only labels which can be seen
+////            double start = WMainWindow::getMW()->ftlabels[fi]->starts[li];
+////            painter->drawLine(QLineF(start, 0.0, start, fs/2.0));
 
-            painter->save();
-            painter->translate(QPointF(start+2.0/trans.m11(), viewrect.top()+12/trans.m22()));
-            painter->scale(1.0/trans.m11(), 1.0/trans.m22());
-            painter->drawStaticText(QPointF(0, 0), QStaticText(WMainWindow::getMW()->ftlabels[fi]->labels[li]->text()));
-            painter->restore();
-        }
-    }
+////            painter->save();
+////            painter->translate(QPointF(start+2.0/trans.m11(), viewrect.top()+12/trans.m22()));
+////            painter->scale(1.0/trans.m11(), 1.0/trans.m22());
+////            painter->drawStaticText(QPointF(0, 0), QStaticText(WMainWindow::getMW()->ftlabels[fi]->labels[li]->text()));
+////            painter->restore();
+////        }
+//    }
 }
 
 void QGVSpectrogram::draw_grid(QPainter* painter, const QRectF& rect) {

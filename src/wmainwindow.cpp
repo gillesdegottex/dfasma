@@ -75,11 +75,12 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::WMainWindow)
     , m_dlgSettings(NULL)
+    , m_lastSelectedSound(NULL)
     , m_gvWaveform(NULL)
     , m_gvSpectrum(NULL)
     , m_gvPhaseSpectrum(NULL)
+    , m_gvSpectrogram(NULL)
     , m_audioengine(NULL)
-    , m_lastSelectedSound(NULL)
 {
     ui->setupUi(this);
     ui->lblFileInfo->hide();
@@ -255,8 +256,7 @@ void WMainWindow::viewsDisplayedChanged() {
 void WMainWindow::newFile(){
     QMessageBox::StandardButton btn = QMessageBox::question(this, "Create a new file ...", "Do you want to create a new label file?", QMessageBox::Yes | QMessageBox::No);
     if(btn==QMessageBox::Yes){
-        FileType* ft = new FTLabels("", this);
-        ui->listSndFiles->addItem(ft);
+        ui->listSndFiles->addItem(new FTLabels(this));
     }
 }
 
@@ -612,6 +612,8 @@ void WMainWindow::updateWindowTitle() {
     else        setWindowTitle("DFasma");
 }
 
+// Check if a file has been modified on the disc
+// TODO Check if this is a distant file and avoid checking if it is ?
 void WMainWindow::checkFileModifications(){
 //    cout << "GET FOCUS " << QDateTime::currentMSecsSinceEpoch() << endl;
     for(size_t fi=0; fi<ftsnds.size(); fi++)
