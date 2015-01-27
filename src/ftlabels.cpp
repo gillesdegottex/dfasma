@@ -38,6 +38,7 @@ using namespace Easdif;
 #include <QMessageBox>
 #include <QDir>
 #include <QGraphicsSimpleTextItem>
+#include <QGraphicsObject>
 #include <qmath.h>
 #include <qendian.h>
 
@@ -48,6 +49,7 @@ using namespace Easdif;
 
 void FTLabels::init(){
     m_isedited = false;
+
     m_fileformat = FFNotSpecified;
     m_actionSave = new QAction("Save", this);
     m_actionSave->setStatusTip(tr("Save the labels times (overwrite the file !)"));
@@ -77,6 +79,8 @@ FTLabels::FTLabels(const QString& _fileName, QObject *parent)
     : FileType(FTLABELS, _fileName, this)
 {
     Q_UNUSED(parent);
+
+    cout << "FTLabels::FTLabels " << _fileName.toLocal8Bit().constData() << endl;
 
     if(fileFullPath.isEmpty())
         throw QString("This ctor use an existing file. Don't use this ctor for an empty label object.");
@@ -120,13 +124,9 @@ void FTLabels::load() {
         m_fileformat = FFAutoDetect;
 
     #ifdef SUPPORT_SDIF
-        if(m_fileformat==FFAutoDetect) {
-            SDIFEntity readentity;
-            if (readentity.OpenRead(fileFullPath.toLocal8Bit().constData())){
-                m_fileformat = FFSDIF;
-                readentity.Close();
-            }
-        }
+        if(m_fileformat==FFAutoDetect)
+            if(FileType::SDIF_isSDIF(fileFullPath))
+                    m_fileformat = FFSDIF;
     #endif
 
 //    if(m_fileformat==FFAutoDetect) {
@@ -178,6 +178,8 @@ void FTLabels::load() {
 
             SDIFEntity readentity;
 
+            cout << "SDIF: Now open for reading data: " << fileFullPath.toLocal8Bit().constData() << endl;
+
             try {
                 if (!readentity.OpenRead(fileFullPath.toLocal8Bit().constData()) )
                     throw QString("SDIF: Cannot open file");
@@ -186,6 +188,8 @@ void FTLabels::load() {
                 e.ErrorMessage();
                 throw QString("SDIF: bad header");
             }
+
+            cout << "SDIF: Opened, let's read" << endl;
 
             readentity.ChangeSelection("/1LAB"); // Select directly the character values
 
@@ -277,6 +281,8 @@ void FTLabels::load() {
     m_lastreadtime = QDateTime::currentDateTime();
     m_isedited = false;
     setStatus();
+
+    cout << "FINISHED READING" << endl;
 }
 
 void FTLabels::clear() {
@@ -458,16 +464,53 @@ double FTLabels::getLastSampleTime() const {
 //        return *((ends.end()-1));
 }
 
+void FTLabels::updateTextsGeometry(){
+
+    if(!m_actionShow->isChecked())
+        return;
+
+    QRectF waveform_viewrect = WMainWindow::getMW()->m_gvWaveform->mapToScene(WMainWindow::getMW()->m_gvWaveform->viewport()->rect()).boundingRect();
+    QTransform waveform_trans = WMainWindow::getMW()->m_gvWaveform->transform();
+
+    QRectF spectrogram_viewrect = WMainWindow::getMW()->m_gvSpectrogram->mapToScene(WMainWindow::getMW()->m_gvSpectrogram->viewport()->rect()).boundingRect();
+    QTransform spectrogram_trans = WMainWindow::getMW()->m_gvSpectrogram->transform();
+
+    for(size_t u=0; u<starts.size(); ++u){
+
+        QTransform mat1;
+        mat1.translate(2.0/waveform_trans.m11(), waveform_viewrect.top()+10/waveform_trans.m22());
+        mat1.scale(1.0/waveform_trans.m11(), 1.0/waveform_trans.m22());
+        waveform_labels[u]->setTransform(mat1);
+
+        QTransform mat2;
+        mat2.translate(2.0/spectrogram_trans.m11(), spectrogram_viewrect.top()+10/spectrogram_trans.m22());
+        mat2.scale(1.0/spectrogram_trans.m11(), 1.0/spectrogram_trans.m22());
+        spectrogram_labels[u]->setTransform(mat2);
+    }
+}
+
 void FTLabels::addLabel(double position, const QString& text){
 
     QPen pen(color);
-    pen.setWidth(0);   
+    pen.setWidth(0);
+    QBrush brush(color);
+    QPen whitepen(Qt::white);
+    whitepen.setWidth(1);
 
     starts.push_back(position);
+
     waveform_labels.push_back(new QGraphicsSimpleTextItem(text));
-//    WMainWindow::getMW()->m_gvWaveform->m_scene->addItem(waveform_labels.back()); // TODO
+    waveform_labels.back()->setPos(position, 0);
+    waveform_labels.back()->setBrush(brush);
+    waveform_labels.back()->setPen(whitepen);
+    WMainWindow::getMW()->m_gvWaveform->m_scene->addItem(waveform_labels.back());
+
     spectrogram_labels.push_back(new QGraphicsSimpleTextItem(text));
-//    WMainWindow::getMW()->m_gvSpectrogram->m_scene->addItem(spectrogram_labels.back()); // TODO
+    spectrogram_labels.back()->setPos(position, 0);
+    spectrogram_labels.back()->setBrush(brush);
+    spectrogram_labels.back()->setPen(whitepen);
+    WMainWindow::getMW()->m_gvSpectrogram->m_scene->addItem(spectrogram_labels.back());
+    // TODO set Brush and pen for the outline!
 
     waveform_lines.push_back(new QGraphicsLineItem(0, -1, 0, 1));
     waveform_lines.back()->setPos(position, 0);
@@ -486,7 +529,9 @@ void FTLabels::addLabel(double position, const QString& text){
 void FTLabels::moveLabel(int index, double position){
     starts[index] = position;
     waveform_lines[index]->setPos(position, 0);
+    waveform_labels[index]->setPos(position, 0);
     spectrogram_lines[index]->setPos(position, 0);
+    spectrogram_labels[index]->setPos(position, 0);
 
     m_isedited = true;
     setStatus();
@@ -500,16 +545,18 @@ void FTLabels::changeText(int index, const QString& text){
     setStatus();
 }
 
-void FTLabels::setShown(bool shown){
-    FileType::setShown(shown);
+void FTLabels::setVisible(bool shown){
+    FileType::setVisible(shown);
 
-    // TODO groupitem ?
     for(size_t u=0; u<starts.size(); ++u){
         waveform_labels[u]->setVisible(shown);
         spectrogram_labels[u]->setVisible(shown);
         waveform_lines[u]->setVisible(shown);
         spectrogram_lines[u]->setVisible(shown);
     }
+
+    if(shown)
+        updateTextsGeometry();
 }
 
 void FTLabels::removeLabel(int index){
@@ -592,4 +639,7 @@ void FTLabels::sort(){
 
 FTLabels::~FTLabels() {
     clear();
+
+//    delete m_waveform_labels_all;
+//    delete m_spectrogram_labels_all;
 }

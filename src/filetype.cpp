@@ -184,7 +184,7 @@ FileType* FileType::duplicate(){
     return NULL;
 }
 
-void FileType::setShown(bool shown) {
+void FileType::setVisible(bool shown) {
     m_actionShow->setChecked(shown);
     if(shown) {
         setForeground(QBrush(QColor(0,0,0)));
@@ -271,6 +271,20 @@ bool CheckList(Easdif::SDIFEntity *p, EASDList::iterator&it) {
 }
 
 
+bool FileType::SDIF_isSDIF(const QString& filename) {
+    try{
+        SDIFEntity readentity;
+        if (readentity.OpenRead(filename.toLocal8Bit().constData())){
+            readentity.Close();
+            return true;
+        }
+    }
+    catch(SDIFBadHeader& e) {
+    }
+
+    return false;
+}
+
 bool FileType::SDIF_hasFrame(const QString& filename, const QString& framesignature) {
 
     // get a free slot in sdif file pointer list
@@ -296,114 +310,11 @@ bool FileType::SDIF_hasFrame(const QString& filename, const QString& framesignat
 
     // open the file
     if(!it->first->OpenRead(filename.toLocal8Bit().constData()))
-        throw QString("Cannot open file: ")+filename;
+        return false;
 
     // enable frame dir to be able to work with selections
     it->first->EnableFrameDir();
     it->second = it->first->begin();
-
-
-/*    // NVTs (Complementary information provided in the header)
-    {
-        int numNVTs =  p->GetNbNVT();
-
-        int sumNVTEntries = 0;
-        for(int ii=0;ii!=numNVTs;++ii){
-          sumNVTEntries += p->GetNVT(ii).size();
-        }
-
-        int offvalue = std::max(0,sumNVTEntries + numNVTs - 1);
-        int inval=0;
-        for(int invt=0; invt != numNVTs ; ++invt){
-            Easdif::SDIFNameValueTable &currNvt = p->GetNVT(invt);
-            std::map<std::string,std::string>::const_iterator it = currNvt.begin();
-            std::map<std::string,std::string>::const_iterator ite = currNvt.end();
-            while(it != ite){
-                cout << (*it).first.c_str() << ":" << (*it).second.c_str() << endl;
-                ++it;
-                ++inval;
-            }
-        }
-    }*/
-
-/*  //      IDS (e.g. streams information)
-  {
-    int numstreamid;
-    SdifStringT *string;
-    char idnumasstring[30];
-    SdifFileT *input = p->GetFile();
-
-    string = SdifStringNew();
-
-    if((numstreamid=SdifStreamIDTableGetNbData(input->StreamIDsTable)) > 0){
-      unsigned int iID;
-      SdifHashNT* pID;
-      SdifStreamIDT *sd;
-
-      for(iID=0; iID<input->StreamIDsTable->SIDHT->HashSize; iID++)
-        for (pID = input->StreamIDsTable->SIDHT->Table[iID]; pID; pID = pID->Next) {
-          SdifStringAppend(string,"IDS ");
-          sd = ((SdifStreamIDT * )(pID->Data));
-          sprintf(idnumasstring,"%d ",sd->NumID);
-          SdifStringAppend(string,idnumasstring);
-          SdifStringAppend(string,sd->Source);
-          SdifStringAppend(string,":");
-          SdifStringAppend(string,sd->TreeWay);
-          SdifStringAppend(string,"\n");
-        }
-    }
-
-    if (string->SizeW)
-        cout << "IDS: " << string->str << endl;
-
-    SdifStringFree(string);
-  }*/
-
-    /*//TYP (non-standard type definitions)
-    {
-        // matrix types
-        {
-          std::vector<Easdif::MatrixType> matrixtypes;
-          p->GetTypes(matrixtypes);
-
-          for(unsigned int ii=0;ii!=matrixtypes.size();++ii){
-            Easdif::MatrixType &mat = matrixtypes[ii];
-
-            char* sigstr = SdifSignatureToString(mat.GetSignature());
-            cout << "Matrix: " << sigstr << endl;
-
-            for(unsigned int ic=0;ic!=mat.mvColumnNames.size();++ic){
-                cout << "Matrix: " << mat.mvColumnNames[ic].c_str() << endl;
-            }
-          }
-        }
-
-        // frame types
-        {
-
-          std::vector<Easdif::FrameType> frametypes;
-          p->GetTypes(frametypes);
-
-          for(unsigned int ii=0;ii!=frametypes.size();++ii){
-            Easdif::FrameType &frm = frametypes[ii];
-
-            char* sigstr = SdifSignatureToString(frm.GetSignature());
-            cout << "Frame: " << sigstr << endl;
-
-    //        int off   = frm.mvMatrixNames.size();
-    //        pd= reinterpret_cast<double*>( mxGetData(ftypmsig));
-    //        for(unsigned int im=0;im!=frm.mvMatrixTypes.size();++im){
-    //          sigstr = SdifSignatureToString(frm.mvMatrixTypes[im].GetSignature());
-    //          *pd         = sigstr[0];
-    //          *(pd+off)   = sigstr[1];
-    //          *(pd+2*off) = sigstr[2];
-    //          *(pd+3*off) = sigstr[3];
-    //          ++pd;
-    //          mxSetCell(ftypmnam,im,mxCreateString(frm.mvMatrixNames[im].c_str()));
-    //        }
-          }
-        }
-    }*/
 
     bool found = false;
 

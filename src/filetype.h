@@ -51,11 +51,12 @@ public:
     ~FileType();
 
     #ifdef SUPPORT_SDIF
+    static bool SDIF_isSDIF(const QString& filename);
     static bool SDIF_hasFrame(const QString& filename, const QString& framesignature);
     #endif
 
     virtual QString info() const;
-    virtual void setShown(bool shown);
+    virtual void setVisible(bool shown);
     virtual bool isModified() {return false;}
     void setColor(const QColor& _color);
     virtual double getLastSampleTime() const =0;

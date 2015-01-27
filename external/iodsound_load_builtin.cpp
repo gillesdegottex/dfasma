@@ -30,7 +30,7 @@ QString FTSound::getAudioFileReadingDescription(){
 int FTSound::getNumberOfChannels(const QString &filePath){
     WavFile* pfile = new WavFile(NULL);
     if(!pfile->open(filePath))
-        throw QString("built-in WAV file reader: Cannot open the file.");
+        return 0;
 
     int nchan = pfile->fileFormat().channelCount();
 

@@ -44,7 +44,7 @@ int FTSound::getNumberOfChannels(const QString& filePath){
     in = sf_open(filePath.toLocal8Bit().constData(), SFM_READ, &sfinfo);
 
     if(in==NULL)
-        throw QString("libsndfile: Cannot open input file");
+        return 0;
 
     sf_close(in);
 

@@ -523,11 +523,12 @@ void WMainWindow::addFile(const QString& filepath) {
         FileType* ft = NULL;
 
         QFileInfo fileinfo(filepath);
+
         if(fileinfo.suffix().compare("sdif", Qt::CaseInsensitive)==0) {
             #ifdef SUPPORT_SDIF
-            // The following check doesnt work for some files which can be loaded
-            //if(!SdifCheckFileFormat(filepath.toLocal8Bit()))
-            //    throw QString("This file looks like an SDIF file, but it does not contain SDIF data.");
+            // SdifCheckFileFormat doesnt work for some files which can be loaded
+            if(!FileType::SDIF_isSDIF(filepath.toLocal8Bit()))
+                throw QString("This file looks like an SDIF file, but it does not contain SDIF data.");
 
             if(FileType::SDIF_hasFrame(filepath, "1FQ0"))
                 ft = new FTFZero(filepath, this);
@@ -541,12 +542,12 @@ void WMainWindow::addFile(const QString& filepath) {
 
             ui->listSndFiles->addItem(ft);
         }
-        else { // Assume it is an audio file
 
+        if(ft==NULL){
             int nchan = FTSound::getNumberOfChannels(filepath);
 
             if(nchan==0)
-                throw QString("There is not even a single channel in this file.");
+                throw QString("cannot find any audio channel in this file.");
             else if(nchan==1){
                 ft = new FTSound(filepath, this);
                 ui->listSndFiles->addItem(ft);
@@ -602,7 +603,6 @@ void WMainWindow::addFile(const QString& filepath) {
     {
         QMessageBox::warning(this, "Failed to load file ...", "Data from the following file can't be loaded:\n"+filepath+"'\n\nReason:\n"+err);
 
-        return;
     }
 }
 
@@ -747,7 +747,7 @@ void WMainWindow::fileInfoUpdate() {
 void WMainWindow::toggleSoundShown() {
     QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
     for(int i=0; i<list.size(); i++)
-        ((FileType*)list.at(i))->setShown(((FileType*)list.at(i))->m_actionShow->isChecked());
+        ((FileType*)list.at(i))->setVisible(((FileType*)list.at(i))->m_actionShow->isChecked());
 
     if(list.size()>0)
         soundsChanged();

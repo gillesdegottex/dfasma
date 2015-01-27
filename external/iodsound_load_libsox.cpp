@@ -48,7 +48,7 @@ int FTSound::getNumberOfChannels(const QString& filePath){
     in = sox_open_read(filePath.toLocal8Bit().constData(), NULL, NULL, NULL);
 
     if(in==NULL)
-        throw QString("libsox: Cannot open input file");
+        return 0;
 
     int nbchannels = in->signal.channels;
 

@@ -273,9 +273,9 @@ void QGVWaveform::viewSet(QRectF viewrect, bool sync) {
             viewrect.setRight(m_scene->sceneRect().right());
 
         fitInView(removeHiddenMargin(this, viewrect));
-//        fitInView(viewrect);
 
         playCursorUpdate();
+        updateTextsGeometry();
 
         if(sync){
             if(WMainWindow::getMW()->m_gvSpectrogram && WMainWindow::getMW()->ui->actionShowSpectrogram->isChecked()) {
@@ -686,8 +686,10 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
     }
     else if(m_currentAction==CALabelModifPosition) {
         FTLabels* ftlabel = WMainWindow::getMW()->getCurrentFTLabels();
-        if(ftlabel)
+        if(ftlabel) {
             ftlabel->moveLabel(m_ca_pressed_index, p.x());
+            updateTextsGeometry();
+        }
     }
     else{
         QRect selview = mapFromScene(m_selection).boundingRect();
@@ -868,8 +870,6 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
 
                 ftlabel->removeLabel(m_ca_pressed_index);
                 m_currentAction = CANothing;
-                m_scene->update();
-                WMainWindow::getMW()->m_gvSpectrogram->m_scene->update();
             }
         }
     }
@@ -878,15 +878,15 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
             FTLabels* ftlabel = WMainWindow::getMW()->getCurrentFTLabels(false);
             if(ftlabel){
                 if(event->text().size()>0){
-                    if(m_currentAction==CALabelWritting && m_ftlabel_current_index!=-1)
+                    if(m_currentAction==CALabelWritting && m_ftlabel_current_index!=-1){
                         ftlabel->changeText(m_ftlabel_current_index, ftlabel->waveform_labels[m_ftlabel_current_index]->text()+event->text());
+                    }
                     else{
                         m_currentAction = CALabelWritting;
                         ftlabel->addLabel(m_giMouseCursorLine->pos().x(), event->text());
                         m_ftlabel_current_index = ftlabel->getNbLabels()-1;
                     }
-                    m_scene->update();
-                    WMainWindow::getMW()->m_gvSpectrogram->m_scene->update();
+                    updateTextsGeometry(); // TODO Could be avoided maybe
                 }
             }
         }
@@ -1026,6 +1026,13 @@ void QGVWaveform::selectionZoomOn(){
 
         setMouseCursorPosition(-1, false);
     }
+}
+
+void QGVWaveform::updateTextsGeometry(){
+
+    // Tell the labels to update their texts
+    for(size_t fi=0; fi<WMainWindow::getMW()->ftlabels.size(); fi++)
+            WMainWindow::getMW()->ftlabels[fi]->updateTextsGeometry();
 }
 
 //class QTimeTracker2 : public QTime {
@@ -1217,32 +1224,6 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
             }
         }
     }
-
-//    // Plot labels
-////    QTransform trans = transform();
-//    for(size_t fi=0; fi<WMainWindow::getMW()->ftlabels.size(); fi++){
-//        if(!WMainWindow::getMW()->ftlabels[fi]->m_actionShow->isChecked())
-//            continue;
-
-//        QPen outlinePen(WMainWindow::getMW()->ftlabels[fi]->color);
-//        outlinePen.setWidth(0);
-//        painter->setPen(outlinePen);
-//        painter->setBrush(QBrush(WMainWindow::getMW()->ftlabels[fi]->color));
-
-////        cout << WMainWindow::getMW()->ftlabels[fi]->starts.size() << " " << WMainWindow::getMW()->ftlabels[fi]->ends.size() << endl;
-
-////        for(int li=0; li<WMainWindow::getMW()->ftlabels[fi]->getNbLabels(); li++){
-//            // TODO plot only labels which can be seen
-////            double start = WMainWindow::getMW()->ftlabels[fi]->starts[li];
-////            painter->drawLine(QLineF(start, -1.0, start, 1.0));
-
-////            painter->save();
-////            painter->translate(QPointF(start+2.0/trans.m11(), viewrect.top()+10/trans.m22()));
-////            painter->scale(1.0/trans.m11(), 1.0/trans.m22());
-////            painter->drawStaticText(QPointF(0, 0), QStaticText(WMainWindow::getMW()->ftlabels[fi]->labels[li]->text()));
-////            painter->restore();
-////        }
-//    }
 }
 
 void QGVWaveform::draw_grid(QPainter* painter, const QRectF& rect){

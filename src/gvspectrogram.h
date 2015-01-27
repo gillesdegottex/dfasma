@@ -88,7 +88,6 @@ public:
     void keyPressEvent(QKeyEvent* event);
 
     void viewSet(QRectF viewrect=QRectF(), bool sync=true);
-    void viewUpdateTexts();
     void drawBackground(QPainter* painter, const QRectF& rect);
     void draw_grid(QPainter* painter, const QRectF& rect);
 
@@ -109,6 +108,7 @@ public slots:
 
     void updateAmplitudeExtent();
     void updateSceneRect(); // To call when fs has changed and limits in dB
+    void updateTextsGeometry();
     void updateDFTSettings();
     void computeSTFT();
     void updateSTFTPlot();

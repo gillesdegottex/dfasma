@@ -65,7 +65,8 @@ public:
     virtual double getLastSampleTime() const;
     virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
     virtual bool isModified() {return m_isedited;}
-    virtual void setShown(bool shown);
+    virtual void setVisible(bool shown);
+    void updateTextsGeometry();
 
     int getNbLabels() const {return starts.size();}
     void moveLabel(int index, double position);

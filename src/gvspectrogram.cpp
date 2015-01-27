@@ -400,7 +400,7 @@ void QGVSpectrogram::resizeEvent(QResizeEvent* event){
         viewSet(mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect(), false);
     }
 
-    viewUpdateTexts();
+    updateTextsGeometry();
     setMouseCursorPosition(QPointF(-1,0), false);
 //    cout << "QGVSpectrogram::~resizeEvent" << endl;
 }
@@ -420,7 +420,7 @@ void QGVSpectrogram::scrollContentsBy(int dx, int dy) {
     r = QRectF(viewrect.left(), viewrect.top()+viewrect.height()-14/trans.m22(), viewrect.width(), 14/trans.m22());
     m_scene->invalidate(r);
 
-    viewUpdateTexts();
+    updateTextsGeometry();
     setMouseCursorPosition(QPointF(-1,0), false);
 
     QGraphicsView::scrollContentsBy(dx, dy);
@@ -552,7 +552,7 @@ void QGVSpectrogram::mouseMoveEvent(QMouseEvent* event){
         newrect.setBottom(m_selection_pressedp.y()+(m_pressed_viewrect.bottom()-m_selection_pressedp.y())*exp(dy));
         viewSet(newrect);
 
-        viewUpdateTexts();
+        updateTextsGeometry();
 
         m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
     }
@@ -785,7 +785,7 @@ void QGVSpectrogram::selectionFixAndRefresh() {
 
     m_giSelectionTxt->setText(QString("%1s,%2Hz").arg(m_selection.width()).arg(m_selection.height()));
 //    m_giSelectionTxt->show();
-    viewUpdateTexts();
+    updateTextsGeometry();
 
     selectionSetTextInForm();
 
@@ -793,7 +793,7 @@ void QGVSpectrogram::selectionFixAndRefresh() {
     m_aSelectionClear->setEnabled(m_selection.width()>0 || m_selection.height());
 }
 
-void QGVSpectrogram::viewUpdateTexts() {
+void QGVSpectrogram::updateTextsGeometry() {
     QTransform trans = transform();
     QTransform txttrans;
     txttrans.scale(1.0/trans.m11(), 1.0/trans.m22());
@@ -806,6 +806,16 @@ void QGVSpectrogram::viewUpdateTexts() {
     QRectF br = m_giSelectionTxt->boundingRect();
     m_giSelectionTxt->setTransform(txttrans);
     m_giSelectionTxt->setPos(m_selection.center()-QPointF(0.5*br.width()/trans.m11(), 0.5*br.height()/trans.m22()));
+
+
+    // Labels
+    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+    for(size_t fi=0; fi<WMainWindow::getMW()->ftlabels.size(); fi++){
+        if(!WMainWindow::getMW()->ftlabels[fi]->m_actionShow->isChecked())
+            continue;
+
+        WMainWindow::getMW()->ftlabels[fi]->updateTextsGeometry();
+    }
 }
 
 void QGVSpectrogram::selectionZoomOn(){
@@ -817,7 +827,7 @@ void QGVSpectrogram::selectionZoomOn(){
         zoomonrect.setRight(zoomonrect.right()+0.1*zoomonrect.width());
         viewSet(zoomonrect);
 
-        viewUpdateTexts();
+        updateTextsGeometry();
 //        if(WMainWindow::getMW()->m_gvPhaseSpectrum)
 //            WMainWindow::getMW()->m_gvPhaseSpectrum->viewUpdateTexts();
 //        if(WMainWindow::getMW()->m_gvSpectrum)
