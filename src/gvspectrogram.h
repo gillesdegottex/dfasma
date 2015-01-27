@@ -46,6 +46,8 @@ class QGVSpectrogram : public QGraphicsView
     QPen m_gridFontPen;
     QFont m_gridFont;
 
+    QGraphicsPathItem* m_giPlayCursor;
+
 public:
     explicit QGVSpectrogram(WMainWindow* parent);
 
@@ -105,6 +107,7 @@ signals:
 public slots:
     void settingsSave();
     void soundsChanged();
+    void playCursorSet(double t, bool forwardsync);
 
     void updateAmplitudeExtent();
     void updateSceneRect(); // To call when fs has changed and limits in dB

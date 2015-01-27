@@ -157,7 +157,7 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     path.lineTo(QPointF(1, -1.0));
     path.lineTo(QPointF(1, 1.0));
     m_giPlayCursor->setPath(path);
-    playCursorSet(0.0);
+    playCursorSet(0.0, false);
     m_scene->addItem(m_giPlayCursor);
 
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -274,7 +274,6 @@ void QGVWaveform::viewSet(QRectF viewrect, bool sync) {
 
         fitInView(removeHiddenMargin(this, viewrect));
 
-        playCursorUpdate();
         updateTextsGeometry();
 
         if(sync){
@@ -861,7 +860,7 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
 
     if(event->key()==Qt::Key_Escape) {
         selectionClear();
-        playCursorSet(0.0);
+        playCursorSet(0.0, true);
     }
     else if(event->key()==Qt::Key_Delete) {
         if(m_currentAction==CALabelModifPosition) {
@@ -961,7 +960,7 @@ void QGVWaveform::selectionClipAndSet(QRectF selection, bool winforceupdate){
 
     m_giSelection->show();
 
-    playCursorSet(m_selection.left()); // Put the play cursor
+    playCursorSet(m_selection.left(), true); // Put the play cursor
 
     if(m_selection.width()>0){
         m_aZoomOnSelection->setEnabled(true);
@@ -1029,6 +1028,9 @@ void QGVWaveform::selectionZoomOn(){
 }
 
 void QGVWaveform::updateTextsGeometry(){
+    QTransform trans = transform();
+    QTransform cursortrans = QTransform::fromScale(1.0/trans.m11(), 1.0);
+    m_giPlayCursor->setTransform(cursortrans);
 
     // Tell the labels to update their texts
     for(size_t fi=0; fi<WMainWindow::getMW()->ftlabels.size(); fi++)
@@ -1323,22 +1325,17 @@ void QGVWaveform::draw_grid(QPainter* painter, const QRectF& rect){
     }
 }
 
-void QGVWaveform::playCursorUpdate() {
-    QTransform trans = transform();
-    QTransform cursortrans = QTransform::fromScale(1.0/trans.m11(), 1.0);
-    m_giPlayCursor->setTransform(cursortrans);
-}
-
-void QGVWaveform::playCursorSet(double t){
+void QGVWaveform::playCursorSet(double t, bool forwardsync){
     if(t==-1){
         if(m_selection.width()>0)
-            playCursorSet(m_selection.left());
+            playCursorSet(m_selection.left(), forwardsync);
         else
             m_giPlayCursor->setPos(QPointF(m_initialPlayPosition, 0));
     }
     else{
         m_giPlayCursor->setPos(QPointF(t, 0));
-        m_giPlayCursor->show();
-        playCursorUpdate();
     }
+
+    if(WMainWindow::getMW()->m_gvSpectrogram && forwardsync)
+        WMainWindow::getMW()->m_gvSpectrogram->playCursorSet(t, false);
 }

@@ -105,6 +105,21 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_giMouseCursorTxtFreq->hide();
     m_scene->addItem(m_giMouseCursorTxtFreq);
 
+    // Play Cursor
+    m_giPlayCursor = new QGraphicsPathItem();
+    QPen playCursorPen(QColor(255, 0, 0));
+    playCursorPen.setWidth(0);
+    m_giPlayCursor->setPen(playCursorPen);
+    m_giPlayCursor->setBrush(QBrush(QColor(255, 0, 0)));
+    QPainterPath path;
+    path.moveTo(QPointF(0, 1000000.0));
+    path.lineTo(QPointF(0, 0.0));
+    path.lineTo(QPointF(1, 0.0));
+    path.lineTo(QPointF(1, 1000000.0));
+    m_giPlayCursor->setPath(path);
+    playCursorSet(0.0, false);
+    m_scene->addItem(m_giPlayCursor);
+
     // Selection
     m_currentAction = CANothing;
     m_giShownSelection = new QGraphicsRectItem();
@@ -684,8 +699,10 @@ void QGVSpectrogram::keyPressEvent(QKeyEvent* event){
 
 //    cout << "QGVSpectrogram::keyPressEvent " << endl;
 
-    if(event->key()==Qt::Key_Escape)
+    if(event->key()==Qt::Key_Escape){
         selectionClear();
+        playCursorSet(0.0, true);
+    }
 
     QGraphicsView::keyPressEvent(event);
 }
@@ -784,10 +801,11 @@ void QGVSpectrogram::selectionFixAndRefresh() {
     m_giShownSelection->show();
 
     m_giSelectionTxt->setText(QString("%1s,%2Hz").arg(m_selection.width()).arg(m_selection.height()));
-//    m_giSelectionTxt->show();
     updateTextsGeometry();
 
     selectionSetTextInForm();
+
+    playCursorSet(m_selection.left(), true); // Put the play cursor
 
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 || m_selection.height());
     m_aSelectionClear->setEnabled(m_selection.width()>0 || m_selection.height());
@@ -798,18 +816,19 @@ void QGVSpectrogram::updateTextsGeometry() {
     QTransform txttrans;
     txttrans.scale(1.0/trans.m11(), 1.0/trans.m22());
 
-    // Cursor
+    // Mouse Cursor
     m_giMouseCursorTxtTime->setTransform(txttrans);
     m_giMouseCursorTxtFreq->setTransform(txttrans);
+
+    // Play cursor
+    m_giPlayCursor->setTransform(QTransform::fromScale(1.0/trans.m11(), 1.0));
 
     // Selection
     QRectF br = m_giSelectionTxt->boundingRect();
     m_giSelectionTxt->setTransform(txttrans);
     m_giSelectionTxt->setPos(m_selection.center()-QPointF(0.5*br.width()/trans.m11(), 0.5*br.height()/trans.m22()));
 
-
     // Labels
-    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
     for(size_t fi=0; fi<WMainWindow::getMW()->ftlabels.size(); fi++){
         if(!WMainWindow::getMW()->ftlabels[fi]->m_actionShow->isChecked())
             continue;
@@ -901,9 +920,24 @@ void QGVSpectrogram::setMouseCursorPosition(QPointF p, bool forwardsync) {
         m_giMouseCursorTxtFreq->setTransform(txttrans);
         m_giMouseCursorTxtFreq->show();
 
-        if(forwardsync)
+        if(WMainWindow::getMW()->m_gvWaveform && forwardsync)
             WMainWindow::getMW()->m_gvWaveform->setMouseCursorPosition(p.x(), false);
     }
+}
+
+void QGVSpectrogram::playCursorSet(double t, bool forwardsync){
+    if(t==-1){
+        if(m_selection.width()>0)
+            playCursorSet(m_selection.left(), forwardsync);
+        else
+            m_giPlayCursor->setPos(QPointF(WMainWindow::getMW()->m_gvWaveform->m_initialPlayPosition, 0));
+    }
+    else{
+        m_giPlayCursor->setPos(QPointF(t, 0));
+    }
+
+    if(WMainWindow::getMW()->m_gvWaveform && forwardsync)
+        WMainWindow::getMW()->m_gvWaveform->playCursorSet(t, false);
 }
 
 void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){

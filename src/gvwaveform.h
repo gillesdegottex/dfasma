@@ -119,8 +119,7 @@ public slots:
 
     void setMouseCursorPosition(double position, bool forwardsync);
 
-    void playCursorUpdate();
-    void playCursorSet(double t);
+    void playCursorSet(double t, bool forwardsync=true);
 
 };
 
