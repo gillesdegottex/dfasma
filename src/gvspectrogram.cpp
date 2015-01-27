@@ -68,9 +68,9 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_aShowProperties->setStatusTip(tr("Open the properties configuration panel of the Spectrogram view"));
     m_aShowProperties->setIcon(QIcon(":/icons/settings.svg"));
 
-    m_gridFontPen.setColor(QColor(128,128,128));
+    m_gridFontPen.setColor(QColor(0,0,0));
     m_gridFontPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-    m_gridFont.setPointSize(6);
+    m_gridFont.setPointSize(8);
     m_gridFont.setFamily("Helvetica");
 
     m_aShowGrid = new QAction(tr("Show &grid"), this);
@@ -910,11 +910,14 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 
 //    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVSpectrogram::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
-    double fs = WMainWindow::getMW()->getFs();
+//    double fs = WMainWindow::getMW()->getFs();
 
     // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
 
-    // Draw the f0 grids
+    // Draw the f0 curve
+        // TODO
+    // Draw the harmonic grid curve
+        // TODO
 //    if(!WMainWindow::getMW()->ftfzeros.empty()) {
 
 //        for(size_t fi=0; fi<WMainWindow::getMW()->ftfzeros.size(); fi++){
@@ -956,44 +959,16 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
     }
 
     // Draw the grid above the spectrogram
-    // TODO
-//    if(m_aShowGrid->isChecked())
-//        draw_grid(painter, rect);
+    if(m_aShowGrid->isChecked())
+        draw_grid(painter, rect);
 
 //    cout << "QGVSpectrogram::~drawBackground" << endl;
 
-
-//    // Plot labels
-//    QTransform trans = transform();
-//    for(size_t fi=0; fi<WMainWindow::getMW()->ftlabels.size(); fi++){
-//        if(!WMainWindow::getMW()->ftlabels[fi]->m_actionShow->isChecked())
-//            continue;
-
-//        QPen outlinePen(WMainWindow::getMW()->ftlabels[fi]->color);
-//        outlinePen.setWidth(0);
-//        painter->setPen(outlinePen);
-//        painter->setBrush(QBrush(WMainWindow::getMW()->ftlabels[fi]->color));
-
-////        cout << WMainWindow::getMW()->ftlabels[fi]->starts.size() << " " << WMainWindow::getMW()->ftlabels[fi]->ends.size() << endl;
-
-////        for(size_t li=0; li<WMainWindow::getMW()->ftlabels[fi]->starts.size(); li++){
-////            // TODO plot only labels which can be seen
-////            double start = WMainWindow::getMW()->ftlabels[fi]->starts[li];
-////            painter->drawLine(QLineF(start, 0.0, start, fs/2.0));
-
-////            painter->save();
-////            painter->translate(QPointF(start+2.0/trans.m11(), viewrect.top()+12/trans.m22()));
-////            painter->scale(1.0/trans.m11(), 1.0/trans.m22());
-////            painter->drawStaticText(QPointF(0, 0), QStaticText(WMainWindow::getMW()->ftlabels[fi]->labels[li]->text()));
-////            painter->restore();
-////        }
-//    }
 }
 
 void QGVSpectrogram::draw_grid(QPainter* painter, const QRectF& rect) {
     // Prepare the pens and fonts
-    // TODO put this in the constructor to limit the allocations in this function
-    QPen gridPen(QColor(192,192,192)); //192
+    QPen gridPen(QColor(0,0,0));
     gridPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
     painter->setFont(m_gridFont);
 
@@ -1012,13 +987,12 @@ void QGVSpectrogram::draw_grid(QPainter* painter, const QRectF& rect) {
         lstep /= 2;
         m++;
     }
+    // cout << "lstep=" << lstep << endl;
 
     // Draw the horizontal lines
     int mn=0;
     painter->setPen(gridPen);
-    for(double l=int(viewrect.top()/lstep)*lstep; l<=rect.bottom(); l+=lstep){
-//        if(mn%m==0) painter->setPen(gridPen);
-//        else        painter->setPen(thinGridPen);
+    for(double l=WMainWindow::getMW()->getFs()/2.0-int((WMainWindow::getMW()->getFs()/2.0-rect.bottom())/lstep)*lstep; l>=rect.top(); l-=lstep){
         painter->drawLine(QLineF(rect.left(), l, rect.right(), l));
         mn++;
     }
@@ -1026,12 +1000,12 @@ void QGVSpectrogram::draw_grid(QPainter* painter, const QRectF& rect) {
     // Write the ordinates of the horizontal lines
     painter->setPen(m_gridFontPen);
     QTransform trans = transform();
-    for(double l=int(viewrect.top()/lstep)*lstep; l<=rect.bottom(); l+=lstep){
+    for(double l=WMainWindow::getMW()->getFs()/2.0-int((WMainWindow::getMW()->getFs()/2.0-rect.bottom())/lstep)*lstep; l>=rect.top(); l-=lstep){
         painter->save();
         painter->translate(QPointF(viewrect.left(), l));
         painter->scale(1.0/trans.m11(), 1.0/trans.m22());
 
-        QString txt = QString("%1dB").arg(-l);
+        QString txt = QString("%1Hz").arg(WMainWindow::getMW()->getFs()/2.0-l);
         QRectF txtrect = painter->boundingRect(QRectF(), Qt::AlignLeft, txt);
         if(l<viewrect.bottom()-0.75*txtrect.height()/trans.m22())
             painter->drawStaticText(QPointF(0, -0.9*txtrect.height()), QStaticText(txt));
@@ -1056,16 +1030,14 @@ void QGVSpectrogram::draw_grid(QPainter* painter, const QRectF& rect) {
     // Draw the vertical lines
     mn = 0;
     painter->setPen(gridPen);
-    for(double l=int(viewrect.left()/lstep)*lstep; l<=rect.right(); l+=lstep){
-//        if(mn%m==0) painter->setPen(gridPen);
-//        else        painter->setPen(thinGridPen);
+    for(double l=int(rect.left()/lstep)*lstep; l<=rect.right(); l+=lstep){
         painter->drawLine(QLineF(l, rect.top(), l, rect.bottom()));
         mn++;
     }
 
     // Write the absissa of the vertical lines
     painter->setPen(m_gridFontPen);
-    for(double l=int(viewrect.left()/lstep)*lstep; l<=rect.right(); l+=lstep){
+    for(double l=int(rect.left()/lstep)*lstep; l<=rect.right(); l+=lstep){
         painter->save();
         painter->translate(QPointF(l, viewrect.bottom()-14/trans.m22()));
         painter->scale(1.0/trans.m11(), 1.0/trans.m22());

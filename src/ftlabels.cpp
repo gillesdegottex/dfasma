@@ -80,8 +80,6 @@ FTLabels::FTLabels(const QString& _fileName, QObject *parent)
 {
     Q_UNUSED(parent);
 
-    cout << "FTLabels::FTLabels " << _fileName.toLocal8Bit().constData() << endl;
-
     if(fileFullPath.isEmpty())
         throw QString("This ctor use an existing file. Don't use this ctor for an empty label object.");
 
@@ -178,8 +176,6 @@ void FTLabels::load() {
 
             SDIFEntity readentity;
 
-            cout << "SDIF: Now open for reading data: " << fileFullPath.toLocal8Bit().constData() << endl;
-
             try {
                 if (!readentity.OpenRead(fileFullPath.toLocal8Bit().constData()) )
                     throw QString("SDIF: Cannot open file");
@@ -188,8 +184,6 @@ void FTLabels::load() {
                 e.ErrorMessage();
                 throw QString("SDIF: bad header");
             }
-
-            cout << "SDIF: Opened, let's read" << endl;
 
             readentity.ChangeSelection("/1LAB"); // Select directly the character values
 
@@ -281,8 +275,6 @@ void FTLabels::load() {
     m_lastreadtime = QDateTime::currentDateTime();
     m_isedited = false;
     setStatus();
-
-    cout << "FINISHED READING" << endl;
 }
 
 void FTLabels::clear() {

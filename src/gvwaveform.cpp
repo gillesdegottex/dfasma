@@ -1305,7 +1305,7 @@ void QGVWaveform::draw_grid(QPainter* painter, const QRectF& rect){
     // Draw the vertical lines
     mn = 0;
     painter->setPen(m_gridPen);
-    for(double l=int(viewrect.left()/lstep)*lstep; l<=rect.right(); l+=lstep){
+    for(double l=int(rect.left()/lstep)*lstep; l<=rect.right(); l+=lstep){
 //        if(mn%m==0) painter->setPen(gridPen);
 //        else        painter->setPen(thinGridPen);
         painter->drawLine(QLineF(l, rect.top(), l, rect.bottom()));
@@ -1314,7 +1314,7 @@ void QGVWaveform::draw_grid(QPainter* painter, const QRectF& rect){
 
     // Write the absissa of the vertical lines
     painter->setPen(m_gridFontPen);
-    for(double l=int(viewrect.left()/lstep)*lstep; l<=rect.right(); l+=lstep){
+    for(double l=int(rect.left()/lstep)*lstep; l<=rect.right(); l+=lstep){
         painter->save();
         painter->translate(QPointF(l, viewrect.bottom()-14/trans.m22()));
         painter->scale(1.0/trans.m11(), 1.0/trans.m22());
