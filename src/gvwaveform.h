@@ -108,6 +108,7 @@ public slots:
     void soundsChanged();
     void updateSceneRect();
     void updateTextsGeometry();
+    void updateSelectionText();
     void sldAmplitudeChanged(int value);
     void fitViewToSoundsAmplitude();
     void azoomin();

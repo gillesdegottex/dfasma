@@ -247,6 +247,9 @@ void WMainWindow::changeToolBarSizes(int size) {
 void WMainWindow::viewsDisplayedChanged() {
     ui->wSpectra->setVisible(ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked());
 
+    WMainWindow::getMW()->m_gvWaveform->m_aShowWindow->setChecked(WMainWindow::getMW()->m_gvWaveform->m_aShowWindow->isChecked() && (ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked()));
+    WMainWindow::getMW()->m_gvWaveform->m_aShowWindow->setEnabled(ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked());
+
     if(ui->actionShowPhaseSpectrum->isChecked())
         m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     else

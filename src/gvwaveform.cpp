@@ -130,12 +130,13 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_giWindow->setPen(pen);
     m_giWindow->setOpacity(0.25);
     m_scene->addItem(m_giWindow);
-    m_aShowWindow = new QAction(tr("Show window"), this);
-    m_aShowWindow->setStatusTip(tr("Show window"));
+    m_aShowWindow = new QAction(tr("Show DFT's window"), this);
+    m_aShowWindow->setStatusTip(tr("Show DFT's window"));
     m_aShowWindow->setCheckable(true);
     m_aShowWindow->setIcon(QIcon(":/icons/window.svg"));
     m_aShowWindow->setChecked(settings.value("qgvwaveform/m_aShowWindow", true).toBool());
     connect(m_aShowWindow, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
+    connect(m_aShowWindow, SIGNAL(toggled(bool)), this, SLOT(updateSelectionText()));
     m_contextmenu.addAction(m_aShowWindow);
 
     m_aShowSTFTWindowCenters = new QAction(tr("Show STFT's window centers"), this);
@@ -955,9 +956,6 @@ void QGVWaveform::selectionClipAndSet(QRectF selection, bool winforceupdate){
     // Set the visible selection encompassing the actual selection
     m_giSelection->setRect(m_selection.left()-0.5/fs, -1, m_selection.width()+1.0/fs, 2);
 
-    // WMainWindow::getMW()->ui->lblSelectionTxt->setText(QString("[%1").arg(m_selection.left()).append(",%1] ").arg(m_selection.right()).append("%1 s").arg(m_selection.width())); // start, end and duration
-    WMainWindow::getMW()->ui->lblSelectionTxt->setText(QString("%1s selection ").arg(m_selection.width(), 0,'f',4).append(" at %1s").arg(m_selection.center().x(), 0,'f',4)); // duration and center
-
     m_giSelection->show();
 
     playCursorSet(m_selection.left(), true); // Put the play cursor
@@ -1000,14 +998,26 @@ void QGVWaveform::selectionClipAndSet(QRectF selection, bool winforceupdate){
         }
 
         // Add the vertical line
-        qreal x = ((WMainWindow::getMW()->m_gvSpectrum->m_win.size()-1)/2.0)/fs;
-        path.moveTo(QPointF(x, 2.0));
-        path.lineTo(QPointF(x, -1.0));
+        qreal winrelcenter = ((WMainWindow::getMW()->m_gvSpectrum->m_win.size()-1)/2.0)/fs;
+        path.moveTo(QPointF(winrelcenter, 2.0));
+        path.lineTo(QPointF(winrelcenter, -1.0));
 
         m_giWindow->setPath(path);
     }
+
+    updateSelectionText();
+
     m_giWindow->setPos(QPointF(m_selection.left(), 0));
     m_giWindow->show();
+}
+
+void QGVWaveform::updateSelectionText(){
+    // WMainWindow::getMW()->ui->lblSelectionTxt->setText(QString("[%1").arg(m_selection.left()).append(",%1] ").arg(m_selection.right()).append("%1 s").arg(m_selection.width())); // start, end and duration
+
+    if(WMainWindow::getMW()->m_gvWaveform->m_aShowWindow->isChecked() && WMainWindow::getMW()->m_gvSpectrum->m_win.size()>0)
+        WMainWindow::getMW()->ui->lblSelectionTxt->setText(QString("%1s window centered at %2").arg(m_selection.width(), 0,'f',4).arg(m_selection.left()+((WMainWindow::getMW()->m_gvSpectrum->m_win.size()-1)/2.0)/WMainWindow::getMW()->getFs(), 0,'f',5)); // duration and center
+    else
+        WMainWindow::getMW()->ui->lblSelectionTxt->setText(QString("%1s selection ").arg(m_selection.width(), 0,'f',5).append(" starting at %1s").arg(m_selection.left(), 0,'f',4)); // duration and start
 }
 
 void QGVWaveform::selectionZoomOn(){
