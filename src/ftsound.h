@@ -137,6 +137,7 @@ public slots:
     void resetFiltering();
     void resetAmpScale();
     void resetDelay();
+    void setVisible(bool shown);
 };
 
 #endif // FTSOUND_H

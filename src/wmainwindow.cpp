@@ -789,6 +789,7 @@ void WMainWindow::resetDelay(){
 }
 
 void WMainWindow::soundsChanged(){
+//    cout << "WMainWindow::soundsChanged" << endl;
     m_gvWaveform->soundsChanged();
     m_gvSpectrum->soundsChanged();
     // m_gvSpectrogram->soundsChanged(); // Too heavy to be here

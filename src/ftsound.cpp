@@ -52,6 +52,9 @@ WAVTYPE FTSound::s_play_power = 0;
 std::deque<WAVTYPE> FTSound::s_play_power_values;
 
 void FTSound::init(){
+
+    connect(m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setVisible(bool)));
+
     m_channelid = 0;
     m_isclipped = false;
     m_isfiltered = false;
@@ -134,6 +137,13 @@ void FTSound::load_finalize() {
     m_lastreadtime = QDateTime::currentDateTime();
     setStatus();
 }
+
+void FTSound::setVisible(bool shown){
+    WMainWindow::getMW()->m_gvWaveform->soundsChanged();
+    WMainWindow::getMW()->m_gvSpectrum->soundsChanged();
+    WMainWindow::getMW()->m_gvSpectrogram->updateSTFTPlot();
+}
+
 
 void FTSound::reload() {
 //    cout << "FTSound::reload" << endl;

@@ -65,7 +65,6 @@ public:
     virtual double getLastSampleTime() const;
     virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
     virtual bool isModified() {return m_isedited;}
-    virtual void setVisible(bool shown);
     void updateTextsGeometry();
 
     int getNbLabels() const {return starts.size();}
@@ -81,6 +80,7 @@ public slots:
     void clear();
     void removeLabel(int index);
     void addLabel(double position, const QString& text);
+    void setVisible(bool shown);
 };
 
 #endif // FTLABELS_H

@@ -50,6 +50,8 @@ using namespace Easdif;
 void FTLabels::init(){
     m_isedited = false;
 
+    connect(m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setVisible(bool)));
+
     m_fileformat = FFNotSpecified;
     m_actionSave = new QAction("Save", this);
     m_actionSave->setStatusTip(tr("Save the labels times (overwrite the file !)"));
@@ -538,7 +540,11 @@ void FTLabels::changeText(int index, const QString& text){
 }
 
 void FTLabels::setVisible(bool shown){
+//    cout << "FTLabels::setVisible" << endl;
     FileType::setVisible(shown);
+
+    if(shown)
+        updateTextsGeometry();
 
     for(size_t u=0; u<starts.size(); ++u){
         waveform_labels[u]->setVisible(shown);
@@ -546,9 +552,6 @@ void FTLabels::setVisible(bool shown){
         waveform_lines[u]->setVisible(shown);
         spectrogram_lines[u]->setVisible(shown);
     }
-
-    if(shown)
-        updateTextsGeometry();
 }
 
 void FTLabels::removeLabel(int index){
