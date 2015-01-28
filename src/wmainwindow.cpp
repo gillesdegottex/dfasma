@@ -231,6 +231,9 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 
     for(int f=0; f<sndfiles.size(); f++)
         addFile(sndfiles[f]);
+
+    if(sndfiles.size()>0)
+        m_gvSpectrogram->soundsChanged();
 }
 
 void WMainWindow::changeToolBarSizes(int size) {
@@ -529,18 +532,18 @@ void WMainWindow::addFile(const QString& filepath) {
 
         if(fileinfo.suffix().compare("sdif", Qt::CaseInsensitive)==0) {
             #ifdef SUPPORT_SDIF
-            // SdifCheckFileFormat doesnt work for some files which can be loaded
-            if(!FileType::SDIF_isSDIF(filepath.toLocal8Bit()))
-                throw QString("This file looks like an SDIF file, but it does not contain SDIF data.");
+                // SdifCheckFileFormat doesnt work for some files which can be loaded
+                if(!FileType::SDIF_isSDIF(filepath.toLocal8Bit()))
+                    throw QString("This file looks like an SDIF file, but it does not contain SDIF data.");
 
-            if(FileType::SDIF_hasFrame(filepath, "1FQ0"))
-                ft = new FTFZero(filepath, this);
-            else if (FileType::SDIF_hasFrame(filepath, "1MRK"))
-                ft = new FTLabels(filepath, this);
-            else
-                throw QString("Unsupported SDIF data.");
+                if(FileType::SDIF_hasFrame(filepath, "1FQ0"))
+                    ft = new FTFZero(filepath, this);
+                else if (FileType::SDIF_hasFrame(filepath, "1MRK"))
+                    ft = new FTLabels(filepath, this);
+                else
+                    throw QString("Unsupported SDIF data.");
             #else
-            throw QString("Support of SDIF files not compiled in this version.");
+                throw QString("Support of SDIF files not compiled in this version.");
             #endif
 
             ui->listSndFiles->addItem(ft);
@@ -727,11 +730,13 @@ void WMainWindow::fileSelectionChanged() {
         connect(ui->actionMultiReload, SIGNAL(triggered()), this, SLOT(fileInfoUpdate()));
     }
 
+    // FileType is not an qobject, thus, need to forward the message manually (i.e. without signal system).
     connect(ui->actionMultiShow, SIGNAL(triggered()), this, SLOT(toggleSoundShown()));
     connect(ui->actionMultiReload, SIGNAL(triggered()), this, SLOT(soundsChanged()));
 
     fileInfoUpdate();
 
+    // Update the spectrogram to current selected signal
     if(selectionhassnd)
         m_gvSpectrogram->updateSTFTPlot();
 }
@@ -747,13 +752,15 @@ void WMainWindow::fileInfoUpdate() {
     else
         ui->lblFileInfo->hide();
 }
+
+// FileType is not an qobject, thus, need to forward the message manually (i.e. without signal system).
 void WMainWindow::toggleSoundShown() {
     QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
-    for(int i=0; i<list.size(); i++)
+    for(int i=0; i<list.size(); i++){
         ((FileType*)list.at(i))->setVisible(((FileType*)list.at(i))->m_actionShow->isChecked());
-
-    if(list.size()>0)
-        soundsChanged();
+        if(((FileType*)list.at(i))==m_lastSelectedSound)
+            m_gvSpectrogram->updateSTFTPlot();
+    }
 }
 void WMainWindow::colorSelected(const QColor& color) {
     FileType* currenItem = (FileType*)(ui->listSndFiles->currentItem());
@@ -784,7 +791,7 @@ void WMainWindow::resetDelay(){
 void WMainWindow::soundsChanged(){
     m_gvWaveform->soundsChanged();
     m_gvSpectrum->soundsChanged();
-    m_gvSpectrogram->soundsChanged();
+    // m_gvSpectrogram->soundsChanged(); // Too heavy to be here
 }
 
 void WMainWindow::closeSelectedFile() {

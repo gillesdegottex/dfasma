@@ -103,7 +103,7 @@ FileType::FileType(FILETYPE _type, const QString& _fileName, QObject * parent)
     m_actionShow->setStatusTip("Show the sound in the views");
     m_actionShow->setCheckable(true);
     m_actionShow->setChecked(true);
-    WMainWindow::getMW()->connect(m_actionShow, SIGNAL(toggled(bool)), WMainWindow::getMW(), SLOT(toggleSoundShown()));
+    WMainWindow::getMW()->connect(m_actionShow, SIGNAL(toggled(bool)), WMainWindow::getMW(), SLOT(soundsChanged()));
 
     m_actionReload = new QAction("Reload", parent);
     m_actionReload->setStatusTip("Reload data from the file");
