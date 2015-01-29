@@ -794,7 +794,10 @@ void QGVWaveform::mouseDoubleClickEvent(QMouseEvent* event){
         if(event->modifiers().testFlag(Qt::ShiftModifier)){
         }
         else if(event->modifiers().testFlag(Qt::ControlModifier)){
-            selectSegment(p.x(), (m_selection.size().width()>0));
+            if(m_selection.left()<=p.x() && p.x()<=m_selection.right())
+                selectRemoveSegment(p.x());
+            else
+                selectSegment(p.x(), (m_selection.size().width()>0));
         }
         else{
             selectSegment(p.x(), false);
@@ -805,55 +808,77 @@ void QGVWaveform::mouseDoubleClickEvent(QMouseEvent* event){
 
 }
 
-void QGVWaveform::selectSegment(double x, bool add){
-    // Check if a marker is close and show the horiz split cursor if true
-    FTLabels* ftl = WMainWindow::getMW()->getCurrentFTLabels(true);
-    if(ftl) {
-        if(ftl->starts.size()>0){
-            if(!add){
-                if(x<ftl->starts[0]){
-                    selectionClipAndSet(QRectF(0.0, -1.0, ftl->starts[0], 2.0), true);
-                }
-                else if(x>ftl->starts.back()){
-                    selectionClipAndSet(QRectF(ftl->starts.back(), -1.0, WMainWindow::getMW()->getMaxLastSampleTime()-ftl->starts.back(), 2.0), true);
-                }
-                else{
-                    int index = -1;
-                    for(int lli=0; lli<ftl->getNbLabels(); lli++)
-                        if(x>ftl->starts[lli])
-                            index = lli;
-                    selectionClipAndSet(QRectF(ftl->starts[index], -1.0, ftl->starts[index+1]-ftl->starts[index], 2.0), true);
-                }
-            }
-            else{
-                if(x<m_selection.left()){
-                    if(x<ftl->starts[0]){
-                        selectionClipAndSet(QRectF(0.0, -1.0, m_selection.right(), 2.0), true);
-                    }
-                    else{
-                        int index = -1;
-                        for(int lli=0; lli<ftl->getNbLabels(); lli++)
-                            if(x>ftl->starts[lli])
-                                index = lli;
-                        selectionClipAndSet(QRectF(ftl->starts[index], -1.0, m_selection.right()-ftl->starts[index], 2.0), true);
-                    }
-                }
-                else if(x>m_selection.right()){
-                    if(x>ftl->starts.back()){
-                        selectionClipAndSet(QRectF(m_selection.left(), -1.0, WMainWindow::getMW()->getMaxLastSampleTime()-m_selection.left(), 2.0), true);
-                    }
-                    else{
-                        int index = -1;
-                        for(int lli=0; lli<ftl->getNbLabels(); lli++)
-                            if(x>ftl->starts[lli])
-                                index = lli;
-                        selectionClipAndSet(QRectF(m_selection.left(), -1.0, ftl->starts[index+1]-m_selection.left(), 2.0), true);
-                    }
-                }
-            }
+void QGVWaveform::selectSegmentFindStartEnd(double x, FTLabels* ftl, double& start, double& end){
+    start = -1;
+    end = -1;
+    if(ftl && ftl->getNbLabels()>0) {
+        if(x<ftl->starts[0]){
+            start = 0.0;
+            end = ftl->starts[0];
+        }
+        else if(x>ftl->starts.back()){
+            start = ftl->starts.back();
+            end = WMainWindow::getMW()->getMaxLastSampleTime();
+        }
+        else{
+            int index = -1;
+            for(int lli=0; lli<ftl->getNbLabels(); lli++) // TODO Simplify and Speed up
+                if(x>ftl->starts[lli])
+                    index = lli;
+            start = ftl->starts[index];
+            end = ftl->starts[index+1];
         }
     }
 }
+
+void QGVWaveform::selectSegment(double x, bool add){
+    // Check if a marker is close and show the horiz split cursor if true
+    FTLabels* ftl = WMainWindow::getMW()->getCurrentFTLabels(true);
+    if(ftl && ftl->getNbLabels()>0) {
+        if(ftl->starts.size()>0){
+            double start, end;
+            selectSegmentFindStartEnd(x, ftl, start, end);
+            if(add){
+                start = std::min(m_selection.left(), start);
+                end = std::max(m_selection.right(), end);
+            }
+            selectionClipAndSet(QRectF(start, -1.0, end-start, 2.0), true);
+        }
+    }
+}
+
+void QGVWaveform::selectRemoveSegment(double x){
+    FTLabels* ftl = WMainWindow::getMW()->getCurrentFTLabels(true);
+    if(ftl && ftl->getNbLabels()>0) {
+        if(m_selection.width()>0 && m_selection.left()<=x && x<=m_selection.right()){
+            double start, end;
+            selectSegmentFindStartEnd(x, ftl, start, end);
+            double playstart = start;
+
+            if(x<m_selection.center().x()){ // if double-clicked on the left of the center, remove on the left
+                start = std::max(end, m_selection.left());
+                end = m_selection.right();
+
+                if(end-start==0)
+                    selectionClear();
+                else
+                    selectionClipAndSet(QRectF(start, -1.0, end-start, 2.0), true);
+            }
+            else{
+                end = std::min(start, m_selection.right());
+                start = m_selection.left();
+
+                if(end-start==0)
+                    selectionClear();
+                else
+                    selectionClipAndSet(QRectF(start, -1.0, end-start, 2.0), true);
+            }
+
+            playCursorSet(playstart, true);
+        }
+    }
+}
+
 
 void QGVWaveform::keyPressEvent(QKeyEvent* event){
 

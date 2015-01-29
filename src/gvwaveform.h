@@ -28,6 +28,7 @@ file provided in the source code of DFasma. Another copy can be found at
 
 class WMainWindow;
 class QToolBar;
+class FTLabels;
 
 class QGVWaveform : public QGraphicsView
 {
@@ -97,7 +98,9 @@ public:
     void draw_grid(QPainter* painter, const QRectF& rect);
     void draw_waveform(QPainter* painter, const QRectF& rect);
 
+    void selectSegmentFindStartEnd(double x, FTLabels* ftl, double& start, double& end);
     void selectSegment(double x, bool add);
+    void selectRemoveSegment(double x);
 
     void viewSet(QRectF viewrect, bool sync=true);
 
