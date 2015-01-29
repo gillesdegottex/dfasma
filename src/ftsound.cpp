@@ -139,6 +139,7 @@ void FTSound::load_finalize() {
 }
 
 void FTSound::setVisible(bool shown){
+    FileType::setVisible(shown);
     WMainWindow::getMW()->m_gvWaveform->soundsChanged();
     WMainWindow::getMW()->m_gvSpectrum->soundsChanged();
     WMainWindow::getMW()->m_gvSpectrogram->updateSTFTPlot();
