@@ -60,13 +60,52 @@ public:
 
     STFTComputeThread* m_stftcomputethread;
     std::vector<FFTTYPE> m_win;
-    QImage m_imgSTFT;
 
     QGraphicsLineItem* m_giMouseCursorLineTime;
     QGraphicsLineItem* m_giMouseCursorLineFreq;
     QGraphicsSimpleTextItem* m_giMouseCursorTxtTime;
     QGraphicsSimpleTextItem* m_giMouseCursorTxtFreq;
     void setMouseCursorPosition(QPointF p, bool forwardsync);
+
+    QImage m_imgSTFT;
+    class ImageParameters{
+    public:
+        STFTComputeThread::Parameters stftparams;
+        int amplitudeMin;
+        int amplitudeMax;
+
+        void clear(){
+            stftparams.clear();
+            amplitudeMin = -1;
+            amplitudeMax = -1;
+        }
+
+        ImageParameters(){
+            clear();
+        }
+        ImageParameters(STFTComputeThread::Parameters reqSTFTparams, int reqamplitudeMin, int reqamplitudeMax){
+            clear();
+            stftparams = reqSTFTparams;
+            amplitudeMin = reqamplitudeMin;
+            amplitudeMax = reqamplitudeMax;
+        }
+
+        bool operator==(const ImageParameters& param){
+            if(stftparams!=param.stftparams)
+                return false;
+            if(amplitudeMin!=param.amplitudeMin)
+                return false;
+            if(amplitudeMax!=param.amplitudeMax)
+                return false;
+
+            return true;
+        }
+        bool operator!=(const ImageParameters& param){
+            return !((*this)==param);
+        }
+
+        inline bool isEmpty(){return stftparams.isEmpty() || amplitudeMin==-1 || amplitudeMax==-1;}
+    } m_imgSTFTParams;
 
     QPointF m_selection_pressedp;
     QPointF m_pressed_mouseinviewport;
@@ -103,7 +142,7 @@ public:
     QAction* m_aShowProperties;
 
 signals:
-    
+
 public slots:
     void settingsSave();
     void soundsChanged();
@@ -113,8 +152,9 @@ public slots:
     void updateSceneRect(); // To call when fs has changed and limits in dB
     void updateTextsGeometry();
     void updateDFTSettings();
-    void computeSTFT();
+//    bool computeSTFT(bool force=false);
     void updateSTFTPlot();
+    void clearSTFTPlot();
     void stftComputing();
 
     void selectionZoomOn();

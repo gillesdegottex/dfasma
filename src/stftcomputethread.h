@@ -40,6 +40,13 @@ public:
         Parameters(){
             clear();
         }
+        Parameters(FTSound* reqnd, const std::vector<FFTTYPE>& reqwin, int reqstepsize, int reqdftlen){
+            clear();
+            snd = reqnd;
+            win = reqwin;
+            stepsize = reqstepsize;
+            dftlen = reqdftlen;
+        }
 
         bool operator==(const Parameters& param){
             if(snd!=param.snd)

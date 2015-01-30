@@ -801,6 +801,8 @@ void WMainWindow::closeSelectedFile() {
 
     QList<QListWidgetItem*> l = ui->listSndFiles->selectedItems();
 
+    bool removeSelectedSound = false;
+
     for(int i=0; i<l.size(); i++){
 
         FileType* ft = (FileType*)l.at(i);
@@ -811,17 +813,22 @@ void WMainWindow::closeSelectedFile() {
 
         // Remove it from its own type-related list
         if(ft->type==FileType::FTSOUND){
-            if(ft==m_lastSelectedSound)
+            if(ft==m_lastSelectedSound){
+                removeSelectedSound = true;
                 m_lastSelectedSound = NULL;
+            }
             ftsnds.erase(std::find(ftsnds.begin(), ftsnds.end(), (FTSound*)ft));
         }
         else if(ft->type==FileType::FTFZERO)
             ftfzeros.erase(std::find(ftfzeros.begin(), ftfzeros.end(), (FTFZero*)ft));
         else if(ft->type==FileType::FTLABELS)
             ftlabels.erase(std::find(ftlabels.begin(), ftlabels.end(), (FTLabels*)ft));
-
-        updateWindowTitle();
     }
+
+    updateWindowTitle();
+
+    if(removeSelectedSound)
+        m_gvSpectrogram->clearSTFTPlot();
 
     // If there is no more files, put the interface in a waiting-for-file state.
     if(ui->listSndFiles->count()==0)

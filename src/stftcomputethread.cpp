@@ -22,11 +22,7 @@ void STFTComputeThread::compute(FTSound* snd, const std::vector<FFTTYPE>& win, i
 
 //    std::cout << "STFTComputeThread::compute winlen=" << winlen << " stepsize=" << stepsize << " dftlen=" << dftlen << std::endl;
 
-    Parameters reqparams;
-    reqparams.snd = snd;
-    reqparams.win = win;
-    reqparams.stepsize = stepsize;
-    reqparams.dftlen = dftlen;
+    Parameters reqparams(snd, win, stepsize, dftlen);
 
     if(m_mutex_computing.tryLock()){
         // Currently not computing, but it will be very soon ...
@@ -56,6 +52,8 @@ void STFTComputeThread::run() {
     do{
 //        std::cout << "STFTComputeThread::run resizing" << std::endl;
 
+        m_params_current.snd->m_stftparams = m_params_current; // Since there is no cancel buttn, fromnow on, soon or later it will correpond.
+
         m_fft->resize(m_params_current.dftlen);
 
         std::vector<WAVTYPE>* wav = m_params_current.snd->wavtoplay;
@@ -64,7 +62,6 @@ void STFTComputeThread::run() {
 
         m_params_current.snd->m_stft.clear();
         m_params_current.snd->m_stftts.clear();
-        m_params_current.snd->m_stftparams = m_params_current;
 
     //        m_imgSTFT = QImage(m_nbsteps, m_dftlen/2+1, QImage::Format_RGB32);
 

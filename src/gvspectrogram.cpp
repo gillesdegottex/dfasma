@@ -64,6 +64,8 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setValue(-settings.value("qgvspectrogram/sldSpectrogramAmplitudeMin", -250).toInt());
     WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->setValue(settings.value("qgvspectrogram/sldSpectrogramAmplitudeMax", 0).toInt());
 
+    m_imgSTFT.fill(Qt::white);
+
     m_aShowProperties = new QAction(tr("&Properties"), this);
     m_aShowProperties->setStatusTip(tr("Open the properties configuration panel of the Spectrogram view"));
     m_aShowProperties->setIcon(QIcon(":/icons/settings.svg"));
@@ -206,10 +208,34 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     updateDFTSettings(); // Prepare a window from loaded settings
 }
 
-void QGVSpectrogram::stftComputing(){
-//    cout << "QGVSpectrogram::stftComputing" << endl;
-    WMainWindow::getMW()->ui->pgbSpectrogramSTFTCompute->show();
-    WMainWindow::getMW()->ui->lblSpectrogramInfoTxt->setText(QString("Computing"));
+void QGVSpectrogram::updateAmplitudeExtent(){
+//    cout << "QGVSpectrogram::updateAmplitudeExtent" << endl;
+
+    // If the current is NOT opaque:
+    if(WMainWindow::getMW()->ftsnds.size()>0){
+        double mindb = 500;
+        double maxdb = -500;
+        for(unsigned int si=0; si<WMainWindow::getMW()->ftsnds.size(); si++){
+//            cout << "m_stft_min=" << WMainWindow::getMW()->ftsnds[si]->m_stft_min << " m_stft_max=" << WMainWindow::getMW()->ftsnds[si]->m_stft_max << endl;
+
+            if(WMainWindow::getMW()->ftsnds[si]->m_stft.size()>0){
+                mindb = std::min(mindb, WMainWindow::getMW()->ftsnds[si]->m_stft_min);
+                maxdb = std::max(maxdb, WMainWindow::getMW()->ftsnds[si]->m_stft_max);
+            }
+        }
+
+//        cout << "mindb=" << mindb << " maxdb=" << maxdb << endl;
+
+        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->setMaximum(maxdb);
+        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->setMinimum(mindb+1);
+        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMinimum(-(maxdb-1));
+        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMaximum(-(mindb));
+    }
+
+    WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->setMinimum(-WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value()+1);
+    WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMinimum(-(WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->value()-1));
+
+//    cout << "QGVSpectrogram::~updateAmplitudeExtent" << endl;
 }
 
 void QGVSpectrogram::updateDFTSettings(){
@@ -253,64 +279,59 @@ void QGVSpectrogram::updateDFTSettings(){
     for(int n=0; n<winlen; n++)
         m_win[n] /= winsum;
 
-    computeSTFT();
+    updateSTFTPlot();
 
 //    cout << "QGVSpectrogram::~updateDFTSettings" << endl;
 }
 
-void QGVSpectrogram::computeSTFT(){
-//    cout << "QGVSpectrogram::computeSTFT" << endl;
+//bool QGVSpectrogram::computeSTFT(bool force){
+////    cout << "QGVSpectrogram::computeSTFT" << endl;
 
-    FTSound* csnd = WMainWindow::getMW()->getCurrentFTSound(true);
-    if(csnd && WMainWindow::getMW()->ui->actionShowSpectrogram->isChecked()) { // Do not run the STFT if the Spectrogram view is not shown
-        int stepsize = std::floor(0.5+WMainWindow::getMW()->getFs()*m_dlgSettings->ui->sbStepSize->value());
-        int dftlen = pow(2, std::ceil(log2(float(m_win.size())))+m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());
+//    FTSound* csnd = WMainWindow::getMW()->getCurrentFTSound(true);
+//    if(csnd && WMainWindow::getMW()->ui->actionShowSpectrogram->isChecked()) { // Do not run the STFT if the Spectrogram view is not shown
 
-//        cout << "QGVSpectrogram::computeSTFT compute on current sound stepsize=" << stepsize << " dftlen=" << dftlen << endl;
+////        cout << "QGVSpectrogram::computeSTFT compute on current sound stepsize=" << stepsize << " dftlen=" << dftlen << endl;
 
-        m_stftcomputethread->compute(csnd, m_win, stepsize, dftlen);
-    }
+//        // Compute only if the STFT parameters changed
+//        if(force || csnd->m_stftparams != Parameters reqparams(snd, win, stepsize, dftlen)){
+//            m_stftcomputethread->compute(csnd, m_win, stepsize, dftlen);
+//            return false;
+//        }
+//    }
 
-//    cout << "QGVSpectrogram::~computeSTFT" << endl;
+//    return true;
+
+////    cout << "QGVSpectrogram::~computeSTFT" << endl;
+//}
+void QGVSpectrogram::stftComputing(){
+//    cout << "QGVSpectrogram::stftComputing" << endl;
+    WMainWindow::getMW()->ui->pgbSpectrogramSTFTCompute->show();
+    WMainWindow::getMW()->ui->lblSpectrogramInfoTxt->setText(QString("Computing"));
 }
-void QGVSpectrogram::updateAmplitudeExtent(){
-//    cout << "QGVSpectrogram::updateAmplitudeExtent" << endl;
 
-    // If the current is NOT opaque:
-    if(WMainWindow::getMW()->ftsnds.size()>0){
-        double mindb = 500;
-        double maxdb = -500;
-        for(unsigned int si=0; si<WMainWindow::getMW()->ftsnds.size(); si++){
-//            cout << "m_stft_min=" << WMainWindow::getMW()->ftsnds[si]->m_stft_min << " m_stft_max=" << WMainWindow::getMW()->ftsnds[si]->m_stft_max << endl;
-
-            if(WMainWindow::getMW()->ftsnds[si]->m_stft.size()>0){
-                mindb = std::min(mindb, WMainWindow::getMW()->ftsnds[si]->m_stft_min);
-                maxdb = std::max(maxdb, WMainWindow::getMW()->ftsnds[si]->m_stft_max);
-            }
-        }
-
-//        cout << "mindb=" << mindb << " maxdb=" << maxdb << endl;
-
-        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->setMaximum(maxdb);
-        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->setMinimum(mindb+1);
-        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMinimum(-(maxdb-1));
-        WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMaximum(-(mindb));
-    }
-
-    WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->setMinimum(-WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value()+1);
-    WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->setMinimum(-(WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->value()-1));
-
-//    cout << "QGVSpectrogram::~updateAmplitudeExtent" << endl;
+template<typename streamtype>
+streamtype& operator<<(streamtype& stream, const QGVSpectrogram::ImageParameters& imgparams){
+    stream << imgparams.stftparams.snd << " win.size=" << imgparams.stftparams.win.size() << " stepsize=" << imgparams.stftparams.stepsize << " dftlen=" << imgparams.stftparams.dftlen << " amp=[" << imgparams.amplitudeMin << ", " << imgparams.amplitudeMax << "]";
 }
+
+void QGVSpectrogram::clearSTFTPlot(){
+    m_imgSTFT.fill(Qt::white);
+    m_scene->update();
+}
+
 void QGVSpectrogram::updateSTFTPlot(){
 //    cout << "QGVSpectrogram::updateSTFTPlot" << endl;
     // Fix limits between min and max sliders
     FTSound* csnd = WMainWindow::getMW()->getCurrentFTSound(true);
-    if(csnd) {
+    if(csnd && WMainWindow::getMW()->ui->actionShowSpectrogram->isChecked()) {
 //        cout << "QGVSpectrogram::updateSTFTPlot " << csnd->fileFullPath.toLatin1().constData() << endl;
 
-        if(csnd->m_stft.size()==0)
-            computeSTFT();
+        int stepsize = std::floor(0.5+WMainWindow::getMW()->getFs()*m_dlgSettings->ui->sbStepSize->value());
+        int dftlen = pow(2, std::ceil(log2(float(m_win.size())))+m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());
+
+        if(csnd->m_stftparams != STFTComputeThread::Parameters(csnd, m_win, stepsize, dftlen)){
+            m_stftcomputethread->compute(csnd, m_win, stepsize, dftlen);
+        }
         else{
             // Be sure to wait for stftComputed (updateSTFTPlot can be called by other means)
             if(m_stftcomputethread->m_mutex_computing.tryLock()){
@@ -319,23 +340,33 @@ void QGVSpectrogram::updateSTFTPlot(){
 
                 int dftlen = (csnd->m_stft[0].size()-1)*2;
 
-                // Update the image from the sound's STFT
-//                cout << "QGVSpectrogram::updateSTFTPlot updating m_imgSTFT ..." << endl;
-                m_imgSTFT = QImage(csnd->m_stft.size(), dftlen/2+1, QImage::Format_RGB32);
+                ImageParameters reqImgParams(csnd->m_stftparams, WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value(), WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->value());
 
-                m_imgSTFT.fill(QColor(0,0,255));
+//                cout << "QGVSpectrogram::updateSTFTPlot need to update the image ?" << endl;
+//                cout << "curr=" << m_imgSTFTParams << endl;
+//                cout << "req=" << reqImgParams << endl;
 
-                for(size_t si=0; si<csnd->m_stft.size(); si++){
-                    for(int n=0; n<dftlen/2+1; n++) {
-                        double y = csnd->m_stft[si][n];
+                if(m_imgSTFTParams!=reqImgParams){
+//                    cout << "QGVSpectrogram::updateSTFTPlot update image" << endl;
 
-                        int color = 255;
-                        if(!std::isinf(y))
-                            color = 256-(256*(y+WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value())/(WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->value()+WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value()));
+                    m_imgSTFTParams = reqImgParams;
 
-                        if(color<0) color = 0;
-                        else if(color>255) color = 255;
-                        m_imgSTFT.setPixel(QPoint(si,dftlen/2-n), QColor(color, color, color).rgb());
+                    // Update the image from the sound's STFT
+    //                cout << "QGVSpectrogram::updateSTFTPlot updating m_imgSTFT ..." << endl;
+                    m_imgSTFT = QImage(csnd->m_stft.size(), csnd->m_stft[0].size(), QImage::Format_RGB32);
+
+                    for(size_t si=0; si<csnd->m_stft.size(); si++){
+                        for(int n=0; n<int(csnd->m_stft[si].size()); n++) {
+                            double y = csnd->m_stft[si][n];
+
+                            int color = 255;
+                            if(!std::isinf(y))
+                                color = 256-(256*(y+WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value())/(WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMax->value()+WMainWindow::getMW()->ui->sldSpectrogramAmplitudeMin->value()));
+
+                            if(color<0) color = 0;
+                            else if(color>255) color = 255;
+                            m_imgSTFT.setPixel(QPoint(si,dftlen/2-n), QColor(color, color, color).rgb());
+                        }
                     }
                 }
 
@@ -356,7 +387,7 @@ void QGVSpectrogram::updateSceneRect() {
 void QGVSpectrogram::soundsChanged(){
 //    cout << "QGVSpectrogram::soundsChanged" << endl;
     if(WMainWindow::getMW()->ftsnds.size()>0)
-        computeSTFT(); // TODO can be very heavy, should update only the necessary part
+        updateSTFTPlot();
 }
 
 void QGVSpectrogram::viewSet(QRectF viewrect, bool sync) {
