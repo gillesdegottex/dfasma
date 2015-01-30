@@ -461,36 +461,38 @@ template<typename DataType, typename ContainerIn, typename ContainerOut> inline 
 }
 
 
-    class FFTwrapper
-    {
-        int m_size;
-        bool m_forward;
+class FFTwrapper
+{
+    int m_size;
+    bool m_forward;
 
-    #ifdef FFT_FFTW3
-        fftw_plan m_fftw3_plan;
-        fftw_complex *m_fftw3_in, *m_fftw3_out;
-    #elif FFT_FFTREAL
-        ffft::FFTReal<FFTTYPE> *m_fftreal_fft;
-        FFTTYPE* m_fftreal_out;
-    #endif
+#ifdef FFT_FFTW3
+    fftw_plan m_fftw3_plan;
+    double *m_fftw3_in;
+    fftw_complex *m_fftw3_out;
+#elif FFT_FFTREAL
+    ffft::FFTReal<FFTTYPE> *m_fftreal_fft;
+    FFTTYPE* m_fftreal_out;
+#endif
 
-    public:
-        FFTwrapper(bool forward=true);
-        FFTwrapper(int n);
-        void resize(int n);
+public:
+    FFTwrapper(bool forward=true);
+    FFTwrapper(int n);
+    void resize(int n);
 
-        int size(){return m_size;}
+    int size(){return m_size;}
 
-        std::vector<FFTTYPE> in;
-        std::vector<std::complex<FFTTYPE> > out;
+    std::vector<FFTTYPE> in;
+    std::vector<std::complex<FFTTYPE> > out;
 
-        void execute(const std::vector<FFTTYPE>& in, std::vector<std::complex<FFTTYPE> >& out);
-        void execute();
+    void execute(const std::vector<FFTTYPE>& in, std::vector<std::complex<FFTTYPE> >& out);
+    void execute();
 
-        static QString getLibraryInfo();
+    static QString getLibraryInfo();
 
-        ~FFTwrapper();
-    };
-}
+    ~FFTwrapper();
+};
+
+} // End namespace sigproc
 
 #endif // SIGPROC_H

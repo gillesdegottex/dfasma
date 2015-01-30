@@ -71,23 +71,29 @@ void FFTwrapper::resize(int n)
     #ifdef FFT_FFTW3
         delete[] m_fftw3_in;
         delete[] m_fftw3_out;
-        m_fftw3_out = m_fftw3_in = NULL;
+        m_fftw3_in = NULL;
+        m_fftw3_out = NULL;
 
-        m_fftw3_in = new fftw_complex[m_size];
-        m_fftw3_out = new fftw_complex[m_size];
+//        m_fftw3_in = new fftw_complex[m_size];
+        m_fftw3_in = new double[m_size];
+        m_fftw3_out = new fftw_complex[m_size/2+1];
 
         //  | FFTW_PRESERVE_INPUT
-        if(m_forward)
-            m_fftw3_plan = fftw_plan_dft_1d(m_size, m_fftw3_in, m_fftw3_out, FFTW_FORWARD, FFTW_MEASURE);
-        else
-            m_fftw3_plan = fftw_plan_dft_1d(m_size, m_fftw3_in, m_fftw3_out, FFTW_BACKWARD, FFTW_MEASURE);
+        if(m_forward){
+            m_fftw3_plan = fftw_plan_dft_r2c_1d(m_size, m_fftw3_in, m_fftw3_out, FFTW_MEASURE);
+//            m_fftw3_plan = fftw_plan_dft_1d(m_size, m_fftw3_in, m_fftw3_out, FFTW_FORWARD, FFTW_MEASURE);
+        }
+        else{
+            m_fftw3_plan = fftw_plan_dft_c2r_1d(m_size, m_fftw3_out, m_fftw3_in, FFTW_MEASURE);
+//            m_fftw3_plan = fftw_plan_dft_1d(m_size, m_fftw3_in, m_fftw3_out, FFTW_BACKWARD, FFTW_MEASURE);
+        }
 
     #elif FFT_FFTREAL
         delete[] m_fftreal_out;
         m_fftreal_out = NULL;
 
         m_fftreal_fft = new ffft::FFTReal<FFTTYPE>(m_size);
-        m_fftreal_out = new FFTTYPE[m_size];
+        m_fftreal_out =m_fftw3_plan new FFTTYPE[m_size];
     #endif
 
     in.resize(m_size);
@@ -102,20 +108,17 @@ void FFTwrapper::execute()
 
 void FFTwrapper::execute(const vector<FFTTYPE>& in, vector<std::complex<FFTTYPE> >& out)
 {
-//    std::cout << "FFTwrapper::execute " << m_size << endl;
+//    std::cout << "FFTm_fftw3_planwrapper::execute " << m_size << endl;
 
     assert(int(in.size())>=m_size);
 
     int neededsize = (m_size%2==1)?(m_size-1)/2+1:m_size/2+1;
-    if(int(out.size())<neededsize)
+    if(int(out.size())!=neededsize)
         out.resize(neededsize);
 
     #ifdef FFT_FFTW3
         for(int i=0; i<m_size; i++)
-        {
-            m_fftw3_in[i][0] = in[i];
-            m_fftw3_in[i][1] = 0.0;
-        }
+            m_fftw3_in[i] = in[i];
 
         fftw_execute(m_fftw3_plan);
 
@@ -140,9 +143,18 @@ void FFTwrapper::execute(const vector<FFTTYPE>& in, vector<std::complex<FFTTYPE>
 FFTwrapper::~FFTwrapper()
 {
     #ifdef FFT_FFTW3
-        if(m_fftw3_plan)	fftw_destroy_plan(m_fftw3_plan);
-        if(m_fftw3_in)	delete[] m_fftw3_in;
-        if(m_fftw3_out)	delete[] m_fftw3_out;
+        if(m_fftw3_plan){
+            fftw_destroy_plan(m_fftw3_plan);
+            fftw_free(m_fftw3_plan);
+        }
+        if(m_fftw3_in){
+//            fftw_free(m_fftw3_in);
+            delete[] m_fftw3_in;
+        }
+        if(m_fftw3_out){
+            fftw_free(m_fftw3_out);
+//            delete[] m_fftw3_out;
+        }
     #elif FFT_FFTREAL
         if(m_fftreal_fft)	delete m_fftreal_fft;
         if(m_fftreal_out)	delete[] m_fftreal_out;
