@@ -73,7 +73,7 @@ FTLabels::FTLabels(QObject *parent)
 
     setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.sdif");
 
-    WMainWindow::getMW()->ftlabels.push_back(this);
+    gMW->ftlabels.push_back(this);
 }
 
 // Construct from an existing file name
@@ -90,7 +90,7 @@ FTLabels::FTLabels(const QString& _fileName, QObject *parent)
     checkFileStatus(CFSMEXCEPTION);
     load();
 
-    WMainWindow::getMW()->ftlabels.push_back(this);
+    gMW->ftlabels.push_back(this);
 }
 
 // Copy constructor
@@ -109,7 +109,7 @@ FTLabels::FTLabels(const FTLabels& ft)
     m_lastreadtime = ft.m_lastreadtime;
     m_modifiedtime = ft.m_modifiedtime;
 
-    WMainWindow::getMW()->ftlabels.push_back(this);
+    gMW->ftlabels.push_back(this);
 }
 
 FileType* FTLabels::duplicate(){
@@ -146,12 +146,12 @@ void FTLabels::load() {
 //        ofstream fout(fileFullPath.toLatin1().constData());
 //        for(size_t li=0; li<starts.size(); li++) {
 //            fout << starts[li] << " ";
-//            double last = starts[li] + 1.0/WMainWindow::getMW()->getFs();
+//            double last = starts[li] + 1.0/gMW->getFs();
 //            if(li<starts.size()-1)
 //                last = starts[li+1];
 //            else {
-//                if(WMainWindow::getMW()->ftsnds.size()>0)
-//                    last = WMainWindow::getMW()->getCurrentFTSound(true)->getLastSampleTime();
+//                if(gMW->ftsnds.size()>0)
+//                    last = gMW->getCurrentFTSound(true)->getLastSampleTime();
 //            }
 //            fout << last << " ";
 //            fout << waveform_labels[li]->text().toLatin1().constData() << endl;
@@ -161,15 +161,15 @@ void FTLabels::load() {
 //        ofstream fout(fileFullPath.toLatin1().constData());
 //        // TODO check the format
 //        for(size_t li=0; li<starts.size(); li++) {
-//            fout << int(0.5+WMainWindow::getMW()->getFs()*starts[li]) << " ";
-//            double last = starts[li] + 1.0/WMainWindow::getMW()->getFs();
+//            fout << int(0.5+gMW->getFs()*starts[li]) << " ";
+//            double last = starts[li] + 1.0/gMW->getFs();
 //            if(li<starts.size()-1)
 //                last = starts[li+1];
 //            else {
-//                if(WMainWindow::getMW()->ftsnds.size()>0)
-//                    last = WMainWindow::getMW()->getCurrentFTSound(true)->getLastSampleTime();
+//                if(gMW->ftsnds.size()>0)
+//                    last = gMW->getCurrentFTSound(true)->getLastSampleTime();
 //            }
-//            fout << int(0.5+WMainWindow::getMW()->getFs()*last) << " ";
+//            fout << int(0.5+gMW->getFs()*last) << " ";
 //            fout << waveform_labels[li]->text().toLatin1().constData() << endl;
 //        }
     }
@@ -348,12 +348,12 @@ void FTLabels::save() {
         ofstream fout(fileFullPath.toLatin1().constData());
         for(size_t li=0; li<starts.size(); li++) {
             fout << starts[li] << " ";
-            double last = starts[li] + 1.0/WMainWindow::getMW()->getFs();
+            double last = starts[li] + 1.0/gMW->getFs();
             if(li<starts.size()-1)
                 last = starts[li+1];
             else {
-                if(WMainWindow::getMW()->ftsnds.size()>0)
-                    last = WMainWindow::getMW()->getCurrentFTSound(true)->getLastSampleTime();
+                if(gMW->ftsnds.size()>0)
+                    last = gMW->getCurrentFTSound(true)->getLastSampleTime();
             }
             fout << last << " ";
             fout << waveform_labels[li]->text().toLatin1().constData() << endl;
@@ -363,15 +363,15 @@ void FTLabels::save() {
         ofstream fout(fileFullPath.toLatin1().constData());
         // TODO check the format
         for(size_t li=0; li<starts.size(); li++) {
-            fout << int(0.5+WMainWindow::getMW()->getFs()*starts[li]) << " ";
-            double last = starts[li] + 1.0/WMainWindow::getMW()->getFs();
+            fout << int(0.5+gMW->getFs()*starts[li]) << " ";
+            double last = starts[li] + 1.0/gMW->getFs();
             if(li<starts.size()-1)
                 last = starts[li+1];
             else {
-                if(WMainWindow::getMW()->ftsnds.size()>0)
-                    last = WMainWindow::getMW()->getCurrentFTSound(true)->getLastSampleTime();
+                if(gMW->ftsnds.size()>0)
+                    last = gMW->getCurrentFTSound(true)->getLastSampleTime();
             }
-            fout << int(0.5+WMainWindow::getMW()->getFs()*last) << " ";
+            fout << int(0.5+gMW->getFs()*last) << " ";
             fout << waveform_labels[li]->text().toLatin1().constData() << endl;
         }
     }
@@ -439,7 +439,7 @@ void FTLabels::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
 
     contextmenu.setTitle("Labels");
 
-    if(WMainWindow::getMW()->ui->actionEditMode->isChecked()){
+    if(gMW->ui->actionEditMode->isChecked()){
         contextmenu.addAction(m_actionSave);
         contextmenu.addAction(m_actionSaveAs);
     }
@@ -463,11 +463,11 @@ void FTLabels::updateTextsGeometry(){
     if(!m_actionShow->isChecked())
         return;
 
-    QRectF waveform_viewrect = WMainWindow::getMW()->m_gvWaveform->mapToScene(WMainWindow::getMW()->m_gvWaveform->viewport()->rect()).boundingRect();
-    QTransform waveform_trans = WMainWindow::getMW()->m_gvWaveform->transform();
+    QRectF waveform_viewrect = gMW->m_gvWaveform->mapToScene(gMW->m_gvWaveform->viewport()->rect()).boundingRect();
+    QTransform waveform_trans = gMW->m_gvWaveform->transform();
 
-    QRectF spectrogram_viewrect = WMainWindow::getMW()->m_gvSpectrogram->mapToScene(WMainWindow::getMW()->m_gvSpectrogram->viewport()->rect()).boundingRect();
-    QTransform spectrogram_trans = WMainWindow::getMW()->m_gvSpectrogram->transform();
+    QRectF spectrogram_viewrect = gMW->m_gvSpectrogram->mapToScene(gMW->m_gvSpectrogram->viewport()->rect()).boundingRect();
+    QTransform spectrogram_trans = gMW->m_gvSpectrogram->transform();
 
     for(size_t u=0; u<starts.size(); ++u){
 
@@ -497,24 +497,24 @@ void FTLabels::addLabel(double position, const QString& text){
     waveform_labels.back()->setPos(position, 0);
     waveform_labels.back()->setBrush(brush);
     waveform_labels.back()->setPen(whitepen);
-    WMainWindow::getMW()->m_gvWaveform->m_scene->addItem(waveform_labels.back());
+    gMW->m_gvWaveform->m_scene->addItem(waveform_labels.back());
 
     spectrogram_labels.push_back(new QGraphicsSimpleTextItem(text));
     spectrogram_labels.back()->setPos(position, 0);
     spectrogram_labels.back()->setBrush(brush);
     spectrogram_labels.back()->setPen(whitepen);
-    WMainWindow::getMW()->m_gvSpectrogram->m_scene->addItem(spectrogram_labels.back());
+    gMW->m_gvSpectrogram->m_scene->addItem(spectrogram_labels.back());
     // TODO set Brush and pen for the outline!
 
     waveform_lines.push_back(new QGraphicsLineItem(0, -1, 0, 1));
     waveform_lines.back()->setPos(position, 0);
     waveform_lines.back()->setPen(pen);
-    WMainWindow::getMW()->m_gvWaveform->m_scene->addItem(waveform_lines.back());
+    gMW->m_gvWaveform->m_scene->addItem(waveform_lines.back());
 
-    spectrogram_lines.push_back(new QGraphicsLineItem(0, 0, 0, WMainWindow::getMW()->getFs()/2));
+    spectrogram_lines.push_back(new QGraphicsLineItem(0, 0, 0, gMW->getFs()/2));
     spectrogram_lines.back()->setPos(position, 0);
     spectrogram_lines.back()->setPen(pen);
-    WMainWindow::getMW()->m_gvSpectrogram->m_scene->addItem(spectrogram_lines.back());
+    gMW->m_gvSpectrogram->m_scene->addItem(spectrogram_lines.back());
 
     m_isedited = true;
     setStatus();

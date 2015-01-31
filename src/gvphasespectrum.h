@@ -70,8 +70,7 @@ public:
     QRectF m_selection, m_mouseSelection;
     QGraphicsRectItem* m_giShownSelection;
     QGraphicsSimpleTextItem* m_giSelectionTxt;
-    void selectionChangesRequested();
-    void selectionFixAndRefresh();
+    void selectionSet(QRectF selection, bool forwardsync);
     void selectionClear();
 
     void scrollContentsBy(int dx, int dy);
@@ -82,7 +81,7 @@ public:
     void mouseReleaseEvent(QMouseEvent* event);
     void keyPressEvent(QKeyEvent* event);
 
-    void viewSet(QRectF viewrect=QRectF(), bool sync=true);
+    void viewSet(QRectF viewrect=QRectF(), bool forwardsync=true);
     void viewUpdateTexts();
     void drawBackground(QPainter* painter, const QRectF& rect);
     void draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& ldft, double fs, double delay, const QRectF& rect);

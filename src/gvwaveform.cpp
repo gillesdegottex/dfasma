@@ -110,7 +110,7 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_mouseSelection = QRectF(0, -1, 0, 2);
     m_selection = m_mouseSelection;
     m_scene->addItem(m_giSelection);
-    WMainWindow::getMW()->ui->lblSelectionTxt->setText("No selection");
+    gMW->ui->lblSelectionTxt->setText("No selection");
     m_giFilteredSelection = new QGraphicsRectItem();
     m_giFilteredSelection->hide();
     QColor filtsecbrush(255, 128, 128);
@@ -203,11 +203,11 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_aFitViewToSoundsAmplitude->setIcon(QIcon(":/icons/unzoomy.svg"));
     m_aFitViewToSoundsAmplitude->setStatusTip(tr("Change the amplitude zoom so that to fit to the maximum of amplitude among all sounds"));
     m_contextmenu.addAction(m_aFitViewToSoundsAmplitude);
-    connect(WMainWindow::getMW()->ui->btnFitViewToSoundsAmplitude, SIGNAL(clicked()), m_aFitViewToSoundsAmplitude, SLOT(trigger()));
-    WMainWindow::getMW()->ui->btnFitViewToSoundsAmplitude->setIcon(QIcon(":/icons/unzoomy.svg"));
+    connect(gMW->ui->btnFitViewToSoundsAmplitude, SIGNAL(clicked()), m_aFitViewToSoundsAmplitude, SLOT(trigger()));
+    gMW->ui->btnFitViewToSoundsAmplitude->setIcon(QIcon(":/icons/unzoomy.svg"));
     connect(m_aFitViewToSoundsAmplitude, SIGNAL(triggered()), this, SLOT(fitViewToSoundsAmplitude()));
 
-    connect(WMainWindow::getMW()->ui->sldWaveformAmplitude, SIGNAL(valueChanged(int)), this, SLOT(sldAmplitudeChanged(int)));
+    connect(gMW->ui->sldWaveformAmplitude, SIGNAL(valueChanged(int)), this, SLOT(sldAmplitudeChanged(int)));
 
 //    setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers))); // Use OpenGL
 
@@ -223,10 +223,10 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
 //    m_toolBar->addSeparator();
     m_toolBar->addAction(m_aZoomOnSelection);
     m_toolBar->addAction(m_aSelectionClear);
-    m_toolBar->setIconSize(QSize(WMainWindow::getMW()->m_dlgSettings->ui->sbToolBarSizes->value(),WMainWindow::getMW()->m_dlgSettings->ui->sbToolBarSizes->value()));
-//    WMainWindow::getMW()->ui->lWaveformToolBar->addWidget(m_toolBar);
+    m_toolBar->setIconSize(QSize(gMW->m_dlgSettings->ui->sbToolBarSizes->value(),gMW->m_dlgSettings->ui->sbToolBarSizes->value()));
+//    gMW->ui->lWaveformToolBar->addWidget(m_toolBar);
     m_toolBar->setOrientation(Qt::Vertical);
-    WMainWindow::getMW()->ui->lWaveformToolBar->addWidget(m_toolBar);
+    gMW->ui->lWaveformToolBar->addWidget(m_toolBar);
 
     setMouseCursorPosition(-1, false);
 }
@@ -239,20 +239,20 @@ void QGVWaveform::settingsSave() {
 }
 
 void QGVWaveform::fitViewToSoundsAmplitude(){
-    if(WMainWindow::getMW()->ftsnds.size()>0){
+    if(gMW->ftsnds.size()>0){
         qreal maxwavmaxamp = 0.0;
-        for(unsigned int si=0; si<WMainWindow::getMW()->ftsnds.size(); si++)
-            maxwavmaxamp = std::max(maxwavmaxamp, WMainWindow::getMW()->ftsnds[si]->m_ampscale*WMainWindow::getMW()->ftsnds[si]->m_wavmaxamp);
+        for(unsigned int si=0; si<gMW->ftsnds.size(); si++)
+            maxwavmaxamp = std::max(maxwavmaxamp, gMW->ftsnds[si]->m_ampscale*gMW->ftsnds[si]->m_wavmaxamp);
 
         // Add a small margin
         maxwavmaxamp *= 1.05;
 
-        WMainWindow::getMW()->ui->sldWaveformAmplitude->setValue(100-(maxwavmaxamp*100.0));
+        gMW->ui->sldWaveformAmplitude->setValue(100-(maxwavmaxamp*100.0));
     }
 }
 
 void QGVWaveform::updateSceneRect() {
-    m_scene->setSceneRect(-1.0/WMainWindow::getMW()->getFs(), -1.05*m_ampzoom, WMainWindow::getMW()->getMaxDuration()+1.0/WMainWindow::getMW()->getFs(), 2.1*m_ampzoom);
+    m_scene->setSceneRect(-1.0/gMW->getFs(), -1.05*m_ampzoom, gMW->getMaxDuration()+1.0/gMW->getFs(), 2.1*m_ampzoom);
 }
 
 void QGVWaveform::viewSet(QRectF viewrect, bool sync) {
@@ -278,11 +278,11 @@ void QGVWaveform::viewSet(QRectF viewrect, bool sync) {
         updateTextsGeometry();
 
         if(sync){
-            if(WMainWindow::getMW()->m_gvSpectrogram && WMainWindow::getMW()->ui->actionShowSpectrogram->isChecked()) {
-                QRectF spectrorect = WMainWindow::getMW()->m_gvSpectrogram->mapToScene(WMainWindow::getMW()->m_gvSpectrogram->viewport()->rect()).boundingRect();
+            if(gMW->m_gvSpectrogram && gMW->ui->actionShowSpectrogram->isChecked()) {
+                QRectF spectrorect = gMW->m_gvSpectrogram->mapToScene(gMW->m_gvSpectrogram->viewport()->rect()).boundingRect();
                 spectrorect.setLeft(viewrect.left());
                 spectrorect.setRight(viewrect.right());
-                WMainWindow::getMW()->m_gvSpectrogram->viewSet(spectrorect, false);
+                gMW->m_gvSpectrogram->viewSet(spectrorect, false);
             }
         }
     }
@@ -383,7 +383,7 @@ void QGVWaveform::setMouseCursorPosition(double position, bool forwardsync) {
         m_giMouseCursorTxt->setPos(position+1/trans.m11(), viewrect.top()-3/trans.m22());
 
         if(forwardsync)
-            WMainWindow::getMW()->m_gvSpectrogram->setMouseCursorPosition(QPointF(position, 0.0), false);
+            gMW->m_gvSpectrogram->setMouseCursorPosition(QPointF(position, 0.0), false);
     }
 }
 
@@ -396,8 +396,8 @@ void QGVWaveform::resizeEvent(QResizeEvent* event){
 
         updateSceneRect();
 
-        if(WMainWindow::getMW()->m_gvSpectrogram->viewport()->rect().width()*WMainWindow::getMW()->m_gvSpectrogram->viewport()->rect().height()>0){
-            QRectF spectrorect = WMainWindow::getMW()->m_gvSpectrogram->mapToScene(WMainWindow::getMW()->m_gvSpectrogram->viewport()->rect()).boundingRect();
+        if(gMW->m_gvSpectrogram->viewport()->rect().width()*gMW->m_gvSpectrogram->viewport()->rect().height()>0){
+            QRectF spectrorect = gMW->m_gvSpectrogram->mapToScene(gMW->m_gvSpectrogram->viewport()->rect()).boundingRect();
 
             QRectF viewrect;
             viewrect.setLeft(spectrorect.left());
@@ -444,14 +444,14 @@ void QGVWaveform::wheelEvent(QWheelEvent* event){
         QScrollBar* sb = horizontalScrollBar();
         sb->setValue(sb->value()-numDegrees.y());
     }
-    else if((viewrect.width()>10.0/WMainWindow::getMW()->getFs() && numDegrees.y()>0) || numDegrees.y()<0) {
+    else if((viewrect.width()>10.0/gMW->getFs() && numDegrees.y()>0) || numDegrees.y()<0) {
         double g = double(mapToScene(event->pos()).x()-viewrect.left())/viewrect.width();
         QRectF newrect = mapToScene(viewport()->rect()).boundingRect();
         newrect.setLeft(newrect.left()+g*0.01*viewrect.width()*numDegrees.y());
         newrect.setRight(newrect.right()-(1-g)*0.01*viewrect.width()*numDegrees.y());
-        if(newrect.width()<10.0/WMainWindow::getMW()->getFs()){
-           newrect.setLeft(newrect.center().x()-5.0/WMainWindow::getMW()->getFs());
-           newrect.setRight(newrect.center().x()+5.0/WMainWindow::getMW()->getFs());
+        if(newrect.width()<10.0/gMW->getFs()){
+           newrect.setLeft(newrect.center().x()-5.0/gMW->getFs());
+           newrect.setRight(newrect.center().x()+5.0/gMW->getFs());
         }
 
         viewSet(newrect);
@@ -474,7 +474,7 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
     QRect selview = mapFromScene(m_selection).boundingRect();
 
     if(event->buttons()&Qt::LeftButton){
-        if(WMainWindow::getMW()->ui->actionSelectionMode->isChecked()){
+        if(gMW->ui->actionSelectionMode->isChecked()){
 
             if(event->modifiers().testFlag(Qt::ShiftModifier)) {
                 // cout << "Scrolling the waveform" << endl;
@@ -509,15 +509,15 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
                 m_selection_pressedx = p.x();
                 m_mouseSelection.setLeft(m_selection_pressedx);
                 m_mouseSelection.setRight(m_selection_pressedx);
-                selectionClipAndSet(m_mouseSelection);
+                selectionSet(m_mouseSelection);
                 m_giSelection->show();
             }
         }
-        else if(WMainWindow::getMW()->ui->actionEditMode->isChecked()){
+        else if(gMW->ui->actionEditMode->isChecked()){
 
             // Look for a nearby marker to modify
             m_ca_pressed_index=-1;
-            FTLabels* ftl = WMainWindow::getMW()->getCurrentFTLabels();
+            FTLabels* ftl = gMW->getCurrentFTLabels();
             if(ftl){
                 for(size_t lli=0; m_ca_pressed_index==-1 && lli<ftl->starts.size(); lli++) {
                     QPoint slp = mapFromScene(QPointF(ftl->starts[lli],0));
@@ -533,9 +533,9 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
                     // cout << "Scaling the waveform" << endl;
                     m_currentAction = CAWaveformDelay;
                     m_selection_pressedx = p.x();
-                    FTSound* currentftsound = WMainWindow::getMW()->getCurrentFTSound();
+                    FTSound* currentftsound = gMW->getCurrentFTSound();
                     if(currentftsound)
-                        m_tmpdelay = currentftsound->m_delay/WMainWindow::getMW()->getFs();
+                        m_tmpdelay = currentftsound->m_delay/gMW->getFs();
                     setCursor(Qt::SizeHorCursor);
                 }
                 else if(event->modifiers().testFlag(Qt::ControlModifier)){
@@ -592,8 +592,8 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
 
         QRectF newrect = m_pressed_scenerect;
 
-        if(newrect.width()*exp(dx)<(10*1.0/WMainWindow::getMW()->getFs()))
-            dx = log((10*1.0/WMainWindow::getMW()->getFs())/newrect.width());
+        if(newrect.width()*exp(dx)<(10*1.0/gMW->getFs()))
+            dx = log((10*1.0/gMW->getFs())/newrect.width());
 
         newrect.setLeft(m_selection_pressedx-(m_selection_pressedx-m_pressed_scenerect.left())*exp(dx));
         newrect.setRight(m_selection_pressedx+(m_pressed_scenerect.right()-m_selection_pressedx)*exp(dx));
@@ -607,34 +607,34 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
     }
     else if(m_currentAction==CAModifSelectionLeft){
         m_mouseSelection.setLeft(p.x()-m_selection_pressedx);
-        selectionClipAndSet(m_mouseSelection);
+        selectionSet(m_mouseSelection);
     }
     else if(m_currentAction==CAModifSelectionRight){
         m_mouseSelection.setRight(p.x()-m_selection_pressedx);
-        selectionClipAndSet(m_mouseSelection);
+        selectionSet(m_mouseSelection);
     }
     else if(m_currentAction==CAMovingSelection){
         // When scroling the selection
         m_mouseSelection.adjust(p.x()-m_selection_pressedx, 0, p.x()-m_selection_pressedx, 0);
-        selectionClipAndSet(m_mouseSelection);
+        selectionSet(m_mouseSelection);
         m_selection_pressedx = p.x();
     }
     else if(m_currentAction==CASelecting){
         // When selecting
         m_mouseSelection.setLeft(m_selection_pressedx);
         m_mouseSelection.setRight(p.x());
-        selectionClipAndSet(m_mouseSelection);
+        selectionSet(m_mouseSelection);
     }
     else if(m_currentAction==CAStretchSelection) {
         // Stretch the selection from its center
         m_mouseSelection.setLeft(m_mouseSelection.left()-(p.x()-m_selection_pressedx));
         m_mouseSelection.setRight(m_mouseSelection.right()+(p.x()-m_selection_pressedx));
-        selectionClipAndSet(m_mouseSelection);
+        selectionSet(m_mouseSelection);
         m_selection_pressedx = p.x();
     }
     else if(m_currentAction==CAWaveformScale){
         // Scale the selected waveform
-        FTSound* currentftsound = WMainWindow::getMW()->getCurrentFTSound();
+        FTSound* currentftsound = gMW->getCurrentFTSound();
         if(currentftsound){
             if(!currentftsound->m_actionShow->isChecked()) {
                 QMessageBox::warning(this, "Editing a hidden file", "<p>The selected file is hidden.<br/><br/>For edition, please select only visible files.</p>");
@@ -649,14 +649,14 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
 
                 currentftsound->setStatus();
 
-                WMainWindow::getMW()->fileInfoUpdate();
+                gMW->fileInfoUpdate();
                 soundsChanged();
-                WMainWindow::getMW()->m_gvSpectrum->soundsChanged();
+                gMW->m_gvSpectrum->soundsChanged();
             }
         }
     }
     else if(m_currentAction==CAWaveformDelay){
-        FTSound* currentftsound = WMainWindow::getMW()->getCurrentFTSound();
+        FTSound* currentftsound = gMW->getCurrentFTSound();
         if(currentftsound){
             // Check first if the user is not trying to modify a hidden file
             if(!currentftsound->m_actionShow->isChecked()) {
@@ -666,26 +666,26 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
             else {
                 m_tmpdelay += p.x()-m_selection_pressedx;
                 m_selection_pressedx = p.x();
-                currentftsound->m_delay = int(0.5+m_tmpdelay*WMainWindow::getMW()->getFs());
+                currentftsound->m_delay = int(0.5+m_tmpdelay*gMW->getFs());
                 if(m_tmpdelay<0) currentftsound->m_delay--;
 
                 currentftsound->setStatus();
 
-                WMainWindow::getMW()->fileInfoUpdate();
+                gMW->fileInfoUpdate();
                 soundsChanged();
-                WMainWindow::getMW()->m_gvSpectrum->soundsChanged();
+                gMW->m_gvSpectrum->soundsChanged();
             }
         }
     }
     else if(m_currentAction==CALabelWritting) {
-        FTLabels* ftlabel = WMainWindow::getMW()->getCurrentFTLabels();
+        FTLabels* ftlabel = gMW->getCurrentFTLabels();
         if(ftlabel) {
             m_ftlabel_current_index = -1;
             m_currentAction = CANothing;
         }
     }
     else if(m_currentAction==CALabelModifPosition) {
-        FTLabels* ftlabel = WMainWindow::getMW()->getCurrentFTLabels();
+        FTLabels* ftlabel = gMW->getCurrentFTLabels();
         if(ftlabel) {
             ftlabel->moveLabel(m_ca_pressed_index, p.x());
             updateTextsGeometry();
@@ -694,7 +694,7 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
     else{
         QRect selview = mapFromScene(m_selection).boundingRect();
 
-        if(WMainWindow::getMW()->ui->actionSelectionMode->isChecked()){
+        if(gMW->ui->actionSelectionMode->isChecked()){
             if(event->modifiers().testFlag(Qt::ShiftModifier)){
             }
             else if(event->modifiers().testFlag(Qt::ControlModifier)){
@@ -710,11 +710,11 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
                     setCursor(Qt::CrossCursor);
             }
         }
-        else if(WMainWindow::getMW()->ui->actionEditMode->isChecked()){
+        else if(gMW->ui->actionEditMode->isChecked()){
 
             // Check if a marker is close and show the horiz split cursor if true
             bool foundclosemarker = false;
-            FTLabels* ftl = WMainWindow::getMW()->getCurrentFTLabels();
+            FTLabels* ftl = gMW->getCurrentFTLabels();
             if(ftl) {
                 for(int lli=0; !foundclosemarker && lli<ftl->getNbLabels(); lli++) {
                     // cout << ftl->labels[lli].toLatin1().data() << ": " << ftl->starts[lli] << endl;
@@ -753,7 +753,7 @@ void QGVWaveform::mouseReleaseEvent(QMouseEvent* event){
         m_mouseSelection.setRight(tmp);
     }
 
-    if(WMainWindow::getMW()->ui->actionSelectionMode->isChecked()){
+    if(gMW->ui->actionSelectionMode->isChecked()){
         if(event->modifiers().testFlag(Qt::ShiftModifier)){
             setCursor(Qt::OpenHandCursor);
         }
@@ -764,7 +764,7 @@ void QGVWaveform::mouseReleaseEvent(QMouseEvent* event){
             setCursor(Qt::CrossCursor);
         }
     }
-    else if(WMainWindow::getMW()->ui->actionEditMode->isChecked()){
+    else if(gMW->ui->actionEditMode->isChecked()){
         if(event->modifiers().testFlag(Qt::ShiftModifier)){
         }
         else if(event->modifiers().testFlag(Qt::ControlModifier)){
@@ -790,7 +790,7 @@ void QGVWaveform::mouseDoubleClickEvent(QMouseEvent* event){
 
     QPointF p = mapToScene(event->pos());
 
-    if(WMainWindow::getMW()->ui->actionSelectionMode->isChecked()){
+    if(gMW->ui->actionSelectionMode->isChecked()){
         if(event->modifiers().testFlag(Qt::ShiftModifier)){
         }
         else if(event->modifiers().testFlag(Qt::ControlModifier)){
@@ -803,7 +803,7 @@ void QGVWaveform::mouseDoubleClickEvent(QMouseEvent* event){
             selectSegment(p.x(), false);
         }
     }
-    else if(WMainWindow::getMW()->ui->actionEditMode->isChecked()){
+    else if(gMW->ui->actionEditMode->isChecked()){
     }
 
 }
@@ -818,7 +818,7 @@ void QGVWaveform::selectSegmentFindStartEnd(double x, FTLabels* ftl, double& sta
         }
         else if(x>ftl->starts.back()){
             start = ftl->starts.back();
-            end = WMainWindow::getMW()->getMaxLastSampleTime();
+            end = gMW->getMaxLastSampleTime();
         }
         else{
             int index = -1;
@@ -833,7 +833,7 @@ void QGVWaveform::selectSegmentFindStartEnd(double x, FTLabels* ftl, double& sta
 
 void QGVWaveform::selectSegment(double x, bool add){
     // Check if a marker is close and show the horiz split cursor if true
-    FTLabels* ftl = WMainWindow::getMW()->getCurrentFTLabels(true);
+    FTLabels* ftl = gMW->getCurrentFTLabels(true);
     if(ftl && ftl->getNbLabels()>0) {
         if(ftl->starts.size()>0){
             double start, end;
@@ -842,13 +842,13 @@ void QGVWaveform::selectSegment(double x, bool add){
                 start = std::min(m_selection.left(), start);
                 end = std::max(m_selection.right(), end);
             }
-            selectionClipAndSet(QRectF(start, -1.0, end-start, 2.0), true);
+            selectionSet(QRectF(start, -1.0, end-start, 2.0), true);
         }
     }
 }
 
 void QGVWaveform::selectRemoveSegment(double x){
-    FTLabels* ftl = WMainWindow::getMW()->getCurrentFTLabels(true);
+    FTLabels* ftl = gMW->getCurrentFTLabels(true);
     if(ftl && ftl->getNbLabels()>0) {
         if(m_selection.width()>0 && m_selection.left()<=x && x<=m_selection.right()){
             double start, end;
@@ -862,7 +862,7 @@ void QGVWaveform::selectRemoveSegment(double x){
                 if(end-start==0)
                     selectionClear();
                 else
-                    selectionClipAndSet(QRectF(start, -1.0, end-start, 2.0), true);
+                    selectionSet(QRectF(start, -1.0, end-start, 2.0), true);
             }
             else{
                 end = std::min(start, m_selection.right());
@@ -871,7 +871,7 @@ void QGVWaveform::selectRemoveSegment(double x){
                 if(end-start==0)
                     selectionClear();
                 else
-                    selectionClipAndSet(QRectF(start, -1.0, end-start, 2.0), true);
+                    selectionSet(QRectF(start, -1.0, end-start, 2.0), true);
             }
 
             playCursorSet(playstart, true);
@@ -886,11 +886,12 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
 
     if(event->key()==Qt::Key_Escape) {
         selectionClear();
+        gMW->m_gvSpectrogram->selectionClear();
         playCursorSet(0.0, true);
     }
     else if(event->key()==Qt::Key_Delete) {
         if(m_currentAction==CALabelModifPosition) {
-            FTLabels* ftlabel = WMainWindow::getMW()->getCurrentFTLabels(false);
+            FTLabels* ftlabel = gMW->getCurrentFTLabels(false);
             if(ftlabel){
 
                 ftlabel->removeLabel(m_ca_pressed_index);
@@ -899,8 +900,8 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
         }
     }
     else {
-        if (WMainWindow::getMW()->ui->actionEditMode->isChecked()){
-            FTLabels* ftlabel = WMainWindow::getMW()->getCurrentFTLabels(false);
+        if (gMW->ui->actionEditMode->isChecked()){
+            FTLabels* ftlabel = gMW->getCurrentFTLabels(false);
             if(ftlabel){
                 if(event->text().size()>0){
                     if(m_currentAction==CALabelWritting && m_ftlabel_current_index!=-1){
@@ -925,16 +926,16 @@ void QGVWaveform::selectionClear(){
     m_selection = QRectF(0, -1, 0, 2);
     m_giSelection->setRect(m_selection.left(), -1, m_selection.width(), 2);
     m_aZoomOnSelection->setEnabled(false);
-    WMainWindow::getMW()->ui->lblSelectionTxt->setText("No selection");
+    gMW->ui->lblSelectionTxt->setText("No selection");
     m_aSelectionClear->setEnabled(false);
-    WMainWindow::getMW()->m_gvSpectrum->m_scene->update();
-    WMainWindow::getMW()->m_gvPhaseSpectrum->m_scene->update();
+    gMW->m_gvSpectrum->m_scene->update();
+    gMW->m_gvPhaseSpectrum->m_scene->update();
 }
 
-void QGVWaveform::selectionClipAndSet(QRectF selection, bool winforceupdate){
+void QGVWaveform::selectionSet(QRectF selection, bool winforceupdate, bool forwardsync){
     // m_giMouseSelection->setRect(selection);
 
-    double fs = WMainWindow::getMW()->getFs();
+    double fs = gMW->getFs();
 
     // Order the selection to avoid negative width
     if(selection.right()<selection.left()){
@@ -944,8 +945,8 @@ void QGVWaveform::selectionClipAndSet(QRectF selection, bool winforceupdate){
     }
 
     size_t prevwinlen = 0;
-    if(WMainWindow::getMW()->m_gvSpectrum)
-        prevwinlen = WMainWindow::getMW()->m_gvSpectrum->m_win.size();
+    if(gMW->m_gvSpectrum)
+        prevwinlen = gMW->m_gvSpectrum->m_win.size();
     m_selection = selection;
 
     // Clip selection on exact sample times
@@ -956,21 +957,20 @@ void QGVWaveform::selectionClipAndSet(QRectF selection, bool winforceupdate){
         m_selection.setRight((int(0.5+m_selection.right()*fs))/fs);
 
     if(m_selection.left()<0) m_selection.setLeft(0.0);
-    if(m_selection.left()>WMainWindow::getMW()->getMaxLastSampleTime()-1.0/fs) m_selection.setLeft(WMainWindow::getMW()->getMaxLastSampleTime()-1.0/fs);
+    if(m_selection.left()>gMW->getMaxLastSampleTime()-1.0/fs) m_selection.setLeft(gMW->getMaxLastSampleTime()-1.0/fs);
     if(m_selection.right()<1.0/fs) m_selection.setRight(1.0/fs);
-    if(m_selection.right()>WMainWindow::getMW()->getMaxLastSampleTime()) m_selection.setRight(WMainWindow::getMW()->getMaxLastSampleTime());
+    if(m_selection.right()>gMW->getMaxLastSampleTime()) m_selection.setRight(gMW->getMaxLastSampleTime());
 
     // Adjust parity of the window size according to option
     int nl = std::max(0, int(0.5+m_selection.left()*fs));
-    int nr = int(0.5+std::min(WMainWindow::getMW()->getMaxLastSampleTime(),m_selection.right())*fs);
+    int nr = int(0.5+std::min(gMW->getMaxLastSampleTime(),m_selection.right())*fs);
     int winlen = nr-nl+1;
-    if(winlen%2==0 && WMainWindow::getMW()->m_gvSpectrum->m_dlgSettings->ui->cbWindowSizeForcedOdd->isChecked()) {
+    if(winlen%2==0 && gMW->m_gvSpectrum->m_dlgSettings->ui->cbWindowSizeForcedOdd->isChecked()) {
         if(m_currentAction==CAModifSelectionLeft)
             m_selection.setLeft(m_selection.left()+1.0/fs);
         else if(m_currentAction==CAModifSelectionRight)
             m_selection.setRight(m_selection.right()-1.0/fs);
         else {
-//            cout << "here ? " << m_mouseSelection.left() << " " << m_mouseSelection.right() << endl;
             if(m_mouseSelection.right()>m_mouseSelection.left())
                 m_selection.setRight(m_selection.right()-1.0/fs);
             else
@@ -994,28 +994,46 @@ void QGVWaveform::selectionClipAndSet(QRectF selection, bool winforceupdate){
         m_aSelectionClear->setEnabled(false);
     }
 
+    if(forwardsync){
+        if(gMW->m_gvSpectrogram){
+            QRectF rect = gMW->m_gvSpectrogram->m_mouseSelection;
+            rect.setLeft(m_selection.left());
+            rect.setRight(m_selection.right());
+
+            if(gMW->m_gvSpectrum && gMW->m_gvSpectrum->m_giShownSelection->isVisible()){
+                rect.setTop(gMW->getFs()/2-gMW->m_gvSpectrum->m_selection.right());
+                rect.setBottom(gMW->getFs()/2-gMW->m_gvSpectrum->m_selection.left());
+            }
+            else{
+                rect.setTop(gMW->m_gvSpectrogram->m_scene->sceneRect().top());
+                rect.setBottom(gMW->m_gvSpectrogram->m_scene->sceneRect().bottom());
+            }
+            gMW->m_gvSpectrogram->selectionSet(rect, false);
+        }
+    }
+
     // The selection's width can vary up to eps, even when it is only shifted
 
     // Spectrum
-    WMainWindow::getMW()->m_gvSpectrum->setWindowRange(m_selection.left(), m_selection.right(), winforceupdate);
+    gMW->m_gvSpectrum->setWindowRange(m_selection.left(), m_selection.right(), winforceupdate);
 
     // Update the visible window
-    if(WMainWindow::getMW()->m_gvSpectrum->m_win.size()>0 && (winforceupdate || WMainWindow::getMW()->m_gvSpectrum->m_win.size() != prevwinlen)) {
+    if(gMW->m_gvSpectrum->m_win.size()>0 && (winforceupdate || gMW->m_gvSpectrum->m_win.size() != prevwinlen)) {
 
         qreal winmax = 0.0;
-        for(size_t n=0; n<WMainWindow::getMW()->m_gvSpectrum->m_win.size(); n++)
-            winmax = std::max(winmax, WMainWindow::getMW()->m_gvSpectrum->m_win[n]);
+        for(size_t n=0; n<gMW->m_gvSpectrum->m_win.size(); n++)
+            winmax = std::max(winmax, gMW->m_gvSpectrum->m_win[n]);
         winmax = 1.0/winmax;
 
         QPainterPath path;
 
         qreal prevx = 0;
-        qreal prevy = WMainWindow::getMW()->m_gvSpectrum->m_win[0]*winmax;
+        qreal prevy = gMW->m_gvSpectrum->m_win[0]*winmax;
         path.moveTo(QPointF(prevx, -prevy));
         qreal y;
-        for(size_t n=1; n<WMainWindow::getMW()->m_gvSpectrum->m_win.size(); n++) {
+        for(size_t n=1; n<gMW->m_gvSpectrum->m_win.size(); n++) {
             qreal x = n/fs;
-            y = WMainWindow::getMW()->m_gvSpectrum->m_win[n];
+            y = gMW->m_gvSpectrum->m_win[n];
             y *= winmax;
             path.lineTo(QPointF(x, -y));
             prevx = x;
@@ -1023,7 +1041,7 @@ void QGVWaveform::selectionClipAndSet(QRectF selection, bool winforceupdate){
         }
 
         // Add the vertical line
-        qreal winrelcenter = ((WMainWindow::getMW()->m_gvSpectrum->m_win.size()-1)/2.0)/fs;
+        qreal winrelcenter = ((gMW->m_gvSpectrum->m_win.size()-1)/2.0)/fs;
         path.moveTo(QPointF(winrelcenter, 2.0));
         path.lineTo(QPointF(winrelcenter, -1.0));
 
@@ -1037,12 +1055,12 @@ void QGVWaveform::selectionClipAndSet(QRectF selection, bool winforceupdate){
 }
 
 void QGVWaveform::updateSelectionText(){
-    // WMainWindow::getMW()->ui->lblSelectionTxt->setText(QString("[%1").arg(m_selection.left()).append(",%1] ").arg(m_selection.right()).append("%1 s").arg(m_selection.width())); // start, end and duration
+    // gMW->ui->lblSelectionTxt->setText(QString("[%1").arg(m_selection.left()).append(",%1] ").arg(m_selection.right()).append("%1 s").arg(m_selection.width())); // start, end and duration
 
-    if(WMainWindow::getMW()->m_gvWaveform->m_aShowWindow->isChecked() && WMainWindow::getMW()->m_gvSpectrum->m_win.size()>0)
-        WMainWindow::getMW()->ui->lblSelectionTxt->setText(QString("%1s window centered at %2").arg(m_selection.width(), 0,'f',4).arg(m_selection.left()+((WMainWindow::getMW()->m_gvSpectrum->m_win.size()-1)/2.0)/WMainWindow::getMW()->getFs(), 0,'f',5)); // duration and center
+    if(gMW->m_gvWaveform->m_aShowWindow->isChecked() && gMW->m_gvSpectrum->m_win.size()>0)
+        gMW->ui->lblSelectionTxt->setText(QString("%1s window centered at %2").arg(gMW->m_gvSpectrum->m_win.size()/gMW->getFs(), 0,'f',4).arg(m_selection.left()+((gMW->m_gvSpectrum->m_win.size()-1)/2.0)/gMW->getFs(), 0,'f',5)); // duration and center
     else
-        WMainWindow::getMW()->ui->lblSelectionTxt->setText(QString("%1s selection ").arg(m_selection.width(), 0,'f',5).append(" starting at %1s").arg(m_selection.left(), 0,'f',4)); // duration and start
+        gMW->ui->lblSelectionTxt->setText(QString("%1s selection ").arg(m_selection.width(), 0,'f',5).append(" starting at %1s").arg(m_selection.left(), 0,'f',4)); // duration and start
 }
 
 void QGVWaveform::selectionZoomOn(){
@@ -1068,8 +1086,8 @@ void QGVWaveform::updateTextsGeometry(){
     m_giPlayCursor->setTransform(cursortrans);
 
     // Tell the labels to update their texts
-    for(size_t fi=0; fi<WMainWindow::getMW()->ftlabels.size(); fi++)
-            WMainWindow::getMW()->ftlabels[fi]->updateTextsGeometry();
+    for(size_t fi=0; fi<gMW->ftlabels.size(); fi++)
+            gMW->ftlabels[fi]->updateTextsGeometry();
 }
 
 //class QTimeTracker2 : public QTime {
@@ -1120,7 +1138,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
 //    std::cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVWaveform::draw_waveform [" << rect.width() << "]" << endl;
 
-    double fs = WMainWindow::getMW()->getFs();
+    double fs = gMW->getFs();
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 //    cout << "QGVWaveform::drawBackground viewrect: " << viewrect << endl;
@@ -1131,35 +1149,35 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
     if(samppixdensity<4) {
 //         cout << "Draw lines between each sample in the updated rect" << endl;
 
-        for(size_t fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++){
-            if(!WMainWindow::getMW()->ftsnds[fi]->m_actionShow->isChecked())
+        for(size_t fi=0; fi<gMW->ftsnds.size(); fi++){
+            if(!gMW->ftsnds[fi]->m_actionShow->isChecked())
                 continue;
 
-            WAVTYPE a = WMainWindow::getMW()->ftsnds[fi]->m_ampscale;
-            if(WMainWindow::getMW()->ftsnds[fi]->m_actionInvPolarity->isChecked())
+            WAVTYPE a = gMW->ftsnds[fi]->m_ampscale;
+            if(gMW->ftsnds[fi]->m_actionInvPolarity->isChecked())
                 a *=-1.0;
 
-            QPen wavpen(WMainWindow::getMW()->ftsnds[fi]->color);
+            QPen wavpen(gMW->ftsnds[fi]->color);
             wavpen.setWidth(0);
             painter->setPen(wavpen);
 
-            int delay = WMainWindow::getMW()->ftsnds[fi]->m_delay;
+            int delay = gMW->ftsnds[fi]->m_delay;
             int nleft = int((rect.left())*fs)-delay;
             int nright = int((rect.right())*fs)+1-delay;
             nleft = std::max(nleft, -delay);
             nleft = std::max(nleft, 0);
-            nleft = std::min(nleft, int(WMainWindow::getMW()->ftsnds[fi]->wav.size()-1)-delay);
-            nleft = std::min(nleft, int(WMainWindow::getMW()->ftsnds[fi]->wav.size()-1));
+            nleft = std::min(nleft, int(gMW->ftsnds[fi]->wav.size()-1)-delay);
+            nleft = std::min(nleft, int(gMW->ftsnds[fi]->wav.size()-1));
             nright = std::max(nright, -delay);
             nright = std::max(nright, 0);
-            nright = std::min(nright, int(WMainWindow::getMW()->ftsnds[fi]->wav.size()-1)-delay);
-            nright = std::min(nright, int(WMainWindow::getMW()->ftsnds[fi]->wav.size()-1));
+            nright = std::min(nright, int(gMW->ftsnds[fi]->wav.size()-1)-delay);
+            nright = std::min(nright, int(gMW->ftsnds[fi]->wav.size()-1));
 
             // Draw a line between each sample value
             WAVTYPE dt = 1.0/fs;
             WAVTYPE prevx = (nleft+delay)*dt;
             a *= -1;
-            WAVTYPE* data = WMainWindow::getMW()->ftsnds[fi]->wavtoplay->data();
+            WAVTYPE* data = gMW->ftsnds[fi]->wavtoplay->data();
             WAVTYPE prevy = a*(*(data+nleft));
 
             WAVTYPE x, y;
@@ -1185,7 +1203,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
                 }
             }
 
-            painter->drawLine(QLineF(double(WMainWindow::getMW()->ftsnds[fi]->wav.size()-1)/fs, -1.0, double(WMainWindow::getMW()->ftsnds[fi]->wav.size()-1)/fs, 1.0));
+            painter->drawLine(QLineF(double(gMW->ftsnds[fi]->wav.size()-1)/fs, -1.0, double(gMW->ftsnds[fi]->wav.size()-1)/fs, 1.0));
         }
     }
     else {
@@ -1193,15 +1211,15 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
         painter->setWorldMatrixEnabled(false); // Work in pixel coordinates
 
-        for(size_t fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++){
-            if(!WMainWindow::getMW()->ftsnds[fi]->m_actionShow->isChecked())
+        for(size_t fi=0; fi<gMW->ftsnds.size(); fi++){
+            if(!gMW->ftsnds[fi]->m_actionShow->isChecked())
                 continue;
 
-            double a = WMainWindow::getMW()->ftsnds[fi]->m_ampscale;
-            if(WMainWindow::getMW()->ftsnds[fi]->m_actionInvPolarity->isChecked())
+            double a = gMW->ftsnds[fi]->m_ampscale;
+            if(gMW->ftsnds[fi]->m_actionInvPolarity->isChecked())
                 a *= -1.0;
 
-            QPen outlinePen(WMainWindow::getMW()->ftsnds[fi]->color);
+            QPen outlinePen(gMW->ftsnds[fi]->color);
             outlinePen.setWidth(0);
             painter->setPen(outlinePen);
 
@@ -1212,17 +1230,17 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
             double p2n = fs*double(viewrect.width())/double(fullpixrect.width()-1); // Pixel to scene
             double yzero = fullpixrect.height()/2;
 
-            WAVTYPE* yp = WMainWindow::getMW()->ftsnds[fi]->wavtoplay->data();
+            WAVTYPE* yp = gMW->ftsnds[fi]->wavtoplay->data();
 
             int winpixdelay = horizontalScrollBar()->value(); // - 1.0/p2n; // The magic value to make everything plot at the same place whatever the scroll
 
-            int snddelay = WMainWindow::getMW()->ftsnds[fi]->m_delay;
+            int snddelay = gMW->ftsnds[fi]->m_delay;
             int ns = int((pixrect.left()+winpixdelay)*p2n)-snddelay;
             for(int i=pixrect.left(); i<=pixrect.right(); i++) {
 
                 int ne = int((i+1+winpixdelay)*p2n)-snddelay;
 
-                if(ns>=0 && ne<int(WMainWindow::getMW()->ftsnds[fi]->wav.size())) {
+                if(ns>=0 && ne<int(gMW->ftsnds[fi]->wav.size())) {
                     WAVTYPE ymin = 1.0;
                     WAVTYPE ymax = -1.0;
                     WAVTYPE* ypp = yp+ns;
@@ -1249,12 +1267,12 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
 
     // Plot STFT's window centers
     if(m_aShowSTFTWindowCenters->isChecked()){
-        FTSound* currentftsound = WMainWindow::getMW()->getCurrentFTSound();
+        FTSound* currentftsound = gMW->getCurrentFTSound();
         if(currentftsound && currentftsound->m_actionShow->isChecked()){
             QPen outlinePen(currentftsound->color);
             outlinePen.setWidth(0);
             painter->setPen(outlinePen);
-//            painter->setBrush(QBrush(WMainWindow::getMW()->ftlabels[fi]->color));
+//            painter->setBrush(QBrush(gMW->ftlabels[fi]->color));
 
             for(size_t wci=0; wci<currentftsound->m_stftts.size(); wci++){
                 painter->drawLine(QLineF(currentftsound->m_stftts[wci], -1.0, currentftsound->m_stftts[wci], 1.0));
@@ -1371,6 +1389,6 @@ void QGVWaveform::playCursorSet(double t, bool forwardsync){
         m_giPlayCursor->setPos(QPointF(t, 0));
     }
 
-    if(WMainWindow::getMW()->m_gvSpectrogram && forwardsync)
-        WMainWindow::getMW()->m_gvSpectrogram->playCursorSet(t, false);
+    if(gMW->m_gvSpectrogram && forwardsync)
+        gMW->m_gvSpectrogram->playCursorSet(t, false);
 }

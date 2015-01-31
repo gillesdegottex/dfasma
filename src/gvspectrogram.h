@@ -116,8 +116,7 @@ public:
     QRectF m_selection, m_mouseSelection;
     QGraphicsRectItem* m_giShownSelection;
     QGraphicsSimpleTextItem* m_giSelectionTxt;
-    void selectionChangesRequested();
-    void selectionFixAndRefresh();
+    void selectionSet(QRectF selection, bool forwardsync=true);
     void selectionSetTextInForm();
 
     void scrollContentsBy(int dx, int dy);
@@ -128,7 +127,7 @@ public:
     void mouseReleaseEvent(QMouseEvent* event);
     void keyPressEvent(QKeyEvent* event);
 
-    void viewSet(QRectF viewrect=QRectF(), bool sync=true);
+    void viewSet(QRectF viewrect=QRectF(), bool forwardsync=true);
     void drawBackground(QPainter* painter, const QRectF& rect);
     void draw_grid(QPainter* painter, const QRectF& rect);
 
@@ -152,7 +151,6 @@ public slots:
     void updateSceneRect(); // To call when fs has changed and limits in dB
     void updateTextsGeometry();
     void updateDFTSettings();
-//    bool computeSTFT(bool force=false);
     void updateSTFTPlot();
     void clearSTFTPlot();
     void stftComputing();

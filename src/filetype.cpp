@@ -103,14 +103,14 @@ FileType::FileType(FILETYPE _type, const QString& _fileName, QObject * parent)
     m_actionShow->setStatusTip("Show the sound in the views");
     m_actionShow->setCheckable(true);
     m_actionShow->setChecked(true);
-    WMainWindow::getMW()->connect(m_actionShow, SIGNAL(toggled(bool)), WMainWindow::getMW(), SLOT(soundsChanged()));
+    gMW->connect(m_actionShow, SIGNAL(toggled(bool)), gMW, SLOT(soundsChanged()));
 
     m_actionReload = new QAction("Reload", parent);
     m_actionReload->setStatusTip("Reload data from the file");
 
     m_actionDuplicate = new QAction("Duplicate", parent);
     m_actionDuplicate->setStatusTip("Duplicate the file content");
-    WMainWindow::getMW()->connect(m_actionDuplicate, SIGNAL(triggered()), WMainWindow::getMW(), SLOT(duplicateCurrentFile()));
+    gMW->connect(m_actionDuplicate, SIGNAL(triggered()), gMW, SLOT(duplicateCurrentFile()));
 
 //    QIODevice::open(QIODevice::ReadOnly);
 }
@@ -166,9 +166,9 @@ void FileType::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
     contextmenu.addAction(m_actionReload);
     contextmenu.addAction(m_actionDuplicate);
     QColorDialog* colordialog = new QColorDialog(&contextmenu);
-    QObject::connect(colordialog, SIGNAL(colorSelected(const QColor &)), WMainWindow::getMW(), SLOT(colorSelected(const QColor &)));
-//    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), WMainWindow::getMW(), SLOT(colorSelected(const QColor &)));
-//    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), WMainWindow::getMW()->m_gvSpectrum, SLOT(soundsChanged()));
+    QObject::connect(colordialog, SIGNAL(colorSelected(const QColor &)), gMW, SLOT(colorSelected(const QColor &)));
+//    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), gMW, SLOT(colorSelected(const QColor &)));
+//    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), gMW->m_gvSpectrum, SLOT(soundsChanged()));
 
     // Add the available Matlab colors to the custom colors
     int ci = 0;
@@ -226,7 +226,7 @@ void FileType::setStatus() {
     setText(liststr);
     setToolTip(tooltipstr);
 
-    WMainWindow::getMW()->fileInfoUpdate();
+    gMW->fileInfoUpdate();
 }
 
 FileType::~FileType() {

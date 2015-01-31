@@ -127,8 +127,8 @@ void STFTComputeThread::run() {
     }
     while(compute);
 
-    WMainWindow::getMW()->ui->pgbSpectrogramSTFTCompute->hide();
-    WMainWindow::getMW()->ui->lblSpectrogramInfoTxt->setText(QString("DFT size=%1").arg(m_fft->size()));
+    gMW->ui->pgbSpectrogramSTFTCompute->hide();
+    gMW->ui->lblSpectrogramInfoTxt->setText(QString("DFT size=%1").arg(m_fft->size()));
 
 //    std::cout << "STFTComputeThread::run m_mutex_computing.unlock " << std::endl;
     m_mutex_computing.unlock();

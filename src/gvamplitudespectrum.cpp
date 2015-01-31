@@ -31,6 +31,7 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "gvwaveform.h"
 #include "gvphasespectrum.h"
+#include "gvspectrogram.h"
 #include "ftsound.h"
 #include "ftfzero.h"
 #include "sigproc.h"
@@ -64,7 +65,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
 
     QSettings settings;
 
-    WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->setValue(settings.value("qgvamplitudespectrum/sldSpectrumAmplitudeMin", -215).toInt());
+    gMW->ui->sldSpectrumAmplitudeMin->setValue(settings.value("qgvamplitudespectrum/sldSpectrumAmplitudeMin", -215).toInt());
 
     m_aShowProperties = new QAction(tr("&Properties"), this);
     m_aShowProperties->setStatusTip(tr("Open the properties configuration panel of the spectrum view"));
@@ -99,7 +100,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_giCursorHoriz->setPen(cursorPen);
     m_giCursorHoriz->hide();
     m_scene->addItem(m_giCursorHoriz);
-    m_giCursorVert = new QGraphicsLineItem(0, 0, WMainWindow::getMW()->getFs()/2.0, 0);
+    m_giCursorVert = new QGraphicsLineItem(0, 0, gMW->getFs()/2.0, 0);
     m_giCursorVert->setPen(cursorPen);
     m_giCursorVert->hide();
     m_scene->addItem(m_giCursorVert);
@@ -131,7 +132,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_giShownSelection->setPen(selectionPen);
     m_giShownSelection->setBrush(selectionBrush);
     m_giShownSelection->setOpacity(0.5);
-    WMainWindow::getMW()->ui->lblSpectrumSelectionTxt->setText("No selection");
+    gMW->ui->lblSpectrumSelectionTxt->setText("No selection");
 
     // Build actions
     m_aZoomIn = new QAction(tr("Zoom In"), this);;
@@ -169,21 +170,21 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_aAutoUpdateDFT->setIcon(QIcon(":/icons/autoupdatedft.svg"));
     connect(m_aAutoUpdateDFT, SIGNAL(toggled(bool)), this, SLOT(settingsModified()));
 
-    WMainWindow::getMW()->ui->lblSpectrumSelectionTxt->setText("No selection");
+    gMW->ui->lblSpectrumSelectionTxt->setText("No selection");
 
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setResizeAnchor(QGraphicsView::AnchorViewCenter);
     setMouseTracking(true);
 
-    WMainWindow::getMW()->ui->pgbFFTResize->hide();
-    WMainWindow::getMW()->ui->lblSpectrumInfoTxt->setText("");
+    gMW->ui->pgbFFTResize->hide();
+    gMW->ui->lblSpectrumInfoTxt->setText("");
 
     connect(m_fftresizethread, SIGNAL(fftResized(int,int)), this, SLOT(computeDFTs()));
     connect(m_fftresizethread, SIGNAL(fftResizing(int,int)), this, SLOT(fftResizing(int,int)));
 
     m_maxsy = 10;
-    m_minsy = WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->value();
+    m_minsy = gMW->ui->sldSpectrumAmplitudeMin->value();
 
     // Fill the toolbar
     m_toolBar = new QToolBar(this);
@@ -195,9 +196,9 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
 //    m_toolBar->addSeparator();
     m_toolBar->addAction(m_aZoomOnSelection);
     m_toolBar->addAction(m_aSelectionClear);
-    m_toolBar->setIconSize(QSize(WMainWindow::getMW()->m_dlgSettings->ui->sbToolBarSizes->value(), WMainWindow::getMW()->m_dlgSettings->ui->sbToolBarSizes->value()));
+    m_toolBar->setIconSize(QSize(gMW->m_dlgSettings->ui->sbToolBarSizes->value(), gMW->m_dlgSettings->ui->sbToolBarSizes->value()));
     m_toolBar->setOrientation(Qt::Vertical);
-    WMainWindow::getMW()->ui->lSpectraToolBar->addWidget(m_toolBar);
+    gMW->ui->lSpectraToolBar->addWidget(m_toolBar);
 
     // Build the context menu
     m_contextmenu.addAction(m_aShowGrid);
@@ -209,22 +210,22 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
     connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(settingsModified()));
 
-    connect(WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin, SIGNAL(valueChanged(int)), this, SLOT(amplitudeMinChanged()));
+    connect(gMW->ui->sldSpectrumAmplitudeMin, SIGNAL(valueChanged(int)), this, SLOT(amplitudeMinChanged()));
 }
 
 void QGVAmplitudeSpectrum::settingsModified(){
-    if(WMainWindow::getMW()->m_gvWaveform)
-        WMainWindow::getMW()->m_gvWaveform->selectionClipAndSet(WMainWindow::getMW()->m_gvWaveform->m_mouseSelection, true);
+    if(gMW->m_gvWaveform)
+        gMW->m_gvWaveform->selectionSet(gMW->m_gvWaveform->m_mouseSelection, true);
 }
 
 void QGVAmplitudeSpectrum::updateAmplitudeExtent(){
-    if(WMainWindow::getMW()->ftsnds.size()>0){
+    if(gMW->ftsnds.size()>0){
         float maxsqnr = -std::numeric_limits<float>::infinity();
-        for(unsigned int si=0; si<WMainWindow::getMW()->ftsnds.size(); si++)
-            maxsqnr = std::max(maxsqnr, 20*std::log10(std::pow(2.0f,WMainWindow::getMW()->ftsnds[si]->format().sampleSize())));
+        for(unsigned int si=0; si<gMW->ftsnds.size(); si++)
+            maxsqnr = std::max(maxsqnr, 20*std::log10(std::pow(2.0f,gMW->ftsnds[si]->format().sampleSize())));
 
-        WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->setMaximum(0);
-        WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->setMinimum(-2*maxsqnr); // 2 gives a margin
+        gMW->ui->sldSpectrumAmplitudeMin->setMaximum(0);
+        gMW->ui->sldSpectrumAmplitudeMin->setMinimum(-2*maxsqnr); // 2 gives a margin
 
         updateSceneRect();
     }
@@ -238,25 +239,27 @@ void QGVAmplitudeSpectrum::amplitudeMinChanged() {
 }
 
 void QGVAmplitudeSpectrum::updateSceneRect() {
-    m_scene->setSceneRect(0.0, -10, WMainWindow::getMW()->getFs()/2, (10-WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->value()));
+    m_scene->setSceneRect(0.0, -10, gMW->getFs()/2, (10-gMW->ui->sldSpectrumAmplitudeMin->value()));
 }
 
 void QGVAmplitudeSpectrum::fftResizing(int prevSize, int newSize){
     Q_UNUSED(prevSize);
 
-    WMainWindow::getMW()->ui->pgbFFTResize->show();
-    WMainWindow::getMW()->ui->lblSpectrumInfoTxt->setText(QString("Resizing DFT to %1").arg(newSize));
+    gMW->ui->pgbFFTResize->show();
+    gMW->ui->lblSpectrumInfoTxt->setText(QString("Resizing DFT to %1").arg(newSize));
 }
 
 void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend, bool winforceupdate){
     if(tstart==tend)
         return;
 
+//    DEBUGSTRING << "QGVAmplitudeSpectrum::setWindowRange " << m_windowDurationClipped << endl;
+
     if(m_dlgSettings->ui->cbSpectrumAmplitudeLimitWindowDuration->isChecked() && (tend-tstart)>m_dlgSettings->ui->sbSpectrumAmplitudeWindowDurationLimit->value())
         tend = tstart+m_dlgSettings->ui->sbSpectrumAmplitudeWindowDurationLimit->value();
 
-    m_nl = std::max(0, int(0.5+tstart*WMainWindow::getMW()->getFs()));
-    m_nr = int(0.5+std::min(WMainWindow::getMW()->getMaxLastSampleTime(),tend)*WMainWindow::getMW()->getFs());
+    m_nl = std::max(0, int(0.5+tstart*gMW->getFs()));
+    m_nr = int(0.5+std::min(gMW->getMaxLastSampleTime(),tend)*gMW->getFs());
 
     if((m_nr-m_nl+1)%2==0 && m_dlgSettings->ui->cbWindowSizeForcedOdd->isChecked())
         m_nr++;
@@ -318,7 +321,7 @@ void QGVAmplitudeSpectrum::updateDFTSettings(){
 }
 
 void QGVAmplitudeSpectrum::computeDFTs(){
-//    std::cout << "QGVAmplitudeSpectrum::computeDFTs " << m_winlen << endl;
+//    DEBUGSTRING << "QGVAmplitudeSpectrum::computeDFTs " << m_winlen << endl;
     if(m_winlen<2)
         return;
 
@@ -328,23 +331,23 @@ void QGVAmplitudeSpectrum::computeDFTs(){
 
         int dftlen = m_fft->size(); // Local copy of the actual dftlen
 
-        WMainWindow::getMW()->ui->pgbFFTResize->hide();
-        WMainWindow::getMW()->ui->lblSpectrumInfoTxt->setText(QString("DFT size=%1").arg(dftlen));
+        gMW->ui->pgbFFTResize->hide();
+        gMW->ui->lblSpectrumInfoTxt->setText(QString("DFT size=%1").arg(dftlen));
 
         m_minsy = std::numeric_limits<double>::infinity();
         m_maxsy = -std::numeric_limits<double>::infinity();
-        for(unsigned int fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++){
-            WAVTYPE gain = WMainWindow::getMW()->ftsnds[fi]->m_ampscale;
-            if(WMainWindow::getMW()->ftsnds[fi]->m_actionInvPolarity->isChecked())
+        for(unsigned int fi=0; fi<gMW->ftsnds.size(); fi++){
+            WAVTYPE gain = gMW->ftsnds[fi]->m_ampscale;
+            if(gMW->ftsnds[fi]->m_actionInvPolarity->isChecked())
                 gain *= -1;
 
             int n = 0;
             int wn = 0;
             for(; n<m_winlen; n++){
-                wn = m_nl+n - WMainWindow::getMW()->ftsnds[fi]->m_delay;
+                wn = m_nl+n - gMW->ftsnds[fi]->m_delay;
 
-                if(wn>=0 && wn<int(WMainWindow::getMW()->ftsnds[fi]->wavtoplay->size())) {
-                    WAVTYPE value = gain*(*(WMainWindow::getMW()->ftsnds[fi]->wavtoplay))[wn];
+                if(wn>=0 && wn<int(gMW->ftsnds[fi]->wavtoplay->size())) {
+                    WAVTYPE value = gain*(*(gMW->ftsnds[fi]->wavtoplay))[wn];
 
                     if(value>1.0)       value = 1.0;
                     else if(value<-1.0) value = -1.0;
@@ -359,8 +362,8 @@ void QGVAmplitudeSpectrum::computeDFTs(){
 
             m_fft->execute(); // Compute the DFT
 
-            std::vector<std::complex<WAVTYPE> >* pdft = &(WMainWindow::getMW()->ftsnds[fi]->m_dft);
-            WMainWindow::getMW()->ftsnds[fi]->m_dft.resize(dftlen/2+1);
+            std::vector<std::complex<WAVTYPE> >* pdft = &(gMW->ftsnds[fi]->m_dft);
+            gMW->ftsnds[fi]->m_dft.resize(dftlen/2+1);
             for(n=0; n<dftlen/2+1; n++) {
                 (*pdft)[n] = std::complex<WAVTYPE>(std::log(std::abs(m_fft->out[n])),std::arg(m_fft->out[n]));
                 double y = (*pdft)[n].real();
@@ -390,8 +393,8 @@ void QGVAmplitudeSpectrum::computeDFTs(){
         m_fftresizethread->m_mutex_resizing.unlock();
 
         m_scene->invalidate();
-        if(WMainWindow::getMW()->m_gvPhaseSpectrum)
-            WMainWindow::getMW()->m_gvPhaseSpectrum->m_scene->invalidate();
+        if(gMW->m_gvPhaseSpectrum)
+            gMW->m_gvPhaseSpectrum->m_scene->invalidate();
     }
 
 //    std::cout << "~QGVAmplitudeSpectrum::computeDFTs" << endl;
@@ -401,7 +404,7 @@ void QGVAmplitudeSpectrum::settingsSave() {
     QSettings settings;
     settings.setValue("qgvamplitudespectrum/m_aShowGrid", m_aShowGrid->isChecked());
     settings.setValue("qgvamplitudespectrum/m_aShowWindow", m_aShowWindow->isChecked());
-    settings.setValue("qgvamplitudespectrum/sldSpectrumAmplitudeMin", WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->value());
+    settings.setValue("qgvamplitudespectrum/sldSpectrumAmplitudeMin", gMW->ui->sldSpectrumAmplitudeMin->value());
     settings.setValue("qgvamplitudespectrum/sbSpectrumOversamplingFactor", m_dlgSettings->ui->sbSpectrumOversamplingFactor->value());
     settings.setValue("qgvamplitudespectrum/sbFFTW3ResizingMaxTimeSpent", m_dlgSettings->ui->sbFFTW3ResizingMaxTimeSpent->value());
     settings.setValue("qgvamplitudespectrum/cbWindowSizeForcedOdd", m_dlgSettings->ui->cbWindowSizeForcedOdd->isChecked());
@@ -415,7 +418,7 @@ void QGVAmplitudeSpectrum::settingsSave() {
 }
 
 void QGVAmplitudeSpectrum::soundsChanged(){
-    if(WMainWindow::getMW()->ftsnds.size()>0)
+    if(gMW->ftsnds.size()>0)
         computeDFTs();
     m_scene->update();
 }
@@ -448,11 +451,11 @@ void QGVAmplitudeSpectrum::viewSet(QRectF viewrect, bool sync) {
         fitInView(removeHiddenMargin(this, viewrect));
 
         if(sync){
-            if(WMainWindow::getMW()->m_gvPhaseSpectrum && WMainWindow::getMW()->ui->actionShowPhaseSpectrum->isChecked()) {
-                QRectF phaserect = WMainWindow::getMW()->m_gvPhaseSpectrum->mapToScene(WMainWindow::getMW()->m_gvPhaseSpectrum->viewport()->rect()).boundingRect();
+            if(gMW->m_gvPhaseSpectrum && gMW->ui->actionShowPhaseSpectrum->isChecked()) {
+                QRectF phaserect = gMW->m_gvPhaseSpectrum->mapToScene(gMW->m_gvPhaseSpectrum->viewport()->rect()).boundingRect();
                 phaserect.setLeft(viewrect.left());
                 phaserect.setRight(viewrect.right());
-                WMainWindow::getMW()->m_gvPhaseSpectrum->viewSet(phaserect, false);
+                gMW->m_gvPhaseSpectrum->viewSet(phaserect, false);
             }
         }
     }
@@ -469,14 +472,14 @@ void QGVAmplitudeSpectrum::resizeEvent(QResizeEvent* event){
 
         updateSceneRect();
 
-        if(WMainWindow::getMW()->m_gvPhaseSpectrum->viewport()->rect().width()*WMainWindow::getMW()->m_gvPhaseSpectrum->viewport()->rect().height()>0){
-            QRectF phaserect = WMainWindow::getMW()->m_gvPhaseSpectrum->mapToScene(WMainWindow::getMW()->m_gvPhaseSpectrum->viewport()->rect()).boundingRect();
+        if(gMW->m_gvPhaseSpectrum->viewport()->rect().width()*gMW->m_gvPhaseSpectrum->viewport()->rect().height()>0){
+            QRectF phaserect = gMW->m_gvPhaseSpectrum->mapToScene(gMW->m_gvPhaseSpectrum->viewport()->rect()).boundingRect();
 
             QRectF viewrect;
             viewrect.setLeft(phaserect.left());
             viewrect.setRight(phaserect.right());
             viewrect.setTop(-10);
-            viewrect.setBottom(-WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->value());
+            viewrect.setBottom(-gMW->ui->sldSpectrumAmplitudeMin->value());
             viewSet(viewrect, false);
         }
         else
@@ -524,21 +527,21 @@ void QGVAmplitudeSpectrum::wheelEvent(QWheelEvent* event) {
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
-    if((viewrect.width()>10.0/WMainWindow::getMW()->getFs() && numDegrees>0) || (viewrect.height()>10.0/WMainWindow::getMW()->getFs() && numDegrees<0)) {
+    if((viewrect.width()>10.0/gMW->getFs() && numDegrees>0) || (viewrect.height()>10.0/gMW->getFs() && numDegrees<0)) {
         double gx = double(mapToScene(event->pos()).x()-viewrect.left())/viewrect.width();
         double gy = double(mapToScene(event->pos()).y()-viewrect.top())/viewrect.height();
         QRectF newrect = mapToScene(viewport()->rect()).boundingRect();
         newrect.setLeft(newrect.left()+gx*0.01*viewrect.width()*numDegrees);
         newrect.setRight(newrect.right()-(1-gx)*0.01*viewrect.width()*numDegrees);
-        if(newrect.width()<10.0/WMainWindow::getMW()->getFs()){
-           newrect.setLeft(newrect.center().x()-5.0/WMainWindow::getMW()->getFs());
-           newrect.setRight(newrect.center().x()+5.0/WMainWindow::getMW()->getFs());
+        if(newrect.width()<10.0/gMW->getFs()){
+           newrect.setLeft(newrect.center().x()-5.0/gMW->getFs());
+           newrect.setRight(newrect.center().x()+5.0/gMW->getFs());
         }
         newrect.setTop(newrect.top()+gy*0.01*viewrect.height()*numDegrees);
         newrect.setBottom(newrect.bottom()-(1-gy)*0.01*viewrect.height()*numDegrees);
-        if(newrect.height()<10.0/WMainWindow::getMW()->getFs()){
-           newrect.setTop(newrect.center().y()-5.0/WMainWindow::getMW()->getFs());
-           newrect.setBottom(newrect.center().y()+5.0/WMainWindow::getMW()->getFs());
+        if(newrect.height()<10.0/gMW->getFs()){
+           newrect.setTop(newrect.center().y()-5.0/gMW->getFs());
+           newrect.setBottom(newrect.center().y()+5.0/gMW->getFs());
         }
 
         viewSet(newrect);
@@ -557,7 +560,7 @@ void QGVAmplitudeSpectrum::mousePressEvent(QMouseEvent* event){
     QRect selview = mapFromScene(m_selection).boundingRect();
 
     if(event->buttons()&Qt::LeftButton){
-        if(WMainWindow::getMW()->ui->actionSelectionMode->isChecked()){
+        if(gMW->ui->actionSelectionMode->isChecked()){
             if(event->modifiers().testFlag(Qt::ShiftModifier)) {
                 // When moving the spectrum's view
                 m_currentAction = CAMoving;
@@ -590,7 +593,7 @@ void QGVAmplitudeSpectrum::mousePressEvent(QMouseEvent* event){
                 m_selection_pressedp = p;
                 m_mouseSelection = m_selection;
                 setCursor(Qt::ClosedHandCursor);
-        //            WMainWindow::getMW()->ui->lblSpectrumSelectionTxt->setText(QString("Selection [%1s").arg(m_selection.left()).append(",%1s] ").arg(m_selection.right()).append("%1s").arg(m_selection.width()));
+        //            gMW->ui->lblSpectrumSelectionTxt->setText(QString("Selection [%1s").arg(m_selection.left()).append(",%1s] ").arg(m_selection.right()).append("%1s").arg(m_selection.width()));
             }
             else {
                 // When selecting
@@ -598,10 +601,10 @@ void QGVAmplitudeSpectrum::mousePressEvent(QMouseEvent* event){
                 m_selection_pressedp = p;
                 m_mouseSelection.setTopLeft(m_selection_pressedp);
                 m_mouseSelection.setBottomRight(m_selection_pressedp);
-                selectionFixAndRefresh();
+                selectionSet(m_mouseSelection, true);
             }
         }
-        else if(WMainWindow::getMW()->ui->actionEditMode->isChecked()){
+        else if(gMW->ui->actionEditMode->isChecked()){
             if(event->modifiers().testFlag(Qt::ShiftModifier)){
 //                 TODO
             }
@@ -664,35 +667,35 @@ void QGVAmplitudeSpectrum::mouseMoveEvent(QMouseEvent* event){
     }
     else if(m_currentAction==CAModifSelectionLeft){
         m_mouseSelection.setLeft(p.x()-m_selection_pressedp.x());
-        selectionChangesRequested();
+        selectionSet(m_mouseSelection, true);
     }
     else if(m_currentAction==CAModifSelectionRight){
         m_mouseSelection.setRight(p.x()-m_selection_pressedp.x());
-        selectionChangesRequested();
+        selectionSet(m_mouseSelection, true);
     }
     else if(m_currentAction==CAModifSelectionTop){
         m_mouseSelection.setTop(p.y()-m_selection_pressedp.y());
-        selectionChangesRequested();
+        selectionSet(m_mouseSelection, true);
     }
     else if(m_currentAction==CAModifSelectionBottom){
         m_mouseSelection.setBottom(p.y()-m_selection_pressedp.y());
-        selectionChangesRequested();
+        selectionSet(m_mouseSelection, true);
     }
     else if(m_currentAction==CAMovingSelection){
         // When scroling the selection
         m_mouseSelection.adjust(p.x()-m_selection_pressedp.x(), p.y()-m_selection_pressedp.y(), p.x()-m_selection_pressedp.x(), p.y()-m_selection_pressedp.y());
-        selectionChangesRequested();
+        selectionSet(m_mouseSelection, true);
         m_selection_pressedp = p;
     }
     else if(m_currentAction==CASelecting){
         // When selecting
         m_mouseSelection.setTopLeft(m_selection_pressedp);
         m_mouseSelection.setBottomRight(p);
-        selectionChangesRequested();
+        selectionSet(m_mouseSelection, true);
     }
     else if(m_currentAction==CAWaveformScale){
         // When scaling the waveform
-        FTSound* currentftsound = WMainWindow::getMW()->getCurrentFTSound();
+        FTSound* currentftsound = gMW->getCurrentFTSound();
         if(currentftsound){
             if(!currentftsound->m_actionShow->isChecked()) {
                 QMessageBox::warning(this, "Editing a hidden file", "<p>The selected file is hidden.<br/><br/>For edition, please select only visible files.</p>");
@@ -709,16 +712,16 @@ void QGVAmplitudeSpectrum::mouseMoveEvent(QMouseEvent* event){
 
                 currentftsound->setStatus();
 
-                WMainWindow::getMW()->fileInfoUpdate();
+                gMW->fileInfoUpdate();
                 soundsChanged();
-                WMainWindow::getMW()->m_gvWaveform->soundsChanged();
+                gMW->m_gvWaveform->soundsChanged();
             }
         }
     }
     else{
         QRect selview = mapFromScene(m_selection).boundingRect();
 
-        if(WMainWindow::getMW()->ui->actionSelectionMode->isChecked()){
+        if(gMW->ui->actionSelectionMode->isChecked()){
             if(event->modifiers().testFlag(Qt::ShiftModifier)){
             }
             else if(event->modifiers().testFlag(Qt::ControlModifier)){
@@ -738,7 +741,7 @@ void QGVAmplitudeSpectrum::mouseMoveEvent(QMouseEvent* event){
                     setCursor(Qt::CrossCursor);
             }
         }
-        else if(WMainWindow::getMW()->ui->actionEditMode->isChecked()){
+        else if(gMW->ui->actionEditMode->isChecked()){
             if(event->modifiers().testFlag(Qt::ShiftModifier)){
             }
             else if(event->modifiers().testFlag(Qt::ControlModifier)){
@@ -753,13 +756,13 @@ void QGVAmplitudeSpectrum::mouseMoveEvent(QMouseEvent* event){
 }
 
 void QGVAmplitudeSpectrum::mouseReleaseEvent(QMouseEvent* event) {
-//    std::cout << "QGVWaveform::mouseReleaseEvent " << selection.width() << endl;
+//    std::cout << "QGVAmplitudeSpectrum::mouseReleaseEvent " << endl;
 
     QPointF p = mapToScene(event->pos());
 
     m_currentAction = CANothing;
 
-    if(WMainWindow::getMW()->ui->actionSelectionMode->isChecked()) {
+    if(gMW->ui->actionSelectionMode->isChecked()) {
         if(event->modifiers().testFlag(Qt::ShiftModifier)) {
             setCursor(Qt::OpenHandCursor);
         }
@@ -773,7 +776,7 @@ void QGVAmplitudeSpectrum::mouseReleaseEvent(QMouseEvent* event) {
                 setCursor(Qt::CrossCursor);
         }
     }
-    else if(WMainWindow::getMW()->ui->actionEditMode->isChecked()) {
+    else if(gMW->ui->actionEditMode->isChecked()) {
         if(event->modifiers().testFlag(Qt::ShiftModifier)){
         }
         else if(event->modifiers().testFlag(Qt::ControlModifier)) {
@@ -805,6 +808,7 @@ void QGVAmplitudeSpectrum::keyPressEvent(QKeyEvent* event){
 }
 
 void QGVAmplitudeSpectrum::selectionClear() {
+//    cout << "QGVAmplitudeSpectrum::selectionClear" << endl;
     m_giShownSelection->hide();
     m_giSelectionTxt->hide();
     m_selection = QRectF(0, 0, 0, 0);
@@ -814,19 +818,30 @@ void QGVAmplitudeSpectrum::selectionClear() {
     m_aSelectionClear->setEnabled(false);
     setCursor(Qt::CrossCursor);
 
-    if(WMainWindow::getMW()->m_gvPhaseSpectrum)
-        WMainWindow::getMW()->m_gvPhaseSpectrum->selectionClear();
+    if(gMW->m_gvPhaseSpectrum)
+        gMW->m_gvPhaseSpectrum->selectionClear();
+
+    if(gMW->m_gvSpectrogram){
+        if(gMW->m_gvSpectrogram->m_giShownSelection->isVisible()) {
+            QRectF rect = gMW->m_gvSpectrogram->m_mouseSelection;
+            rect.setTop(0.0);
+            rect.setBottom(gMW->getFs()/2);
+            gMW->m_gvSpectrogram->selectionSet(rect, false);
+        }
+    }
 
     selectionSetTextInForm();
+
+    m_scene->update();
 }
 
 void QGVAmplitudeSpectrum::selectionSetTextInForm() {
 
     QString str;
 
-//    cout << "QGVAmplitudeSpectrum::selectionSetText: " << m_selection.height() << " " << WMainWindow::getMW()->m_gvPhaseSpectrum->m_selection.height() << endl;
+//    cout << "QGVAmplitudeSpectrum::selectionSetText: " << m_selection.height() << " " << gMW->m_gvPhaseSpectrum->m_selection.height() << endl;
 
-    if (m_selection.height()==0 && WMainWindow::getMW()->m_gvPhaseSpectrum->m_selection.height()==0) {
+    if (m_selection.height()==0 && gMW->m_gvPhaseSpectrum->m_selection.height()==0) {
         str = "No selection";
     }
     else {
@@ -838,58 +853,44 @@ void QGVAmplitudeSpectrum::selectionSetTextInForm() {
             right = m_selection.right();
         }
         else {
-            left = WMainWindow::getMW()->m_gvPhaseSpectrum->m_selection.left();
-            right = WMainWindow::getMW()->m_gvPhaseSpectrum->m_selection.right();
+            left = gMW->m_gvPhaseSpectrum->m_selection.left();
+            right = gMW->m_gvPhaseSpectrum->m_selection.right();
         }
         str += QString("[%1,%2]%3 Hz").arg(left).arg(right).arg(right-left);
 
         if (m_selection.height()>0) {
             str += QString(" x [%4,%5]%6 dB").arg(-m_selection.bottom()).arg(-m_selection.top()).arg(m_selection.height());
         }
-        if (WMainWindow::getMW()->m_gvPhaseSpectrum->m_selection.height()>0) {
-            str += QString(" x [%7,%8]%9 rad").arg(-WMainWindow::getMW()->m_gvPhaseSpectrum->m_selection.bottom()).arg(-WMainWindow::getMW()->m_gvPhaseSpectrum->m_selection.top()).arg(WMainWindow::getMW()->m_gvPhaseSpectrum->m_selection.height());
+        if (gMW->m_gvPhaseSpectrum->m_selection.height()>0) {
+            str += QString(" x [%7,%8]%9 rad").arg(-gMW->m_gvPhaseSpectrum->m_selection.bottom()).arg(-gMW->m_gvPhaseSpectrum->m_selection.top()).arg(gMW->m_gvPhaseSpectrum->m_selection.height());
         }
     }
 
-    WMainWindow::getMW()->ui->lblSpectrumSelectionTxt->setText(str);
+    gMW->ui->lblSpectrumSelectionTxt->setText(str);
 }
 
-void QGVAmplitudeSpectrum::selectionChangesRequested() {
-    selectionFixAndRefresh();
-
-    if(WMainWindow::getMW()->m_gvPhaseSpectrum) {
-        WMainWindow::getMW()->m_gvPhaseSpectrum->m_mouseSelection.setLeft(m_mouseSelection.left());
-        WMainWindow::getMW()->m_gvPhaseSpectrum->m_mouseSelection.setRight(m_mouseSelection.right());
-        if(WMainWindow::getMW()->m_gvPhaseSpectrum->m_mouseSelection.height()==0) {
-            WMainWindow::getMW()->m_gvPhaseSpectrum->m_mouseSelection.setTop(-M_PI);
-            WMainWindow::getMW()->m_gvPhaseSpectrum->m_mouseSelection.setBottom(M_PI);
-        }
-        WMainWindow::getMW()->m_gvPhaseSpectrum->selectionFixAndRefresh();
-    }
-
-    selectionSetTextInForm();
-}
-
-void QGVAmplitudeSpectrum::selectionFixAndRefresh() {
+void QGVAmplitudeSpectrum::selectionSet(QRectF selection, bool forwardsync) {
 
     // Order the selection to avoid negative width and negative height
-    if(m_mouseSelection.right()<m_mouseSelection.left()){
-        float tmp = m_mouseSelection.left();
-        m_mouseSelection.setLeft(m_mouseSelection.right());
-        m_mouseSelection.setRight(tmp);
+    if(selection.right()<selection.left()){
+        float tmp = selection.left();
+        selection.setLeft(selection.right());
+        selection.setRight(tmp);
     }
-    if(m_mouseSelection.top()>m_mouseSelection.bottom()){
-        float tmp = m_mouseSelection.top();
-        m_mouseSelection.setTop(m_mouseSelection.bottom());
-        m_mouseSelection.setBottom(tmp);
+    if(selection.top()>selection.bottom()){
+        float tmp = selection.top();
+        selection.setTop(selection.bottom());
+        selection.setBottom(tmp);
     }
 
-    m_selection = m_mouseSelection;
+    m_selection = m_mouseSelection = selection;
 
     if(m_selection.left()<0) m_selection.setLeft(0);
-    if(m_selection.right()>WMainWindow::getMW()->getFs()/2.0) m_selection.setRight(WMainWindow::getMW()->getFs()/2.0);
+    if(m_selection.right()>gMW->getFs()/2.0) m_selection.setRight(gMW->getFs()/2.0);
     if(m_selection.top()<m_scene->sceneRect().top()) m_selection.setTop(m_scene->sceneRect().top());
     if(m_selection.bottom()>m_scene->sceneRect().bottom()) m_selection.setBottom(m_scene->sceneRect().bottom());
+
+//    DEBUGSTRING << "QGVAmplitudeSpectrum::selectionSet " << m_selection << endl;
 
     m_giShownSelection->setRect(m_selection);
     m_giShownSelection->show();
@@ -902,6 +903,32 @@ void QGVAmplitudeSpectrum::selectionFixAndRefresh() {
 
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 || m_selection.height());
     m_aSelectionClear->setEnabled(m_selection.width()>0 || m_selection.height());
+
+    if(forwardsync) {
+        if(gMW->m_gvPhaseSpectrum){
+            QRectF rect = gMW->m_gvPhaseSpectrum->m_mouseSelection;
+            rect.setLeft(m_mouseSelection.left());
+            rect.setRight(m_mouseSelection.right());
+            if(rect.height()==0) {
+                rect.setTop(gMW->m_gvPhaseSpectrum->m_scene->sceneRect().top());
+                rect.setBottom(gMW->m_gvPhaseSpectrum->m_scene->sceneRect().bottom());
+            }
+            gMW->m_gvPhaseSpectrum->selectionSet(rect, false);
+        }
+
+        if(gMW->m_gvSpectrogram){
+            QRectF rect = gMW->m_gvSpectrogram->m_mouseSelection;
+            rect.setTop(gMW->getFs()/2-m_mouseSelection.right());
+            rect.setBottom(gMW->getFs()/2-m_mouseSelection.left());
+            if(!gMW->m_gvSpectrogram->m_giShownSelection->isVisible()) {
+                rect.setLeft(gMW->m_gvSpectrogram->m_scene->sceneRect().left());
+                rect.setRight(gMW->m_gvSpectrogram->m_scene->sceneRect().right());
+            }
+            gMW->m_gvSpectrogram->selectionSet(rect, false);
+        }
+    }
+
+    selectionSetTextInForm();
 }
 
 void QGVAmplitudeSpectrum::viewUpdateTexts() {
@@ -931,8 +958,8 @@ void QGVAmplitudeSpectrum::selectionZoomOn(){
         viewSet(zoomonrect);
 
         viewUpdateTexts();
-        if(WMainWindow::getMW()->m_gvPhaseSpectrum)
-            WMainWindow::getMW()->m_gvPhaseSpectrum->viewUpdateTexts();
+        if(gMW->m_gvPhaseSpectrum)
+            gMW->m_gvPhaseSpectrum->viewUpdateTexts();
 
         cursorUpdate(QPointF(-1,0));
 //        m_aZoomOnSelection->setEnabled(false);
@@ -967,10 +994,10 @@ void QGVAmplitudeSpectrum::azoomout(){
 }
 void QGVAmplitudeSpectrum::aunzoom(){
 
-    QRectF rect = QRectF(0.0, -m_maxsy, WMainWindow::getMW()->getFs()/2, (m_maxsy-m_minsy));
+    QRectF rect = QRectF(0.0, -m_maxsy, gMW->getFs()/2, (m_maxsy-m_minsy));
 
-    if(rect.bottom()>(-WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->value()))
-        rect.setBottom(-WMainWindow::getMW()->ui->sldSpectrumAmplitudeMin->value());
+    if(rect.bottom()>(-gMW->ui->sldSpectrumAmplitudeMin->value()))
+        rect.setBottom(-gMW->ui->sldSpectrumAmplitudeMin->value());
     if(rect.top()<(-m_maxsy>10))
         rect.setTop(-10);
 
@@ -979,8 +1006,8 @@ void QGVAmplitudeSpectrum::aunzoom(){
 //    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 //    cout << "QGVAmplitudeSpectrum::aunzoom viewrect: " << viewrect.left() << "," << viewrect.right() << " X " << viewrect.top() << "," << viewrect.bottom() << endl;
 
-    if(WMainWindow::getMW()->m_gvPhaseSpectrum) {
-        WMainWindow::getMW()->m_gvPhaseSpectrum->viewSet(QRectF(0.0, -M_PI, WMainWindow::getMW()->getFs()/2, 2*M_PI), false);
+    if(gMW->m_gvPhaseSpectrum) {
+        gMW->m_gvPhaseSpectrum->viewSet(QRectF(0.0, -M_PI, gMW->getFs()/2, 2*M_PI), false);
     }
 
 //    cursorUpdate(QPointF(-1,0));
@@ -1000,11 +1027,11 @@ void QGVAmplitudeSpectrum::cursorUpdate(QPointF p) {
 
     line.setP1(QPointF(p.x(), m_giCursorVert->line().y1()));
     line.setP2(QPointF(p.x(), m_giCursorVert->line().y2()));
-    WMainWindow::getMW()->m_gvPhaseSpectrum->m_giCursorVert->setLine(line);
-    WMainWindow::getMW()->m_gvPhaseSpectrum->cursorFixAndRefresh();
+    gMW->m_gvPhaseSpectrum->m_giCursorVert->setLine(line);
+    gMW->m_gvPhaseSpectrum->cursorFixAndRefresh();
 }
 
-void QGVAmplitudeSpectrum::cursorFixAndRefresh() {
+void QGVAmplitudeSpectrum::cursorFixAndRefresh() { // TODO Use sync strategy
     if(m_giCursorVert->line().x1()==-1){
         m_giCursorHoriz->hide();
         m_giCursorVert->hide();
@@ -1018,7 +1045,7 @@ void QGVAmplitudeSpectrum::cursorFixAndRefresh() {
         txttrans.scale(1.0/trans.m11(),1.0/trans.m22());
 
         m_giCursorHoriz->show();
-        m_giCursorHoriz->setLine(viewrect.right()-50/trans.m11(), m_giCursorHoriz->line().y1(), WMainWindow::getMW()->getFs()/2.0, m_giCursorHoriz->line().y1());
+        m_giCursorHoriz->setLine(viewrect.right()-50/trans.m11(), m_giCursorHoriz->line().y1(), gMW->getFs()/2.0, m_giCursorHoriz->line().y1());
         m_giCursorVert->show();
         m_giCursorVert->setLine(m_giCursorVert->line().x1(), viewrect.top(), m_giCursorVert->line().x1(), viewrect.top()+14/trans.m22());
         m_giCursorPositionXTxt->show();
@@ -1031,7 +1058,7 @@ void QGVAmplitudeSpectrum::cursorFixAndRefresh() {
         x = min(x, viewrect.right()-br.width()/trans.m11());
 
         QString freqstr = QString("%1Hz").arg(m_giCursorVert->line().x1());
-        if(WMainWindow::getMW()->m_dlgSettings->ui->cbShowMusicNoteNames->isChecked())
+        if(gMW->m_dlgSettings->ui->cbShowMusicNoteNames->isChecked())
             freqstr += "("+sigproc::h2n(sigproc::f2h(m_giCursorVert->line().x1()))+")";
         m_giCursorPositionXTxt->setText(freqstr);
         m_giCursorPositionXTxt->setPos(x, viewrect.top()-4/trans.m22());
@@ -1046,7 +1073,7 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
 
 //    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVAmplitudeSpectrum::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
-    double fs = WMainWindow::getMW()->getFs();
+    double fs = gMW->getFs();
 
     // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
 
@@ -1055,24 +1082,24 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
         draw_grid(painter, rect);
 
     // Draw the f0 grids
-    if(!WMainWindow::getMW()->ftfzeros.empty()) {
+    if(!gMW->ftfzeros.empty()) {
 
-        for(size_t fi=0; fi<WMainWindow::getMW()->ftfzeros.size(); fi++){
-            if(!WMainWindow::getMW()->ftfzeros[fi]->m_actionShow->isChecked())
+        for(size_t fi=0; fi<gMW->ftfzeros.size(); fi++){
+            if(!gMW->ftfzeros[fi]->m_actionShow->isChecked())
                 continue;
 
-            QPen outlinePen(WMainWindow::getMW()->ftfzeros[fi]->color);
+            QPen outlinePen(gMW->ftfzeros[fi]->color);
             outlinePen.setWidth(0);
             painter->setPen(outlinePen);
-            painter->setBrush(QBrush(WMainWindow::getMW()->ftfzeros[fi]->color));
+            painter->setBrush(QBrush(gMW->ftfzeros[fi]->color));
 
             double ct = 0.5*(m_nl+m_nr)/fs;
-            double cf0 = sigproc::nearest<double>(WMainWindow::getMW()->ftfzeros[fi]->ts, WMainWindow::getMW()->ftfzeros[fi]->f0s, ct, -1.0);
+            double cf0 = sigproc::nearest<double>(gMW->ftfzeros[fi]->ts, gMW->ftfzeros[fi]->f0s, ct, -1.0);
 
             // cout << ct << ":" << cf0 << endl;
             if(cf0==-1) continue;
 
-            QColor c = WMainWindow::getMW()->ftfzeros[fi]->color;
+            QColor c = gMW->ftfzeros[fi]->color;
             c.setAlphaF(1.0);
             outlinePen.setColor(c);
             painter->setPen(outlinePen);
@@ -1090,8 +1117,8 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
 
     // Draw the spectra
     // TODO should draw spectra only if m_fft is not touching m_dft variables (it doesnt crash ??)
-    if (WMainWindow::getMW()->ftsnds.size()==0) return;
-    if (WMainWindow::getMW()->m_gvWaveform->m_selection.width()==0) return;
+    if (gMW->ftsnds.size()==0) return;
+    if (gMW->m_gvWaveform->m_selection.width()==0) return;
 
     // Draw the filter response
     if(m_filterresponse.size()>0) {
@@ -1127,20 +1154,20 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
     }
 
     // Draw the sound's spectra
-    for(size_t fi=0; fi<WMainWindow::getMW()->ftsnds.size(); fi++){
-        if(!WMainWindow::getMW()->ftsnds[fi]->m_actionShow->isChecked())
+    for(size_t fi=0; fi<gMW->ftsnds.size(); fi++){
+        if(!gMW->ftsnds[fi]->m_actionShow->isChecked())
             continue;
 
-        if(WMainWindow::getMW()->ftsnds[fi]->m_dft.size()<1)
+        if(gMW->ftsnds[fi]->m_dft.size()<1)
             continue;
 
-        QPen outlinePen(WMainWindow::getMW()->ftsnds[fi]->color);
+        QPen outlinePen(gMW->ftsnds[fi]->color);
         outlinePen.setWidth(0);
         painter->setPen(outlinePen);
-        painter->setBrush(QBrush(WMainWindow::getMW()->ftsnds[fi]->color));
+        painter->setBrush(QBrush(gMW->ftsnds[fi]->color));
         painter->setOpacity(1);
 
-        draw_spectrum(painter, WMainWindow::getMW()->ftsnds[fi]->m_dft, fs, 1.0, rect);
+        draw_spectrum(painter, gMW->ftsnds[fi]->m_dft, fs, 1.0, rect);
     }
 
 //    cout << "QGVAmplitudeSpectrum::~drawBackground" << endl;

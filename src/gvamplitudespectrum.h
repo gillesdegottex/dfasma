@@ -36,7 +36,6 @@ file provided in the source code of DFasma. Another copy can be found at
 class GVAmplitudeSpectrumWDialogSettings;
 class MainWindow;
 class QSpinBox;
-//class FFTwrapper;
 
 class QGVAmplitudeSpectrum : public QGraphicsView
 {
@@ -85,8 +84,7 @@ public:
     QRectF m_selection, m_mouseSelection;
     QGraphicsRectItem* m_giShownSelection;
     QGraphicsSimpleTextItem* m_giSelectionTxt;
-    void selectionChangesRequested();
-    void selectionFixAndRefresh();
+    void selectionSet(QRectF selection, bool forwardsync);
     void selectionSetTextInForm();
 
     void scrollContentsBy(int dx, int dy);

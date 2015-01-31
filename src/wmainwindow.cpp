@@ -69,7 +69,7 @@ using namespace std;
 #define QUOTE(name) #name
 #define STR(macro) QUOTE(macro)
 
-WMainWindow* WMainWindow::sm_mainwindow = NULL;
+WMainWindow* gMW = NULL;
 
 WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     : QMainWindow(parent)
@@ -85,7 +85,7 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     ui->setupUi(this);
     ui->lblFileInfo->hide();
 
-    sm_mainwindow = this;
+    gMW = this;
 
     m_dlgSettings = new WDialogSettings(this);
     m_dlgSettings->ui->lblLibraryAudioFileReading->setText(FTSound::getAudioFileReadingDescription());
@@ -237,9 +237,9 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 }
 
 void WMainWindow::changeToolBarSizes(int size) {
-    WMainWindow::getMW()->m_gvWaveform->m_toolBar->setIconSize(QSize(size,size));
-    WMainWindow::getMW()->m_gvSpectrum->m_toolBar->setIconSize(QSize(size,size));
-    WMainWindow::getMW()->m_gvSpectrogram->m_toolBar->setIconSize(QSize(size,size));
+    gMW->m_gvWaveform->m_toolBar->setIconSize(QSize(size,size));
+    gMW->m_gvSpectrum->m_toolBar->setIconSize(QSize(size,size));
+    gMW->m_gvSpectrogram->m_toolBar->setIconSize(QSize(size,size));
     ui->mainToolBar->setIconSize(QSize(1.5*size,1.5*size));
 //    m_pbVolume->setMaximumWidth(75);
     m_pbVolume->setMaximumWidth(m_dlgSettings->ui->sbToolBarSizes->value()/2);
@@ -250,8 +250,8 @@ void WMainWindow::changeToolBarSizes(int size) {
 void WMainWindow::viewsDisplayedChanged() {
     ui->wSpectra->setVisible(ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked());
 
-    WMainWindow::getMW()->m_gvWaveform->m_aShowWindow->setChecked(WMainWindow::getMW()->m_gvWaveform->m_aShowWindow->isChecked() && (ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked()));
-    WMainWindow::getMW()->m_gvWaveform->m_aShowWindow->setEnabled(ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked());
+    gMW->m_gvWaveform->m_aShowWindow->setChecked(gMW->m_gvWaveform->m_aShowWindow->isChecked() && (ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked()));
+    gMW->m_gvWaveform->m_aShowWindow->setEnabled(ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked());
 
     if(ui->actionShowPhaseSpectrum->isChecked())
         m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);

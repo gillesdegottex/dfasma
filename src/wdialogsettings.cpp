@@ -81,7 +81,7 @@ void WDialogSettings::settingsSave() {
     settings.setValue("cbShowMusicNoteNames", ui->cbShowMusicNoteNames->isChecked());
     settings.setValue("sbToolBarSizes", ui->sbToolBarSizes->value());
 
-    WMainWindow::getMW()->settingsSave();
+    gMW->settingsSave();
 }
 void WDialogSettings::settingsClear() {
     QSettings settings;

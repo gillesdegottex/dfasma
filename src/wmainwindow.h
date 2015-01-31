@@ -52,6 +52,8 @@ namespace Ui {
 class WMainWindow;
 }
 
+class WMainWindow;
+extern WMainWindow* gMW; // Global accessor of the Main Window
 
 class WMainWindow : public QMainWindow
 {
@@ -110,7 +112,6 @@ public:
     ~WMainWindow();
 
     Ui::WMainWindow* ui;
-    inline static WMainWindow* getMW() {return sm_mainwindow;}
 
     WDialogSettings* m_dlgSettings;
 

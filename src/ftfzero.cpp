@@ -51,7 +51,7 @@ FTFZero::FTFZero(const QString& _fileName, QObject *parent)
         load();
     }
 
-    WMainWindow::getMW()->ftfzeros.push_back(this);
+    gMW->ftfzeros.push_back(this);
 }
 
 FTFZero::FTFZero(const FTFZero& ft)
@@ -66,7 +66,7 @@ FTFZero::FTFZero(const FTFZero& ft)
     m_lastreadtime = ft.m_lastreadtime;
     m_modifiedtime = ft.m_modifiedtime;
 
-    WMainWindow::getMW()->ftfzeros.push_back(this);
+    gMW->ftfzeros.push_back(this);
 }
 
 FileType* FTFZero::duplicate(){
