@@ -750,8 +750,14 @@ void WMainWindow::fileSelectionChanged() {
     fileInfoUpdate();
 
     // Update the spectrogram to current selected signal
-    if(selectionhassnd)
+    if(selectionhassnd){
+        if(m_gvWaveform->m_aShowSelectedWaveformOnTop){
+            m_gvWaveform->m_scene->update();
+            m_gvSpectrum->m_scene->update();
+            m_gvPhaseSpectrum->m_scene->update();
+        }
         m_gvSpectrogram->updateSTFTPlot();
+    }
 }
 void WMainWindow::fileInfoUpdate() {
     QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();

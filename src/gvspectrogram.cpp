@@ -750,7 +750,7 @@ void QGVSpectrogram::selectionSetTextInForm() {
         str = "No selection";
     }
     else {
-        str += QString("Selection: ");
+        str += QString("");
 
         double left, right;
         if(m_selection.height()>0) {
@@ -761,13 +761,10 @@ void QGVSpectrogram::selectionSetTextInForm() {
             left = gMW->m_gvPhaseSpectrum->m_selection.left();
             right = gMW->m_gvPhaseSpectrum->m_selection.right();
         }
-        str += QString("[%1,%2]%3 Hz").arg(left).arg(right).arg(right-left);
+        str += QString("[%1,%2]%3s").arg(left).arg(right).arg(right-left);
 
         if (m_selection.height()>0) {
-            str += QString(" x [%4,%5]%6 dB").arg(-m_selection.bottom()).arg(-m_selection.top()).arg(m_selection.height());
-        }
-        if (gMW->m_gvPhaseSpectrum->m_selection.height()>0) {
-            str += QString(" x [%7,%8]%9 rad").arg(-gMW->m_gvPhaseSpectrum->m_selection.bottom()).arg(-gMW->m_gvPhaseSpectrum->m_selection.top()).arg(gMW->m_gvPhaseSpectrum->m_selection.height());
+            str += QString(" x [%4,%5]%6Hz").arg(gMW->getFs()/2-m_selection.bottom()).arg(gMW->getFs()/2-m_selection.top()).arg(m_selection.height());
         }
     }
 

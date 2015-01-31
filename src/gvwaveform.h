@@ -29,6 +29,7 @@ file provided in the source code of DFasma. Another copy can be found at
 class WMainWindow;
 class QToolBar;
 class FTLabels;
+class FTSound;
 
 class QGVWaveform : public QGraphicsView
 {
@@ -76,6 +77,7 @@ public:
     QAction* m_aZoomOut;
     QAction* m_aUnZoom;
     QAction* m_aFitViewToSoundsAmplitude;
+    QAction* m_aShowSelectedWaveformOnTop;
     QMenu m_contextmenu;
 
     explicit QGVWaveform(WMainWindow* parent);
@@ -96,7 +98,8 @@ public:
     QPen m_gridFontPen;
     QFont m_gridFont;
     void draw_grid(QPainter* painter, const QRectF& rect);
-    void draw_waveform(QPainter* painter, const QRectF& rect);
+    void draw_allwaveforms(QPainter* painter, const QRectF& rect);
+    void draw_waveform(QPainter* painter, const QRectF& rect, FTSound *snd);
 
     void selectSegmentFindStartEnd(double x, FTLabels* ftl, double& start, double& end);
     void selectSegment(double x, bool add);

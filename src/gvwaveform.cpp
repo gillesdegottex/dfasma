@@ -76,8 +76,14 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_aShowGrid->setCheckable(true);
     m_aShowGrid->setIcon(QIcon(":/icons/grid.svg"));
     m_aShowGrid->setChecked(settings.value("qgvwaveform/m_aShowGrid", true).toBool());
-    connect(m_aShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
+    connect(m_aShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
     m_contextmenu.addAction(m_aShowGrid);
+    m_aShowSelectedWaveformOnTop = new QAction(tr("Show selected wav on top"), this);
+    m_aShowSelectedWaveformOnTop->setStatusTip(tr("Show the selected waveform on top of all others"));
+    m_aShowSelectedWaveformOnTop->setCheckable(true);
+    m_aShowSelectedWaveformOnTop->setChecked(settings.value("qgvwaveform/m_aShowSelectedWaveformOnTop", true).toBool());
+    connect(m_aShowSelectedWaveformOnTop, SIGNAL(triggered()), m_scene, SLOT(update()));
+    m_contextmenu.addAction(m_aShowSelectedWaveformOnTop);
 
     // Mouse Cursor
     m_giMouseCursorLine = new QGraphicsLineItem(0, -1, 0, 1);
@@ -138,7 +144,6 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     connect(m_aShowWindow, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
     connect(m_aShowWindow, SIGNAL(toggled(bool)), this, SLOT(updateSelectionText()));
     m_contextmenu.addAction(m_aShowWindow);
-
     m_aShowSTFTWindowCenters = new QAction(tr("Show STFT's window centers"), this);
     m_aShowSTFTWindowCenters->setStatusTip(tr("Show STFT's window centers"));
     m_aShowSTFTWindowCenters->setCheckable(true);
@@ -234,6 +239,7 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
 void QGVWaveform::settingsSave() {
     QSettings settings;
     settings.setValue("qgvwaveform/m_aShowGrid", m_aShowGrid->isChecked());
+    settings.setValue("qgvwaveform/m_aShowSelectedWaveformOnTop", m_aShowSelectedWaveformOnTop->isChecked());
     settings.setValue("qgvwaveform/m_aShowWindow", m_aShowWindow->isChecked());
     settings.setValue("qgvwaveform/m_aShowSTFTWindowCenters", m_aShowSTFTWindowCenters->isChecked());
 }
@@ -1125,7 +1131,7 @@ void QGVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
     if(m_aShowGrid->isChecked())
         draw_grid(painter, rect);
 
-    draw_waveform(painter, rect);
+    draw_allwaveforms(painter, rect);
 
     m_giWindow->setVisible(m_aShowWindow->isChecked() && m_selection.width()>0.0);
 
@@ -1134,136 +1140,136 @@ void QGVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
 //    std::cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGraphicsView::drawBackground [" << rect.left() << "," << rect.right() << "]x[" << rect.top() << "," << rect.bottom() << "] avg=" << time_tracker.getAveragedElapsed() << "(" << time_tracker.past_elapsed.size() << ") last=" << time_tracker.past_elapsed.back() << endl;
 }
 
-void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect){
-
-//    std::cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVWaveform::draw_waveform [" << rect.width() << "]" << endl;
+void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* snd){
+    if(!snd->m_actionShow->isChecked())
+        return;
 
     double fs = gMW->getFs();
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-//    cout << "QGVWaveform::drawBackground viewrect: " << viewrect << endl;
-
     double samppixdensity = (viewrect.right()-viewrect.left())*fs/viewport()->rect().width();
 
 //    samppixdensity=0.01;
     if(samppixdensity<4) {
 //         cout << "Draw lines between each sample in the updated rect" << endl;
 
-        for(size_t fi=0; fi<gMW->ftsnds.size(); fi++){
-            if(!gMW->ftsnds[fi]->m_actionShow->isChecked())
-                continue;
+        WAVTYPE a = snd->m_ampscale;
+        if(snd->m_actionInvPolarity->isChecked())
+            a *=-1.0;
 
-            WAVTYPE a = gMW->ftsnds[fi]->m_ampscale;
-            if(gMW->ftsnds[fi]->m_actionInvPolarity->isChecked())
-                a *=-1.0;
+        QPen wavpen(snd->color);
+        wavpen.setWidth(0);
+        painter->setPen(wavpen);
 
-            QPen wavpen(gMW->ftsnds[fi]->color);
-            wavpen.setWidth(0);
-            painter->setPen(wavpen);
+        int delay = snd->m_delay;
+        int nleft = int((rect.left())*fs)-delay;
+        int nright = int((rect.right())*fs)+1-delay;
+        nleft = std::max(nleft, -delay);
+        nleft = std::max(nleft, 0);
+        nleft = std::min(nleft, int(snd->wav.size()-1)-delay);
+        nleft = std::min(nleft, int(snd->wav.size()-1));
+        nright = std::max(nright, -delay);
+        nright = std::max(nright, 0);
+        nright = std::min(nright, int(snd->wav.size()-1)-delay);
+        nright = std::min(nright, int(snd->wav.size()-1));
 
-            int delay = gMW->ftsnds[fi]->m_delay;
-            int nleft = int((rect.left())*fs)-delay;
-            int nright = int((rect.right())*fs)+1-delay;
-            nleft = std::max(nleft, -delay);
-            nleft = std::max(nleft, 0);
-            nleft = std::min(nleft, int(gMW->ftsnds[fi]->wav.size()-1)-delay);
-            nleft = std::min(nleft, int(gMW->ftsnds[fi]->wav.size()-1));
-            nright = std::max(nright, -delay);
-            nright = std::max(nright, 0);
-            nright = std::min(nright, int(gMW->ftsnds[fi]->wav.size()-1)-delay);
-            nright = std::min(nright, int(gMW->ftsnds[fi]->wav.size()-1));
+        // Draw a line between each sample value
+        WAVTYPE dt = 1.0/fs;
+        WAVTYPE prevx = (nleft+delay)*dt;
+        a *= -1;
+        WAVTYPE* data = snd->wavtoplay->data();
+        WAVTYPE prevy = a*(*(data+nleft));
 
-            // Draw a line between each sample value
-            WAVTYPE dt = 1.0/fs;
-            WAVTYPE prevx = (nleft+delay)*dt;
-            a *= -1;
-            WAVTYPE* data = gMW->ftsnds[fi]->wavtoplay->data();
-            WAVTYPE prevy = a*(*(data+nleft));
+        WAVTYPE x, y;
+        for(int n=nleft; n<=nright; ++n){
+            x = (n+delay)*dt;
+            y = a*(*(data+n));
 
-            WAVTYPE x, y;
-            for(int n=nleft; n<=nright; ++n){
+            painter->drawLine(QLineF(prevx, prevy, x, y));
+
+            prevx = x;
+            prevy = y;
+        }
+
+        // When resolution is big enough, draw tick marks at each sample
+        double samppixdensity_dotsthr = 0.125;
+        if(samppixdensity<samppixdensity_dotsthr){
+            qreal markhalfheight = m_ampzoom*(1.0/10)*((samppixdensity_dotsthr-samppixdensity)/samppixdensity_dotsthr);
+
+            for(int n=nleft; n<=nright; n++){
                 x = (n+delay)*dt;
                 y = a*(*(data+n));
-
-                painter->drawLine(QLineF(prevx, prevy, x, y));
-
-                prevx = x;
-                prevy = y;
+                painter->drawLine(QLineF(x, y-markhalfheight, x, y+markhalfheight));
             }
-
-            // When resolution is big enough, draw tick marks at each sample
-            double samppixdensity_dotsthr = 0.125;
-            if(samppixdensity<samppixdensity_dotsthr){
-                qreal markhalfheight = m_ampzoom*(1.0/10)*((samppixdensity_dotsthr-samppixdensity)/samppixdensity_dotsthr);
-
-                for(int n=nleft; n<=nright; n++){
-                    x = (n+delay)*dt;
-                    y = a*(*(data+n));
-                    painter->drawLine(QLineF(x, y-markhalfheight, x, y+markhalfheight));
-                }
-            }
-
-            painter->drawLine(QLineF(double(gMW->ftsnds[fi]->wav.size()-1)/fs, -1.0, double(gMW->ftsnds[fi]->wav.size()-1)/fs, 1.0));
         }
+
+        painter->drawLine(QLineF(double(snd->wav.size()-1)/fs, -1.0, double(snd->wav.size()-1)/fs, 1.0));
     }
     else {
 //        cout << "Plot only one line per pixel, in order to reduce computation time" << endl;
 
         painter->setWorldMatrixEnabled(false); // Work in pixel coordinates
 
-        for(size_t fi=0; fi<gMW->ftsnds.size(); fi++){
-            if(!gMW->ftsnds[fi]->m_actionShow->isChecked())
-                continue;
+        double a = snd->m_ampscale;
+        if(snd->m_actionInvPolarity->isChecked())
+            a *= -1.0;
 
-            double a = gMW->ftsnds[fi]->m_ampscale;
-            if(gMW->ftsnds[fi]->m_actionInvPolarity->isChecked())
-                a *= -1.0;
+        QPen outlinePen(snd->color);
+        outlinePen.setWidth(0);
+        painter->setPen(outlinePen);
 
-            QPen outlinePen(gMW->ftsnds[fi]->color);
-            outlinePen.setWidth(0);
-            painter->setPen(outlinePen);
+        QRect pixrect = mapFromScene(rect).boundingRect();
+        QRect fullpixrect = mapFromScene(viewrect).boundingRect();
 
-            QRect pixrect = mapFromScene(rect).boundingRect();
-            QRect fullpixrect = mapFromScene(viewrect).boundingRect();
+        double s2p = -a*fullpixrect.height()/viewrect.height(); // Scene to pixel
+        double p2n = fs*double(viewrect.width())/double(fullpixrect.width()-1); // Pixel to scene
+        double yzero = fullpixrect.height()/2;
 
-            double s2p = -a*fullpixrect.height()/viewrect.height(); // Scene to pixel
-            double p2n = fs*double(viewrect.width())/double(fullpixrect.width()-1); // Pixel to scene
-            double yzero = fullpixrect.height()/2;
+        WAVTYPE* yp = snd->wavtoplay->data();
 
-            WAVTYPE* yp = gMW->ftsnds[fi]->wavtoplay->data();
+        int winpixdelay = horizontalScrollBar()->value(); // - 1.0/p2n; // The magic value to make everything plot at the same place whatever the scroll
 
-            int winpixdelay = horizontalScrollBar()->value(); // - 1.0/p2n; // The magic value to make everything plot at the same place whatever the scroll
+        int snddelay = snd->m_delay;
+        int ns = int((pixrect.left()+winpixdelay)*p2n)-snddelay;
+        for(int i=pixrect.left(); i<=pixrect.right(); i++) {
 
-            int snddelay = gMW->ftsnds[fi]->m_delay;
-            int ns = int((pixrect.left()+winpixdelay)*p2n)-snddelay;
-            for(int i=pixrect.left(); i<=pixrect.right(); i++) {
+            int ne = int((i+1+winpixdelay)*p2n)-snddelay;
 
-                int ne = int((i+1+winpixdelay)*p2n)-snddelay;
-
-                if(ns>=0 && ne<int(gMW->ftsnds[fi]->wav.size())) {
-                    WAVTYPE ymin = 1.0;
-                    WAVTYPE ymax = -1.0;
-                    WAVTYPE* ypp = yp+ns;
-                    WAVTYPE y;
-                    for(int n=ns; n<=ne; n++) {
-                        y = *ypp;
-                        ymin = std::min(ymin, y);
-                        ymax = std::max(ymax, y);
-                        ypp++;
-                    }
-                    ymin *= s2p;
-                    ymax *= s2p;
-                    ymin = int(ymin+0.5);
-                    ymax = int(ymax+0.5);
-                    painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
+            if(ns>=0 && ne<int(snd->wav.size())) {
+                WAVTYPE ymin = 1.0;
+                WAVTYPE ymax = -1.0;
+                WAVTYPE* ypp = yp+ns;
+                WAVTYPE y;
+                for(int n=ns; n<=ne; n++) {
+                    y = *ypp;
+                    ymin = std::min(ymin, y);
+                    ymax = std::max(ymax, y);
+                    ypp++;
                 }
-
-                ns = ne;
+                ymin *= s2p;
+                ymax *= s2p;
+                ymin = int(ymin+0.5);
+                ymax = int(ymax+0.5);
+                painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
             }
+
+            ns = ne;
         }
 
         painter->setWorldMatrixEnabled(true); // Go back to scene coordinates
     }
+}
+
+void QGVWaveform::draw_allwaveforms(QPainter* painter, const QRectF& rect){
+
+//    std::cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVWaveform::draw_waveform [" << rect.width() << "]" << endl;
+
+    FTSound* currsnd = gMW->getCurrentFTSound(true);
+    for(size_t fi=0; fi<gMW->ftsnds.size(); fi++)
+        if(!m_aShowSelectedWaveformOnTop->isChecked() || gMW->ftsnds[fi]!=currsnd)
+            draw_waveform(painter, rect, gMW->ftsnds[fi]);
+    if(m_aShowSelectedWaveformOnTop->isChecked())
+        draw_waveform(painter, rect, currsnd);
 
     // Plot STFT's window centers
     if(m_aShowSTFTWindowCenters->isChecked()){

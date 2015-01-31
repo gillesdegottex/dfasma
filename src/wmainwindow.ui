@@ -227,6 +227,9 @@
                <bold>false</bold>
               </font>
              </property>
+             <property name="toolTip">
+              <string>Spectrogram's selection</string>
+             </property>
              <property name="text">
               <string>&lt;selection&gt;</string>
              </property>
@@ -404,6 +407,9 @@
                <italic>false</italic>
                <bold>false</bold>
               </font>
+             </property>
+             <property name="toolTip">
+              <string>Spectra's selection</string>
              </property>
              <property name="text">
               <string>&lt;selection&gt;</string>
@@ -626,7 +632,7 @@
      <x>0</x>
      <y>0</y>
      <width>831</width>
-     <height>31</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>

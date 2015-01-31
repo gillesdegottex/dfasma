@@ -83,6 +83,8 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_aShowGrid->setChecked(settings.value("qgvspectrum/m_aShowGrid", true).toBool());
     connect(m_aShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
 
+    connect(gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop, SIGNAL(triggered()), m_scene, SLOT(update()));
+
     m_aShowWindow = new QAction(tr("Show &window"), this);
     m_aShowWindow->setStatusTip(tr("Show &window"));
     m_aShowWindow->setCheckable(true);
@@ -202,6 +204,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
 
     // Build the context menu
     m_contextmenu.addAction(m_aShowGrid);
+    m_contextmenu.addAction(gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop);
     m_contextmenu.addAction(m_aShowWindow);
     m_contextmenu.addSeparator();
     m_contextmenu.addAction(m_aAutoUpdateDFT);
@@ -845,7 +848,7 @@ void QGVAmplitudeSpectrum::selectionSetTextInForm() {
         str = "No selection";
     }
     else {
-        str += QString("Selection: ");
+        str += QString("");
 
         double left, right;
         if(m_selection.height()>0) {
@@ -1153,29 +1156,40 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
         draw_spectrum(painter, m_windft, fs, 1.0, rect);
     }
 
-    // Draw the sound's spectra
+
+    FTSound* currsnd = gMW->getCurrentFTSound(true);
+
     for(size_t fi=0; fi<gMW->ftsnds.size(); fi++){
-        if(!gMW->ftsnds[fi]->m_actionShow->isChecked())
-            continue;
+        if(!gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop->isChecked() || gMW->ftsnds[fi]!=currsnd){
+            QPen outlinePen(gMW->ftsnds[fi]->color);
+            outlinePen.setWidth(0);
+            painter->setPen(outlinePen);
+            painter->setBrush(QBrush(gMW->ftsnds[fi]->color));
+            painter->setOpacity(1);
 
-        if(gMW->ftsnds[fi]->m_dft.size()<1)
-            continue;
+            draw_spectrum(painter, gMW->ftsnds[fi]->m_dft, fs, 1.0, rect);
+        }
+    }
 
-        QPen outlinePen(gMW->ftsnds[fi]->color);
+    if(gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop->isChecked()){
+        QPen outlinePen(currsnd->color);
         outlinePen.setWidth(0);
         painter->setPen(outlinePen);
-        painter->setBrush(QBrush(gMW->ftsnds[fi]->color));
+        painter->setBrush(QBrush(currsnd->color));
         painter->setOpacity(1);
 
-        draw_spectrum(painter, gMW->ftsnds[fi]->m_dft, fs, 1.0, rect);
+        draw_spectrum(painter, currsnd->m_dft, fs, 1.0, rect);
     }
 
 //    cout << "QGVAmplitudeSpectrum::~drawBackground" << endl;
 }
 
 void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& ldft, double fs, double ascale, const QRectF& rect) {
+//    cout << "QGVAmplitudeSpectrum::draw_spectrum " << ldft.size() << endl;
+
     int dftlen = (ldft.size()-1)*2;
-    if (dftlen==0) return;
+    if (dftlen<2)
+        return;
 
     double lascale = std::log(ascale);
 //    cout << "ascale=" << ascale << " lascale=" << lascale << endl;

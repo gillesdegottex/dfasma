@@ -104,6 +104,7 @@ QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
 
     // Build the context menu
     m_contextmenu.addAction(gMW->m_gvSpectrum->m_aShowGrid);
+    m_contextmenu.addAction(gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop);
     m_contextmenu.addSeparator();
 //    m_aShowProperties = new QAction(tr("&Properties"), this);
 //    m_aShowProperties->setStatusTip(tr("Open the properties configuration panel of the spectrum view"));
@@ -111,7 +112,9 @@ QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
 //    connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
 //    connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(updateSceneRect()));
 
-    connect(gMW->m_gvSpectrum->m_aShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
+    connect(gMW->m_gvSpectrum->m_aShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
+
+    connect(gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop, SIGNAL(triggered()), m_scene, SLOT(update()));
 }
 
 // Remove hard coded margin (Bug 11945)
@@ -677,23 +680,31 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
         }
     }
 
-    if (gMW->m_gvWaveform->m_selection.width()==0) return;
+    if (gMW->m_gvWaveform->m_selection.width()==0)
+        return;
 
-    // Draw the phase spectrum
-    for(unsigned int fi=0; fi<gMW->ftsnds.size(); fi++){
+    // Draw the phase spectra
 
-        if(!gMW->ftsnds[fi]->m_actionShow->isChecked())
-            continue;
+    FTSound* currsnd = gMW->getCurrentFTSound(true);
 
-        if(gMW->ftsnds[fi]->m_dft.size()<1)
-            continue;
+    for(size_t fi=0; fi<gMW->ftsnds.size(); fi++){
+        if(!gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop->isChecked() || gMW->ftsnds[fi]!=currsnd){
+            QPen outlinePen(gMW->ftsnds[fi]->color);
+            outlinePen.setWidth(0);
+            painter->setPen(outlinePen);
+            painter->setBrush(QBrush(gMW->ftsnds[fi]->color));
 
-        QPen outlinePen(gMW->ftsnds[fi]->color);
+            draw_spectrum(painter, gMW->ftsnds[fi]->m_dft, gMW->getFs(), (gMW->m_gvSpectrum->m_winlen-1)/2.0, rect);
+        }
+    }
+
+    if(gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop->isChecked()){
+        QPen outlinePen(currsnd->color);
         outlinePen.setWidth(0);
         painter->setPen(outlinePen);
-        painter->setBrush(QBrush(gMW->ftsnds[fi]->color));
+        painter->setBrush(QBrush(currsnd->color));
 
-        draw_spectrum(painter, gMW->ftsnds[fi]->m_dft, gMW->getFs(), (gMW->m_gvSpectrum->m_winlen-1)/2.0, rect);
+        draw_spectrum(painter, currsnd->m_dft, gMW->getFs(), (gMW->m_gvSpectrum->m_winlen-1)/2.0, rect);
     }
 
 //    cout << "QGVPhaseSpectrum::~drawBackground" << endl;
@@ -701,7 +712,8 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
 
 void QGVPhaseSpectrum::draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& ldft, double fs, double delay, const QRectF& rect) {
     int dftlen = (ldft.size()-1)*2;
-    if (dftlen==0) return;
+    if (dftlen<2)
+        return;
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
