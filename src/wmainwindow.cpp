@@ -244,7 +244,7 @@ void WMainWindow::changeToolBarSizes(int size) {
 //    m_pbVolume->setMaximumWidth(75);
     m_pbVolume->setMaximumWidth(m_dlgSettings->ui->sbToolBarSizes->value()/2);
 //    m_pbVolume->setMaximumHeight(ui->mainToolBar->height()/2);
-    m_pbVolume->setMaximumHeight(ui->mainToolBar->height());
+    m_pbVolume->setMaximumHeight(1.5*size);
 }
 
 void WMainWindow::viewsDisplayedChanged() {
