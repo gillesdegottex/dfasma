@@ -902,10 +902,10 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
     else {
         if (gMW->ui->actionEditMode->isChecked()){
             FTLabels* ftlabel = gMW->getCurrentFTLabels(false);
-            if(ftlabel){
+            if(ftlabel && !FTGraphicsLabelItem::isEditing()){
                 if(event->text().size()>0){
                     if(m_currentAction==CALabelWritting && m_ftlabel_current_index!=-1){
-                        ftlabel->changeText(m_ftlabel_current_index, ftlabel->waveform_labels[m_ftlabel_current_index]->text()+event->text());
+                        ftlabel->changeText(m_ftlabel_current_index, ftlabel->waveform_labels[m_ftlabel_current_index]->toPlainText()+event->text());
                     }
                     else{
                         m_currentAction = CALabelWritting;

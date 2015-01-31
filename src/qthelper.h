@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#define COUTD std::cout << QThread::currentThreadId() << " " << QDateTime::fromMSecsSinceEpoch(QDateTime::currentMSecsSinceEpoch()).toString("hh:mm:ss.zzz             ").toLocal8Bit().constData() << " "
+
 // Remove hard coded margin (Bug 11945)
 // See: https://bugreports.qt-project.org/browse/QTBUG-11945
 inline QRectF removeHiddenMargin(QGraphicsView* gv, const QRectF& sceneRect){

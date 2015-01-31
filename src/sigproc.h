@@ -30,9 +30,6 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QString>
 #include <iostream>
 
-#define DEBUGSTRING std::cout << QThread::currentThreadId() << " " << QDateTime::fromMSecsSinceEpoch(QDateTime::currentMSecsSinceEpoch()).toString("hh:mm:ss.zzz             ").toLocal8Bit().constData() << " "
-
-
 #define FFTTYPE double
 
 #ifdef FFT_FFTW3

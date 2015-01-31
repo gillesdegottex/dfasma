@@ -90,6 +90,7 @@ private slots:
     void resetDelay();
     void setSelectionMode(bool checked);
     void setEditMode(bool checked);
+    void setLabelsEditable(bool editable);
     void execAbout();
     void fileSelectionChanged();
     void viewsDisplayedChanged();

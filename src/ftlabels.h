@@ -27,11 +27,32 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QString>
 #include <QColor>
 #include <QAction>
+#include <QGraphicsTextItem>
 
 #include "filetype.h"
 
 class QGraphicsSimpleTextItem;
 class QGraphicsLineItem;
+class FTLabels;
+
+class FTGraphicsLabelItem : public QGraphicsTextItem
+{
+    FTLabels* m_ftl;
+    static bool sm_isEditing;
+    QString m_prevText;
+
+public:
+    FTGraphicsLabelItem(FTLabels* ftl, const QString & text);
+
+    virtual void keyPressEvent(QKeyEvent * event);
+    virtual void focusInEvent(QFocusEvent * event);
+    virtual void focusOutEvent(QFocusEvent * event);
+
+    virtual void paint(QPainter *painter,const QStyleOptionGraphicsItem *option,QWidget *widget);
+
+    static bool isEditing() {return sm_isEditing;}
+};
+
 
 class FTLabels : public QObject, public FileType
 {
@@ -56,7 +77,7 @@ public:
     virtual FileType* duplicate();
 
     std::deque<double> starts; // TODO Get ride of ?
-    std::deque<QGraphicsSimpleTextItem*> waveform_labels;
+    std::deque<FTGraphicsLabelItem*> waveform_labels;
     std::deque<QGraphicsSimpleTextItem*> spectrogram_labels;
     std::deque<QGraphicsLineItem*> waveform_lines;
     std::deque<QGraphicsLineItem*> spectrogram_lines;

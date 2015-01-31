@@ -32,6 +32,10 @@ using namespace std;
 using namespace Easdif;
 #endif
 
+#include <qmath.h>
+#include <qendian.h>
+#include <Qt>
+#include <QKeyEvent>
 #include <QMenu>
 #include <QFileInfo>
 #include <QFileDialog>
@@ -39,13 +43,71 @@ using namespace Easdif;
 #include <QDir>
 #include <QGraphicsSimpleTextItem>
 #include <QGraphicsObject>
-#include <qmath.h>
-#include <qendian.h>
+#include <QGraphicsTextItem>
+#include <QTextCursor>
 
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "gvwaveform.h"
 #include "gvspectrogram.h"
+#include "qthelper.h"
+
+
+bool FTGraphicsLabelItem::sm_isEditing = false;
+
+FTGraphicsLabelItem::FTGraphicsLabelItem(FTLabels* ftl, const QString & text)
+    : QGraphicsTextItem(text)
+    , m_ftl(ftl)
+{
+}
+
+void FTGraphicsLabelItem::focusInEvent(QFocusEvent * event){
+    Q_UNUSED(event)
+//    COUTD << "FTGraphicsLabelItem::focusInEvent " << endl;
+    m_prevText = toPlainText();
+    sm_isEditing = true;
+    setTextCursor(QTextCursor(document()));
+    update();
+}
+void FTGraphicsLabelItem::focusOutEvent(QFocusEvent * event){
+    Q_UNUSED(event)
+//    COUTD << "FTGraphicsLabelItem::focusOutEvent " << endl;
+    sm_isEditing = false;
+
+    // Replace the text in the spectrogram
+    std::deque<double>::iterator p = std::find(m_ftl->starts.begin(), m_ftl->starts.end(), pos().x());
+    if(p!=m_ftl->starts.end()){
+        int index = std::distance(m_ftl->starts.begin(), p);
+        m_ftl->spectrogram_labels[index]->setText(toPlainText());
+    }
+    else
+        qWarning("FTGraphicsLabelItem::focusOutEvent Cannot replace the text in the spectrogram");
+
+    setTextCursor(QTextCursor());
+    update();
+}
+void FTGraphicsLabelItem::keyPressEvent(QKeyEvent * event){
+//    COUTD << "FTGraphicsLabelItem::keyPressEvent " << event->key() << " enter=" << Qt::Key_Enter << endl;
+
+    if(event->key()==Qt::Key_Escape) {
+        setPlainText(m_prevText);
+        clearFocus();
+    }
+    else if((event->key() == Qt::Key_Enter) || (event->key() == Qt::Key_Return)) {
+        clearFocus();
+    }
+    else
+        QGraphicsTextItem::keyPressEvent(event);
+}
+
+void FTGraphicsLabelItem::paint(QPainter *painter,const QStyleOptionGraphicsItem *option,QWidget *widget){
+    painter->setPen(m_ftl->color);
+    QRectF br = boundingRect();
+    br.adjust(+2, +2, -2, -2);
+    painter->drawRect(br);
+    QGraphicsTextItem::paint(painter, option, widget);
+}
+
 
 void FTLabels::init(){
     m_isedited = false;
@@ -274,6 +336,8 @@ void FTLabels::load() {
         throw QString("File format not recognized for loading this label file.");
     }
 
+    updateTextsGeometry();
+
     m_lastreadtime = QDateTime::currentDateTime();
     m_isedited = false;
     setStatus();
@@ -341,7 +405,7 @@ void FTLabels::save() {
     if(m_fileformat==FFAsciiTimeText){
         ofstream fout(fileFullPath.toLatin1().constData());
         for(size_t li=0; li<starts.size(); li++) {
-            fout << starts[li] << " " << waveform_labels[li]->text().toLatin1().constData() << endl;
+            fout << starts[li] << " " << waveform_labels[li]->toPlainText().toLatin1().constData() << endl;
         }
     }
     else if(m_fileformat==FFAsciiSegments){
@@ -356,7 +420,7 @@ void FTLabels::save() {
                     last = gMW->getCurrentFTSound(true)->getLastSampleTime();
             }
             fout << last << " ";
-            fout << waveform_labels[li]->text().toLatin1().constData() << endl;
+            fout << waveform_labels[li]->toPlainText().toLatin1().constData() << endl;
         }
     }
     else if(m_fileformat==FFAsciiSegmentsHTK){
@@ -372,7 +436,7 @@ void FTLabels::save() {
                     last = gMW->getCurrentFTSound(true)->getLastSampleTime();
             }
             fout << int(0.5+gMW->getFs()*last) << " ";
-            fout << waveform_labels[li]->text().toLatin1().constData() << endl;
+            fout << waveform_labels[li]->toPlainText().toLatin1().constData() << endl;
         }
     }
     else if(m_fileformat==FFSDIF){
@@ -397,7 +461,7 @@ void FTLabels::save() {
 
                 // Fill the matrix
                 SDIFMatrix tmpMatrix("1LAB");
-                tmpMatrix.Set(std::string(waveform_labels[li]->text().toLatin1().constData()));
+                tmpMatrix.Set(std::string(waveform_labels[li]->toPlainText().toLatin1().constData()));
                 frameToWrite.AddMatrix(tmpMatrix);
 
                 frameToWrite.Write(filew);
@@ -471,13 +535,17 @@ void FTLabels::updateTextsGeometry(){
 
     for(size_t u=0; u<starts.size(); ++u){
 
+        double x = 0.0;
+        if(starts[u]>gMW->getMaxLastSampleTime()-24.0/waveform_trans.m11())
+            x = -(waveform_labels[u]->boundingRect().width()-4)/waveform_trans.m11();
+
         QTransform mat1;
-        mat1.translate(2.0/waveform_trans.m11(), waveform_viewrect.top()+10/waveform_trans.m22());
+        mat1.translate(x-2.0/waveform_trans.m11(), waveform_viewrect.top()+10/waveform_trans.m22());
         mat1.scale(1.0/waveform_trans.m11(), 1.0/waveform_trans.m22());
         waveform_labels[u]->setTransform(mat1);
 
         QTransform mat2;
-        mat2.translate(2.0/spectrogram_trans.m11(), spectrogram_viewrect.top()+10/spectrogram_trans.m22());
+        mat2.translate(x+2.0/spectrogram_trans.m11(), spectrogram_viewrect.top()+10/spectrogram_trans.m22());
         mat2.scale(1.0/spectrogram_trans.m11(), 1.0/spectrogram_trans.m22());
         spectrogram_labels[u]->setTransform(mat2);
     }
@@ -493,10 +561,13 @@ void FTLabels::addLabel(double position, const QString& text){
 
     starts.push_back(position);
 
-    waveform_labels.push_back(new QGraphicsSimpleTextItem(text));
+    waveform_labels.push_back(new FTGraphicsLabelItem(this, text));
     waveform_labels.back()->setPos(position, 0);
-    waveform_labels.back()->setBrush(brush);
-    waveform_labels.back()->setPen(whitepen);
+    waveform_labels.back()->setDefaultTextColor(color);
+    if(gMW->ui->actionEditMode->isChecked())
+        waveform_labels.back()->setTextInteractionFlags(Qt::TextEditable);
+    else
+        waveform_labels.back()->setTextInteractionFlags(Qt::NoTextInteraction);
     gMW->m_gvWaveform->m_scene->addItem(waveform_labels.back());
 
     spectrogram_labels.push_back(new QGraphicsSimpleTextItem(text));
@@ -514,7 +585,7 @@ void FTLabels::addLabel(double position, const QString& text){
     spectrogram_lines.push_back(new QGraphicsLineItem(0, 0, 0, gMW->getFs()/2));
     spectrogram_lines.back()->setPos(position, 0);
     spectrogram_lines.back()->setPen(pen);
-    gMW->m_gvSpectrogram->m_scene->addItem(spectrogram_lines.back());
+    gMW->m_gvSpectrogram->m_scene->addItem(spectrogram_lines.back());    
 
     m_isedited = true;
     setStatus();
@@ -532,7 +603,7 @@ void FTLabels::moveLabel(int index, double position){
 }
 
 void FTLabels::changeText(int index, const QString& text){
-    waveform_labels[index]->setText(text);
+    waveform_labels[index]->setPlainText(text);
     spectrogram_labels[index]->setText(text);
 
     m_isedited = true;
@@ -558,12 +629,12 @@ void FTLabels::removeLabel(int index){
 
     starts.erase(starts.begin()+index);
 
-    QGraphicsSimpleTextItem* labeltoremove = *(waveform_labels.begin()+index);
+    QGraphicsTextItem* labeltoremove = *(waveform_labels.begin()+index);
     waveform_labels.erase(waveform_labels.begin()+index);
     delete labeltoremove;
-    labeltoremove = *(spectrogram_labels.begin()+index);
+    QGraphicsSimpleTextItem* labelsimpletoremove = *(spectrogram_labels.begin()+index);
     spectrogram_labels.erase(spectrogram_labels.begin()+index);
-    delete labeltoremove;
+    delete labelsimpletoremove;
 
     QGraphicsLineItem* linetoremove = *(waveform_lines.begin()+index);
     waveform_lines.erase(waveform_lines.begin()+index);
@@ -606,7 +677,7 @@ void FTLabels::sort(){
     std::sort(indices.begin(), indices.end(), compare_indirect_index < std::deque<double> >(starts));
 
     std::deque<double> sorted_starts(starts.size());
-    std::deque<QGraphicsSimpleTextItem*> sorted_waveform_labels(waveform_labels.size());
+    std::deque<FTGraphicsLabelItem*> sorted_waveform_labels(waveform_labels.size());
     std::deque<QGraphicsSimpleTextItem*> sorted_spectrogram_labels(spectrogram_labels.size());
     std::deque<QGraphicsLineItem*> sorted_waveform_lines(starts.size());
     std::deque<QGraphicsLineItem*> sorted_spectrogram_lines(starts.size());

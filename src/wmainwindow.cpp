@@ -497,6 +497,19 @@ void WMainWindow::setEditMode(bool checked){
     }
     else
         setSelectionMode(true);
+
+    setLabelsEditable(checked);
+}
+
+void WMainWindow::setLabelsEditable(bool editable){
+    for(size_t fi=0; fi<ftlabels.size(); fi++){
+        for(size_t li=0; li<ftlabels[fi]->waveform_labels.size(); li++){
+            if(editable)
+                ftlabels[fi]->waveform_labels[li]->setTextInteractionFlags(Qt::TextEditorInteraction);
+            else
+                ftlabels[fi]->waveform_labels[li]->setTextInteractionFlags(Qt::NoTextInteraction);
+        }
+    }
 }
 
 WMainWindow::~WMainWindow() {
