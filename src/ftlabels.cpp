@@ -351,6 +351,7 @@ void FTLabels::clear() {
         waveform_labels.clear();
         for(size_t li=0; li<spectrogram_labels.size(); li++)
             delete spectrogram_labels[li];
+        spectrogram_labels.clear();
         for(size_t li=0; li<waveform_lines.size(); li++)
             delete waveform_lines[li];
         waveform_lines.clear();
