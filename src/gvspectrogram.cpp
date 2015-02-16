@@ -731,10 +731,9 @@ void QGVSpectrogram::selectionClear() {
     m_aSelectionClear->setEnabled(false);
     setCursor(Qt::CrossCursor);
 
-    if(gMW->m_gvPhaseSpectrum)
-        gMW->m_gvPhaseSpectrum->selectionClear();
-    if(gMW->m_gvSpectrum)
-        gMW->m_gvSpectrum->selectionClear();
+    if(gMW->m_gvWaveform)      gMW->m_gvWaveform->selectionClear();
+    if(gMW->m_gvSpectrum)      gMW->m_gvSpectrum->selectionClear();
+    if(gMW->m_gvPhaseSpectrum) gMW->m_gvPhaseSpectrum->selectionClear();
 
     selectionSetTextInForm();
 }
