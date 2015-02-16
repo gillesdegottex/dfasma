@@ -235,7 +235,7 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
         addFile(sndfiles[f]);
 
     if(sndfiles.size()>0)
-        m_gvSpectrogram->soundsChanged();
+        m_gvSpectrogram->updateDFTSettings(); // This will update the window computation AND trigger the STFT computation
 }
 
 void WMainWindow::changeToolBarSizes(int size) {
@@ -243,9 +243,7 @@ void WMainWindow::changeToolBarSizes(int size) {
     gMW->m_gvSpectrum->m_toolBar->setIconSize(QSize(size,size));
     gMW->m_gvSpectrogram->m_toolBar->setIconSize(QSize(size,size));
     ui->mainToolBar->setIconSize(QSize(1.5*size,1.5*size));
-//    m_pbVolume->setMaximumWidth(75);
     m_pbVolume->setMaximumWidth(m_dlgSettings->ui->sbToolBarSizes->value()/2);
-//    m_pbVolume->setMaximumHeight(ui->mainToolBar->height()/2);
     m_pbVolume->setMaximumHeight(1.5*size);
 }
 
@@ -760,6 +758,7 @@ void WMainWindow::fileSelectionChanged() {
         }
         m_gvSpectrogram->updateSTFTPlot();
     }
+//    cout << "WMainWindow::~fileSelectionChanged" << endl;
 }
 void WMainWindow::fileInfoUpdate() {
     QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();

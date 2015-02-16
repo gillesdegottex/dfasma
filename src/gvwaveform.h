@@ -121,7 +121,7 @@ public slots:
     void azoomout();
     void aunzoom();
     void selectionSet(QRectF selection, bool winforceupdate=false, bool forwardsync=true);
-    void selectionClear();
+    void selectionClear(bool forwardsync=true);
     void selectionZoomOn();
 
     void setMouseCursorPosition(double position, bool forwardsync);

@@ -70,7 +70,7 @@ public:
     QGraphicsRectItem* m_giShownSelection;
     QGraphicsSimpleTextItem* m_giSelectionTxt;
     void selectionSet(QRectF selection, bool forwardsync);
-    void selectionClear();
+    void selectionClear(bool forwardsync=true);
 
     void scrollContentsBy(int dx, int dy);
     void wheelEvent(QWheelEvent* event);

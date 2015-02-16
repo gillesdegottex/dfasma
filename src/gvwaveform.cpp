@@ -929,7 +929,7 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
     QGraphicsView::keyPressEvent(event);
 }
 
-void QGVWaveform::selectionClear(){
+void QGVWaveform::selectionClear(bool forwardsync){
     m_giSelection->hide();
     m_selection = QRectF(0, -1, 0, 2);
     m_giSelection->setRect(m_selection.left(), -1, m_selection.width(), 2);
@@ -938,6 +938,10 @@ void QGVWaveform::selectionClear(){
     m_aSelectionClear->setEnabled(false);
     gMW->m_gvSpectrum->m_scene->update();
     gMW->m_gvPhaseSpectrum->m_scene->update();
+
+    if(forwardsync){
+        if(gMW->m_gvSpectrogram) gMW->m_gvSpectrogram->selectionClear(false);
+    }
 }
 
 void QGVWaveform::selectionSet(QRectF selection, bool winforceupdate, bool forwardsync){

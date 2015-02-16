@@ -497,7 +497,7 @@ void QGVPhaseSpectrum::keyPressEvent(QKeyEvent* event){
     QGraphicsView::keyPressEvent(event);
 }
 
-void QGVPhaseSpectrum::selectionClear(){
+void QGVPhaseSpectrum::selectionClear(bool forwardsync){
     m_selection = QRectF(0, 0, 0, 0);
     m_mouseSelection = QRectF(0, 0, 0, 0);
     m_giShownSelection->hide();

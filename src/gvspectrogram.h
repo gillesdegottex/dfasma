@@ -156,7 +156,7 @@ public slots:
     void stftComputing();
 
     void selectionZoomOn();
-    void selectionClear();
+    void selectionClear(bool forwardsync=true);
     void azoomin();
     void azoomout();
 };

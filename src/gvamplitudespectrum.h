@@ -128,7 +128,7 @@ public slots:
     void fftResizing(int prevSize, int newSize);
 
     void selectionZoomOn();
-    void selectionClear();
+    void selectionClear(bool forwardsync=true);
     void azoomin();
     void azoomout();
     void aunzoom();

@@ -52,7 +52,7 @@ void STFTComputeThread::run() {
     do{
 //        std::cout << "STFTComputeThread::run resizing" << std::endl;
 
-        m_params_current.snd->m_stftparams = m_params_current; // Since there is no cancel buttn, fromnow on, soon or later it will correpond.
+        m_params_current.snd->m_stftparams = m_params_current; // Since there is no cancel buttn, from now on, soon or later it will correpond.
 
         m_fft->resize(m_params_current.dftlen);
 
@@ -99,6 +99,8 @@ void STFTComputeThread::run() {
                 m_params_current.snd->m_stft_min = std::min(m_params_current.snd->m_stft_min, y);
                 m_params_current.snd->m_stft_max = std::max(m_params_current.snd->m_stft_max, y);
             }
+
+            emit stftProgressing(int(100*double(si*m_params_current.stepsize)/wav->size()));
         }
 
         m_params_current.snd->m_stft_min = std::max(-2.0*20*std::log10(std::pow(2,m_params_current.snd->format().sampleSize())), m_params_current.snd->m_stft_min);
@@ -128,7 +130,8 @@ void STFTComputeThread::run() {
     while(compute);
 
     gMW->ui->pgbSpectrogramSTFTCompute->hide();
-    gMW->ui->lblSpectrogramInfoTxt->setText(QString("DFT size=%1").arg(m_fft->size()));
+    gMW->ui->lblSpectrogramInfoTxt->setText(QString("Updating Image ..."));
+    //    gMW->ui->lblSpectrogramInfoTxt->setText(QString("DFT size=%1").arg(m_fft->size()));
 
 //    std::cout << "STFTComputeThread::run m_mutex_computing.unlock " << std::endl;
     m_mutex_computing.unlock();

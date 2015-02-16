@@ -19,6 +19,7 @@ class STFTComputeThread : public QThread
 signals:
     void stftComputing();
     void stftComputed();
+    void stftProgressing(int);
 
 public:
     STFTComputeThread(QObject* parent);

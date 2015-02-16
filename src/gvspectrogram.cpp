@@ -177,6 +177,7 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
 
     connect(m_stftcomputethread, SIGNAL(stftComputing()), this, SLOT(stftComputing()));
     connect(m_stftcomputethread, SIGNAL(stftComputed()), this, SLOT(updateSTFTPlot()));
+    connect(m_stftcomputethread, SIGNAL(stftProgressing(int)), gMW->ui->pgbSpectrogramSTFTCompute, SLOT(setValue(int)));
 
     // Fill the toolbar
     m_toolBar = new QToolBar(this);
@@ -239,9 +240,11 @@ void QGVSpectrogram::updateAmplitudeExtent(){
 }
 
 void QGVSpectrogram::updateDFTSettings(){
-//    cout << "QGVSpectrogram::updateDFTSettings" << endl;
+//    cout << "QGVSpectrogram::updateDFTSettings fs=" << gMW->getFs() << endl;
 
     int winlen = std::floor(0.5+gMW->getFs()*m_dlgSettings->ui->sbWindowSize->value());
+    //    cout << "QGVSpectrogram::updateDFTSettings winlen=" << winlen << endl;
+
     if(winlen%2==0 && m_dlgSettings->ui->cbWindowSizeForcedOdd->isChecked())
         winlen++;
 
@@ -287,9 +290,11 @@ void QGVSpectrogram::updateDFTSettings(){
 
 void QGVSpectrogram::stftComputing(){
 //    cout << "QGVSpectrogram::stftComputing" << endl;
+    gMW->ui->pgbSpectrogramSTFTCompute->setMaximum(100);
     gMW->ui->pgbSpectrogramSTFTCompute->show();
-    gMW->ui->lblSpectrogramInfoTxt->setText(QString("Computing"));
+    gMW->ui->lblSpectrogramInfoTxt->setText(QString("Computing STFT"));
 }
+
 
 template<typename streamtype>
 streamtype& operator<<(streamtype& stream, const QGVSpectrogram::ImageParameters& imgparams){
@@ -303,6 +308,7 @@ void QGVSpectrogram::clearSTFTPlot(){
 
 void QGVSpectrogram::updateSTFTPlot(){
 //    cout << "QGVSpectrogram::updateSTFTPlot" << endl;
+
     // Fix limits between min and max sliders
     FTSound* csnd = gMW->getCurrentFTSound(true);
     if(csnd && gMW->ui->actionShowSpectrogram->isChecked()) {
@@ -324,17 +330,13 @@ void QGVSpectrogram::updateSTFTPlot(){
 
                 ImageParameters reqImgParams(csnd->m_stftparams, gMW->ui->sldSpectrogramAmplitudeMin->value(), gMW->ui->sldSpectrogramAmplitudeMax->value());
 
-//                cout << "QGVSpectrogram::updateSTFTPlot need to update the image ?" << endl;
-//                cout << "curr=" << m_imgSTFTParams << endl;
-//                cout << "req=" << reqImgParams << endl;
-
                 if(m_imgSTFTParams!=reqImgParams){
-//                    cout << "QGVSpectrogram::updateSTFTPlot update image" << endl;
+//                    gMW->ui->pgbSpectrogramSTFTCompute->hide();
+                    gMW->ui->lblSpectrogramInfoTxt->setText(QString("Updating Image ..."));
 
                     m_imgSTFTParams = reqImgParams;
 
                     // Update the image from the sound's STFT
-    //                cout << "QGVSpectrogram::updateSTFTPlot updating m_imgSTFT ..." << endl;
                     m_imgSTFT = QImage(csnd->m_stft.size(), csnd->m_stft[0].size(), QImage::Format_RGB32);
 
                     for(size_t si=0; si<csnd->m_stft.size(); si++){
@@ -353,7 +355,7 @@ void QGVSpectrogram::updateSTFTPlot(){
                 }
 
                 m_scene->update();
-//                cout << "QGVSpectrogram::updateSTFTPlot updating m_imgSTFT done." << endl;
+                gMW->ui->lblSpectrogramInfoTxt->setText(QString("DFT size=%1").arg(dftlen));
 
                 m_stftcomputethread->m_mutex_computing.unlock();
             }
@@ -367,9 +369,10 @@ void QGVSpectrogram::updateSceneRect() {
 }
 
 void QGVSpectrogram::soundsChanged(){
-//    cout << "QGVSpectrogram::soundsChanged" << endl;
+    cout << "QGVSpectrogram::soundsChanged" << endl;
     if(gMW->ftsnds.size()>0)
         updateSTFTPlot();
+    cout << "QGVSpectrogram::~soundsChanged" << endl;
 }
 
 void QGVSpectrogram::viewSet(QRectF viewrect, bool forwardsync) {
@@ -721,7 +724,7 @@ void QGVSpectrogram::keyPressEvent(QKeyEvent* event){
     QGraphicsView::keyPressEvent(event);
 }
 
-void QGVSpectrogram::selectionClear() {
+void QGVSpectrogram::selectionClear(bool forwardsync) {
     m_giShownSelection->hide();
     m_giSelectionTxt->hide();
     m_selection = QRectF(0, 0, 0, 0);
@@ -731,11 +734,13 @@ void QGVSpectrogram::selectionClear() {
     m_aSelectionClear->setEnabled(false);
     setCursor(Qt::CrossCursor);
 
-    if(gMW->m_gvWaveform)      gMW->m_gvWaveform->selectionClear();
-    if(gMW->m_gvSpectrum)      gMW->m_gvSpectrum->selectionClear();
-    if(gMW->m_gvPhaseSpectrum) gMW->m_gvPhaseSpectrum->selectionClear();
-
     selectionSetTextInForm();
+
+    if(forwardsync){
+        if(gMW->m_gvWaveform)      gMW->m_gvWaveform->selectionClear(false);
+        if(gMW->m_gvSpectrum)      gMW->m_gvSpectrum->selectionClear(false);
+        if(gMW->m_gvPhaseSpectrum) gMW->m_gvPhaseSpectrum->selectionClear(false);
+    }
 }
 
 void QGVSpectrogram::selectionSetTextInForm() {
@@ -771,6 +776,8 @@ void QGVSpectrogram::selectionSetTextInForm() {
 }
 
 void QGVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
+//    FLAG
+
     // Order the selection to avoid negative width and negative height
     if(selection.right()<selection.left()){
         float tmp = selection.left();

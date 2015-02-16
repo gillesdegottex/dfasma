@@ -810,7 +810,7 @@ void QGVAmplitudeSpectrum::keyPressEvent(QKeyEvent* event){
     QGraphicsView::keyPressEvent(event);
 }
 
-void QGVAmplitudeSpectrum::selectionClear() {
+void QGVAmplitudeSpectrum::selectionClear(bool forwardsync) {
 //    cout << "QGVAmplitudeSpectrum::selectionClear" << endl;
     m_giShownSelection->hide();
     m_giSelectionTxt->hide();
