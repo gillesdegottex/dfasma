@@ -595,10 +595,10 @@ void QGVPhaseSpectrum::cursorUpdate(QPointF p) {
     m_giCursorHoriz->setLine(line);
     cursorFixAndRefresh();
 
-    line.setP1(QPointF(p.x(), m_giCursorVert->line().y1()));
-    line.setP2(QPointF(p.x(), m_giCursorVert->line().y2()));
-    gMW->m_gvSpectrum->m_giCursorVert->setLine(line);
-    gMW->m_gvSpectrum->cursorFixAndRefresh();
+//    line.setP1(QPointF(p.x(), m_giCursorVert->line().y1()));
+//    line.setP2(QPointF(p.x(), m_giCursorVert->line().y2()));
+//    gMW->m_gvSpectrum->m_giCursorVert->setLine(line);
+    gMW->m_gvSpectrum->setMouseCursorPosition(QPointF(p.x(), 0.0), false);
 }
 
 void QGVPhaseSpectrum::cursorFixAndRefresh() {

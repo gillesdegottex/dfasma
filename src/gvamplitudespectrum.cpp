@@ -494,7 +494,7 @@ void QGVAmplitudeSpectrum::resizeEvent(QResizeEvent* event){
     }
 
     viewUpdateTexts();
-    cursorUpdate(QPointF(-1,0));
+    setMouseCursorPosition(QPointF(-1,0), false);
 
 //    cout << "QGVAmplitudeSpectrum::~resizeEvent" << endl;
 }
@@ -514,7 +514,7 @@ void QGVAmplitudeSpectrum::scrollContentsBy(int dx, int dy) {
     m_scene->invalidate(r);
 
     viewUpdateTexts();
-    cursorUpdate(QPointF(-1,0));
+    setMouseCursorPosition(QPointF(-1,0), false);
 
     QGraphicsView::scrollContentsBy(dx, dy);
 }
@@ -568,7 +568,7 @@ void QGVAmplitudeSpectrum::mousePressEvent(QMouseEvent* event){
                 // When moving the spectrum's view
                 m_currentAction = CAMoving;
                 setDragMode(QGraphicsView::ScrollHandDrag);
-                cursorUpdate(QPointF(-1,0));
+                setMouseCursorPosition(QPointF(-1,0), false);
             }
             else if(!event->modifiers().testFlag(Qt::ControlModifier) && m_selection.width()>0 && m_selection.height()>0 && abs(selview.left()-event->x())<5 && event->y()>=selview.top() && event->y()<=selview.bottom()) {
                 // Resize left boundary of the selection
@@ -642,13 +642,13 @@ void QGVAmplitudeSpectrum::mouseMoveEvent(QMouseEvent* event){
 
     QPointF p = mapToScene(event->pos());
 
-    cursorUpdate(p);
+    setMouseCursorPosition(p, true);
 
 //    std::cout << "QGVWaveform::mouseMoveEvent action=" << m_currentAction << " x=" << p.x() << " y=" << p.y() << endl;
 
     if(m_currentAction==CAMoving) {
         // When scrolling the view around the scene
-        cursorUpdate(QPointF(-1,0));
+        setMouseCursorPosition(QPointF(-1,0), false);
     }
     else if(m_currentAction==CAZooming) {
         double dx = -(event->pos()-m_pressed_mouseinviewport).x()/100.0;
@@ -664,7 +664,7 @@ void QGVAmplitudeSpectrum::mouseMoveEvent(QMouseEvent* event){
         viewSet(newrect);
 
         viewUpdateTexts();
-        cursorUpdate(mapToScene(event->pos()));
+        setMouseCursorPosition(mapToScene(event->pos()), true);
 
         m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
     }
@@ -964,7 +964,7 @@ void QGVAmplitudeSpectrum::selectionZoomOn(){
         if(gMW->m_gvPhaseSpectrum)
             gMW->m_gvPhaseSpectrum->viewUpdateTexts();
 
-        cursorUpdate(QPointF(-1,0));
+        setMouseCursorPosition(QPointF(-1,0), false);
 //        m_aZoomOnSelection->setEnabled(false);
     }
 }
@@ -979,7 +979,7 @@ void QGVAmplitudeSpectrum::azoomin(){
     setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
     viewSet();
 
-    cursorUpdate(QPointF(-1,0));
+    setMouseCursorPosition(QPointF(-1,0), false);
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
 }
 void QGVAmplitudeSpectrum::azoomout(){
@@ -992,7 +992,7 @@ void QGVAmplitudeSpectrum::azoomout(){
     setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
     viewSet();
 
-    cursorUpdate(QPointF(-1,0));
+    setMouseCursorPosition(QPointF(-1,0), false);
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
 }
 void QGVAmplitudeSpectrum::aunzoom(){
@@ -1017,7 +1017,7 @@ void QGVAmplitudeSpectrum::aunzoom(){
 //    m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
 }
 
-void QGVAmplitudeSpectrum::cursorUpdate(QPointF p) {
+void QGVAmplitudeSpectrum::setMouseCursorPosition(QPointF p, bool forwardsync) {
 
     QLineF line;
     line.setP1(QPointF(p.x(), m_giCursorVert->line().y1()));
@@ -1026,15 +1026,7 @@ void QGVAmplitudeSpectrum::cursorUpdate(QPointF p) {
     line.setP1(QPointF(m_giCursorHoriz->line().x1(), p.y()));
     line.setP2(QPointF(m_giCursorHoriz->line().x2(), p.y()));
     m_giCursorHoriz->setLine(line);
-    cursorFixAndRefresh();
 
-    line.setP1(QPointF(p.x(), m_giCursorVert->line().y1()));
-    line.setP2(QPointF(p.x(), m_giCursorVert->line().y2()));
-    gMW->m_gvPhaseSpectrum->m_giCursorVert->setLine(line);
-    gMW->m_gvPhaseSpectrum->cursorFixAndRefresh();
-}
-
-void QGVAmplitudeSpectrum::cursorFixAndRefresh() { // TODO Use sync strategy
     if(m_giCursorVert->line().x1()==-1){
         m_giCursorHoriz->hide();
         m_giCursorVert->hide();
@@ -1069,6 +1061,15 @@ void QGVAmplitudeSpectrum::cursorFixAndRefresh() { // TODO Use sync strategy
         m_giCursorPositionYTxt->setText(QString("%1dB").arg(-m_giCursorHoriz->line().y1()));
         br = m_giCursorPositionYTxt->boundingRect();
         m_giCursorPositionYTxt->setPos(viewrect.right()-br.width()/trans.m11(), m_giCursorHoriz->line().y1()-br.height()/trans.m22());
+    }
+
+    if(forwardsync){
+        if(gMW->m_gvPhaseSpectrum){
+            line.setP1(QPointF(p.x(), m_giCursorVert->line().y1()));
+            line.setP2(QPointF(p.x(), m_giCursorVert->line().y2()));
+            gMW->m_gvPhaseSpectrum->m_giCursorVert->setLine(line);
+            gMW->m_gvPhaseSpectrum->cursorFixAndRefresh();
+        }
     }
 }
 

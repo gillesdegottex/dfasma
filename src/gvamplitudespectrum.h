@@ -72,8 +72,7 @@ public:
     QGraphicsLineItem* m_giCursorVert;
     QGraphicsSimpleTextItem* m_giCursorPositionXTxt;
     QGraphicsSimpleTextItem* m_giCursorPositionYTxt;
-    void cursorUpdate(QPointF p);
-    void cursorFixAndRefresh();
+    void setMouseCursorPosition(QPointF p, bool forwardsync);
 
     QPointF m_selection_pressedp;
     QPointF m_pressed_mouseinviewport;
