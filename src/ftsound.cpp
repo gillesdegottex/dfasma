@@ -180,13 +180,6 @@ QString FTSound::info() const {
 
     str += "Duration: "+QString::number(getDuration())+"s ("+QString::number(wav.size())+")<br/>";
 
-    if(m_ampscale!=1.0)
-        str += "Scaled: "+QString::number(20*std::log10(m_ampscale), 'f', 4)+"dB ("+QString::number(m_ampscale, 'f', 4)+")<br/>";
-    if(isClipped())
-        str += "<font color=\"red\"><b>CLIPPED</b></font><br/>";
-    if(m_delay!=0.0)
-        str += "Delayed: "+QString::number(double(m_delay)/fs, 'f', 4)+"s ("+QString::number(m_delay)+")<br/>";
-
     QString codecname = m_fileaudioformat.codec();
 //    if(codecname.isEmpty()) codecname = "unknown type";
 //    str += "Codec: "+codecname+"<br/>";
@@ -226,6 +219,13 @@ QString FTSound::info() const {
 //                str += "Smallest amplitude: "+QString::number(20*log10(smallest))+"dB";
 //        }
     }
+
+    if(m_ampscale!=1.0)
+        str += "<b>Scaled: "+QString::number(20*std::log10(m_ampscale), 'f', 4)+"dB ("+QString::number(m_ampscale, 'f', 4)+")</b><br/>";
+    if(isClipped())
+        str += "<font color=\"red\"><b>CLIPPED</b></font><br/>";
+    if(m_delay!=0.0)
+        str += "<b>Delayed: "+QString::number(double(m_delay)/fs, 'f', 4)+"s ("+QString::number(m_delay)+")</b><br/>";
 
     return str;
 }
