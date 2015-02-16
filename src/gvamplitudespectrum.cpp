@@ -1232,6 +1232,7 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
         double s2p = -fullpixrect.height()/viewrect.height(); // Scene to pixel
         double p2s = viewrect.width()/fullpixrect.width(); // Pixel to scene
         double yzero = mapFromScene(QPointF(0,0)).y();
+        double yinfmin = -viewrect.bottom()/sigproc::log2db; // Nothing seen below this
 
         std::complex<WAVTYPE>* yp = ldft.data();
 
@@ -1246,6 +1247,7 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
                 WAVTYPE y;
                 for(int n=ns; n<=ne; n++) {
                     y = lascale+ypp->real();
+                    if(y<yinfmin) y = yinfmin-10;
                     ymin = std::min(ymin, y);
                     ymax = std::max(ymax, y);
                     ypp++;
