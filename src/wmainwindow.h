@@ -67,6 +67,8 @@ class WMainWindow : public QMainWindow
     void disconnectModes();
 
     QProgressBar* m_pbVolume;
+    FTSound* m_lastSelectedSound;
+    FTSound* m_lastFilteredSound;
 
 protected:
     void keyPressEvent(QKeyEvent* event);
@@ -125,7 +127,6 @@ public:
     std::deque<FTSound*> ftsnds;
     std::deque<FTFZero*> ftfzeros;
     std::deque<FTLabels*> ftlabels;
-    FTSound* m_lastSelectedSound;
     FTSound* getCurrentFTSound(bool forceselect=false);
     FTLabels* getCurrentFTLabels(bool forceselect=false);
 

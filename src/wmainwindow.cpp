@@ -61,6 +61,7 @@ using namespace std;
 #include <QMessageBox>
 #include <QMimeData>
 #include <QScrollBar>
+#include "qthelper.h"
 
 #ifdef SUPPORT_SDIF
 #include <easdif/easdif.h>
@@ -74,8 +75,9 @@ WMainWindow* gMW = NULL;
 WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::WMainWindow)
-    , m_dlgSettings(NULL)
     , m_lastSelectedSound(NULL)
+    , m_lastFilteredSound(NULL)
+    , m_dlgSettings(NULL)
     , m_gvWaveform(NULL)
     , m_gvSpectrum(NULL)
     , m_gvPhaseSpectrum(NULL)
@@ -945,10 +947,9 @@ void WMainWindow::play()
             FTSound* currentftsound = getCurrentFTSound(true);
             if(currentftsound) {
 
-                // Start by reseting any filtered sounds
-                for(size_t fi=0; fi<ftsnds.size(); fi++)
-                    if(ftsnds[fi]!=currentftsound)
-                        ftsnds[fi]->resetFiltering();
+                // Start by reseting any previously filtered sounds
+                if(m_lastFilteredSound && m_lastFilteredSound->isFiltered())
+                    m_lastFilteredSound->resetFiltering();
 
                 double tstart = m_gvWaveform->m_giPlayCursor->pos().x();
                 double tstop = getMaxLastSampleTime();
@@ -970,6 +971,7 @@ void WMainWindow::play()
                         for(size_t fi=0; fi<ftsnds.size(); fi++)
                             ftsnds[fi]->setFiltered(false);
                         currentftsound->setFiltered(true);
+                        m_lastFilteredSound = currentftsound;
                     }
                     else
                         currentftsound->setFiltered(false);

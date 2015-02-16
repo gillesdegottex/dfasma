@@ -4,6 +4,7 @@
 #include <iostream>
 
 #define COUTD std::cout << QThread::currentThreadId() << " " << QDateTime::fromMSecsSinceEpoch(QDateTime::currentMSecsSinceEpoch()).toString("hh:mm:ss.zzz             ").toLocal8Bit().constData() << " "
+#define FLAG std::cout << __FILE__ << ":" << __LINE__ << endl;
 
 // Remove hard coded margin (Bug 11945)
 // See: https://bugreports.qt-project.org/browse/QTBUG-11945
