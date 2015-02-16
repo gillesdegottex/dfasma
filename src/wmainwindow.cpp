@@ -160,8 +160,8 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     m_pbVolume->setMaximum(0);
 //    m_pbVolume->setMaximumHeight(ui->mainToolBar->height()/2);
     m_pbVolume->setMaximumHeight(ui->mainToolBar->height());
-    m_pbVolume->setMinimum(-32);
-    m_pbVolume->setValue(-32);
+    m_pbVolume->setMinimum(-50); // Quite arbitrary
+    m_pbVolume->setValue(-50);   // Quite arbitrary
     ui->mainToolBar->insertWidget(ui->actionSettings, m_pbVolume);
     ui->mainToolBar->insertSeparator(ui->actionSettings);
 
@@ -1032,7 +1032,7 @@ void WMainWindow::audioStateChanged(QAudio::State state){
 
 void WMainWindow::localEnergyChanged(double e){
 
-//    cout << e << " " << flush;
+//    cout << 20*log10(e) << " " << flush;
 
     if(e==0) m_pbVolume->setValue(m_pbVolume->minimum());
     else     m_pbVolume->setValue(20*log10(e)); // In dB
