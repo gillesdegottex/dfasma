@@ -388,8 +388,10 @@ void QGVWaveform::setMouseCursorPosition(double position, bool forwardsync) {
 //            x = x - br.width()/trans.m11();
         m_giMouseCursorTxt->setPos(position+1/trans.m11(), viewrect.top()-3/trans.m22());
 
-        if(forwardsync)
-            gMW->m_gvSpectrogram->setMouseCursorPosition(QPointF(position, 0.0), false);
+        if(forwardsync){
+            if(gMW->m_gvSpectrogram)
+                gMW->m_gvSpectrogram->setMouseCursorPosition(QPointF(position, 0.0), false);
+        }
     }
 }
 

@@ -24,6 +24,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "ui_wmainwindow.h"
 #include "gvwaveform.h"
 #include "gvamplitudespectrum.h"
+#include "gvspectrogram.h"
 #include "ftsound.h"
 #include "ftfzero.h"
 #include "sigproc.h"
@@ -206,7 +207,7 @@ void QGVPhaseSpectrum::resizeEvent(QResizeEvent* event) {
 //        gMW->m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     viewUpdateTexts();
-    cursorUpdate(QPointF(-1,0));
+    setMouseCursorPosition(QPointF(-1,0), false);
 
 ////    cout << "QGVPhaseSpectrum::~resizeEvent" << endl;
 }
@@ -225,7 +226,7 @@ void QGVPhaseSpectrum::scrollContentsBy(int dx, int dy){
     m_scene->invalidate(r);
 
     viewUpdateTexts();
-    cursorUpdate(QPointF(-1,0));
+    setMouseCursorPosition(QPointF(-1,0), false);
 
     QGraphicsView::scrollContentsBy(dx, dy);
 }
@@ -247,7 +248,7 @@ void QGVPhaseSpectrum::wheelEvent(QWheelEvent* event) {
     setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
     viewSet();
 
-    cursorUpdate(mapToScene(event->pos()));
+    setMouseCursorPosition(mapToScene(event->pos()), true);
 
 //    cout << "QGVPhaseSpectrum::~wheelEvent" << endl;
 }
@@ -267,7 +268,7 @@ void QGVPhaseSpectrum::mousePressEvent(QMouseEvent* event){
                 // When moving the spectrum's view
                 m_currentAction = CAMoving;
                 setDragMode(QGraphicsView::ScrollHandDrag);
-                cursorUpdate(QPointF(-1,0));
+                setMouseCursorPosition(QPointF(-1,0), false);
             }
             else if((!kctrl && !kshift) && m_selection.width()>0 && m_selection.height()>0 && abs(selview.left()-event->x())<5 && event->y()>=selview.top() && event->y()<=selview.bottom()) {
                 // Resize left boundary of the selection
@@ -349,7 +350,7 @@ void QGVPhaseSpectrum::mouseMoveEvent(QMouseEvent* event){
 
     if(m_currentAction==CAMoving) {
         // When scrolling the view around the scene
-        cursorUpdate(QPointF(-1,0));
+//        setMouseCursorPosition(QPointF(-1,0), true);
     }
     else if(m_currentAction==CAZooming) {
         double dx = -(event->pos()-m_pressed_mouseinviewport).x()/100.0;
@@ -445,7 +446,7 @@ void QGVPhaseSpectrum::mouseMoveEvent(QMouseEvent* event){
         }
     }
 
-    cursorUpdate(p);
+    setMouseCursorPosition(p, true);
 
 //    std::cout << "~QGVWaveform::mouseMoveEvent" << endl;
     QGraphicsView::mouseMoveEvent(event);
@@ -569,7 +570,7 @@ void QGVPhaseSpectrum::azoomin(){
     setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
     viewSet();
 
-    cursorUpdate(QPointF(-1,0));
+    setMouseCursorPosition(QPointF(-1,0), false);
 }
 void QGVPhaseSpectrum::azoomout(){
     QTransform trans = transform();
@@ -581,10 +582,10 @@ void QGVPhaseSpectrum::azoomout(){
     setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
     viewSet();
 
-    cursorUpdate(QPointF(-1,0));
+    setMouseCursorPosition(QPointF(-1,0), false);
 }
 
-void QGVPhaseSpectrum::cursorUpdate(QPointF p) {
+void QGVPhaseSpectrum::setMouseCursorPosition(QPointF p, bool forwardsync) {
 
     QLineF line;
     line.setP1(QPointF(p.x(), m_giCursorVert->line().y1()));
@@ -593,15 +594,6 @@ void QGVPhaseSpectrum::cursorUpdate(QPointF p) {
     line.setP1(QPointF(m_giCursorHoriz->line().x1(), p.y()));
     line.setP2(QPointF(m_giCursorHoriz->line().x2(), p.y()));
     m_giCursorHoriz->setLine(line);
-    cursorFixAndRefresh();
-
-//    line.setP1(QPointF(p.x(), m_giCursorVert->line().y1()));
-//    line.setP2(QPointF(p.x(), m_giCursorVert->line().y2()));
-//    gMW->m_gvSpectrum->m_giCursorVert->setLine(line);
-    gMW->m_gvSpectrum->setMouseCursorPosition(QPointF(p.x(), 0.0), false);
-}
-
-void QGVPhaseSpectrum::cursorFixAndRefresh() {
     if(m_giCursorVert->line().x1()==-1){
         m_giCursorHoriz->hide();
         m_giCursorVert->hide();
@@ -633,6 +625,13 @@ void QGVPhaseSpectrum::cursorFixAndRefresh() {
         m_giCursorPositionYTxt->setText(QString("%1rad").arg(-m_giCursorHoriz->line().y1()));
         br = m_giCursorPositionYTxt->boundingRect();
         m_giCursorPositionYTxt->setPos(viewrect.right()-br.width()/trans.m11(), m_giCursorHoriz->line().y1()-br.height()/trans.m22());
+    }
+
+    if(forwardsync){
+        if(gMW->m_gvSpectrogram)
+            gMW->m_gvSpectrogram->setMouseCursorPosition(QPointF(0.0, p.x()), false);
+        if(gMW->m_gvSpectrum)
+            gMW->m_gvSpectrum->setMouseCursorPosition(QPointF(p.x(), 0.0), false);
     }
 }
 

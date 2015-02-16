@@ -1064,12 +1064,10 @@ void QGVAmplitudeSpectrum::setMouseCursorPosition(QPointF p, bool forwardsync) {
     }
 
     if(forwardsync){
-        if(gMW->m_gvPhaseSpectrum){
-            line.setP1(QPointF(p.x(), m_giCursorVert->line().y1()));
-            line.setP2(QPointF(p.x(), m_giCursorVert->line().y2()));
-            gMW->m_gvPhaseSpectrum->m_giCursorVert->setLine(line);
-            gMW->m_gvPhaseSpectrum->cursorFixAndRefresh();
-        }
+        if(gMW->m_gvSpectrogram)
+            gMW->m_gvSpectrogram->setMouseCursorPosition(QPointF(0.0, p.x()), false);
+        if(gMW->m_gvPhaseSpectrum)
+            gMW->m_gvPhaseSpectrum->setMouseCursorPosition(QPointF(p.x(), 0.0), false);
     }
 }
 
