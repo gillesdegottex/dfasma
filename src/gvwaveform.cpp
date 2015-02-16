@@ -83,7 +83,7 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_aShowSelectedWaveformOnTop->setCheckable(true);
     m_aShowSelectedWaveformOnTop->setChecked(settings.value("qgvwaveform/m_aShowSelectedWaveformOnTop", true).toBool());
     connect(m_aShowSelectedWaveformOnTop, SIGNAL(triggered()), m_scene, SLOT(update()));
-    m_contextmenu.addAction(m_aShowSelectedWaveformOnTop);
+//    m_contextmenu.addAction(m_aShowSelectedWaveformOnTop);
 
     // Mouse Cursor
     m_giMouseCursorLine = new QGraphicsLineItem(0, -1, 0, 1);

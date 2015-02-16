@@ -204,7 +204,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
 
     // Build the context menu
     m_contextmenu.addAction(m_aShowGrid);
-    m_contextmenu.addAction(gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop);
+//    m_contextmenu.addAction(gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop);
     m_contextmenu.addAction(m_aShowWindow);
     m_contextmenu.addSeparator();
     m_contextmenu.addAction(m_aAutoUpdateDFT);
@@ -1161,24 +1161,28 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
 
     for(size_t fi=0; fi<gMW->ftsnds.size(); fi++){
         if(!gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop->isChecked() || gMW->ftsnds[fi]!=currsnd){
-            QPen outlinePen(gMW->ftsnds[fi]->color);
-            outlinePen.setWidth(0);
-            painter->setPen(outlinePen);
-            painter->setBrush(QBrush(gMW->ftsnds[fi]->color));
-            painter->setOpacity(1);
+            if(gMW->ftsnds[fi]->m_actionShow->isChecked()){
+                QPen outlinePen(gMW->ftsnds[fi]->color);
+                outlinePen.setWidth(0);
+                painter->setPen(outlinePen);
+                painter->setBrush(QBrush(gMW->ftsnds[fi]->color));
+                painter->setOpacity(1);
 
-            draw_spectrum(painter, gMW->ftsnds[fi]->m_dft, fs, 1.0, rect);
+                draw_spectrum(painter, gMW->ftsnds[fi]->m_dft, fs, 1.0, rect);
+            }
         }
     }
 
     if(gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop->isChecked()){
-        QPen outlinePen(currsnd->color);
-        outlinePen.setWidth(0);
-        painter->setPen(outlinePen);
-        painter->setBrush(QBrush(currsnd->color));
-        painter->setOpacity(1);
+        if(currsnd->m_actionShow->isChecked()){
+            QPen outlinePen(currsnd->color);
+            outlinePen.setWidth(0);
+            painter->setPen(outlinePen);
+            painter->setBrush(QBrush(currsnd->color));
+            painter->setOpacity(1);
 
-        draw_spectrum(painter, currsnd->m_dft, fs, 1.0, rect);
+            draw_spectrum(painter, currsnd->m_dft, fs, 1.0, rect);
+        }
     }
 
 //    cout << "QGVAmplitudeSpectrum::~drawBackground" << endl;

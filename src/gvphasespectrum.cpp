@@ -104,7 +104,7 @@ QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
 
     // Build the context menu
     m_contextmenu.addAction(gMW->m_gvSpectrum->m_aShowGrid);
-    m_contextmenu.addAction(gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop);
+//    m_contextmenu.addAction(gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop);
     m_contextmenu.addSeparator();
 //    m_aShowProperties = new QAction(tr("&Properties"), this);
 //    m_aShowProperties->setStatusTip(tr("Open the properties configuration panel of the spectrum view"));
@@ -113,7 +113,6 @@ QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
 //    connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(updateSceneRect()));
 
     connect(gMW->m_gvSpectrum->m_aShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
-
     connect(gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop, SIGNAL(triggered()), m_scene, SLOT(update()));
 }
 
@@ -689,22 +688,26 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
 
     for(size_t fi=0; fi<gMW->ftsnds.size(); fi++){
         if(!gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop->isChecked() || gMW->ftsnds[fi]!=currsnd){
-            QPen outlinePen(gMW->ftsnds[fi]->color);
-            outlinePen.setWidth(0);
-            painter->setPen(outlinePen);
-            painter->setBrush(QBrush(gMW->ftsnds[fi]->color));
+            if(gMW->ftsnds[fi]->m_actionShow->isChecked()){
+                QPen outlinePen(gMW->ftsnds[fi]->color);
+                outlinePen.setWidth(0);
+                painter->setPen(outlinePen);
+                painter->setBrush(QBrush(gMW->ftsnds[fi]->color));
 
-            draw_spectrum(painter, gMW->ftsnds[fi]->m_dft, gMW->getFs(), (gMW->m_gvSpectrum->m_winlen-1)/2.0, rect);
+                draw_spectrum(painter, gMW->ftsnds[fi]->m_dft, gMW->getFs(), (gMW->m_gvSpectrum->m_winlen-1)/2.0, rect);
+            }
         }
     }
 
     if(gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop->isChecked()){
-        QPen outlinePen(currsnd->color);
-        outlinePen.setWidth(0);
-        painter->setPen(outlinePen);
-        painter->setBrush(QBrush(currsnd->color));
+        if(currsnd->m_actionShow->isChecked()){
+            QPen outlinePen(currsnd->color);
+            outlinePen.setWidth(0);
+            painter->setPen(outlinePen);
+            painter->setBrush(QBrush(currsnd->color));
 
-        draw_spectrum(painter, currsnd->m_dft, gMW->getFs(), (gMW->m_gvSpectrum->m_winlen-1)/2.0, rect);
+            draw_spectrum(painter, currsnd->m_dft, gMW->getFs(), (gMW->m_gvSpectrum->m_winlen-1)/2.0, rect);
+        }
     }
 
 //    cout << "QGVPhaseSpectrum::~drawBackground" << endl;
