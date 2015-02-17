@@ -61,6 +61,7 @@ using namespace std;
 #include <QMessageBox>
 #include <QMimeData>
 #include <QScrollBar>
+#include <QProgressDialog>
 #include "qthelper.h"
 
 #ifdef SUPPORT_SDIF
@@ -233,8 +234,16 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 
     connect(m_dlgSettings->ui->sbToolBarSizes, SIGNAL(valueChanged(int)), this, SLOT(changeToolBarSizes(int)));
 
-    for(int f=0; f<sndfiles.size(); f++)
+    QProgressDialog dlgProgress("Opening files...", "Abort", 0, sndfiles.size(), this);
+    dlgProgress.setWindowModality(Qt::WindowModal);
+    dlgProgress.setMinimumDuration(1000);
+    dlgProgress.setMaximum(sndfiles.size());
+    for(int f=0; f<sndfiles.size() && !dlgProgress.wasCanceled(); f++){
+        dlgProgress.setValue(f);
         addFile(sndfiles[f]);
+    }
+    dlgProgress.setValue(sndfiles.size());
+    updateViewsAfterAddFile(true);
 
     if(sndfiles.size()>0)
         m_gvSpectrogram->updateDFTSettings(); // This will update the window computation AND trigger the STFT computation
@@ -525,15 +534,28 @@ WMainWindow::~WMainWindow() {
 
 void WMainWindow::openFile() {
 
+    bool isfirsts = ftsnds.size()==0;
+
 //      const QString &caption = QString(),
 //      const QString &dir = QString(),
 //      const QString &filter = QString(),
 //      QString *selectedFilter = 0,
 //      Options options = 0);
+
     QStringList l = QFileDialog::getOpenFileNames(this, "Open File(s) ...", QString(), QString(), 0, QFileDialog::ReadOnly);
 
-    for(int f=0; f<l.size(); f++)
-        addFile(l.at(f));
+    if(l.size()>0){
+        QProgressDialog dlgProgress("Opening files...", "Abort", 0, l.size(), this);
+        dlgProgress.setWindowModality(Qt::WindowModal);
+        dlgProgress.setMinimumDuration(1000);
+        dlgProgress.setMaximum(l.size());
+        for(int f=0; f<l.size() && !dlgProgress.wasCanceled(); f++){
+            dlgProgress.setValue(f);
+            addFile(l.at(f));
+        }
+        dlgProgress.setValue(l.size());
+        updateViewsAfterAddFile(isfirsts);
+    }
 }
 
 void WMainWindow::addFile(const QString& filepath) {
@@ -602,30 +624,31 @@ void WMainWindow::addFile(const QString& filepath) {
             m_gvWaveform->fitViewToSoundsAmplitude();
         //    cout << "~MainWindow::addFile" << endl;
         }
-
-        if(ui->listSndFiles->count()==0)
-            setInWaitingForFileState();
-        else {
-            ui->actionCloseFile->setEnabled(true);
-            ui->splitterViews->show();
-            updateWindowTitle();
-            m_gvWaveform->updateSceneRect();
-            m_gvSpectrogram->updateSceneRect();
-            m_gvSpectrum->updateSceneRect();
-            m_gvPhaseSpectrum->updateSceneRect();
-            if(isfirsts){
-                m_gvWaveform->viewSet(m_gvWaveform->m_scene->sceneRect(), false);
-                m_gvSpectrogram->viewSet(m_gvSpectrogram->m_scene->sceneRect(), false);
-                m_gvSpectrum->viewSet(m_gvSpectrum->m_scene->sceneRect(), false);
-                m_gvPhaseSpectrum->viewSet(m_gvPhaseSpectrum->m_scene->sceneRect(), false);
-            }
-            soundsChanged();
-        }
     }
     catch (QString err)
     {
         QMessageBox::warning(this, "Failed to load file ...", "Data from the following file can't be loaded:\n"+filepath+"'\n\nReason:\n"+err);
+    }
+}
 
+void WMainWindow::updateViewsAfterAddFile(bool isfirsts) {
+    if(ui->listSndFiles->count()==0)
+        setInWaitingForFileState();
+    else {
+        ui->actionCloseFile->setEnabled(true);
+        ui->splitterViews->show();
+        updateWindowTitle();
+        m_gvWaveform->updateSceneRect();
+        m_gvSpectrogram->updateSceneRect();
+        m_gvSpectrum->updateSceneRect();
+        m_gvPhaseSpectrum->updateSceneRect();
+        if(isfirsts){
+            m_gvWaveform->viewSet(m_gvWaveform->m_scene->sceneRect(), false);
+            m_gvSpectrogram->viewSet(m_gvSpectrogram->m_scene->sceneRect(), false);
+            m_gvSpectrum->viewSet(m_gvSpectrum->m_scene->sceneRect(), false);
+            m_gvPhaseSpectrum->viewSet(m_gvPhaseSpectrum->m_scene->sceneRect(), false);
+        }
+        soundsChanged();
     }
 }
 
@@ -665,9 +688,20 @@ void WMainWindow::duplicateCurrentFile(){
 void WMainWindow::dropEvent(QDropEvent *event){
 //    cout << "Contents: " << event->mimeData()->text().toLatin1().data() << endl;
 
+    bool isfirsts = ftsnds.size()==0;
+
     QList<QUrl>	lurl = event->mimeData()->urls();
-    for(int lurli=0; lurli<lurl.size(); lurli++)
+
+    QProgressDialog dlgProgress("Opening files...", "Abort", 0, lurl.size(), this);
+    dlgProgress.setWindowModality(Qt::WindowModal);
+    dlgProgress.setMinimumDuration(1000);
+    dlgProgress.setMaximum(lurl.size());
+    for(int lurli=0; lurli<lurl.size() && !dlgProgress.wasCanceled(); lurli++){
+        dlgProgress.setValue(lurli);
         addFile(lurl[lurli].toLocalFile());
+    }
+    dlgProgress.setValue(lurl.size());
+    updateViewsAfterAddFile(isfirsts);
 }
 void WMainWindow::dragEnterEvent(QDragEnterEvent *event){
     event->acceptProposedAction();

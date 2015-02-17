@@ -47,6 +47,7 @@ class QGVSpectrogram;
 class QHBoxLayout;
 class QProgressBar;
 class QLabel;
+class QProgressDialog;
 
 namespace Ui {
 class WMainWindow;
@@ -110,6 +111,7 @@ public slots:
     void checkFileModifications();
     void duplicateCurrentFile();
     void setInWaitingForFileState();
+    void updateViewsAfterAddFile(bool isfirsts);
 
 public:
     explicit WMainWindow(QStringList sndfiles, QWidget* parent=0);
