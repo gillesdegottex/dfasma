@@ -48,6 +48,7 @@ using namespace std;
 #include <QStaticText>
 #include <QDebug>
 #include <QTime>
+#include <QToolTip>
 
 #include "qthelper.h"
 
@@ -211,6 +212,9 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
 
 void QGVSpectrogram::updateAmplitudeExtent(){
 //    cout << "QGVSpectrogram::updateAmplitudeExtent" << endl;
+
+    if(!gMW->isLoading())
+        QToolTip::showText(QCursor::pos(), QString("[%1,%2]dB").arg(-gMW->ui->sldSpectrogramAmplitudeMin->value()).arg(gMW->ui->sldSpectrogramAmplitudeMax->value()), this);
 
     // If the current is NOT opaque:
     if(gMW->ftsnds.size()>0){

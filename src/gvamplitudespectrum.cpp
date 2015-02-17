@@ -50,6 +50,7 @@ using namespace std;
 #include <QTime>
 #include <QMessageBox>
 #include <QScrollBar>
+#include <QToolTip>
 
 #include "qthelper.h"
 
@@ -222,6 +223,8 @@ void QGVAmplitudeSpectrum::settingsModified(){
 }
 
 void QGVAmplitudeSpectrum::updateAmplitudeExtent(){
+//    cout << "QGVAmplitudeSpectrum::updateAmplitudeExtent" << endl;
+
     if(gMW->ftsnds.size()>0){
         float maxsqnr = -std::numeric_limits<float>::infinity();
         for(unsigned int si=0; si<gMW->ftsnds.size(); si++)
@@ -232,12 +235,18 @@ void QGVAmplitudeSpectrum::updateAmplitudeExtent(){
 
         updateSceneRect();
     }
+
+//    cout << "QGVAmplitudeSpectrum::~updateAmplitudeExtent" << endl;
 }
 
 void QGVAmplitudeSpectrum::amplitudeMinChanged() {
 //    cout << "QGVAmplitudeSpectrum::amplitudeMinChanged" << endl;
+    if(!gMW->isLoading())
+        QToolTip::showText(QCursor::pos(), QString("%1dB").arg(gMW->ui->sldSpectrumAmplitudeMin->value()), this);
+
     updateSceneRect();
     viewSet(m_scene->sceneRect(), false);
+
 //    cout << "QGVAmplitudeSpectrum::~amplitudeMinChanged" << endl;
 }
 

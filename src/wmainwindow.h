@@ -60,6 +60,7 @@ class WMainWindow : public QMainWindow
     Q_OBJECT
 
     static WMainWindow* sm_mainwindow;
+    bool m_loading;
 
     void initializeSoundSystem(float fs);
 
@@ -115,6 +116,7 @@ public:
     ~WMainWindow();
 
     Ui::WMainWindow* ui;
+    bool isLoading() const {return m_loading;}
 
     WDialogSettings* m_dlgSettings;
 

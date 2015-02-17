@@ -84,6 +84,8 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     , m_gvSpectrogram(NULL)
     , m_audioengine(NULL)
 {
+    m_loading = true;
+
     ui->setupUi(this);
     ui->lblFileInfo->hide();
 
@@ -236,6 +238,8 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 
     if(sndfiles.size()>0)
         m_gvSpectrogram->updateDFTSettings(); // This will update the window computation AND trigger the STFT computation
+
+    m_loading = false;
 }
 
 void WMainWindow::changeToolBarSizes(int size) {
