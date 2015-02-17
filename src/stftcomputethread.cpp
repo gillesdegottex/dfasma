@@ -5,6 +5,7 @@
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "ftsound.h"
+#include "qthelper.h"
 
 STFTComputeThread::STFTComputeThread(QObject* parent)
     : QThread(parent)
@@ -26,6 +27,9 @@ void STFTComputeThread::compute(FTSound* snd, const std::vector<FFTTYPE>& win, i
 
     if(m_mutex_computing.tryLock()){
         // Currently not computing, but it will be very soon ...
+
+        gMW->ui->pbSTFTComputingCancel->setChecked(false);
+        gMW->ui->pbSTFTComputingCancel->show();
 
         m_params_current = reqparams;
         emit stftComputing();
@@ -52,7 +56,7 @@ void STFTComputeThread::run() {
     do{
 //        std::cout << "STFTComputeThread::run resizing" << std::endl;
 
-        m_params_current.snd->m_stftparams = m_params_current; // Since there is no cancel buttn, from now on, soon or later it will correpond.
+        m_params_current.snd->m_stftparams = m_params_current;
 
         m_fft->resize(m_params_current.dftlen);
 
@@ -63,14 +67,12 @@ void STFTComputeThread::run() {
         m_params_current.snd->m_stft.clear();
         m_params_current.snd->m_stftts.clear();
 
-    //        m_imgSTFT = QImage(m_nbsteps, m_dftlen/2+1, QImage::Format_RGB32);
-
         m_params_current.snd->m_stft_min = std::numeric_limits<double>::infinity();
         m_params_current.snd->m_stft_max = -std::numeric_limits<double>::infinity();
 
 //        std::cout << "STFTComputeThread::run stepsize=" << m_params_current.stepsize << std::endl;
 
-        for(int si=0; true; si++){
+        for(int si=0; !gMW->ui->pbSTFTComputingCancel->isChecked(); si++){
             if(si*m_params_current.stepsize+m_params_current.win.size()-1 > wav->size()-1)
                 break;
 
@@ -103,6 +105,12 @@ void STFTComputeThread::run() {
             emit stftProgressing(int(100*double(si*m_params_current.stepsize)/wav->size()));
         }
 
+        if(gMW->ui->pbSTFTComputingCancel->isChecked()){
+            m_params_current.snd->m_stft.clear();
+            m_params_current.snd->m_stftts.clear();
+            m_params_current.snd->m_stftparams.clear();
+        }
+
         m_params_current.snd->m_stft_min = std::max(-2.0*20*std::log10(std::pow(2,m_params_current.snd->format().sampleSize())), m_params_current.snd->m_stft_min);
 //        std::cout << "STFTComputeThread::run compute finished" << std::endl;
 
@@ -129,15 +137,22 @@ void STFTComputeThread::run() {
     }
     while(compute);
 
-    gMW->ui->pgbSpectrogramSTFTCompute->hide();
-    gMW->ui->lblSpectrogramInfoTxt->setText(QString("Updating Image ..."));
     //    gMW->ui->lblSpectrogramInfoTxt->setText(QString("DFT size=%1").arg(m_fft->size()));
+    gMW->ui->pgbSpectrogramSTFTCompute->hide();
+    gMW->ui->pbSTFTComputingCancel->hide();
+    if(gMW->ui->pbSTFTComputingCancel->isChecked())
+        gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT Canceled"));
+    else
+        gMW->ui->lblSpectrogramInfoTxt->setText(QString("Updating Image..."));
 
 //    std::cout << "STFTComputeThread::run m_mutex_computing.unlock " << std::endl;
     m_mutex_computing.unlock();
 
 //    std::cout << "STFTComputeThread::run emit " << std::endl;
-    emit stftComputed();
+    if(!gMW->ui->pbSTFTComputingCancel->isChecked())
+        emit stftComputed();
+
+    gMW->ui->pbSTFTComputingCancel->setChecked(false);
 
 //    std::cout << "STFTComputeThread::~run" << std::endl;
 }

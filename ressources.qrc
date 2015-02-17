@@ -22,5 +22,6 @@
         <file>icons/phasespectrum.svg</file>
         <file>icons/spectrogram.svg</file>
         <file>README.txt</file>
+        <file>icons/cancel.svg</file>
     </qresource>
 </RCC>

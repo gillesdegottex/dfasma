@@ -324,43 +324,48 @@ void QGVSpectrogram::updateSTFTPlot(){
             // Be sure to wait for stftComputed (updateSTFTPlot can be called by other means)
             if(m_stftcomputethread->m_mutex_computing.tryLock()){
 
-                updateAmplitudeExtent();
+                if(csnd->m_stft.size()>0){
 
-                int dftlen = (csnd->m_stft[0].size()-1)*2;
+                    updateAmplitudeExtent();
 
-                ImageParameters reqImgParams(csnd->m_stftparams, gMW->ui->sldSpectrogramAmplitudeMin->value(), gMW->ui->sldSpectrogramAmplitudeMax->value());
+                    int dftlen = (csnd->m_stft[0].size()-1)*2;
 
-                if(m_imgSTFTParams!=reqImgParams){
-//                    gMW->ui->pgbSpectrogramSTFTCompute->hide();
-                    gMW->ui->lblSpectrogramInfoTxt->setText(QString("Updating Image ..."));
+                    ImageParameters reqImgParams(csnd->m_stftparams, gMW->ui->sldSpectrogramAmplitudeMin->value(), gMW->ui->sldSpectrogramAmplitudeMax->value());
 
-                    m_imgSTFTParams = reqImgParams;
+                    if(m_imgSTFTParams!=reqImgParams){
+    //                    gMW->ui->pgbSpectrogramSTFTCompute->hide();
+                        gMW->ui->pbSTFTComputingCancel->hide();
+                        gMW->ui->lblSpectrogramInfoTxt->setText(QString("Updating Image ..."));
 
-                    // Update the image from the sound's STFT
-                    m_imgSTFT = QImage(csnd->m_stft.size(), csnd->m_stft[0].size(), QImage::Format_RGB32);
+                        m_imgSTFTParams = reqImgParams;
 
-                    for(size_t si=0; si<csnd->m_stft.size(); si++){
-                        for(int n=0; n<int(csnd->m_stft[si].size()); n++) {
-                            double y = csnd->m_stft[si][n];
+                        // Update the image from the sound's STFT
+                        m_imgSTFT = QImage(csnd->m_stft.size(), csnd->m_stft[0].size(), QImage::Format_RGB32);
 
-                            int color = 255;
-                            if(!std::isinf(y))
-                                color = 256-(256*(y+gMW->ui->sldSpectrogramAmplitudeMin->value())/(gMW->ui->sldSpectrogramAmplitudeMax->value()+gMW->ui->sldSpectrogramAmplitudeMin->value()));
+                        for(size_t si=0; si<csnd->m_stft.size(); si++){
+                            for(int n=0; n<int(csnd->m_stft[si].size()); n++) {
+                                double y = csnd->m_stft[si][n];
 
-                            if(color<0) color = 0;
-                            else if(color>255) color = 255;
-                            m_imgSTFT.setPixel(QPoint(si,dftlen/2-n), QColor(color, color, color).rgb());
+                                int color = 255;
+                                if(!std::isinf(y))
+                                    color = 256-(256*(y+gMW->ui->sldSpectrogramAmplitudeMin->value())/(gMW->ui->sldSpectrogramAmplitudeMax->value()+gMW->ui->sldSpectrogramAmplitudeMin->value()));
+
+                                if(color<0) color = 0;
+                                else if(color>255) color = 255;
+                                m_imgSTFT.setPixel(QPoint(si,dftlen/2-n), QColor(color, color, color).rgb());
+                            }
                         }
                     }
-                }
 
-                m_scene->update();
-                gMW->ui->lblSpectrogramInfoTxt->setText(QString("DFT size=%1").arg(dftlen));
+                    m_scene->update();
+                    gMW->ui->lblSpectrogramInfoTxt->setText(QString("DFT size=%1").arg(dftlen));
+                }
 
                 m_stftcomputethread->m_mutex_computing.unlock();
             }
         }
     }
+
 //    cout << "QGVSpectrogram::~updateSTFTPlot" << endl;
 }
 
