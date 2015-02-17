@@ -32,7 +32,7 @@ DEFINES += FFTW3RESIZINGMAXTIMESPENT
 # For the audio file support
 # Chose among: audiofilereading_libsndfile, audiofilereading_libsox,
 #              audiofilereading_libav,
-#              audiofilereading_builtin, audiofilereading_qt
+#              audiofilereading_qt, audiofilereading_builtin
 CONFIG += audiofilereading_libsndfile
 
 # Additional file format support
