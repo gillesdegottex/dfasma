@@ -179,6 +179,9 @@ inline DataType nearest(const ContainerTimes& ts, const ContainerData& data, dou
     return d;
 }
 
+double equalloudnesscurvesISO226(double freq, double Ln=0.0);
+
+
 // Generalized cosin window
 inline std::vector<double> gencoswindow(int N, const std::vector<double>& c) {
     std::vector<double> win(N, 0.0);

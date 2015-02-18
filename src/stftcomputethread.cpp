@@ -138,8 +138,6 @@ void STFTComputeThread::run() {
     while(compute);
 
     //    gMW->ui->lblSpectrogramInfoTxt->setText(QString("DFT size=%1").arg(m_fft->size()));
-    gMW->ui->pgbSpectrogramSTFTCompute->hide();
-    gMW->ui->pbSTFTComputingCancel->hide();
     if(gMW->ui->pbSTFTComputingCancel->isChecked())
         gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT Canceled"));
     else

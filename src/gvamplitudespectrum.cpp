@@ -1164,6 +1164,23 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
         draw_spectrum(painter, m_windft, fs, 1.0, rect);
     }
 
+//    QPen outlinePen(QColor(0, 0, 0));
+//    outlinePen.setWidth(0);
+//    painter->setPen(outlinePen);
+//    painter->setOpacity(1);
+//    int dftlen = 4096;
+//    std::vector<std::complex<WAVTYPE> > elc(dftlen/2, 0.0);
+//    double sum = 0.0;
+//    for(size_t u=0; u<elc.size(); ++u){
+//        elc[u] = sigproc::equalloudnesscurvesISO226(fs*double(u)/dftlen, 50);
+//        elc[u] = std::exp((-elc[u])/sigproc::log2db);
+//        sum += elc[u].real();
+//    }
+//    for(size_t u=0; u<elc.size(); ++u)
+//        elc[u] = std::log(elc[u]/sum);
+
+//    draw_spectrum(painter, elc, fs, 1.0, rect);
+
 
     FTSound* currsnd = gMW->getCurrentFTSound(true);
 

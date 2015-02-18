@@ -337,7 +337,7 @@ void QGVSpectrogram::updateSTFTPlot(){
                     ImageParameters reqImgParams(csnd->m_stftparams, gMW->ui->sldSpectrogramAmplitudeMin->value(), gMW->ui->sldSpectrogramAmplitudeMax->value());
 
                     if(m_imgSTFTParams!=reqImgParams){
-    //                    gMW->ui->pgbSpectrogramSTFTCompute->hide();
+                        gMW->ui->pgbSpectrogramSTFTCompute->hide();
                         gMW->ui->pbSTFTComputingCancel->hide();
                         gMW->ui->lblSpectrogramInfoTxt->setText(QString("Updating Image ..."));
 
