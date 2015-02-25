@@ -76,6 +76,7 @@ WMainWindow* gMW = NULL;
 WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::WMainWindow)
+    , m_dlgProgress(NULL)
     , m_lastSelectedSound(NULL)
     , m_lastFilteredSound(NULL)
     , m_dlgSettings(NULL)
@@ -236,15 +237,15 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 
     connect(m_dlgSettings->ui->sbToolBarSizes, SIGNAL(valueChanged(int)), this, SLOT(changeToolBarSizes(int)));
 
-    QProgressDialog dlgProgress("Opening files...", "Abort", 0, sndfiles.size(), this);
-    dlgProgress.setWindowModality(Qt::WindowModal);
-    dlgProgress.setMinimumDuration(1000);
-    dlgProgress.setMaximum(sndfiles.size());
-    for(int f=0; f<sndfiles.size() && !dlgProgress.wasCanceled(); f++){
-        dlgProgress.setValue(f);
+    m_dlgProgress = new QProgressDialog("Opening files...", "Abort", 0, sndfiles.size(), this);
+    m_dlgProgress->setWindowModality(Qt::WindowModal);
+    m_dlgProgress->setMinimumDuration(1000);
+    m_dlgProgress->setMaximum(sndfiles.size());
+    for(int f=0; f<sndfiles.size() && !m_dlgProgress->wasCanceled(); f++){
+        m_dlgProgress->setValue(f);
         addFile(sndfiles[f]);
     }
-    dlgProgress.setValue(sndfiles.size());
+    m_dlgProgress->setValue(sndfiles.size());
     updateViewsAfterAddFile(true);
 
     if(sndfiles.size()>0)
@@ -547,15 +548,12 @@ void WMainWindow::openFile() {
     QStringList l = QFileDialog::getOpenFileNames(this, "Open File(s) ...", QString(), QString(), 0, QFileDialog::ReadOnly);
 
     if(l.size()>0){
-        QProgressDialog dlgProgress("Opening files...", "Abort", 0, l.size(), this);
-        dlgProgress.setWindowModality(Qt::WindowModal);
-        dlgProgress.setMinimumDuration(1000);
-        dlgProgress.setMaximum(l.size());
-        for(int f=0; f<l.size() && !dlgProgress.wasCanceled(); f++){
-            dlgProgress.setValue(f);
+        m_dlgProgress->setMaximum(l.size());
+        for(int f=0; f<l.size() && !m_dlgProgress->wasCanceled(); f++){
+            m_dlgProgress->setValue(f);
             addFile(l.at(f));
         }
-        dlgProgress.setValue(l.size());
+        m_dlgProgress->setValue(l.size());
         updateViewsAfterAddFile(isfirsts);
     }
 }
@@ -629,6 +627,7 @@ void WMainWindow::addFile(const QString& filepath) {
     }
     catch (QString err)
     {
+        m_dlgProgress->setValue(m_dlgProgress->maximum());
         QMessageBox::warning(this, "Failed to load file ...", "Data from the following file can't be loaded:\n"+filepath+"'\n\nReason:\n"+err);
     }
 }
@@ -696,15 +695,12 @@ void WMainWindow::dropEvent(QDropEvent *event){
 
     QList<QUrl>	lurl = event->mimeData()->urls();
 
-    QProgressDialog dlgProgress("Opening files...", "Abort", 0, lurl.size(), this);
-    dlgProgress.setWindowModality(Qt::WindowModal);
-    dlgProgress.setMinimumDuration(1000);
-    dlgProgress.setMaximum(lurl.size());
-    for(int lurli=0; lurli<lurl.size() && !dlgProgress.wasCanceled(); lurli++){
-        dlgProgress.setValue(lurli);
+    m_dlgProgress->setMaximum(lurl.size());
+    for(int lurli=0; lurli<lurl.size() && !m_dlgProgress->wasCanceled(); lurli++){
+        m_dlgProgress->setValue(lurli);
         addFile(lurl[lurli].toLocalFile());
     }
-    dlgProgress.setValue(lurl.size());
+    m_dlgProgress->setValue(lurl.size());
     updateViewsAfterAddFile(isfirsts);
 }
 void WMainWindow::dragEnterEvent(QDragEnterEvent *event){

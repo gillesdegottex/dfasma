@@ -167,6 +167,8 @@ void FTSound::reload() {
     wav.clear();
     wavfiltered.clear();
     resetFiltering();
+    m_stft.clear();
+    m_stftts.clear();
     m_stftparams.clear();
 
     // ... and reload the data from the file

@@ -63,14 +63,15 @@ class WMainWindow : public QMainWindow
     static WMainWindow* sm_mainwindow;
     bool m_loading;
 
-    void initializeSoundSystem(float fs);
+    FTSound* m_lastSelectedSound;
+    FTSound* m_lastFilteredSound;
+    QProgressDialog* m_dlgProgress;
 
     void connectModes();
     void disconnectModes();
 
+    void initializeSoundSystem(float fs);
     QProgressBar* m_pbVolume;
-    FTSound* m_lastSelectedSound;
-    FTSound* m_lastFilteredSound;
 
 protected:
     void keyPressEvent(QKeyEvent* event);
