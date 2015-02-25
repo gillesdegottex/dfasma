@@ -652,7 +652,7 @@
      <x>0</x>
      <y>0</y>
      <width>831</width>
-     <height>31</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>
@@ -663,9 +663,9 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionNewFile"/>
-   <addaction name="actionOpen"/>
-   <addaction name="actionCloseFile"/>
+   <addaction name="actionFileNew"/>
+   <addaction name="actionFileOpen"/>
+   <addaction name="actionFileClose"/>
    <addaction name="separator"/>
    <addaction name="actionSelectionMode"/>
    <addaction name="actionEditMode"/>
@@ -679,7 +679,7 @@
    <addaction name="actionAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="actionCloseFile">
+  <action name="actionFileClose">
    <property name="text">
     <string>Close</string>
    </property>
@@ -690,7 +690,7 @@
     <string>Ctrl+W</string>
    </property>
   </action>
-  <action name="actionOpen">
+  <action name="actionFileOpen">
    <property name="text">
     <string>Open...</string>
    </property>
@@ -786,12 +786,12 @@
     <string>Ctrl+Space</string>
    </property>
   </action>
-  <action name="actionMultiReload">
+  <action name="actionFileReload">
    <property name="text">
     <string>Reload</string>
    </property>
    <property name="toolTip">
-    <string>Reload data of the selected files</string>
+    <string>Reload data of the selected file(s)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
@@ -860,7 +860,7 @@
     <string>F8</string>
    </property>
   </action>
-  <action name="actionNewFile">
+  <action name="actionFileNew">
    <property name="text">
     <string>New...</string>
    </property>
@@ -878,7 +878,7 @@
  </resources>
  <connections>
   <connection>
-   <sender>actionOpen</sender>
+   <sender>actionFileOpen</sender>
    <signal>triggered()</signal>
    <receiver>WMainWindow</receiver>
    <slot>openFile()</slot>
@@ -894,7 +894,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionCloseFile</sender>
+   <sender>actionFileClose</sender>
    <signal>triggered()</signal>
    <receiver>WMainWindow</receiver>
    <slot>closeSelectedFile()</slot>
@@ -909,9 +909,26 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionFileReload</sender>
+   <signal>triggered()</signal>
+   <receiver>WMainWindow</receiver>
+   <slot>reloadSelectedFile()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>415</x>
+     <y>356</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>openFile()</slot>
   <slot>closeSelectedFile()</slot>
+  <slot>reloadSelectedFile()</slot>
  </slots>
 </ui>

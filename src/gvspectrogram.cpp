@@ -310,13 +310,18 @@ void QGVSpectrogram::clearSTFTPlot(){
     m_scene->update();
 }
 
-void QGVSpectrogram::updateSTFTPlot(){
-//    cout << "QGVSpectrogram::updateSTFTPlot" << endl;
+void QGVSpectrogram::updateSTFTPlot(bool force){
+//    COUTD << "QGVSpectrogram::updateSTFTPlot" << endl;
 
     // Fix limits between min and max sliders
     FTSound* csnd = gMW->getCurrentFTSound(true);
     if(csnd && gMW->ui->actionShowSpectrogram->isChecked()) {
 //        cout << "QGVSpectrogram::updateSTFTPlot " << csnd->fileFullPath.toLatin1().constData() << endl;
+
+        if(force){
+            csnd->m_stftparams.clear();
+            m_imgSTFTParams.clear();
+        }
 
         int stepsize = std::floor(0.5+gMW->getFs()*m_dlgSettings->ui->sbStepSize->value());
         int dftlen = pow(2, std::ceil(log2(float(m_win.size())))+m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());

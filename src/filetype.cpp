@@ -105,9 +105,6 @@ FileType::FileType(FILETYPE _type, const QString& _fileName, QObject * parent)
     m_actionShow->setChecked(true);
     gMW->connect(m_actionShow, SIGNAL(toggled(bool)), gMW, SLOT(soundsChanged()));
 
-    m_actionReload = new QAction("Reload", parent);
-    m_actionReload->setStatusTip("Reload data from the file");
-
     m_actionDuplicate = new QAction("Duplicate", parent);
     m_actionDuplicate->setStatusTip("Duplicate the file content");
     gMW->connect(m_actionDuplicate, SIGNAL(triggered()), gMW, SLOT(duplicateCurrentFile()));
@@ -163,7 +160,7 @@ void FileType::setColor(const QColor& _color) {
 
 void FileType::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
     contextmenu.addAction(m_actionShow);
-    contextmenu.addAction(m_actionReload);
+    contextmenu.addAction(mainwindow->ui->actionFileReload);
     contextmenu.addAction(m_actionDuplicate);
     QColorDialog* colordialog = new QColorDialog(&contextmenu);
     QObject::connect(colordialog, SIGNAL(colorSelected(const QColor &)), gMW, SLOT(colorSelected(const QColor &)));
@@ -175,8 +172,8 @@ void FileType::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
     for(std::deque<QColor>::iterator it=sg_colors.begin(); it!=sg_colors.end(); it++,ci++)
         QColorDialog::setCustomColor(ci, (*it));
 
-    contextmenu.addAction("Color ...", colordialog, SLOT(exec()));
-    contextmenu.addAction(mainwindow->ui->actionCloseFile);
+    contextmenu.addAction("Color...", colordialog, SLOT(exec()));
+    contextmenu.addAction(mainwindow->ui->actionFileClose);
     contextmenu.addSeparator();
 }
 

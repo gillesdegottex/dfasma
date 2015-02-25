@@ -82,6 +82,7 @@ private slots:
     void newFile();
     void openFile();
     void closeSelectedFile();
+    void reloadSelectedFile();
     void play();
     void enablePlay();
     void localEnergyChanged(double);

@@ -44,6 +44,8 @@ using namespace std;
 #include "gvspectrogramwdialogsettings.h"
 #include "ui_gvspectrogramwdialogsettings.h"
 
+#include "qthelper.h"
+
 bool FTSound::sm_playwin_use = false;
 std::vector<WAVTYPE> FTSound::sm_avoidclickswindow;
 
@@ -84,8 +86,6 @@ void FTSound::init(){
     m_actionResetFiltering = new QAction("Remove filtering effects", this);
     m_actionResetFiltering->setStatusTip(tr("Reset to original signal without filtering effects"));
     connect(m_actionResetFiltering, SIGNAL(triggered()), this, SLOT(resetFiltering()));
-
-    connect(m_actionReload, SIGNAL(triggered()), this, SLOT(reload()));
 }
 
 FTSound::FTSound(const QString& _fileName, QObject *parent, int channelid)
@@ -139,17 +139,17 @@ void FTSound::load_finalize() {
 }
 
 void FTSound::setVisible(bool shown){
-    cout << "FTSound::setVisible" << endl;
+//    cout << "FTSound::setVisible" << endl;
     FileType::setVisible(shown);
     gMW->m_gvWaveform->soundsChanged();
     gMW->m_gvSpectrum->soundsChanged();
     gMW->m_gvSpectrogram->updateSTFTPlot();
-    cout << "FTSound::~setVisible" << endl;
+//    cout << "FTSound::~setVisible" << endl;
 }
 
 
 void FTSound::reload() {
-//    cout << "FTSound::reload" << endl;
+//    COUTD << "FTSound::reload" << endl;
 
     stop();
 
@@ -167,10 +167,13 @@ void FTSound::reload() {
     wav.clear();
     wavfiltered.clear();
     resetFiltering();
+    m_stftparams.clear();
 
     // ... and reload the data from the file
     load();
     load_finalize();
+
+//    COUTD << "FTSound::~reload" << endl;
 }
 
 FileType* FTSound::duplicate(){
@@ -243,14 +246,12 @@ void FTSound::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
 
     FileType::fillContextMenu(contextmenu, mainwindow);
 
-    connect(m_actionReload, SIGNAL(triggered()), mainwindow, SLOT(soundsChanged()));
-
     contextmenu.setTitle("Sound");
 
     contextmenu.addAction(mainwindow->ui->actionPlay);
     contextmenu.addAction(m_actionResetFiltering);
     contextmenu.addAction(m_actionInvPolarity);
-    connect(m_actionInvPolarity, SIGNAL(toggled(bool)), mainwindow, SLOT(soundsChanged()));
+    connect(m_actionInvPolarity, SIGNAL(toggled(bool)), gMW, SLOT(soundsChanged()));
     m_actionResetAmpScale->setText(QString("Reset amplitude scaling (%1dB) to 0dB").arg(20*log10(m_ampscale), 0, 'g', 3));
     m_actionResetAmpScale->setDisabled(m_ampscale==1.0);
     contextmenu.addAction(m_actionResetAmpScale);

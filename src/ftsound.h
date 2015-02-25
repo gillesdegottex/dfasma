@@ -44,10 +44,10 @@ class FTSound : public QIODevice, public FileType
 {
     Q_OBJECT
 
-    void init();
+    void init(); // Called only once upon creation
 
-    void load(int channelid=1);
-    void load_finalize();
+    void load(int channelid=1);       // Implementation depends on the used file library (sox, lisndfile, ...)
+    void load_finalize();             // Independent of the used file lib.
 
     QAudioFormat m_fileaudioformat;   // Format of the audio data
 
