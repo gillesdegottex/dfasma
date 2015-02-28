@@ -207,14 +207,21 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     connect(gMW->ui->sldSpectrogramAmplitudeMin, SIGNAL(valueChanged(int)), this, SLOT(updateSTFTPlot()));
     connect(gMW->ui->sldSpectrogramAmplitudeMax, SIGNAL(valueChanged(int)), this, SLOT(updateSTFTPlot()));
 
+    connect(gMW->ui->sldSpectrogramAmplitudeMin, SIGNAL(sliderPressed()), SLOT(amplitudeExtentSlidersChanged()));
+    connect(gMW->ui->sldSpectrogramAmplitudeMax, SIGNAL(sliderPressed()), SLOT(amplitudeExtentSlidersChanged()));
+    connect(gMW->ui->sldSpectrogramAmplitudeMin, SIGNAL(sliderMoved(int)), SLOT(amplitudeExtentSlidersChanged()));
+    connect(gMW->ui->sldSpectrogramAmplitudeMax, SIGNAL(sliderMoved(int)), SLOT(amplitudeExtentSlidersChanged()));
+
     updateDFTSettings(); // Prepare a window from loaded settings
+}
+
+void QGVSpectrogram::amplitudeExtentSlidersChanged(){
+    if(!gMW->isLoading())
+        QToolTip::showText(QCursor::pos(), QString("[%1,%2]dB").arg(-gMW->ui->sldSpectrogramAmplitudeMin->value()).arg(gMW->ui->sldSpectrogramAmplitudeMax->value()), this);
 }
 
 void QGVSpectrogram::updateAmplitudeExtent(){
 //    cout << "QGVSpectrogram::updateAmplitudeExtent" << endl;
-
-    if(!gMW->isLoading())
-        QToolTip::showText(QCursor::pos(), QString("[%1,%2]dB").arg(-gMW->ui->sldSpectrogramAmplitudeMin->value()).arg(gMW->ui->sldSpectrogramAmplitudeMax->value()), this);
 
     // If the current is NOT opaque:
     if(gMW->ftsnds.size()>0){
