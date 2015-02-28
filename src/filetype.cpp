@@ -37,6 +37,8 @@ using namespace std;
 using namespace Easdif;
 #endif
 
+#include "qthelper.h"
+
 static int sg_colors_loaded = 0;
 static deque<QColor> sg_colors;
 
@@ -227,7 +229,6 @@ void FileType::setStatus() {
 }
 
 FileType::~FileType() {
-
     sg_colors.push_front(color);
 }
 

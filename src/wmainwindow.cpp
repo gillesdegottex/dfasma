@@ -850,10 +850,10 @@ void WMainWindow::soundsChanged(){
 }
 
 void WMainWindow::closeSelectedFile() {
-
     m_audioengine->stopPlayback();
 
     QList<QListWidgetItem*> l = ui->listSndFiles->selectedItems();
+    ui->listSndFiles->clearSelection();
 
     bool removeSelectedSound = false;
 
