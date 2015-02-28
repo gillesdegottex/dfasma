@@ -333,7 +333,7 @@ void QGVAmplitudeSpectrum::updateDFTSettings(){
 }
 
 void QGVAmplitudeSpectrum::computeDFTs(){
-//    DEBUGSTRING << "QGVAmplitudeSpectrum::computeDFTs " << m_winlen << endl;
+    COUTD << "QGVAmplitudeSpectrum::computeDFTs " << m_winlen << endl;
     if(m_winlen<2)
         return;
 
@@ -430,6 +430,7 @@ void QGVAmplitudeSpectrum::settingsSave() {
 }
 
 void QGVAmplitudeSpectrum::soundsChanged(){
+    FLAG
     if(gMW->ftsnds.size()>0)
         computeDFTs();
     m_scene->update();
@@ -723,10 +724,9 @@ void QGVAmplitudeSpectrum::mouseMoveEvent(QMouseEvent* event){
                     currentftsound->m_ampscale = 1e-10;
 
                 currentftsound->setStatus();
-
-                gMW->fileInfoUpdate();
                 soundsChanged();
                 gMW->m_gvWaveform->soundsChanged();
+                gMW->fileInfoUpdate();
             }
         }
     }

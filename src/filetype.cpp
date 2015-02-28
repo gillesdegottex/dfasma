@@ -224,8 +224,6 @@ void FileType::setStatus() {
 
     setText(liststr);
     setToolTip(tooltipstr);
-
-    gMW->fileInfoUpdate();
 }
 
 FileType::~FileType() {

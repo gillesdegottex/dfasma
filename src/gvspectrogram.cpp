@@ -325,7 +325,7 @@ void QGVSpectrogram::stftFinished(bool canceled){
 }
 
 void QGVSpectrogram::updateSTFTPlot(bool force){
-//    COUTD << "QGVSpectrogram::updateSTFTPlot" << endl;
+    COUTD << "QGVSpectrogram::updateSTFTPlot" << endl;
 
     // Fix limits between min and max sliders
     FTSound* csnd = gMW->getCurrentFTSound(true);
@@ -359,7 +359,7 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
                         gMW->ui->pgbSpectrogramSTFTCompute->hide();
                         gMW->ui->pbSTFTComputingCancel->hide();
                         gMW->ui->lblSpectrogramInfoTxt->setText(QString("Updating Image ..."));
-                        QCoreApplication::processEvents();
+                        QCoreApplication::processEvents(); // To apply the above before blocking on the image filling
 
                         m_imgSTFTParams = reqImgParams;
 

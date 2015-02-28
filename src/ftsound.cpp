@@ -139,7 +139,7 @@ void FTSound::load_finalize() {
 }
 
 void FTSound::setVisible(bool shown){
-//    cout << "FTSound::setVisible" << endl;
+//    cout << "FTSound::setVisible " << shown << endl;
     FileType::setVisible(shown);
     gMW->m_gvWaveform->soundsChanged();
     gMW->m_gvSpectrum->soundsChanged();
@@ -258,10 +258,12 @@ void FTSound::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
     m_actionResetAmpScale->setDisabled(m_ampscale==1.0);
     contextmenu.addAction(m_actionResetAmpScale);
     connect(m_actionResetAmpScale, SIGNAL(triggered()), this, SLOT(resetAmpScale()));
+    connect(m_actionResetAmpScale, SIGNAL(triggered()), gMW, SLOT(fileInfoUpdate()));
     m_actionResetDelay->setText(QString("Reset delay (%1s) to 0s").arg(m_delay/mainwindow->getFs(), 0, 'g', 3));
     m_actionResetDelay->setDisabled(m_delay==0);
     contextmenu.addAction(m_actionResetDelay);
     connect(m_actionResetDelay, SIGNAL(triggered()), this, SLOT(resetDelay()));
+    connect(m_actionResetDelay, SIGNAL(triggered()), gMW, SLOT(fileInfoUpdate()));
 }
 
 void FTSound::setFiltered(bool filtered){
@@ -287,7 +289,6 @@ void FTSound::resetAmpScale(){
     setStatus();
 
     gMW->soundsChanged();
-    gMW->fileInfoUpdate();
 }
 void FTSound::resetDelay(){
     m_delay = 0.0;
@@ -295,7 +296,6 @@ void FTSound::resetDelay(){
     setStatus();
 
     gMW->soundsChanged();
-    gMW->fileInfoUpdate();
 }
 
 double FTSound::getLastSampleTime() const {
@@ -318,8 +318,6 @@ void FTSound::updateClippedState(){
         setBackgroundColor(QColor(255,192,192));
     else
         setBackgroundColor(QColor(255,255,255));
-
-    gMW->fileInfoUpdate();
 }
 
 void FTSound::setSamplingRate(double _fs){

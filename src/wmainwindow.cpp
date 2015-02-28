@@ -75,10 +75,10 @@ WMainWindow* gMW = NULL;
 
 WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::WMainWindow)
     , m_dlgProgress(NULL)
     , m_lastSelectedSound(NULL)
     , m_lastFilteredSound(NULL)
+    , ui(new Ui::WMainWindow)
     , m_dlgSettings(NULL)
     , m_gvWaveform(NULL)
     , m_gvSpectrum(NULL)
@@ -670,6 +670,8 @@ void WMainWindow::checkFileModifications(){
         ftfzeros[fi]->checkFileStatus();
     for(size_t fi=0; fi<ftlabels.size(); fi++)
         ftlabels[fi]->checkFileStatus();
+
+    gMW->fileInfoUpdate();
 }
 
 void WMainWindow::duplicateCurrentFile(){
@@ -781,8 +783,6 @@ void WMainWindow::fileSelectionChanged() {
     // FileType is not a qobject, thus, need to forward the message manually (i.e. without signal system)
     connect(ui->actionMultiShow, SIGNAL(triggered()), this, SLOT(toggleSoundShown()));
 
-    fileInfoUpdate();
-
     // Update the spectrogram to current selected signal
     if(nb_snd_in_selection>0){
         if(m_gvWaveform->m_aShowSelectedWaveformOnTop){
@@ -792,7 +792,9 @@ void WMainWindow::fileSelectionChanged() {
         }
         m_gvSpectrogram->updateSTFTPlot();
     }
-//    cout << "WMainWindow::~fileSelectionChanged" << endl;
+
+    fileInfoUpdate();
+    //    cout << "WMainWindow::~fileSelectionChanged" << endl;
 }
 void WMainWindow::fileInfoUpdate() {
     QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
@@ -809,12 +811,14 @@ void WMainWindow::fileInfoUpdate() {
 
 // FileType is not an qobject, thus, need to forward the message manually (i.e. without signal system).
 void WMainWindow::toggleSoundShown() {
+    FLAG
     QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
     for(int i=0; i<list.size(); i++){
         ((FileType*)list.at(i))->setVisible(((FileType*)list.at(i))->m_actionShow->isChecked());
         if(((FileType*)list.at(i))==m_lastSelectedSound)
             m_gvSpectrogram->updateSTFTPlot();
     }
+    FLAG
 }
 void WMainWindow::colorSelected(const QColor& color) {
     FileType* currenItem = (FileType*)(ui->listSndFiles->currentItem());
@@ -913,7 +917,7 @@ void WMainWindow::reloadSelectedFile() {
     fileInfoUpdate();
 
     if(reloadSelectedSound)
-        m_gvSpectrogram->updateSTFTPlot(true);
+        m_gvSpectrogram->updateSTFTPlot(true); // Force the STFT computation
 
 //    COUTD << "WMainWindow::~reloadSelectedFile" << endl;
 }
