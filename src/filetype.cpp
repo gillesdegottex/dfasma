@@ -102,7 +102,7 @@ FileType::FileType(FILETYPE _type, const QString& _fileName, QObject * parent)
     setToolTip(fileInfo.absoluteFilePath());
 
     m_actionShow = new QAction("Show", parent);
-    m_actionShow->setStatusTip("Show the sound in the views");
+    m_actionShow->setStatusTip("Show this file in the views");
     m_actionShow->setCheckable(true);
     m_actionShow->setChecked(true);
     gMW->connect(m_actionShow, SIGNAL(toggled(bool)), gMW, SLOT(soundsChanged()));
@@ -162,7 +162,7 @@ void FileType::setColor(const QColor& _color) {
 
 void FileType::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
     contextmenu.addAction(m_actionShow);
-    contextmenu.addAction(mainwindow->ui->actionFileReload);
+    contextmenu.addAction(mainwindow->ui->actionSelectedFilesReload);
     contextmenu.addAction(m_actionDuplicate);
     QColorDialog* colordialog = new QColorDialog(&contextmenu);
     QObject::connect(colordialog, SIGNAL(colorSelected(const QColor &)), gMW, SLOT(colorSelected(const QColor &)));
@@ -175,7 +175,7 @@ void FileType::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
         QColorDialog::setCustomColor(ci, (*it));
 
     contextmenu.addAction("Color...", colordialog, SLOT(exec()));
-    contextmenu.addAction(mainwindow->ui->actionFileClose);
+    contextmenu.addAction(mainwindow->ui->actionSelectedFilesClose);
     contextmenu.addSeparator();
 }
 
@@ -186,11 +186,11 @@ FileType* FileType::duplicate(){
 void FileType::setVisible(bool shown) {
     m_actionShow->setChecked(shown);
     if(shown) {
-        setForeground(QBrush(QColor(0,0,0)));
+        setForeground(QGuiApplication::palette().text());
     }
     else {
         // TODO add diagonal gray stripes in the icon
-        setForeground(QBrush(QColor(168,168,168)));
+        setForeground(QGuiApplication::palette().brush(QPalette::Disabled, QPalette::WindowText));
     }
     setStatus();
 }

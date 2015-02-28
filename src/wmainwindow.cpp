@@ -100,7 +100,6 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 
     ui->mainToolBar->setIconSize(QSize(1.5*m_dlgSettings->ui->sbToolBarSizes->value(),1.5*m_dlgSettings->ui->sbToolBarSizes->value()));
 
-
     QString sdifinfostr = "";
     #ifdef SUPPORT_SDIF
         sdifinfostr = "<br/><i>SDIF file format:</i> <a href=\"http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/\">Easdif</a> version "+QString(EASDIF_VERSION_STRING);
@@ -116,6 +115,9 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     m_dlgSettings->ui->vlLibraries->addWidget(new QLabel(fftinfostr));
 
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(execAbout()));
+    connect(ui->actionSelectedFilesReload, SIGNAL(triggered()), this, SLOT(selectedFilesReload()));
+    connect(ui->actionSelectedFilesToggleShown, SIGNAL(triggered()), this, SLOT(selectedFilesToggleShown()));
+    connect(ui->actionSelectedFilesClose, SIGNAL(triggered()), this, SLOT(selectedFilesClose()));
 
     m_globalWaitingBarLabel = new QLabel(ui->statusBar);
     m_globalWaitingBarLabel->setAlignment(Qt::AlignRight);
@@ -143,16 +145,17 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     ui->actionFileNew->setIcon(style()->standardIcon(QStyle::SP_FileIcon));
     connect(ui->actionFileNew, SIGNAL(triggered()), this, SLOT(newFile()));
     ui->actionFileNew->setVisible(false);
-    ui->actionFileClose->setIcon(style()->standardIcon(QStyle::SP_DialogCloseButton));
-    ui->actionFileClose->setEnabled(false);
-    ui->actionFileReload->setIcon(style()->standardIcon(QStyle::SP_BrowserReload));
-    ui->actionFileReload->setEnabled(false);
+    ui->actionSelectedFilesClose->setIcon(style()->standardIcon(QStyle::SP_DialogCloseButton));
+    ui->actionSelectedFilesClose->setEnabled(false);
+    ui->actionSelectedFilesReload->setIcon(style()->standardIcon(QStyle::SP_BrowserReload));
+    ui->actionSelectedFilesReload->setEnabled(false);
+    ui->actionSelectedFilesToggleShown->setEnabled(false);
     connect(ui->actionSettings, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
     ui->actionSelectionMode->setChecked(true);
     connectModes();
     connect(ui->listSndFiles, SIGNAL(itemSelectionChanged()), this, SLOT(fileSelectionChanged()));
-    addAction(ui->actionMultiShow);
-    addAction(ui->actionFileReload);
+    addAction(ui->actionSelectedFilesToggleShown);
+    addAction(ui->actionSelectedFilesReload);
     addAction(ui->actionPlayFiltered);
 
     // Audio engine for playing the selections
@@ -200,7 +203,6 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     connect(m_gvSpectrogram->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvWaveform->horizontalScrollBar(), SLOT(setValue(int)));
 
     // TODO Link spectra with spectrogram ?
-
 
     // Set visible views
     connect(ui->actionShowAmplitudeSpectrum, SIGNAL(toggled(bool)), ui->wSpectrumAmplitude, SLOT(setVisible(bool)));
@@ -636,8 +638,9 @@ void WMainWindow::updateViewsAfterAddFile(bool isfirsts) {
     if(ui->listSndFiles->count()==0)
         setInWaitingForFileState();
     else {
-        ui->actionFileClose->setEnabled(true);
-        ui->actionFileReload->setEnabled(true);
+        ui->actionSelectedFilesClose->setEnabled(true);
+        ui->actionSelectedFilesReload->setEnabled(true);
+        ui->actionSelectedFilesToggleShown->setEnabled(true);
         ui->splitterViews->show();
         updateWindowTitle();
         m_gvWaveform->updateSceneRect();
@@ -682,8 +685,8 @@ void WMainWindow::duplicateCurrentFile(){
             ui->listSndFiles->addItem(ft);
             m_gvWaveform->updateSceneRect();
             soundsChanged();
-            ui->actionFileClose->setEnabled(true);
-            ui->actionFileReload->setEnabled(true);
+            ui->actionSelectedFilesClose->setEnabled(true);
+            ui->actionSelectedFilesReload->setEnabled(true);
             ui->splitterViews->show();
             updateWindowTitle();
         }
@@ -756,9 +759,9 @@ void WMainWindow::showFileContextMenu(const QPoint& pos) {
         currenItem->fillContextMenu(contextmenu, this);
     }
     else {
-        contextmenu.addAction(ui->actionMultiShow);
-        contextmenu.addAction(ui->actionFileReload);
-        contextmenu.addAction(ui->actionFileClose);
+        contextmenu.addAction(ui->actionSelectedFilesToggleShown);
+        contextmenu.addAction(ui->actionSelectedFilesReload);
+        contextmenu.addAction(ui->actionSelectedFilesClose);
     }
 
     int contextmenuheight = contextmenu.sizeHint().height();
@@ -768,20 +771,16 @@ void WMainWindow::showFileContextMenu(const QPoint& pos) {
 
 void WMainWindow::fileSelectionChanged() {
 //    cout << "WMainWindow::fileSelectionChanged" << endl;
-    ui->actionMultiShow->disconnect();
 
     QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
     int nb_snd_in_selection = 0;
+
     for(int i=0; i<list.size(); i++) {
         if(((FileType*)list.at(i))->type == FileType::FTSOUND){
             nb_snd_in_selection++;
             m_lastSelectedSound = (FTSound*)list.at(i);
         }
-        connect(ui->actionMultiShow, SIGNAL(triggered()), ((FileType*)list.at(i))->m_actionShow, SLOT(toggle()));
     }
-
-    // FileType is not a qobject, thus, need to forward the message manually (i.e. without signal system)
-    connect(ui->actionMultiShow, SIGNAL(triggered()), this, SLOT(toggleSoundShown()));
 
     // Update the spectrogram to current selected signal
     if(nb_snd_in_selection>0){
@@ -794,6 +793,7 @@ void WMainWindow::fileSelectionChanged() {
     }
 
     fileInfoUpdate();
+
     //    cout << "WMainWindow::~fileSelectionChanged" << endl;
 }
 void WMainWindow::fileInfoUpdate() {
@@ -810,16 +810,6 @@ void WMainWindow::fileInfoUpdate() {
 }
 
 // FileType is not an qobject, thus, need to forward the message manually (i.e. without signal system).
-void WMainWindow::toggleSoundShown() {
-    FLAG
-    QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
-    for(int i=0; i<list.size(); i++){
-        ((FileType*)list.at(i))->setVisible(((FileType*)list.at(i))->m_actionShow->isChecked());
-        if(((FileType*)list.at(i))==m_lastSelectedSound)
-            m_gvSpectrogram->updateSTFTPlot();
-    }
-    FLAG
-}
 void WMainWindow::colorSelected(const QColor& color) {
     FileType* currenItem = (FileType*)(ui->listSndFiles->currentItem());
     if(currenItem)
@@ -848,12 +838,23 @@ void WMainWindow::resetDelay(){
 
 void WMainWindow::soundsChanged(){
 //    COUTD << "WMainWindow::soundsChanged" << endl;
-    m_gvWaveform->soundsChanged();
-    m_gvSpectrum->soundsChanged();
+    m_gvWaveform->soundsChanged(); // Can be also very heavy if updating multiple files
+    m_gvSpectrum->soundsChanged(); // Can be also very heavy if updating multiple files
     // m_gvSpectrogram->soundsChanged(); // Too heavy to be here, call updateSTFTPlot(force) instead
 }
 
-void WMainWindow::closeSelectedFile() {
+void WMainWindow::selectedFilesToggleShown() {
+//    FLAG
+    QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
+    for(int i=0; i<list.size(); i++){
+        ((FileType*)list.at(i))->setVisible(!((FileType*)list.at(i))->m_actionShow->isChecked());
+        if(((FileType*)list.at(i))==m_lastSelectedSound)
+            m_gvSpectrogram->updateSTFTPlot();
+    }
+//    FLAG
+}
+
+void WMainWindow::selectedFilesClose() {
     m_audioengine->stopPlayback();
 
     QList<QListWidgetItem*> l = ui->listSndFiles->selectedItems();
@@ -895,8 +896,8 @@ void WMainWindow::closeSelectedFile() {
         soundsChanged();
 }
 
-void WMainWindow::reloadSelectedFile() {
-//    COUTD << "WMainWindow::reloadSelectedFile" << endl;
+void WMainWindow::selectedFilesReload() {
+//    COUTD << "WMainWindow::selectedFileReload" << endl;
 
     m_audioengine->stopPlayback();
 
@@ -919,7 +920,7 @@ void WMainWindow::reloadSelectedFile() {
     if(reloadSelectedSound)
         m_gvSpectrogram->updateSTFTPlot(true); // Force the STFT computation
 
-//    COUTD << "WMainWindow::~reloadSelectedFile" << endl;
+//    COUTD << "WMainWindow::~selectedFileReload" << endl;
 }
 
 
@@ -929,8 +930,9 @@ void WMainWindow::setInWaitingForFileState(){
 
     ui->splitterViews->hide();
     FTSound::fs_common = 0;
-    ui->actionFileClose->setEnabled(false);
-    ui->actionFileReload->setEnabled(false);
+    ui->actionSelectedFilesClose->setEnabled(false);
+    ui->actionSelectedFilesReload->setEnabled(false);
+    ui->actionSelectedFilesToggleShown->setEnabled(false);
     ui->actionPlay->setEnabled(false);
 }
 

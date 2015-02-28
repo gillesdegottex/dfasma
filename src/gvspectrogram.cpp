@@ -325,7 +325,7 @@ void QGVSpectrogram::stftFinished(bool canceled){
 }
 
 void QGVSpectrogram::updateSTFTPlot(bool force){
-    COUTD << "QGVSpectrogram::updateSTFTPlot" << endl;
+//    COUTD << "QGVSpectrogram::updateSTFTPlot" << endl;
 
     // Fix limits between min and max sliders
     FTSound* csnd = gMW->getCurrentFTSound(true);

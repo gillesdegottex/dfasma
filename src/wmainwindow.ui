@@ -665,7 +665,7 @@
    </attribute>
    <addaction name="actionFileNew"/>
    <addaction name="actionFileOpen"/>
-   <addaction name="actionFileClose"/>
+   <addaction name="actionSelectedFilesClose"/>
    <addaction name="separator"/>
    <addaction name="actionSelectionMode"/>
    <addaction name="actionEditMode"/>
@@ -679,7 +679,7 @@
    <addaction name="actionAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="actionFileClose">
+  <action name="actionSelectedFilesClose">
    <property name="text">
     <string>Close</string>
    </property>
@@ -764,7 +764,7 @@
     <string>F4</string>
    </property>
   </action>
-  <action name="actionMultiShow">
+  <action name="actionSelectedFilesToggleShown">
    <property name="text">
     <string>Toggle show state</string>
    </property>
@@ -786,7 +786,7 @@
     <string>Ctrl+Space</string>
    </property>
   </action>
-  <action name="actionFileReload">
+  <action name="actionSelectedFilesReload">
    <property name="text">
     <string>Reload</string>
    </property>
@@ -876,59 +876,11 @@
  <resources>
   <include location="../ressources.qrc"/>
  </resources>
- <connections>
-  <connection>
-   <sender>actionFileOpen</sender>
-   <signal>triggered()</signal>
-   <receiver>WMainWindow</receiver>
-   <slot>openFile()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>406</x>
-     <y>255</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionFileClose</sender>
-   <signal>triggered()</signal>
-   <receiver>WMainWindow</receiver>
-   <slot>closeSelectedFile()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>406</x>
-     <y>255</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionFileReload</sender>
-   <signal>triggered()</signal>
-   <receiver>WMainWindow</receiver>
-   <slot>reloadSelectedFile()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>415</x>
-     <y>356</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
  <slots>
   <slot>openFile()</slot>
-  <slot>closeSelectedFile()</slot>
-  <slot>reloadSelectedFile()</slot>
+  <slot>selectedFilesClose()</slot>
+  <slot>selectedFilesReload()</slot>
+  <slot>selectedFilesToggleShow()</slot>
  </slots>
 </ui>

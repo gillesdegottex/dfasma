@@ -333,7 +333,7 @@ void QGVAmplitudeSpectrum::updateDFTSettings(){
 }
 
 void QGVAmplitudeSpectrum::computeDFTs(){
-    COUTD << "QGVAmplitudeSpectrum::computeDFTs " << m_winlen << endl;
+//    COUTD << "QGVAmplitudeSpectrum::computeDFTs " << m_winlen << endl;
     if(m_winlen<2)
         return;
 
@@ -430,7 +430,7 @@ void QGVAmplitudeSpectrum::settingsSave() {
 }
 
 void QGVAmplitudeSpectrum::soundsChanged(){
-    FLAG
+//    FLAG
     if(gMW->ftsnds.size()>0)
         computeDFTs();
     m_scene->update();
