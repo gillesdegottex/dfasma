@@ -7,6 +7,8 @@
 
 //using namespace mkfilter;
 
+namespace mkfilter {
+
 #include <math.h>
 #include <iostream>
 #include <QString>
@@ -498,6 +500,8 @@ void expandpoly3(const pzrep& zplane2, uint options2, double raw_alpha1, double 
         den[i] = ycoeffs2[zplane2.numpoles-i];
 }
 
+}
+
 // C++ interface to the above functions ----------------------------------------
 
 void mkfilter::make_butterworth_filter(int _order, double _alpha, bool isLowPass, std::vector<double>& num, std::vector<double>& den, std::vector<double>* response, int dftlen) {
@@ -552,7 +556,7 @@ void mkfilter::make_butterworth_filter(int _order, double _alpha, bool isLowPass
 //        std::cout << "den[" << i << "]=" << den[i] << std::endl;
 }
 
-void printpoleszeros(pzrep zplane) {
+void printpoleszeros(mkfilter::pzrep zplane) {
     for (int i=0; i < zplane.numpoles; i++)
         std::cout << "ZP" << i << ": " << zplane.poles[i].re << "+j*" << zplane.poles[i].im << std::endl;
     for (int i=0; i < zplane.numzeros; i++)
