@@ -18,7 +18,7 @@ class STFTComputeThread : public QThread
 
 signals:
     void stftComputing();
-    void stftComputed();
+    void stftFinished(bool canceled=false);
     void stftProgressing(int);
 
 public:

@@ -177,7 +177,7 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     gMW->ui->lblSpectrogramInfoTxt->setText("");
 
     connect(m_stftcomputethread, SIGNAL(stftComputing()), this, SLOT(stftComputing()));
-    connect(m_stftcomputethread, SIGNAL(stftComputed()), this, SLOT(updateSTFTPlot()));
+    connect(m_stftcomputethread, SIGNAL(stftFinished(bool)), this, SLOT(stftFinished(bool)));
     connect(m_stftcomputethread, SIGNAL(stftProgressing(int)), gMW->ui->pgbSpectrogramSTFTCompute, SLOT(setValue(int)));
 
     // Fill the toolbar
@@ -295,8 +295,9 @@ void QGVSpectrogram::updateDFTSettings(){
 void QGVSpectrogram::stftComputing(){
 //    cout << "QGVSpectrogram::stftComputing" << endl;
     gMW->ui->pgbSpectrogramSTFTCompute->setMaximum(100);
+    gMW->ui->pgbSpectrogramSTFTCompute->setValue(0);
     gMW->ui->pgbSpectrogramSTFTCompute->show();
-    gMW->ui->lblSpectrogramInfoTxt->setText(QString("Computing STFT"));
+    gMW->ui->lblSpectrogramInfoTxt->setText(QString("Computing STFT..."));
 }
 
 
@@ -306,8 +307,21 @@ streamtype& operator<<(streamtype& stream, const QGVSpectrogram::ImageParameters
 }
 
 void QGVSpectrogram::clearSTFTPlot(){
+    m_imgSTFTParams.clear();
     m_imgSTFT.fill(Qt::white);
     m_scene->update();
+}
+
+void QGVSpectrogram::stftFinished(bool canceled){
+    if(canceled){
+        gMW->ui->pbSTFTComputingCancel->hide();
+        gMW->ui->pgbSpectrogramSTFTCompute->hide();
+        gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT Canceled"));
+        clearSTFTPlot();
+    }
+    else {
+        updateSTFTPlot();
+    }
 }
 
 void QGVSpectrogram::updateSTFTPlot(bool force){
@@ -345,6 +359,7 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
                         gMW->ui->pgbSpectrogramSTFTCompute->hide();
                         gMW->ui->pbSTFTComputingCancel->hide();
                         gMW->ui->lblSpectrogramInfoTxt->setText(QString("Updating Image ..."));
+                        QCoreApplication::processEvents();
 
                         m_imgSTFTParams = reqImgParams;
 

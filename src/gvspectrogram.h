@@ -151,9 +151,10 @@ public slots:
     void updateSceneRect(); // To call when fs has changed and limits in dB
     void updateTextsGeometry();
     void updateDFTSettings();
+    void stftComputing();
+    void stftFinished(bool canceled);
     void updateSTFTPlot(bool force=false);
     void clearSTFTPlot();
-    void stftComputing();
 
     void selectionZoomOn();
     void selectionClear(bool forwardsync=true);

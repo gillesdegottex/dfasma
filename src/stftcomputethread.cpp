@@ -137,18 +137,11 @@ void STFTComputeThread::run() {
     }
     while(compute);
 
-    //    gMW->ui->lblSpectrogramInfoTxt->setText(QString("DFT size=%1").arg(m_fft->size()));
-    if(gMW->ui->pbSTFTComputingCancel->isChecked())
-        gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT Canceled"));
-    else
-        gMW->ui->lblSpectrogramInfoTxt->setText(QString("Updating Image..."));
-
 //    std::cout << "STFTComputeThread::run m_mutex_computing.unlock " << std::endl;
     m_mutex_computing.unlock();
 
 //    std::cout << "STFTComputeThread::run emit " << std::endl;
-    if(!gMW->ui->pbSTFTComputingCancel->isChecked())
-        emit stftComputed();
+    emit stftFinished(gMW->ui->pbSTFTComputingCancel->isChecked());
 
     gMW->ui->pbSTFTComputingCancel->setChecked(false);
 
