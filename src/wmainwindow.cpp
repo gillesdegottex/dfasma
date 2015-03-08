@@ -275,6 +275,8 @@ void WMainWindow::viewsDisplayedChanged() {
         m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     else
         m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+
+    gMW->m_gvSpectrum->selectionSetTextInForm();
 }
 
 void WMainWindow::newFile(){

@@ -870,10 +870,11 @@ void QGVAmplitudeSpectrum::selectionSetTextInForm() {
         }
         str += QString("[%1,%2]%3 Hz").arg(left).arg(right).arg(right-left);
 
-        if (m_selection.height()>0) {
+        if (gMW->m_gvSpectrum->isVisible() && m_selection.height()>0) {
             str += QString(" x [%4,%5]%6 dB").arg(-m_selection.bottom()).arg(-m_selection.top()).arg(m_selection.height());
         }
-        if (gMW->m_gvPhaseSpectrum->m_selection.height()>0) {
+//        COUTD << gMW->m_gvPhaseSpectrum->isVisible() << endl;
+        if (gMW->m_gvPhaseSpectrum->isVisible() && gMW->m_gvPhaseSpectrum->m_selection.height()>0) {
             str += QString(" x [%7,%8]%9 rad").arg(-gMW->m_gvPhaseSpectrum->m_selection.bottom()).arg(-gMW->m_gvPhaseSpectrum->m_selection.top()).arg(gMW->m_gvPhaseSpectrum->m_selection.height());
         }
     }

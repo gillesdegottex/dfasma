@@ -42,6 +42,8 @@ using namespace std;
 #include <QDebug>
 #include <QTime>
 
+#include "qthelper.h"
+
 QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
     : QGraphicsView(parent)
     , m_scene(NULL)
@@ -174,7 +176,7 @@ void QGVPhaseSpectrum::viewSet(QRectF viewrect, bool sync) {
 }
 
 void QGVPhaseSpectrum::resizeEvent(QResizeEvent* event) {
-//    cout << "QGVPhaseSpectrum::resizeEvent" << endl;
+//    COUTD << "QGVPhaseSpectrum::resizeEvent" << endl;
 
     QRectF oldviewrect = mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect();
 
@@ -209,7 +211,7 @@ void QGVPhaseSpectrum::resizeEvent(QResizeEvent* event) {
     viewUpdateTexts();
     setMouseCursorPosition(QPointF(-1,0), false);
 
-////    cout << "QGVPhaseSpectrum::~resizeEvent" << endl;
+//    COUTD << "QGVPhaseSpectrum::~resizeEvent" << endl;
 }
 
 void QGVPhaseSpectrum::scrollContentsBy(int dx, int dy){
