@@ -600,6 +600,7 @@ void WMainWindow::addFile(const QString& filepath) {
                 ui->listSndFiles->addItem(ft);
             }
             else{
+                m_dlgProgress->setValue(m_dlgProgress->maximum());
                 WDialogSelectChannel dlg(filepath, nchan, this);
                 if(dlg.exec()) {
                     if(dlg.ui->rdbImportEachChannel->isChecked()){
