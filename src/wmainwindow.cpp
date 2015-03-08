@@ -659,7 +659,7 @@ void WMainWindow::updateViewsAfterAddFile(bool isfirsts) {
             m_gvSpectrum->viewSet(m_gvSpectrum->m_scene->sceneRect(), false);
             m_gvPhaseSpectrum->viewSet(m_gvPhaseSpectrum->m_scene->sceneRect(), false);
         }
-        soundsChanged();
+        allSoundsChanged();
     }
 }
 
@@ -690,7 +690,7 @@ void WMainWindow::duplicateCurrentFile(){
         if(ft){
             ui->listSndFiles->addItem(ft);
             m_gvWaveform->updateSceneRect();
-            soundsChanged();
+            allSoundsChanged();
             ui->actionSelectedFilesClose->setEnabled(true);
             ui->actionSelectedFilesReload->setEnabled(true);
             ui->splitterViews->show();
@@ -776,7 +776,7 @@ void WMainWindow::showFileContextMenu(const QPoint& pos) {
 }
 
 void WMainWindow::fileSelectionChanged() {
-//    cout << "WMainWindow::fileSelectionChanged" << endl;
+//    COUTD << "WMainWindow::fileSelectionChanged" << endl;
 
     QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
     int nb_snd_in_selection = 0;
@@ -800,7 +800,7 @@ void WMainWindow::fileSelectionChanged() {
 
     fileInfoUpdate();
 
-    //    cout << "WMainWindow::~fileSelectionChanged" << endl;
+//    COUTD << "WMainWindow::~fileSelectionChanged" << endl;
 }
 void WMainWindow::fileInfoUpdate() {
     QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
@@ -828,7 +828,7 @@ void WMainWindow::resetAmpScale(){
 
         currentftsound->setStatus();
 
-        soundsChanged();
+        allSoundsChanged();
     }
 }
 void WMainWindow::resetDelay(){
@@ -838,14 +838,14 @@ void WMainWindow::resetDelay(){
 
         currentftsound->setStatus();
 
-        soundsChanged();
+        allSoundsChanged();
     }
 }
 
-void WMainWindow::soundsChanged(){
+void WMainWindow::allSoundsChanged(){
 //    COUTD << "WMainWindow::soundsChanged" << endl;
-    m_gvWaveform->soundsChanged(); // Can be also very heavy if updating multiple files
-    m_gvSpectrum->soundsChanged(); // Can be also very heavy if updating multiple files
+    m_gvWaveform->m_scene->update(); // Can be also very heavy if updating multiple files
+    m_gvSpectrum->allSoundsChanged(); // Can be also very heavy if updating multiple files
     // m_gvSpectrogram->soundsChanged(); // Too heavy to be here, call updateSTFTPlot(force) instead
 }
 
@@ -857,6 +857,8 @@ void WMainWindow::selectedFilesToggleShown() {
         if(((FileType*)list.at(i))==m_lastSelectedSound)
             m_gvSpectrogram->updateSTFTPlot();
     }
+    m_gvWaveform->m_scene->update();
+    m_gvSpectrum->allSoundsChanged();
 //    FLAG
 }
 
@@ -899,7 +901,7 @@ void WMainWindow::selectedFilesClose() {
     if(ui->listSndFiles->count()==0)
         setInWaitingForFileState();
     else
-        soundsChanged();
+        allSoundsChanged();
 }
 
 void WMainWindow::selectedFilesReload() {
@@ -924,8 +926,8 @@ void WMainWindow::selectedFilesReload() {
     fileInfoUpdate();
 
     if(reloadSelectedSound){
-        m_gvWaveform->soundsChanged();
-        m_gvSpectrum->computeDFTs(); // TODO The DFT of all files are updated here, whereas only the slected files need to be ! Need to run computeDFTs on a given file.
+        m_gvWaveform->m_scene->update();
+        m_gvSpectrum->allSoundsChanged(); // TODO The DFT of all files are updated here, whereas only the slected files need to be ! Need to run computeDFTs on a given file.
         m_gvSpectrogram->updateSTFTPlot(true); // Force the STFT computation
     }
 

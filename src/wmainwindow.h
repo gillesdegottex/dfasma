@@ -105,7 +105,7 @@ private slots:
 public slots:
     void updateWindowTitle();
     void fileInfoUpdate();
-    void soundsChanged();
+    void allSoundsChanged();
     void selectAudioOutputDevice(int di);
     void selectAudioOutputDevice(const QString& devicename);
     void settingsSave();

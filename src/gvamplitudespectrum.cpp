@@ -404,12 +404,12 @@ void QGVAmplitudeSpectrum::computeDFTs(){
 
         m_fftresizethread->m_mutex_resizing.unlock();
 
-        m_scene->invalidate();
+        m_scene->update();
         if(gMW->m_gvPhaseSpectrum)
-            gMW->m_gvPhaseSpectrum->m_scene->invalidate();
+            gMW->m_gvPhaseSpectrum->m_scene->update();
     }
 
-//    std::cout << "~QGVAmplitudeSpectrum::computeDFTs" << endl;
+//    COUTD << "~QGVAmplitudeSpectrum::computeDFTs" << endl;
 }
 
 void QGVAmplitudeSpectrum::settingsSave() {
@@ -429,11 +429,13 @@ void QGVAmplitudeSpectrum::settingsSave() {
     settings.setValue("qgvamplitudespectrum/cbAddMarginsOnSelection", m_dlgSettings->ui->cbAddMarginsOnSelection->isChecked());
 }
 
-void QGVAmplitudeSpectrum::soundsChanged(){
-//    FLAG
+void QGVAmplitudeSpectrum::allSoundsChanged(){
     if(gMW->ftsnds.size()>0)
-        computeDFTs();
+        computeDFTs(); // Blocking FFT computation
+
     m_scene->update();
+    if(gMW->m_gvPhaseSpectrum)
+        gMW->m_gvPhaseSpectrum->m_scene->update();
 }
 
 void QGVAmplitudeSpectrum::viewSet(QRectF viewrect, bool sync) {
@@ -724,8 +726,8 @@ void QGVAmplitudeSpectrum::mouseMoveEvent(QMouseEvent* event){
                     currentftsound->m_ampscale = 1e-10;
 
                 currentftsound->setStatus();
-                soundsChanged();
-                gMW->m_gvWaveform->soundsChanged();
+                allSoundsChanged();
+                gMW->m_gvWaveform->m_scene->update();
                 gMW->fileInfoUpdate();
                 gMW->ui->pbSpectrogramSTFTUpdate->show();
             }

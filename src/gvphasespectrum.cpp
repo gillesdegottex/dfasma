@@ -410,8 +410,8 @@ void QGVPhaseSpectrum::mouseMoveEvent(QMouseEvent* event){
         FTSound* currentftsound = gMW->getCurrentFTSound();
         if(currentftsound){
             currentftsound->m_delay = m_pressed_delay - dt*gMW->getFs();
-            gMW->m_gvWaveform->soundsChanged();
-            gMW->m_gvSpectrum->soundsChanged();
+            gMW->m_gvWaveform->m_scene->update();
+            gMW->m_gvSpectrum->allSoundsChanged();
             gMW->fileInfoUpdate();
             gMW->ui->pbSpectrogramSTFTUpdate->show();
         }

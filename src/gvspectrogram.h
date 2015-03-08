@@ -144,7 +144,7 @@ signals:
 
 public slots:
     void settingsSave();
-    void soundsChanged();
+    void allSoundsChanged();
     void playCursorSet(double t, bool forwardsync);
 
     void amplitudeExtentSlidersChanged();

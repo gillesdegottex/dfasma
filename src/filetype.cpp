@@ -106,7 +106,6 @@ FileType::FileType(FILETYPE _type, const QString& _fileName, QObject * parent)
     m_actionShow->setCheckable(true);
     m_actionShow->setChecked(true);
     m_actionShow->setShortcut(gMW->ui->actionSelectedFilesToggleShown->shortcut());
-    gMW->connect(m_actionShow, SIGNAL(toggled(bool)), gMW, SLOT(soundsChanged()));
 
     m_actionDuplicate = new QAction("Duplicate", parent);
     m_actionDuplicate->setStatusTip("Duplicate the file content");
@@ -185,6 +184,7 @@ FileType* FileType::duplicate(){
 }
 
 void FileType::setVisible(bool shown) {
+//    COUTD << "FileType::setVisible" << endl;
     m_actionShow->setChecked(shown);
     if(shown) {
         setForeground(QGuiApplication::palette().text());
@@ -194,6 +194,7 @@ void FileType::setVisible(bool shown) {
         setForeground(QGuiApplication::palette().brush(QPalette::Disabled, QPalette::WindowText));
     }
     setStatus();
+//    COUTD << "FileType::~setVisible" << endl;
 }
 
 void FileType::setStatus() {

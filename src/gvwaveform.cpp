@@ -294,10 +294,6 @@ void QGVWaveform::viewSet(QRectF viewrect, bool sync) {
     }
 }
 
-void QGVWaveform::soundsChanged(){
-    m_scene->update();
-}
-
 void QGVWaveform::sldAmplitudeChanged(int value){
 
     m_ampzoom = (100-value)/100.0;
@@ -657,8 +653,8 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
 
                 currentftsound->setStatus();
 
-                soundsChanged();
-                gMW->m_gvSpectrum->soundsChanged();
+                m_scene->update();
+                gMW->m_gvSpectrum->allSoundsChanged();
                 gMW->fileInfoUpdate();
                 gMW->ui->pbSpectrogramSTFTUpdate->show();
             }
@@ -680,8 +676,8 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
 
                 currentftsound->setStatus();
 
-                soundsChanged();
-                gMW->m_gvSpectrum->soundsChanged();
+                m_scene->update();
+                gMW->m_gvSpectrum->allSoundsChanged();
                 gMW->fileInfoUpdate();
                 gMW->ui->pbSpectrogramSTFTUpdate->show();
             }

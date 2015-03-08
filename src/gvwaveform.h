@@ -111,7 +111,6 @@ signals:
 
 public slots:
     void settingsSave();
-    void soundsChanged();
     void updateSceneRect();
     void updateTextsGeometry();
     void updateSelectionText();

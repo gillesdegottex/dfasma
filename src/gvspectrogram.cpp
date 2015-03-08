@@ -406,11 +406,11 @@ void QGVSpectrogram::updateSceneRect() {
     m_scene->setSceneRect(-1.0/gMW->getFs(), 0.0, gMW->getMaxDuration()+1.0/gMW->getFs(), gMW->getFs()/2);
 }
 
-void QGVSpectrogram::soundsChanged(){
-    cout << "QGVSpectrogram::soundsChanged" << endl;
+void QGVSpectrogram::allSoundsChanged(){
+//    cout << "QGVSpectrogram::allSoundsChanged" << endl;
     if(gMW->ftsnds.size()>0)
         updateSTFTPlot();
-    cout << "QGVSpectrogram::~soundsChanged" << endl;
+//    cout << "QGVSpectrogram::~allSoundsChanged" << endl;
 }
 
 void QGVSpectrogram::viewSet(QRectF viewrect, bool forwardsync) {
