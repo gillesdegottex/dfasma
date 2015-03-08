@@ -36,4 +36,11 @@ streamtype& operator<<(streamtype& stream, const QPoint& p) {
     return stream;
 }
 
+template<typename streamtype>
+streamtype& operator<<(streamtype& stream, const QColor& c) {
+    stream << "(" << c.red() << "," << c.green() << "," << c.blue() << ")";
+
+    return stream;
+}
+
 #endif // QTHELPER_H

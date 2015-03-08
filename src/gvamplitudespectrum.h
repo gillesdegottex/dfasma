@@ -41,8 +41,8 @@ class QGVAmplitudeSpectrum : public QGraphicsView
 {
     Q_OBJECT
 
-    qreal m_minsy;
-    qreal m_maxsy;
+    WAVTYPE m_minsy;
+    WAVTYPE m_maxsy;
 
     QPen m_gridFontPen;
     QFont m_gridFont;

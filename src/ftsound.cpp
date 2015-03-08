@@ -139,12 +139,12 @@ void FTSound::load_finalize() {
 }
 
 void FTSound::setVisible(bool shown){
-//    cout << "FTSound::setVisible " << shown << endl;
+    cout << "FTSound::setVisible " << shown << endl;
     FileType::setVisible(shown);
     gMW->m_gvWaveform->soundsChanged();
     gMW->m_gvSpectrum->soundsChanged();
     gMW->m_gvSpectrogram->updateSTFTPlot();
-//    cout << "FTSound::~setVisible" << endl;
+    cout << "FTSound::~setVisible" << endl;
 }
 
 

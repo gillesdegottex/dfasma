@@ -105,6 +105,7 @@ FileType::FileType(FILETYPE _type, const QString& _fileName, QObject * parent)
     m_actionShow->setStatusTip("Show this file in the views");
     m_actionShow->setCheckable(true);
     m_actionShow->setChecked(true);
+    m_actionShow->setShortcut(gMW->ui->actionSelectedFilesToggleShown->shortcut());
     gMW->connect(m_actionShow, SIGNAL(toggled(bool)), gMW, SLOT(soundsChanged()));
 
     m_actionDuplicate = new QAction("Duplicate", parent);

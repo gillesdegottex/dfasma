@@ -346,8 +346,8 @@ void QGVAmplitudeSpectrum::computeDFTs(){
         gMW->ui->pgbFFTResize->hide();
         gMW->ui->lblSpectrumInfoTxt->setText(QString("DFT size=%1").arg(dftlen));
 
-        m_minsy = std::numeric_limits<double>::infinity();
-        m_maxsy = -std::numeric_limits<double>::infinity();
+        m_minsy = std::numeric_limits<WAVTYPE>::infinity();
+        m_maxsy = -std::numeric_limits<WAVTYPE>::infinity();
         for(unsigned int fi=0; fi<gMW->ftsnds.size(); fi++){
             WAVTYPE gain = gMW->ftsnds[fi]->m_ampscale;
             if(gMW->ftsnds[fi]->m_actionInvPolarity->isChecked())
@@ -378,7 +378,7 @@ void QGVAmplitudeSpectrum::computeDFTs(){
             gMW->ftsnds[fi]->m_dft.resize(dftlen/2+1);
             for(n=0; n<dftlen/2+1; n++) {
                 (*pdft)[n] = std::complex<WAVTYPE>(std::log(std::abs(m_fft->out[n])),std::arg(m_fft->out[n]));
-                double y = (*pdft)[n].real();
+                WAVTYPE y = (*pdft)[n].real();
                 m_minsy = std::min(m_minsy, y);
                 m_maxsy = std::max(m_maxsy, y);
             }
@@ -1083,8 +1083,7 @@ void QGVAmplitudeSpectrum::setMouseCursorPosition(QPointF p, bool forwardsync) {
 }
 
 void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
-
-//    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVAmplitudeSpectrum::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
+//    COUTD << "QGVAmplitudeSpectrum::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
     double fs = gMW->getFs();
 
@@ -1212,11 +1211,11 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
         }
     }
 
-//    cout << "QGVAmplitudeSpectrum::~drawBackground" << endl;
+//    COUTD << "QGVAmplitudeSpectrum::~drawBackground" << endl;
 }
 
 void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& ldft, double fs, double ascale, const QRectF& rect) {
-//    cout << "QGVAmplitudeSpectrum::draw_spectrum " << ldft.size() << endl;
+//    COUTD << "QGVAmplitudeSpectrum::draw_spectrum " << ldft.size() << endl;
 
     int dftlen = (ldft.size()-1)*2;
     if (dftlen<2)
@@ -1249,7 +1248,7 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
         }
     }
     else {
-//        cout << "Spec: Plot only one line per pixel, in order to reduce computation time" << endl;
+//        COUTD << "Spec: Plot only one line per pixel, in order to reduce computation time" << endl;
 
         painter->setWorldMatrixEnabled(false); // Work in pixel coordinates
 
@@ -1268,8 +1267,8 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
             int ne = int(dftlen*(viewrect.left()+(i+1)*p2s)/fs);
 
             if(ns>=0 && ne<int(ldft.size())) {
-                WAVTYPE ymin = std::numeric_limits<double>::infinity();
-                WAVTYPE ymax = -std::numeric_limits<double>::infinity();
+                WAVTYPE ymin = std::numeric_limits<WAVTYPE>::infinity();
+                WAVTYPE ymax = -std::numeric_limits<WAVTYPE>::infinity();
                 std::complex<WAVTYPE>* ypp = yp+ns;
                 WAVTYPE y;
                 for(int n=ns; n<=ne; n++) {
