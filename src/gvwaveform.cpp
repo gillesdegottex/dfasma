@@ -660,6 +660,7 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
                 soundsChanged();
                 gMW->m_gvSpectrum->soundsChanged();
                 gMW->fileInfoUpdate();
+                gMW->ui->pbSpectrogramSTFTUpdate->show();
             }
         }
     }
@@ -682,6 +683,7 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
                 soundsChanged();
                 gMW->m_gvSpectrum->soundsChanged();
                 gMW->fileInfoUpdate();
+                gMW->ui->pbSpectrogramSTFTUpdate->show();
             }
         }
     }

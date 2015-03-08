@@ -253,6 +253,8 @@ void QGVSpectrogram::updateAmplitudeExtent(){
 void QGVSpectrogram::updateDFTSettings(){
 //    cout << "QGVSpectrogram::updateDFTSettings fs=" << gMW->getFs() << endl;
 
+    gMW->ui->pbSpectrogramSTFTUpdate->hide();
+
     int winlen = std::floor(0.5+gMW->getFs()*m_dlgSettings->ui->sbWindowSize->value());
     //    cout << "QGVSpectrogram::updateDFTSettings winlen=" << winlen << endl;
 
@@ -564,17 +566,6 @@ void QGVSpectrogram::mousePressEvent(QMouseEvent* event){
                 selectionSet(m_mouseSelection);
             }
         }
-        else if(gMW->ui->actionEditMode->isChecked()){
-            if(event->modifiers().testFlag(Qt::ShiftModifier)){
-//                 TODO
-            }
-            else{
-                // When scaling the waveform
-                m_currentAction = CAWaveformScale;
-                m_selection_pressedp = p;
-                setCursor(Qt::SizeVerCursor);
-            }
-        }
     }
     else if(event->buttons()&Qt::RightButton) {
         if (event->modifiers().testFlag(Qt::ShiftModifier)) {
@@ -651,22 +642,6 @@ void QGVSpectrogram::mouseMoveEvent(QMouseEvent* event){
         m_mouseSelection.setBottomRight(p);
         selectionSet(m_mouseSelection, true);
     }
-    else if(m_currentAction==CAWaveformScale){
-        // When scaling the waveform
-        FTSound* currentftsound = gMW->getCurrentFTSound();
-        if(currentftsound){
-            currentftsound->m_ampscale *= pow(10, -(p.y()-m_selection_pressedp.y())/20.0);
-            m_selection_pressedp = p;
-
-            if(currentftsound->m_ampscale>1e10)
-                currentftsound->m_ampscale = 1e10;
-            else if(currentftsound->m_ampscale<1e-10)
-                currentftsound->m_ampscale = 1e-10;
-
-            gMW->m_gvWaveform->soundsChanged();
-            soundsChanged();
-        }
-    }
     else{
         QRect selview = mapFromScene(m_selection).boundingRect();
 
@@ -724,15 +699,6 @@ void QGVSpectrogram::mouseReleaseEvent(QMouseEvent* event) {
             else{
                 setCursor(Qt::CrossCursor);
             }
-        }
-    }
-    else if(gMW->ui->actionEditMode->isChecked()) {
-        if(event->modifiers().testFlag(Qt::ShiftModifier)){
-        }
-        else if(event->modifiers().testFlag(Qt::ControlModifier)) {
-        }
-        else{
-            setCursor(Qt::SizeVerCursor);
         }
     }
 

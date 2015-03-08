@@ -413,6 +413,7 @@ void QGVPhaseSpectrum::mouseMoveEvent(QMouseEvent* event){
             gMW->m_gvWaveform->soundsChanged();
             gMW->m_gvSpectrum->soundsChanged();
             gMW->fileInfoUpdate();
+            gMW->ui->pbSpectrogramSTFTUpdate->show();
         }
     }
     else{

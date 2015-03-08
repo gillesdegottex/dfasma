@@ -284,18 +284,24 @@ void FTSound::resetFiltering(){
 }
 
 void FTSound::resetAmpScale(){
-    m_ampscale = 1.0;
+    if(m_ampscale!=1.0){
+        m_ampscale = 1.0;
 
-    setStatus();
+        setStatus();
 
-    gMW->soundsChanged();
+        gMW->soundsChanged();
+        gMW->ui->pbSpectrogramSTFTUpdate->show();
+    }
 }
 void FTSound::resetDelay(){
-    m_delay = 0.0;
+    if(m_delay!=0.0){
+        m_delay = 0.0;
 
-    setStatus();
+        setStatus();
 
-    gMW->soundsChanged();
+        gMW->soundsChanged();
+        gMW->ui->pbSpectrogramSTFTUpdate->show();
+    }
 }
 
 double FTSound::getLastSampleTime() const {

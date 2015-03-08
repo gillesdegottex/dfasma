@@ -727,6 +727,7 @@ void QGVAmplitudeSpectrum::mouseMoveEvent(QMouseEvent* event){
                 soundsChanged();
                 gMW->m_gvWaveform->soundsChanged();
                 gMW->fileInfoUpdate();
+                gMW->ui->pbSpectrogramSTFTUpdate->show();
             }
         }
     }

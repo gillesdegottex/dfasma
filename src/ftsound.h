@@ -76,7 +76,6 @@ public:
     WAVTYPE m_wavmaxamp;
     WAVTYPE m_filteredmaxamp;
 
-
     qreal m_ampscale; // [linear]
     qint64 m_delay;   // [sample index]
 

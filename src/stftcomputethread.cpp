@@ -7,6 +7,38 @@
 #include "ftsound.h"
 #include "qthelper.h"
 
+
+STFTComputeThread::Parameters::Parameters(FTSound* reqnd, const std::vector<FFTTYPE>& reqwin, int reqstepsize, int reqdftlen){
+    clear();
+    snd = reqnd;
+    ampscale = reqnd->m_ampscale;
+    delay = reqnd->m_delay;
+    win = reqwin;
+    stepsize = reqstepsize;
+    dftlen = reqdftlen;
+}
+
+bool STFTComputeThread::Parameters::operator==(const Parameters& param){
+    if(snd!=param.snd)
+        return false;
+    if(ampscale!=param.ampscale)
+        return false;
+    if(delay!=param.delay)
+        return false;
+    if(stepsize!=param.stepsize)
+        return false;
+    if(dftlen!=param.dftlen)
+        return false;
+    if(win.size()!=param.win.size())
+        return false;
+    for(size_t n=0; n<win.size(); n++)
+        if(win[n]!=param.win[n])
+            return false;
+
+    return true;
+}
+
+
 STFTComputeThread::STFTComputeThread(QObject* parent)
     : QThread(parent)
 {
@@ -60,6 +92,9 @@ void STFTComputeThread::run() {
 
         m_fft->resize(m_params_current.dftlen);
 
+
+        qreal gain = m_params_current.snd->m_ampscale;
+
         std::vector<WAVTYPE>* wav = m_params_current.snd->wavtoplay;
 
 //        std::cout << "STFTComputeThread::run resize finished" << std::endl;
@@ -83,8 +118,14 @@ void STFTComputeThread::run() {
             int wn = 0;
             for(; n<int(m_params_current.win.size()); n++){
                 wn = si*m_params_current.stepsize+n - m_params_current.snd->m_delay;
-                if(wn>=0 && wn<int(wav->size())) // TODO temp
-                    m_fft->in[n] = (*(wav))[wn]*m_params_current.win[n];
+                if(wn>=0 && wn<int(wav->size())) { // TODO temp
+                    WAVTYPE value = gain*(*(wav))[wn];
+
+                    if(value>1.0)       value = 1.0;
+                    else if(value<-1.0) value = -1.0;
+
+                    m_fft->in[n] = value*m_params_current.win[n];
+                }
                 else
                     m_fft->in[n] = 0.0;
             }

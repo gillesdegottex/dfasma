@@ -90,6 +90,7 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 
     ui->setupUi(this);
     ui->lblFileInfo->hide();
+    ui->pbSpectrogramSTFTUpdate->hide();
 
     gMW = this;
 
@@ -252,6 +253,8 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 
     if(sndfiles.size()>0)
         m_gvSpectrogram->updateDFTSettings(); // This will update the window computation AND trigger the STFT computation
+
+    connect(ui->pbSpectrogramSTFTUpdate, SIGNAL(clicked()), m_gvSpectrogram, SLOT(updateDFTSettings()));
 
     m_loading = false;
 }

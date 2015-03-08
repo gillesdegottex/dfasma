@@ -27,12 +27,17 @@ public:
     class Parameters{
     public:
         FTSound* snd;
+        qreal ampscale; // [linear]
+        qint64 delay;   // [sample index]
+
         std::vector<FFTTYPE> win;
         int stepsize;
         int dftlen;
 
         void clear(){
             snd = NULL;
+            ampscale = 1.0;
+            delay = 0;
             win.clear();
             stepsize = -1;
             dftlen = -1;
@@ -41,29 +46,9 @@ public:
         Parameters(){
             clear();
         }
-        Parameters(FTSound* reqnd, const std::vector<FFTTYPE>& reqwin, int reqstepsize, int reqdftlen){
-            clear();
-            snd = reqnd;
-            win = reqwin;
-            stepsize = reqstepsize;
-            dftlen = reqdftlen;
-        }
+        Parameters(FTSound* reqnd, const std::vector<FFTTYPE>& reqwin, int reqstepsize, int reqdftlen);
 
-        bool operator==(const Parameters& param){
-            if(snd!=param.snd)
-                return false;
-            if(stepsize!=param.stepsize)
-                return false;
-            if(dftlen!=param.dftlen)
-                return false;
-            if(win.size()!=param.win.size())
-                return false;
-            for(size_t n=0; n<win.size(); n++)
-                if(win[n]!=param.win[n])
-                    return false;
-
-            return true;
-        }
+        bool operator==(const Parameters& param);
         bool operator!=(const Parameters& param){
             return !((*this)==param);
         }
