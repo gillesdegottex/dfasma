@@ -500,6 +500,13 @@ void expandpoly3(const pzrep& zplane2, uint options2, double raw_alpha1, double 
         den[i] = ycoeffs2[zplane2.numpoles-i];
 }
 
+void printpoleszeros(mkfilter::pzrep zplane) {
+    for (int i=0; i < zplane.numpoles; i++)
+        std::cout << "ZP" << i << ": " << zplane.poles[i].re << "+j*" << zplane.poles[i].im << std::endl;
+    for (int i=0; i < zplane.numzeros; i++)
+        std::cout << "ZZ" << i << ": " << zplane.zeros[i].re << "+j*" << zplane.zeros[i].im << std::endl;
+}
+
 }
 
 // C++ interface to the above functions ----------------------------------------
@@ -554,13 +561,6 @@ void mkfilter::make_butterworth_filter(int _order, double _alpha, bool isLowPass
 //        std::cout << "num[" << i << "]=" << num[i] << std::endl;
 //    for (size_t i=0; i < den.size(); i++)
 //        std::cout << "den[" << i << "]=" << den[i] << std::endl;
-}
-
-void printpoleszeros(mkfilter::pzrep zplane) {
-    for (int i=0; i < zplane.numpoles; i++)
-        std::cout << "ZP" << i << ": " << zplane.poles[i].re << "+j*" << zplane.poles[i].im << std::endl;
-    for (int i=0; i < zplane.numzeros; i++)
-        std::cout << "ZZ" << i << ": " << zplane.zeros[i].re << "+j*" << zplane.zeros[i].im << std::endl;
 }
 
 void mkfilter::make_butterworth_filter_biquad(int _order, double _alpha, bool isLowPass, std::vector< std::vector<double> >& num, std::vector<std::vector<double> >& den, std::vector<double>* response, int dftlen) {
