@@ -924,6 +924,7 @@ void WMainWindow::selectedFilesReload() {
     fileInfoUpdate();
 
     if(reloadSelectedSound){
+        m_gvWaveform->soundsChanged();
         m_gvSpectrum->computeDFTs(); // TODO The DFT of all files are updated here, whereas only the slected files need to be ! Need to run computeDFTs on a given file.
         m_gvSpectrogram->updateSTFTPlot(true); // Force the STFT computation
     }
