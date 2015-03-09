@@ -256,6 +256,8 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 
     connect(ui->pbSpectrogramSTFTUpdate, SIGNAL(clicked()), m_gvSpectrogram, SLOT(updateDFTSettings()));
 
+    connect(ui->actionFileOpen, SIGNAL(triggered()), this, SLOT(openFile()));
+
     m_loading = false;
 }
 
