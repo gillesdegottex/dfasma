@@ -248,7 +248,11 @@ void QGVWaveform::fitViewToSoundsAmplitude(){
     if(gMW->ftsnds.size()>0){
         qreal maxwavmaxamp = 0.0;
         for(unsigned int si=0; si<gMW->ftsnds.size(); si++)
-            maxwavmaxamp = std::max(maxwavmaxamp, gMW->ftsnds[si]->m_ampscale*gMW->ftsnds[si]->m_wavmaxamp);
+            if(gMW->ftsnds[si]->isVisible())
+                maxwavmaxamp = std::max(maxwavmaxamp, gMW->ftsnds[si]->m_ampscale*gMW->ftsnds[si]->m_wavmaxamp);
+
+        if(maxwavmaxamp==0.0)
+            maxwavmaxamp = 1.0;
 
         // Add a small margin
         maxwavmaxamp *= 1.05;

@@ -56,6 +56,7 @@ public:
 
     virtual QString info() const;
     virtual void setVisible(bool shown);
+    bool isVisible(){return m_actionShow->isChecked();}
     virtual bool isModified() {return false;}
     void setColor(const QColor& _color);
     virtual double getLastSampleTime() const =0;
