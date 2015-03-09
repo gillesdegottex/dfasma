@@ -1,7 +1,7 @@
 #ifndef COLORMAP_H
 #define COLORMAP_H
 
-#include <math.h>
+#include <cmath>
 #include <vector>
 #include <algorithm>
 #include <numeric>
@@ -35,7 +35,7 @@ public:
     virtual QString name() {return "Gray";}
     virtual QColor map(float y){
         int color = 255;
-        if(!isinf(y))
+        if(!std::isinf(y))
             color = 255*y;
 
         if(color<0) color = 0;
