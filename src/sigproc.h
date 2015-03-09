@@ -27,8 +27,10 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <deque>
 #include <cmath>
 #include <complex>
-#include <QString>
 #include <iostream>
+
+#include <QString>
+#include <QMutex>
 
 #define FFTTYPE double
 
@@ -470,6 +472,7 @@ class FFTwrapper
     fftw_plan m_fftw3_plan;
     double *m_fftw3_in;
     fftw_complex *m_fftw3_out;
+    static QMutex m_fftw3_planner_access; // To protect the access to the FFT and external variables
 #elif FFT_FFTREAL
     ffft::FFTReal<FFTTYPE> *m_fftreal_fft;
     FFTTYPE* m_fftreal_out;

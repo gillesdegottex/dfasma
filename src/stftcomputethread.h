@@ -58,8 +58,8 @@ public:
 
     void compute(FTSound* snd, const std::vector<FFTTYPE>& win, int stepsize, int dftlen);     // Entry point
 
-    QMutex m_mutex_computing;      // To protect the access to the FFT and external variables
-    QMutex m_mutex_changingparams; // To protect the access to the parameters above
+    mutable QMutex m_mutex_computing;      // To protect the access to the FFT and external variables
+    mutable QMutex m_mutex_changingparams; // To protect the access to the parameters above
 
     inline const Parameters& getCurrentParameters() const {return m_params_current;}
 

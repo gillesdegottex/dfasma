@@ -82,22 +82,21 @@ void STFTComputeThread::compute(FTSound* snd, const std::vector<FFTTYPE>& win, i
 }
 
 void STFTComputeThread::run() {
-//    std::cout << "STFTComputeThread::run" << std::endl;
+//    COUTD << "STFTComputeThread::run" << std::endl;
 
     bool compute = true;
     do{
-//        std::cout << "STFTComputeThread::run resizing" << std::endl;
-
         m_params_current.snd->m_stftparams = m_params_current;
 
+//        COUTD << "STFTComputeThread::run ask resize" << std::endl;
         m_fft->resize(m_params_current.dftlen);
-
+//        COUTD << "STFTComputeThread::run resized" << std::endl;
 
         qreal gain = m_params_current.snd->m_ampscale;
 
         std::vector<WAVTYPE>* wav = m_params_current.snd->wavtoplay;
 
-//        std::cout << "STFTComputeThread::run resize finished" << std::endl;
+//        COUTD << "STFTComputeThread::run resize finished" << std::endl;
 
         m_params_current.snd->m_stft.clear();
         m_params_current.snd->m_stftts.clear();
@@ -105,7 +104,7 @@ void STFTComputeThread::run() {
         m_params_current.snd->m_stft_min = std::numeric_limits<double>::infinity();
         m_params_current.snd->m_stft_max = -std::numeric_limits<double>::infinity();
 
-//        std::cout << "STFTComputeThread::run stepsize=" << m_params_current.stepsize << std::endl;
+//        COUTD << "STFTComputeThread::run stepsize=" << m_params_current.stepsize << std::endl;
 
         for(int si=0; !gMW->ui->pbSTFTComputingCancel->isChecked(); si++){
             if(si*m_params_current.stepsize+m_params_current.win.size()-1 > wav->size()-1)
@@ -153,13 +152,13 @@ void STFTComputeThread::run() {
         }
 
         m_params_current.snd->m_stft_min = std::max(-2.0*20*std::log10(std::pow(2,m_params_current.snd->format().sampleSize())), m_params_current.snd->m_stft_min);
-//        std::cout << "STFTComputeThread::run compute finished" << std::endl;
+//        COUTD << "STFTComputeThread::run compute finished" << std::endl;
 
-//        std::cout << "STFTComputeThread::run check for computing again ..." << std::endl;
+//        COUTD << "STFTComputeThread::run check for computing again ..." << std::endl;
         // Check if it has to be computed again
         m_mutex_changingparams.lock();
         if(!m_params_todo.isEmpty()){
-//            std::cout << "STFTComputeThread::run something to compute again !" << std::endl;
+//            COUTD << "STFTComputeThread::run something to compute again !" << std::endl;
 
             // m_mutex_computing.unlock();
             m_params_current = m_params_todo;
@@ -167,24 +166,24 @@ void STFTComputeThread::run() {
             m_mutex_changingparams.unlock();
         }
         else{
-//            std::cout << "STFTComputeThread::run nothing else to compute" << std::endl;
+//            COUTD << "STFTComputeThread::run nothing else to compute" << std::endl;
             // m_mutex_computing.unlock();
             m_params_current.clear();
             m_mutex_changingparams.unlock();
             compute = false;
         }
 
-//        std::cout << "STFTComputeThread::run while ..." << std::endl;
+//        COUTD << "STFTComputeThread::run while ..." << std::endl;
     }
     while(compute);
 
-//    std::cout << "STFTComputeThread::run m_mutex_computing.unlock " << std::endl;
+//    COUTD << "STFTComputeThread::run m_mutex_computing.unlock " << std::endl;
     m_mutex_computing.unlock();
 
-//    std::cout << "STFTComputeThread::run emit " << std::endl;
+//    COUTD << "STFTComputeThread::run emit " << std::endl;
     emit stftFinished(gMW->ui->pbSTFTComputingCancel->isChecked());
 
     gMW->ui->pbSTFTComputingCancel->setChecked(false);
 
-//    std::cout << "STFTComputeThread::~run" << std::endl;
+//    COUTD << "STFTComputeThread::~run" << std::endl;
 }

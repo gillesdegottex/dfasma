@@ -1189,6 +1189,9 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
             x = (n+delay)*dt;
             y = a*(*(data+n));
 
+            if(y>1.0)       y = 1.0;
+            else if(y<-1.0) y = -1.0;
+
             painter->drawLine(QLineF(prevx, prevy, x, y));
 
             prevx = x;
@@ -1214,9 +1217,9 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
 
         painter->setWorldMatrixEnabled(false); // Work in pixel coordinates
 
-        double a = snd->m_ampscale;
+        double gain = snd->m_ampscale;
         if(snd->m_actionInvPolarity->isChecked())
-            a *= -1.0;
+            gain *= -1.0;
 
         QPen outlinePen(snd->color);
         outlinePen.setWidth(0);
@@ -1225,7 +1228,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
         QRect pixrect = mapFromScene(rect).boundingRect();
         QRect fullpixrect = mapFromScene(viewrect).boundingRect();
 
-        double s2p = -a*fullpixrect.height()/viewrect.height(); // Scene to pixel
+        double s2p = -fullpixrect.height()/viewrect.height(); // Scene to pixel
         double p2n = fs*double(viewrect.width())/double(fullpixrect.width()-1); // Pixel to scene
         double yzero = fullpixrect.height()/2;
 
@@ -1250,10 +1253,16 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
                     ymax = std::max(ymax, y);
                     ypp++;
                 }
+                ymin = gain*ymin;
+                if(ymin>1.0)       ymin = 1.0;
+                else if(ymin<-1.0) ymin = -1.0;
+                ymax = gain*ymax;
+                if(ymax>1.0)       ymax = 1.0;
+                else if(ymax<-1.0) ymax = -1.0;
                 ymin *= s2p;
                 ymax *= s2p;
-                ymin = int(ymin+0.5);
-                ymax = int(ymax+0.5);
+//                ymin = int(ymin+0.5);
+//                ymax = int(ymax+0.5);
                 painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
             }
 

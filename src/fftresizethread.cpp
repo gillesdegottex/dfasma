@@ -2,6 +2,8 @@
 
 #include "sigproc.h"
 
+#include "qthelper.h"
+
 FFTResizeThread::FFTResizeThread(sigproc::FFTwrapper* fft, QObject* parent)
     : QThread(parent)
     , m_fft(fft)
@@ -44,17 +46,18 @@ void FFTResizeThread::resize(int newsize) {
 }
 
 void FFTResizeThread::run() {
-//    std::cout << "FFTResizeThread::run" << std::endl;
+//    COUTD << "FFTResizeThread::run" << std::endl;
 
     bool resize = true;
     do{
         int prevSize = m_fft->size();
 
-//        std::cout << "FFTResizeThread::run " << prevSize << "=>" << m_size_resizing << std::endl;
-
+//        COUTD << "FFTResizeThread::run " << prevSize << "=>" << m_size_resizing << std::endl;
+//        COUTD << "FFTResizeThread::run ask resize" << std::endl;
         m_fft->resize(m_size_resizing);
+//        COUTD << "FFTResizeThread::run resized" << std::endl;
 
-//        std::cout << "FFTResizeThread::run resize finished" << std::endl;
+//        COUTD << "FFTResizeThread::run resize finished" << std::endl;
 
         // Check if it has to be resized again
         m_mutex_changingsizes.lock();
@@ -78,5 +81,5 @@ void FFTResizeThread::run() {
     while(resize);
     m_mutex_resizing.unlock();
 
-//    std::cout << "FFTResizeThread::~run m_size_resizing=" << m_size_resizing << " m_size_todo=" << m_size_todo << std::endl;
+//    COUTD << "FFTResizeThread::~run m_size_resizing=" << m_size_resizing << " m_size_todo=" << m_size_todo << std::endl;
 }

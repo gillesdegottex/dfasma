@@ -94,7 +94,6 @@ signals:
     
 public slots:
     void settingsSave();
-    void soundsChanged();
     void updateSceneRect();
 
     void azoomin();

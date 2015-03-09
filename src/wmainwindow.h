@@ -63,9 +63,10 @@ class WMainWindow : public QMainWindow
     static WMainWindow* sm_mainwindow;
     bool m_loading;
 
+    QProgressDialog* m_dlgProgress;
+
     FTSound* m_lastSelectedSound;
     FTSound* m_lastFilteredSound;
-    QProgressDialog* m_dlgProgress;
 
     void connectModes();
     void disconnectModes();

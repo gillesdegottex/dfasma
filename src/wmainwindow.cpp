@@ -843,14 +843,14 @@ void WMainWindow::resetDelay(){
 }
 
 void WMainWindow::allSoundsChanged(){
-//    COUTD << "WMainWindow::soundsChanged" << endl;
+//    COUTD << "WMainWindow::allSoundsChanged" << endl;
     m_gvWaveform->m_scene->update(); // Can be also very heavy if updating multiple files
     m_gvSpectrum->allSoundsChanged(); // Can be also very heavy if updating multiple files
     // m_gvSpectrogram->soundsChanged(); // Too heavy to be here, call updateSTFTPlot(force) instead
+//    COUTD << "WMainWindow::~allSoundsChanged" << endl;
 }
 
 void WMainWindow::selectedFilesToggleShown() {
-//    FLAG
     QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
     for(int i=0; i<list.size(); i++){
         ((FileType*)list.at(i))->setVisible(!((FileType*)list.at(i))->m_actionShow->isChecked());
@@ -859,7 +859,6 @@ void WMainWindow::selectedFilesToggleShown() {
     }
     m_gvWaveform->m_scene->update();
     m_gvSpectrum->allSoundsChanged();
-//    FLAG
 }
 
 void WMainWindow::selectedFilesClose() {

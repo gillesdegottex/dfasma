@@ -131,10 +131,6 @@ QRectF QGVPhaseSpectrum::removeHiddenMargin(const QRectF& sceneRect){
 void QGVPhaseSpectrum::settingsSave() {
 }
 
-void QGVPhaseSpectrum::soundsChanged() {
-    m_scene->update();
-}
-
 void QGVPhaseSpectrum::updateSceneRect() {
     m_scene->setSceneRect(0.0, -M_PI, gMW->getFs()/2, 2*M_PI);
 }

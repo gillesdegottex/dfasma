@@ -25,9 +25,12 @@ using namespace sigproc;
 #include <iostream>
 using namespace std;
 
+#include "qthelper.h"
+
 
 #ifdef FFT_FFTW3
     #define FFTW_VERSION "3" // Used interface's version
+    QMutex FFTwrapper::m_fftw3_planner_access; // To protect the access to the FFT and external variables
 #elif FFT_FFTREAL
     #define FFTREAL_VERSION "2.11" // This is the current built-in version
 #endif
@@ -64,11 +67,14 @@ FFTwrapper::FFTwrapper(int n)
 }
 void FFTwrapper::resize(int n)
 {
-	assert(n>0);
+    QMutexLocker locker(&m_fftw3_planner_access);
 
-	m_size = n;
+    assert(n>0);
+
+    m_size = n;
 
     #ifdef FFT_FFTW3
+
         delete[] m_fftw3_in;
         delete[] m_fftw3_out;
         m_fftw3_in = NULL;
@@ -100,15 +106,13 @@ void FFTwrapper::resize(int n)
     out.resize((m_size%2==1)?(m_size-1)/2+1:m_size/2+1);
 }
 
-void FFTwrapper::execute()
-{
-//    std::cout << "FFTwrapper::execute()" << endl;
+void FFTwrapper::execute() {
     execute(in, out);
 }
 
 void FFTwrapper::execute(const vector<FFTTYPE>& in, vector<std::complex<FFTTYPE> >& out)
 {
-//    std::cout << "FFTm_fftw3_planwrapper::execute " << m_size << endl;
+    QMutexLocker locker(&m_fftw3_planner_access);
 
     assert(int(in.size())>=m_size);
 
@@ -117,6 +121,7 @@ void FFTwrapper::execute(const vector<FFTTYPE>& in, vector<std::complex<FFTTYPE>
         out.resize(neededsize);
 
     #ifdef FFT_FFTW3
+
         for(int i=0; i<m_size; i++)
             m_fftw3_in[i] = in[i];
 
@@ -142,6 +147,8 @@ void FFTwrapper::execute(const vector<FFTTYPE>& in, vector<std::complex<FFTTYPE>
 
 FFTwrapper::~FFTwrapper()
 {
+    QMutexLocker locker(&m_fftw3_planner_access);
+
     #ifdef FFT_FFTW3
         if(m_fftw3_plan){
             fftw_destroy_plan(m_fftw3_plan);
@@ -160,6 +167,7 @@ FFTwrapper::~FFTwrapper()
         if(m_fftreal_out)	delete[] m_fftreal_out;
     #endif
 }
+
 
 namespace sigproc{
     double elc_f[29] = {20, 25, 31.5, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000, 10000, 12500};

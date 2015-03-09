@@ -430,12 +430,14 @@ void QGVAmplitudeSpectrum::settingsSave() {
 }
 
 void QGVAmplitudeSpectrum::allSoundsChanged(){
+//    FLAG
     if(gMW->ftsnds.size()>0)
         computeDFTs(); // Blocking FFT computation
 
-    m_scene->update();
-    if(gMW->m_gvPhaseSpectrum)
-        gMW->m_gvPhaseSpectrum->m_scene->update();
+//    m_scene->update();
+//    if(gMW->m_gvPhaseSpectrum)
+//        gMW->m_gvPhaseSpectrum->m_scene->update();
+//    FLAG
 }
 
 void QGVAmplitudeSpectrum::viewSet(QRectF viewrect, bool sync) {

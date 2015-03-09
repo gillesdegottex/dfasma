@@ -1,9 +1,17 @@
 #ifndef QTHELPER_H
 #define QTHELPER_H
 
+#include <QRectF>
+
 #include <iostream>
 
+#include <QThread>
+#include <QDateTime>
+#include <QColor>
+#include <QGraphicsView>
+
 #define COUTD std::cout << QThread::currentThreadId() << " " << QDateTime::fromMSecsSinceEpoch(QDateTime::currentMSecsSinceEpoch()).toString("hh:mm:ss.zzz             ").toLocal8Bit().constData() << " " << __FILE__ << ":" << __LINE__ << " "
+
 #define FLAG COUTD << std::endl;
 
 // Remove hard coded margin (Bug 11945)

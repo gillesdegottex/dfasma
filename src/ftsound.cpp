@@ -250,7 +250,7 @@ void FTSound::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
     contextmenu.addAction(mainwindow->ui->actionPlay);
     contextmenu.addAction(m_actionResetFiltering);
     contextmenu.addAction(m_actionInvPolarity);
-    connect(m_actionInvPolarity, SIGNAL(toggled(bool)), gMW, SLOT(soundsChanged()));
+    connect(m_actionInvPolarity, SIGNAL(toggled(bool)), gMW, SLOT(allSoundsChanged()));
     m_actionResetAmpScale->setText(QString("Reset amplitude scaling (%1dB) to 0dB").arg(20*log10(m_ampscale), 0, 'g', 3));
     m_actionResetAmpScale->setDisabled(m_ampscale==1.0);
     contextmenu.addAction(m_actionResetAmpScale);

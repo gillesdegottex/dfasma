@@ -26,8 +26,8 @@ public:
 
     void resize(int newsize); // Entry point
 
-    QMutex m_mutex_resizing;      // To protect the access to the FFT transformer
-    QMutex m_mutex_changingsizes; // To protect the access to the size variables above
+    mutable QMutex m_mutex_resizing;      // To protect the access to the FFT transformer
+    mutable QMutex m_mutex_changingsizes; // To protect the access to the size variables above
 };
 
 #endif // FFTRESIZETHREAD_H
