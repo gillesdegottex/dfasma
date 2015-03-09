@@ -67,8 +67,6 @@ FFTwrapper::FFTwrapper(int n)
 }
 void FFTwrapper::resize(int n)
 {
-    QMutexLocker locker(&m_fftw3_planner_access);
-
     assert(n>0);
 
     m_size = n;
@@ -84,6 +82,7 @@ void FFTwrapper::resize(int n)
         m_fftw3_in = new double[m_size];
         m_fftw3_out = new fftw_complex[m_size/2+1];
 
+        m_fftw3_planner_access.lock();
         //  | FFTW_PRESERVE_INPUT
         if(m_forward){
             m_fftw3_plan = fftw_plan_dft_r2c_1d(m_size, m_fftw3_in, m_fftw3_out, FFTW_MEASURE);
@@ -93,6 +92,7 @@ void FFTwrapper::resize(int n)
             m_fftw3_plan = fftw_plan_dft_c2r_1d(m_size, m_fftw3_out, m_fftw3_in, FFTW_MEASURE);
 //            m_fftw3_plan = fftw_plan_dft_1d(m_size, m_fftw3_in, m_fftw3_out, FFTW_BACKWARD, FFTW_MEASURE);
         }
+        m_fftw3_planner_access.unlock();
 
     #elif FFT_FFTREAL
         delete[] m_fftreal_out;
@@ -112,8 +112,6 @@ void FFTwrapper::execute() {
 
 void FFTwrapper::execute(const vector<FFTTYPE>& in, vector<std::complex<FFTTYPE> >& out)
 {
-    QMutexLocker locker(&m_fftw3_planner_access);
-
     assert(int(in.size())>=m_size);
 
     int neededsize = (m_size%2==1)?(m_size-1)/2+1:m_size/2+1;
@@ -125,7 +123,9 @@ void FFTwrapper::execute(const vector<FFTTYPE>& in, vector<std::complex<FFTTYPE>
         for(int i=0; i<m_size; i++)
             m_fftw3_in[i] = in[i];
 
+        m_fftw3_planner_access.lock();
         fftw_execute(m_fftw3_plan);
+        m_fftw3_planner_access.unlock();
 
         for(size_t i=0; i<out.size(); i++)
             out[i] = make_complex(m_fftw3_out[i]);
@@ -147,9 +147,8 @@ void FFTwrapper::execute(const vector<FFTTYPE>& in, vector<std::complex<FFTTYPE>
 
 FFTwrapper::~FFTwrapper()
 {
-    QMutexLocker locker(&m_fftw3_planner_access);
-
     #ifdef FFT_FFTW3
+        m_fftw3_planner_access.lock();
         if(m_fftw3_plan){
             fftw_destroy_plan(m_fftw3_plan);
             fftw_free(m_fftw3_plan);
@@ -162,6 +161,7 @@ FFTwrapper::~FFTwrapper()
             fftw_free(m_fftw3_out);
 //            delete[] m_fftw3_out;
         }
+        m_fftw3_planner_access.unlock();
     #elif FFT_FFTREAL
         if(m_fftreal_fft)	delete m_fftreal_fft;
         if(m_fftreal_out)	delete[] m_fftreal_out;
