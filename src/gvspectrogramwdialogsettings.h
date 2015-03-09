@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+#include "colormap.h"
+
 namespace Ui {
 class GVSpectrogramWDialogSettings;
 }
@@ -14,6 +16,9 @@ class GVSpectrogramWDialogSettings : public QDialog
     Q_OBJECT
 
     QGVSpectrogram* m_spectrogram;
+
+    ColorMapGray cmapgray;
+    ColorMapJet cmapjet;
 
 public:
     explicit GVSpectrogramWDialogSettings(QGVSpectrogram* parent);

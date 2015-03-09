@@ -375,17 +375,23 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
                         // Update the image from the sound's STFT
                         m_imgSTFT = QImage(csnd->m_stft.size(), csnd->m_stft[0].size(), QImage::Format_RGB32);
 
+                        QColor cc;
+                        ColorMap& cmap = ColorMap::getAt(m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex());
+                        bool reversed = m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked();
+
+                        // TODO Add in settings
+
                         for(size_t si=0; si<csnd->m_stft.size(); si++){
                             for(int n=0; n<int(csnd->m_stft[si].size()); n++) {
                                 double y = csnd->m_stft[si][n];
+                                y = (y+gMW->ui->sldSpectrogramAmplitudeMin->value())/(gMW->ui->sldSpectrogramAmplitudeMax->value()+gMW->ui->sldSpectrogramAmplitudeMin->value());
 
-                                int color = 255;
-                                if(!std::isinf(y))
-                                    color = 256-(256*(y+gMW->ui->sldSpectrogramAmplitudeMin->value())/(gMW->ui->sldSpectrogramAmplitudeMax->value()+gMW->ui->sldSpectrogramAmplitudeMin->value()));
+                                if(reversed)
+                                    y = 1.0-y;
 
-                                if(color<0) color = 0;
-                                else if(color>255) color = 255;
-                                m_imgSTFT.setPixel(QPoint(si,dftlen/2-n), QColor(color, color, color).rgb());
+                                // TODO Avoid QColor ctor since call rgb()
+                                cc = cmap(y);
+                                m_imgSTFT.setPixel(QPoint(si,dftlen/2-n), cc.rgb());
                             }
                         }
                     }
@@ -778,7 +784,6 @@ void QGVSpectrogram::selectionSetTextInForm() {
 }
 
 void QGVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
-//    FLAG
 
     // Order the selection to avoid negative width and negative height
     if(selection.right()<selection.left()){

@@ -33,6 +33,10 @@ GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(QGVSpectrogram* paren
     ui->lblWindowExpDecay->hide();
     ui->spWindowExpDecay->hide();
 
+    QStringList colormaps = ColorMap::getAvailableColorMaps();
+    for(QStringList::Iterator it=colormaps.begin(); it!=colormaps.end(); ++it)
+        ui->cbSpectrogramColorMaps->addItem(*it);
+
     adjustSize();
 
     connect(ui->cbSpectrogramWindowType, SIGNAL(currentIndexChanged(QString)), this, SLOT(CBSpectrumWindowTypeCurrentIndexChanged(QString)));
