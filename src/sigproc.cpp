@@ -187,7 +187,7 @@ double sigproc::equalloudnesscurvesISO226(double freq, double Ln){
         return +100000;
 //        return +std::numeric_limits<double>::infinity();
 
-    double fmin = std::numeric_limits<double>::infinity();
+//    double fmin = std::numeric_limits<double>::infinity();
     size_t ind = 0;
     while(ind<29 && freq>elc_f[ind])
         ind++;

@@ -88,9 +88,7 @@ void STFTComputeThread::run() {
     do{
         m_params_current.snd->m_stftparams = m_params_current;
 
-//        COUTD << "STFTComputeThread::run ask resize" << std::endl;
         m_fft->resize(m_params_current.dftlen);
-//        COUTD << "STFTComputeThread::run resized" << std::endl;
 
         qreal gain = m_params_current.snd->m_ampscale;
 
@@ -104,10 +102,10 @@ void STFTComputeThread::run() {
         m_params_current.snd->m_stft_min = std::numeric_limits<double>::infinity();
         m_params_current.snd->m_stft_max = -std::numeric_limits<double>::infinity();
 
-//        COUTD << "STFTComputeThread::run stepsize=" << m_params_current.stepsize << std::endl;
+        int maxsampleindex = wav->size()-1 + int(m_params_current.snd->m_delay);
 
         for(int si=0; !gMW->ui->pbSTFTComputingCancel->isChecked(); si++){
-            if(si*m_params_current.stepsize+m_params_current.win.size()-1 > wav->size()-1)
+            if(si*m_params_current.stepsize+m_params_current.win.size()-1 > maxsampleindex)
                 break;
 
             m_params_current.snd->m_stft.push_back(std::vector<WAVTYPE>(m_params_current.dftlen/2+1));
@@ -115,6 +113,7 @@ void STFTComputeThread::run() {
 
             int n = 0;
             int wn = 0;
+            bool hasfilledvalues = false;
             for(; n<int(m_params_current.win.size()); n++){
                 wn = si*m_params_current.stepsize+n - m_params_current.snd->m_delay;
                 if(wn>=0 && wn<int(wav->size())) { // TODO temp
@@ -124,25 +123,33 @@ void STFTComputeThread::run() {
                     else if(value<-1.0) value = -1.0;
 
                     m_fft->in[n] = value*m_params_current.win[n];
+                    hasfilledvalues = true;
                 }
                 else
                     m_fft->in[n] = 0.0;
             }
-            for(; n<m_params_current.dftlen; n++)
-                m_fft->in[n] = 0.0;
 
-            m_fft->execute(); // Compute the DFT
+            if(hasfilledvalues){
+                for(; n<m_params_current.dftlen; n++)
+                    m_fft->in[n] = 0.0;
 
-            for(n=0; n<m_params_current.dftlen/2+1; n++) {
-                double y = sigproc::log2db*std::log(std::abs(m_fft->out[n]));
+                m_fft->execute(); // Compute the DFT
 
-                m_params_current.snd->m_stft[si][n] = y;
+                for(n=0; n<m_params_current.dftlen/2+1; n++) {
+                    double y = sigproc::log2db*std::log(std::abs(m_fft->out[n]));
 
-                m_params_current.snd->m_stft_min = std::min(m_params_current.snd->m_stft_min, y);
-                m_params_current.snd->m_stft_max = std::max(m_params_current.snd->m_stft_max, y);
+                    m_params_current.snd->m_stft[si][n] = y;
+
+                    m_params_current.snd->m_stft_min = std::min(m_params_current.snd->m_stft_min, y);
+                    m_params_current.snd->m_stft_max = std::max(m_params_current.snd->m_stft_max, y);
+                }
+            }
+            else{
+                for(n=0; n<m_params_current.dftlen/2+1; n++)
+                    m_params_current.snd->m_stft[si][n] = -std::numeric_limits<double>::infinity();
             }
 
-            emit stftProgressing(int(100*double(si*m_params_current.stepsize)/wav->size()));
+            emit stftProgressing(int(100*double(si*m_params_current.stepsize)/maxsampleindex));
         }
 
         if(gMW->ui->pbSTFTComputingCancel->isChecked()){
