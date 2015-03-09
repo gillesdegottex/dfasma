@@ -36,6 +36,8 @@ GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(QGVSpectrogram* paren
     QStringList colormaps = ColorMap::getAvailableColorMaps();
     for(QStringList::Iterator it=colormaps.begin(); it!=colormaps.end(); ++it)
         ui->cbSpectrogramColorMaps->addItem(*it);
+    ui->cbSpectrogramColorMaps->setCurrentIndex(settings.value("qgvspectrogram/cbSpectrogramColorMaps", 0).toInt());
+    ui->cbSpectrogramColorMapReversed->setChecked(settings.value("qgvspectrogram/cbSpectrogramColorMapReversed", true).toBool());
 
     adjustSize();
 

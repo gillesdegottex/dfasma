@@ -73,21 +73,27 @@ public:
         STFTComputeThread::Parameters stftparams;
         int amplitudeMin;
         int amplitudeMax;
+        int colormapindex;
+        bool colormapreversed;
 
         void clear(){
             stftparams.clear();
             amplitudeMin = -1;
             amplitudeMax = -1;
+            colormapindex = -1;
+            colormapreversed = false;
         }
 
         ImageParameters(){
             clear();
         }
-        ImageParameters(STFTComputeThread::Parameters reqSTFTparams, int reqamplitudeMin, int reqamplitudeMax){
+        ImageParameters(STFTComputeThread::Parameters reqSTFTparams, int reqamplitudeMin, int reqamplitudeMax, int reqcolormapindex, bool reqcolormapreversed){
             clear();
             stftparams = reqSTFTparams;
             amplitudeMin = reqamplitudeMin;
             amplitudeMax = reqamplitudeMax;
+            colormapindex = reqcolormapindex;
+            colormapreversed = reqcolormapreversed;
         }
 
         bool operator==(const ImageParameters& param){
@@ -97,6 +103,10 @@ public:
                 return false;
             if(amplitudeMax!=param.amplitudeMax)
                 return false;
+            if(colormapindex!=param.colormapindex)
+                return false;
+            if(colormapreversed!=param.colormapreversed)
+                return false;
 
             return true;
         }
@@ -104,7 +114,7 @@ public:
             return !((*this)==param);
         }
 
-        inline bool isEmpty(){return stftparams.isEmpty() || amplitudeMin==-1 || amplitudeMax==-1;}
+        inline bool isEmpty(){return stftparams.isEmpty() || amplitudeMin==-1 || amplitudeMax==-1 || colormapindex==-1;}
     } m_imgSTFTParams;
 
     QPointF m_selection_pressedp;

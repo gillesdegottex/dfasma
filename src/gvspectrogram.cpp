@@ -362,7 +362,7 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
 
                     int dftlen = (csnd->m_stft[0].size()-1)*2;
 
-                    ImageParameters reqImgParams(csnd->m_stftparams, gMW->ui->sldSpectrogramAmplitudeMin->value(), gMW->ui->sldSpectrogramAmplitudeMax->value());
+                    ImageParameters reqImgParams(csnd->m_stftparams, gMW->ui->sldSpectrogramAmplitudeMin->value(), gMW->ui->sldSpectrogramAmplitudeMax->value(), m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex(), m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked());
 
                     if(m_imgSTFTParams!=reqImgParams){
                         gMW->ui->pgbSpectrogramSTFTCompute->hide();
@@ -1136,6 +1136,9 @@ void QGVSpectrogram::settingsSave() {
     settings.setValue("qgvspectrogram/sbStepSize", m_dlgSettings->ui->sbStepSize->value());
     settings.setValue("qgvspectrogram/sbWindowSize", m_dlgSettings->ui->sbWindowSize->value());
     settings.setValue("qgvspectrogram/sbSpectrogramOversamplingFactor", m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());
+
+    settings.setValue("qgvspectrogram/cbSpectrogramColorMaps", m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex());
+    settings.setValue("qgvspectrogram/cbSpectrogramColorMapReversed", m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked());
 }
 
 QGVSpectrogram::~QGVSpectrogram(){

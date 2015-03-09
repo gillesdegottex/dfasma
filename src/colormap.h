@@ -72,38 +72,4 @@ public:
     }
 };
 
-
-//QColor ColorMapGray(float y){
-//    int color = 255;
-//    if(!std::isinf(y))
-//        color = 255*y;
-
-//    if(color<0) color = 0;
-//    else if(color>255) color = 255;
-
-//    return QColor(color, color, color);
-//}
-//QColor ColorMapJet(float y){
-//    y = 1.0-y;
-//    float red = 0;
-//    if(y<0.25) red = 4*y+0.5;
-//    else       red = -4*y+2.5;
-//    if(red>1.0)      red=1.0;
-//    else if(red<0.0) red=0.0;
-
-//    float green = 0;
-//    if(y<0.5)  green = 4*y-0.5;
-//    else       green = -4*y+3.5;
-//    if(green>1.0)      green=1.0;
-//    else if(green<0.0) green=0.0;
-
-//    float blue = 0;
-//    if(y<0.75) blue = 4*y-1.5;
-//    else       blue = -4*y+4.5;
-//    if(blue>1.0)      blue=1.0;
-//    else if(blue<0.0) blue=0.0;
-
-//    return QColor(int(255*red), int(255*green), int(255*blue));
-//}
-
 #endif // COLORMAP_H
