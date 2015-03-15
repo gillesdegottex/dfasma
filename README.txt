@@ -1,12 +1,12 @@
                                 DFasma
-         A tool to compare mono audio files in time and frequency
+           A tool to compare audio files in time and frequency
                             Version 0.6.0
                 https://github.com/gillesdegottex/dfasma
 
 
-DFasma is an open-source software used to compare audio files (mono only) in
-time and frequency. The comparison is first visual, using wavforms and spectra.
-Listening segments of the loaded files is also possible in order to allow
+DFasma is an open-source software used to compare audio files in time and
+frequency. The comparison is first visual, using wavforms and spectra.
+It is also possible to listen to time-frequency segments in order to allow
 perceptual comparison.
 
 This software is coded in C/C++ using the Qt library (http://qt-project.org).
@@ -15,12 +15,14 @@ It is stored as a GitHub project (https://github.com/gillesdegottex/dfasma).
 
 Goals
     * The interface and the audio files have to be loaded as quick as possible.
-    * Any kind of lossless audio files should be easily loaded
-        (it can use libsndfile or libsox which support ~25 different formats).
-    * Manage mono audio files (stereo files could be addressed in the future)
+    * Any kind of lossless audio files should be easily loaded (it can
+      currently use libsndfile or libsox which support ~25 different formats).
     * All features should run on Linux, OS X and Migrosoft operating systems.
+    * Manage mono audio files (tracks of multi-channel files (e.g. stereo) can
+      be loaded separately. A more advanced management of multi-channel files
+      could be addressed in the future)
     * Even though there are basic functionnalities to align the signals in 
-      amplitude, this software is basically NOT an audio file editor.
+      time and amplitude, this software does not aim to be an audio editor.
 
 
 Copyright (c) 2014 Gilles Degottex <gilles.degottex@gmail.com>
@@ -29,11 +31,22 @@ License
     This software is under the GPL (v3) License. See the file LICENSE.txt
     or http://www.gnu.org/licenses/gpl.html
     All source files of any kind (code source, icons, any ressources), except
-    the content of the 'external' directory, which are necessary or optional
-    for compiling this software are under the same license.
+    the content of the 'external' directory, which are either necessary or
+    optional for compiling this software, are under the same license.
 
 Disclaimer
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
+    ALSO, THE COPYRIGHT HOLDERS AND CONTRIBUTORS DO NOT TAKE ANY LEGAL
+    RESPONSIBILITY REGARDING THE IMPLEMENTATIONS OF THE PROCESSING TECHNIQUES
+    OR ALGORITHMS (E.G. CONSEQUENCES OF BUGS OR ERRONEOUS IMPLEMENTATIONS).
+    See the GNU General Public License (LICENSE.txt) for additional details.

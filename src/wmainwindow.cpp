@@ -326,7 +326,7 @@ void WMainWindow::execAbout(){
     ")+dfasmaversion+" (compiled on "+curdate+")";
 
     txt += "<h4>Purpose</h4>";
-    txt += "<i>DFasma</i> is an open-source software whose main purpose is to compare waveforms in time and spectral domains. "; //  Even though there are a few scaling functionalities, DFasma is basically <u>not</u> a sound editor
+    txt += "<i>DFasma</i> is an open-source software whose main purpose is to compare waveforms in time and spectral domains. "; //  Even though there are a few scaling functionalities, DFasma is basically not an audio editor
     txt += "Its design is inspired by the <i>Xspect</i> software which was developed at <a href='http://www.ircam.fr'>Ircam</a>.</p>";
     // <a href='http://recherche.ircam.fr/equipes/analyse-synthese/DOCUMENTATIONS/xspect/xsintro1.2.html'>Xspect software</a>
 
@@ -338,10 +338,12 @@ void WMainWindow::execAbout(){
             The source code is hosted on <a href='https://github.com/gillesdegottex/dfasma'>GitHub</a>.";
 
     txt += "<h4>Disclaimer</h4>\
-            All the functionalities of <i>DFasma</i> and its code are provided WITHOUT ANY WARRANTY \
-            (e.g. there is NO WARRANTY OF MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE). \
-            Also, the author does NOT TAKE ANY LEGAL RESPONSIBILITY regarding <i>DFasma</i> or its code \
-            (e.g. consequences of bugs or erroneous implementation).";
+            ALL THE FUNCTIONALITIES OF <I>DFASMA</I> AND ITS CODE ARE PROVIDED WITHOUT ANY WARRANTY \
+            (E.G. THERE IS NO WARRANTY OF MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR PURPOSE). \
+            ALSO, THE COPYRIGHT HOLDERS AND CONTRIBUTORS DO NOT TAKE ANY LEGAL RESPONSIBILITY \
+            REGARDING THE IMPLEMENTATIONS OF THE PROCESSING TECHNIQUES OR ALGORITHMS \
+            (E.G. CONSEQUENCES OF BUGS OR ERRONEOUS IMPLEMENTATIONS). \
+            Please see the README.txt file for additional information.";
 
     txt += "<h4>Credits</h4>\
             Most open-source softwares are infeasible without indirect contributions provided through libraries. \
@@ -357,7 +359,7 @@ void WMainWindow::execAbout(){
 
     txt += "<p>Any contribution of any sort is very welcome and will be rewarded by your name in this about box, in addition to a pint of your favorite beer during the next signal processing <a href='http://www.obsessedwithsports.com/wp-content/uploads/2013/03/revenge-of-the-nerds-sloan-conference.png'>conference</a>!</p>";
 
-    QMessageBox::about(this, "About this software                                                                                                ", txt);
+    QMessageBox::about(this, "About this software                                                                                                                   ", txt);
 
 //    QMessageBox::aboutQt(this, "About this software");
 }
