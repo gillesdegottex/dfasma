@@ -375,11 +375,8 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
                         // Update the image from the sound's STFT
                         m_imgSTFT = QImage(csnd->m_stft.size(), csnd->m_stft[0].size(), QImage::Format_RGB32);
 
-                        QColor cc;
                         ColorMap& cmap = ColorMap::getAt(m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex());
                         bool reversed = m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked();
-
-                        // TODO Add in settings
 
                         for(size_t si=0; si<csnd->m_stft.size(); si++){
                             for(int n=0; n<int(csnd->m_stft[si].size()); n++) {
@@ -389,9 +386,7 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
                                 if(reversed)
                                     y = 1.0-y;
 
-                                // TODO Avoid QColor ctor since call rgb()
-                                cc = cmap(y);
-                                m_imgSTFT.setPixel(QPoint(si,dftlen/2-n), cc.rgb());
+                                m_imgSTFT.setPixel(QPoint(si,dftlen/2-n), cmap(y));
                             }
                         }
                     }
