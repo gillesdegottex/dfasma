@@ -37,7 +37,7 @@ CONFIG += audiofilereading_libsndfile
 
 # Additional file format support
 # SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
-#CONFIG += sdifreading
+CONFIG += sdifreading
 
 ## OS specific options
 #QMAKE_MAC_SDK = macosx10.6
@@ -56,9 +56,11 @@ DEFINES += DFASMAVERSIONGIT=$$system(git describe --tags --always)
 CONFIG(sdifreading) {
     message(Building with SDIF file reader.)
     DEFINES += SUPPORT_SDIF
-    #LIBS += /usr/local/lib/libEasdif_static.a
-    LIBS += -lEasdif
+    QMAKE_CXXFLAGS  += -I/u/anasynth/degottex/.local/include/easdif/
     #QMAKE_CXXFLAGS  += -I/u/formes/share/include
+    #LIBS += /usr/local/lib/libEasdif_static.a
+    LIBS += -L/u/anasynth/degottex/.local/lib/x86_64-Linux-rh65/
+    LIBS += -lEasdif
 }
 
 # Audio file reading libraries -------------------------------------------------
@@ -147,7 +149,8 @@ SOURCES   += src/main.cpp\
              src/gvspectrogramwdialogsettings.cpp \
              src/sigproc.cpp \
              external/mkfilter/mkfilter.cpp \
-             external/audioengine/audioengine.cpp
+             external/audioengine/audioengine.cpp \
+             src/colormap.cpp
 
 HEADERS   += src/wmainwindow.h \
              src/wdialogselectchannel.h \
@@ -166,7 +169,8 @@ HEADERS   += src/wmainwindow.h \
              src/stftcomputethread.h \
              src/gvspectrogramwdialogsettings.h \
              src/fftresizethread.h \
-             external/audioengine/audioengine.h
+             external/audioengine/audioengine.h \
+             src/colormap.h
 
 FORMS     += src/wmainwindow.ui \
              src/wdialogselectchannel.ui \
