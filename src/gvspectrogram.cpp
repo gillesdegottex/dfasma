@@ -173,6 +173,7 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     setResizeAnchor(QGraphicsView::AnchorViewCenter);
     setMouseTracking(true);
 
+    gMW->ui->pbSTFTComputingCancel->hide();
     gMW->ui->pgbSpectrogramSTFTCompute->hide();
     gMW->ui->lblSpectrogramInfoTxt->setText("");
 
@@ -365,8 +366,8 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
                     ImageParameters reqImgParams(csnd->m_stftparams, gMW->ui->sldSpectrogramAmplitudeMin->value(), gMW->ui->sldSpectrogramAmplitudeMax->value(), m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex(), m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked());
 
                     if(m_imgSTFTParams!=reqImgParams){
-                        gMW->ui->pgbSpectrogramSTFTCompute->hide();
                         gMW->ui->pbSTFTComputingCancel->hide();
+                        gMW->ui->pgbSpectrogramSTFTCompute->hide();
                         gMW->ui->lblSpectrogramInfoTxt->setText(QString("Updating Image ..."));
                         QCoreApplication::processEvents(); // To apply the above before blocking on the image filling
 
