@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>250</height>
+    <height>188</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>The file:</string>
+        <string>The file contains multiple channels:</string>
        </property>
       </widget>
      </item>
@@ -27,13 +27,6 @@
       <widget class="QLabel" name="lblFileName">
        <property name="text">
         <string>&lt;fileName&gt;</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>contains multiple channels:</string>
        </property>
       </widget>
      </item>
