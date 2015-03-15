@@ -921,6 +921,7 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
                         m_currentAction = CALabelWritting;
                         ftlabel->addLabel(m_giMouseCursorLine->pos().x(), event->text());
                         m_ftlabel_current_index = ftlabel->getNbLabels()-1;
+                        gMW->fileInfoUpdate();
                     }
                     updateTextsGeometry(); // TODO Could be avoided maybe
                 }

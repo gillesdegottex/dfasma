@@ -116,7 +116,7 @@ void STFTComputeThread::run() {
             bool hasfilledvalues = false;
             for(; n<int(m_params_current.win.size()); n++){
                 wn = si*m_params_current.stepsize+n - m_params_current.snd->m_delay;
-                if(wn>=0 && wn<int(wav->size())) { // TODO temp
+                if(wn>=0 && wn<int(wav->size())) {
                     WAVTYPE value = gain*(*(wav))[wn];
 
                     if(value>1.0)       value = 1.0;
