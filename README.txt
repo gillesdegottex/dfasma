@@ -1,6 +1,6 @@
                                 DFasma
          A tool to compare mono audio files in time and frequency
-                            Version 0.5.0
+                            Version 0.6.0
                 https://github.com/gillesdegottex/dfasma
 
 
