@@ -43,6 +43,7 @@ class FTGraphicsLabelItem : public QGraphicsTextItem
 
 public:
     FTGraphicsLabelItem(FTLabels* ftl, const QString & text);
+    FTGraphicsLabelItem(FTGraphicsLabelItem* ftgi, FTLabels* ftl); // copy ctor
 
     virtual void keyPressEvent(QKeyEvent * event);
     virtual void focusInEvent(QFocusEvent * event);

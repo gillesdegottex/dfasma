@@ -61,6 +61,12 @@ FTGraphicsLabelItem::FTGraphicsLabelItem(FTLabels* ftl, const QString & text)
 {
 }
 
+FTGraphicsLabelItem::FTGraphicsLabelItem(FTGraphicsLabelItem* ftgi, FTLabels* ftl)
+    : QGraphicsTextItem(ftgi->toPlainText())
+    , m_ftl(ftl)
+{
+}
+
 void FTGraphicsLabelItem::focusInEvent(QFocusEvent * event){
     Q_UNUSED(event)
 //    COUTD << "FTGraphicsLabelItem::focusInEvent " << endl;
@@ -160,16 +166,16 @@ FTLabels::FTLabels(const FTLabels& ft)
 {
     init();
 
-    starts = ft.starts;
-    waveform_labels = ft.waveform_labels; // TODO Need to duplicate the items, no ?
-    spectrogram_labels = ft.spectrogram_labels; // TODO Need to duplicate the items, no ?
-    waveform_lines = ft.waveform_lines; // TODO Need to duplicate the items, no ?
-    spectrogram_lines = ft.spectrogram_lines; // TODO Need to duplicate the items, no ?
+    int starti=0;
+    for(std::deque<FTGraphicsLabelItem*>::const_iterator it=ft.waveform_labels.begin(); it!=ft.waveform_labels.end(); ++it, ++starti)
+        addLabel(ft.starts[starti], (*it)->toPlainText());
 
     m_lastreadtime = ft.m_lastreadtime;
     m_modifiedtime = ft.m_modifiedtime;
 
     gMW->ftlabels.push_back(this);
+
+    updateTextsGeometry();
 }
 
 FileType* FTLabels::duplicate(){
@@ -494,6 +500,7 @@ void FTLabels::save() {
 
 QString FTLabels::info() const {
     QString str = FileType::info();
+    str += "Number of labels: " + QString::number(starts.size()) + "<br/>";
     return str;
 }
 
@@ -655,8 +662,7 @@ struct compare_indirect_index
 {
     const Container& container;
     compare_indirect_index( const Container& container ): container( container ) { }
-    bool operator () ( size_t lindex, size_t rindex ) const
-    {
+    bool operator () ( size_t lindex, size_t rindex ) const {
         return container[ lindex ] < container[ rindex ];
     }
 };

@@ -120,9 +120,12 @@ QString FileType::info() const {
 
     QString datestr = m_lastreadtime.toString("HH:mm:ss ddMMM");
     if(m_modifiedtime>m_lastreadtime) datestr = "<b>"+datestr+"</b>";
-    str += "Loaded at "+datestr+"<br/>";
+    if(m_lastreadtime!=QDateTime())
+        str += "Loaded at "+datestr+"<br/>";
 
-    if(m_modifiedtime==QDateTime())
+    if(m_lastreadtime==QDateTime())
+        str += "<b>Not saved yet</b><br/>";
+    else if(m_modifiedtime==QDateTime())
         str += "<b>Currently inaccessible</b><br/>";
     else{
         datestr = m_modifiedtime.toString("HH:mm:ss ddMMM");
