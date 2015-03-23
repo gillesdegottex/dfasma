@@ -137,7 +137,11 @@ FTLabels::FTLabels(QObject *parent)
 
     init();
 
-    setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.sdif");
+    #ifdef SUPPORT_SDIF
+        setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.sdif");
+    #else
+        setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.mrk.txt");
+    #endif
 
     gMW->ftlabels.push_back(this);
 }
@@ -193,6 +197,9 @@ void FTLabels::load() {
         if(m_fileformat==FFAutoDetect)
             if(FileType::SDIF_isSDIF(fileFullPath))
                     m_fileformat = FFSDIF;
+    #else
+        if(m_fileformat==FFAutoDetect)
+            m_fileformat = FFAsciiTimeText;
     #endif
 
 //    if(m_fileformat==FFAutoDetect) {
@@ -203,10 +210,16 @@ void FTLabels::load() {
         throw QString("Cannot detect the file format of this label file");
 
     if(m_fileformat==FFAsciiTimeText){
-//        ofstream fout(fileFullPath.toLatin1().constData());
-//        for(size_t li=0; li<starts.size(); li++) {
-//            fout << starts[li] << " " << waveform_labels[li]->text().toLatin1().constData() << endl;
-//        }
+        ifstream fin(fileFullPath.toLatin1().constData());
+        if(!fin.is_open())
+            throw QString("FTLabel:FFAsciiTimeText: Cannot open file");
+
+        double t;
+        string line, text;
+        while(std::getline(fin, line)) {
+            std::istringstream(line) >> t >> text;
+            addLabel(t, text.c_str());
+        }
     }
     else if(m_fileformat==FFAsciiSegments){
 //        ofstream fout(fileFullPath.toLatin1().constData());
@@ -409,8 +422,10 @@ void FTLabels::save() {
 
     if(m_fileformat==FFAsciiTimeText){
         ofstream fout(fileFullPath.toLatin1().constData());
+        fout.precision(12);
+        fout.setf(std::ios::scientific); // floatfield set to fixed
         for(size_t li=0; li<starts.size(); li++) {
-            fout << starts[li] << " " << waveform_labels[li]->toPlainText().toLatin1().constData() << endl;
+            fout << starts[li] << " " << (waveform_labels[li]->toPlainText().toLatin1().constData()) << endl;
         }
     }
     else if(m_fileformat==FFAsciiSegments){

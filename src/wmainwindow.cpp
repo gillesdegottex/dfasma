@@ -569,6 +569,12 @@ void WMainWindow::openFile() {
     }
 }
 
+bool isOfExtension(const QString& filepath, const QString& ext){
+    int ret = filepath.lastIndexOf(ext, -1, Qt::CaseInsensitive);
+
+    return ret!=-1 && (ret==filepath.length()-ext.length());
+}
+
 void WMainWindow::addFile(const QString& filepath) {
 //    cout << "INFO: Add file: " << filepath.toLocal8Bit().constData() << endl;
 
@@ -578,9 +584,7 @@ void WMainWindow::addFile(const QString& filepath) {
 
         FileType* ft = NULL;
 
-        QFileInfo fileinfo(filepath);
-
-        if(fileinfo.suffix().compare("sdif", Qt::CaseInsensitive)==0) {
+        if(isOfExtension(filepath, ".sdif")) {
             #ifdef SUPPORT_SDIF
                 // SdifCheckFileFormat doesnt work for some files which can be loaded
                 if(!FileType::SDIF_isSDIF(filepath.toLocal8Bit()))
@@ -595,6 +599,12 @@ void WMainWindow::addFile(const QString& filepath) {
             #else
                 throw QString("Support of SDIF files not compiled in this version.");
             #endif
+
+            ui->listSndFiles->addItem(ft);
+        }
+        else if(isOfExtension(filepath, ".mrk.txt")) {
+
+            ft = new FTLabels(filepath, this);
 
             ui->listSndFiles->addItem(ft);
         }
