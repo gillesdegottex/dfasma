@@ -99,7 +99,7 @@ void FFTwrapper::resize(int n)
         m_fftreal_out = NULL;
 
         m_fftreal_fft = new ffft::FFTReal<FFTTYPE>(m_size);
-        m_fftreal_out =m_fftw3_plan new FFTTYPE[m_size];
+        m_fftreal_out = new FFTTYPE[m_size];
     #endif
 
     in.resize(m_size);
