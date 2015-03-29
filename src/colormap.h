@@ -6,8 +6,10 @@
 #include <algorithm>
 #include <numeric>
 
+
 #include <QStringList>
 #include <QColor>
+#include "qthelper.h"
 
 class ColorMap {
     static std::vector<ColorMap*> sm_colormaps;
@@ -35,7 +37,7 @@ public:
     virtual QString name() {return "Gray";}
     virtual QRgb map(float y){
         int color = 255;
-        if(!std::isinf(y))
+        if(!qIsInf(y))
             color = 255*y;
 
         if(color<0) color = 0;

@@ -527,7 +527,7 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
             m_ca_pressed_index=-1;
             FTLabels* ftl = gMW->getCurrentFTLabels();
             if(ftl){
-                for(size_t lli=0; m_ca_pressed_index==-1 && lli<ftl->starts.size(); lli++) {
+                for(int lli=0; m_ca_pressed_index==-1 && lli<int(ftl->starts.size()); lli++) {
                     QPoint slp = mapFromScene(QPointF(ftl->starts[lli],0));
                     if(std::abs(slp.x()-event->x())<5) {
                         m_ca_pressed_index = lli;

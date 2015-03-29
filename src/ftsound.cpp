@@ -377,10 +377,10 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
 
     int delayedstart = m_start-m_delay;
     if(delayedstart<0) delayedstart=0;
-    if(delayedstart>int(wavtoplay->size()-1)) delayedstart=wavtoplay->size()-1;
+    if(delayedstart>int(wavtoplay->size())-1) delayedstart=int(wavtoplay->size())-1;
     int delayedend = m_end-m_delay;
     if(delayedend<0) delayedend=0;
-    if(delayedend>int(wavtoplay->size()-1)) delayedend=wavtoplay->size()-1;
+    if(delayedend>int(wavtoplay->size())-1) delayedend=int(wavtoplay->size())-1;
 
     // Fix frequency cutoffs
     if(fstart>fstop){
@@ -547,10 +547,10 @@ qint64 FTSound::readData(char *data, qint64 askedlen)
     unsigned char *ptr = reinterpret_cast<unsigned char *>(data);
     int delayedstart = m_start-m_delay;
     if(delayedstart<0) delayedstart=0;
-    if(delayedstart>int(wavtoplay->size()-1)) delayedstart=wavtoplay->size()-1;
+    if(delayedstart>int(wavtoplay->size()-1)) delayedstart=int(wavtoplay->size())-1;
     int delayedend = m_end-m_delay;
     if(delayedend<0) delayedend=0;
-    if(delayedend>int(wavtoplay->size()-1)) delayedend=wavtoplay->size()-1;
+    if(delayedend>int(wavtoplay->size()-1)) delayedend=int(wavtoplay->size())-1;
 
     // Polarity apparently matters in very particular cases
     // so take it into account when playing.

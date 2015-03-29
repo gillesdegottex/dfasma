@@ -40,6 +40,8 @@ int FTSound::getNumberOfChannels(const QString &filePath){
 }
 
 void FTSound::load(int channelid){
+    if(channelid>1)
+        throw QString("built-in WAV file reader: Can read only the first and unique channel of the file.");
 
     m_fileaudioformat = QAudioFormat(); // Clear the format
 

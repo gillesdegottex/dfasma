@@ -27,6 +27,8 @@ using namespace std;
 
 #include "iodsound_load_qt.h"
 
+#include "../src/qthelper.h"
+
 QString FTSound::getAudioFileReadingDescription(){
 
     QString txt = QString("<p>Using builtin <a href='http://qt-project.org/doc/qt-5.0/qtmultimedia/audiooverview.html'>Qt audio decoder</a>");
@@ -186,8 +188,27 @@ void AudioDecoder::updateProgress()
     }
 }
 
+int FTSound::getNumberOfChannels(const QString &filePath){
+    QAudioDecoder *decoder = new QAudioDecoder();
+    decoder->setSourceFilename(filePath);
+
+    QAudioFormat format = decoder->audioFormat();
+
+    int nchan = format.channelCount();
+
+//    COUTD  << nchan << endl;
+
+    delete decoder;
+
+    if(nchan==-1)
+        throw QString("Qt file reader: Cannot read the number of channels in this file.");
+
+    return nchan;
+}
 
 void FTSound::load(int channelid){
+    if(channelid>1)
+        throw QString("Qt file reader: Can read only the first and unique channel of the file.");
 
     m_fileaudioformat = QAudioFormat(); // Clear the format
 

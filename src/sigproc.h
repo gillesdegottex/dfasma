@@ -25,10 +25,10 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <limits>
 #include <vector>
 #include <deque>
-#include <cmath>
 #include <complex>
 #include <iostream>
 
+#include <QtMath>
 #include <QString>
 #include <QMutex>
 
@@ -292,12 +292,12 @@ inline std::vector<double> expwindow(int N, double D=60.0) {
 template<typename DataType, typename ContainerIn, typename ContainerOut> inline void filtfilt(const ContainerIn& wav, const std::vector<double>& num, const std::vector<double>& den, ContainerOut& filteredwav, int nstart=-1, int nend=-1)
 {
     size_t order = den.size()-1; // Filter order
-    size_t maxorder = std::max(num.size(), den.size())+1;
+    int maxorder = int(std::max(num.size(), den.size()))+1;
 
     if (nstart==-1)
         nstart = 0;
     if (nend==-1)
-        nend = wav.size()-1;
+        nend = int(wav.size())-1;
 
     filteredwav.resize(wav.size());
 
@@ -311,8 +311,8 @@ template<typename DataType, typename ContainerIn, typename ContainerOut> inline 
 
     // The exrapolated segmented will be windowed
     std::vector<double> win = sigproc::hann(margin*maxorder*2+1);
-    double winmax = win[(win.size()-1)/2];
-    for(size_t n=0; n<win.size(); n++)
+    double winmax = win[(int(win.size())-1)/2];
+    for(size_t n=0; n<int(win.size()); n++)
         win[n] /= winmax;
 
     // Before nstart
@@ -322,12 +322,12 @@ template<typename DataType, typename ContainerIn, typename ContainerOut> inline 
     // for(; nstart-1-n>=0 && n<preextrap.size(); ++n) // Fill with the values before nstart
     //     preextrap[preextrap.size()-1-n] = wav[nstart-1-n];
     // Add reversed signal in order to preserve the derivatives
-    for(; nstart+n+1<wav.size() && n<preextrap.size(); ++n)
+    for(; nstart+n+1<int(wav.size()) && n<int(preextrap.size()); ++n)
         preextrap[preextrap.size()-1-n] = 2*wav[nstart]-wav[nstart+1+n];
-    for(int m=n; m<preextrap.size(); ++m)
+    for(int m=n; m<int(preextrap.size()); ++m)
         preextrap[preextrap.size()-1-m] = preextrap[preextrap.size()-1-n+1];
     // Add the window
-    for(int n=0; n<preextrap.size(); ++n)
+    for(int n=0; n<int(preextrap.size()); ++n)
         preextrap[n] *= win[n];
 
     // After nend
@@ -337,12 +337,12 @@ template<typename DataType, typename ContainerIn, typename ContainerOut> inline 
     // for(; nend+1+n<wav.size() && n<postextrap.size(); ++n) // Fill with the values after nend
     //     postextrap[n] = wav[nend+1+n];
     // Add reversed signal in order to preserve the derivatives
-    for(; nend-n-1>=0 && n<postextrap.size(); ++n)
+    for(; nend-n-1>=0 && n<int(postextrap.size()); ++n)
         postextrap[n] = 2*wav[nend]-wav[nend-n-1];
-    for(int m=n; m<postextrap.size(); ++m)
+    for(size_t m=n; m<postextrap.size(); ++m)
         postextrap[m] = postextrap[n];
     // Add the window
-    for(int n=0; n<postextrap.size(); ++n)
+    for(size_t n=0; n<postextrap.size(); ++n)
         postextrap[n] *= win[1+(win.size()-1)/2+n];
 
 
@@ -365,7 +365,7 @@ template<typename DataType, typename ContainerIn, typename ContainerOut> inline 
     }
 
     // Filter the input
-    for(size_t n=nstart; n<=nend; ++n) {
+    for(int n=nstart; n<=nend; ++n) {
 
         states.pop_back();
         states.push_front(wav[n]);
@@ -401,7 +401,7 @@ template<typename DataType, typename ContainerIn, typename ContainerOut> inline 
     // Do not reset the states
 
     // Back-filter the post-extrapolation
-    for(int n=postextrap.size()-1; n>=0; --n) {
+    for(int n=int(postextrap.size())-1; n>=0; --n) {
 
         states.pop_back();
         states.push_front(postextrap[n]);
@@ -436,7 +436,7 @@ template<typename DataType, typename ContainerIn, typename ContainerOut> inline 
 
     // Back-filter the pre-extrapolation
     // (not really necessary)
-    for(int n=preextrap.size()-1; n>=0; --n) {
+    for(int n=int(preextrap.size())-1; n>=0; --n) {
 
         states.pop_back();
         states.push_front(preextrap[n]);

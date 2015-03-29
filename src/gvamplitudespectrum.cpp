@@ -1016,7 +1016,7 @@ void QGVAmplitudeSpectrum::aunzoom(){
 
     if(rect.bottom()>(-gMW->ui->sldSpectrumAmplitudeMin->value()))
         rect.setBottom(-gMW->ui->sldSpectrumAmplitudeMin->value());
-    if(rect.top()<(-m_maxsy>10))
+    if(rect.top()<-m_maxsy)
         rect.setTop(-10);
 
     viewSet(rect, false);
@@ -1143,7 +1143,7 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
         painter->setPen(outlinePen);
         painter->setOpacity(1.0);
 
-        int dftlen = (m_filterresponse.size()-1)*2; // The dftlen of the filter response is a fixed one ! It is not the same as the other spectra
+        int dftlen = (int(m_filterresponse.size())-1)*2; // The dftlen of the filter response is a fixed one ! It is not the same as the other spectra
         int kmin = std::max(0, int(dftlen*rect.left()/fs));
         int kmax = std::min(dftlen/2, int(1+dftlen*rect.right()/fs));
 
@@ -1221,7 +1221,7 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
 void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& ldft, double fs, double ascale, const QRectF& rect) {
 //    COUTD << "QGVAmplitudeSpectrum::draw_spectrum " << ldft.size() << endl;
 
-    int dftlen = (ldft.size()-1)*2;
+    int dftlen = (int(ldft.size())-1)*2;
     if (dftlen<2)
         return;
 
