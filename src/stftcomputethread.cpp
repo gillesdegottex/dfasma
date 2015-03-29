@@ -7,8 +7,7 @@
 #include "ftsound.h"
 #include "qthelper.h"
 
-
-STFTComputeThread::Parameters::Parameters(FTSound* reqnd, const std::vector<FFTTYPE>& reqwin, int reqstepsize, int reqdftlen){
+STFTComputeThread::Parameters::Parameters(FTSound* reqnd, const std::vector<FFTTYPE>& reqwin, int reqstepsize, int reqdftlen, int reqcepliftorder, bool reqcepliftpresdc){
     clear();
     snd = reqnd;
     ampscale = reqnd->m_ampscale;
@@ -16,6 +15,8 @@ STFTComputeThread::Parameters::Parameters(FTSound* reqnd, const std::vector<FFTT
     win = reqwin;
     stepsize = reqstepsize;
     dftlen = reqdftlen;
+    cepliftorder = reqcepliftorder;
+    cepliftpresdc = reqcepliftpresdc;
 }
 
 bool STFTComputeThread::Parameters::operator==(const Parameters& param){
@@ -28,6 +29,10 @@ bool STFTComputeThread::Parameters::operator==(const Parameters& param){
     if(stepsize!=param.stepsize)
         return false;
     if(dftlen!=param.dftlen)
+        return false;
+    if(cepliftorder!=param.cepliftorder)
+        return false;
+    if(cepliftpresdc!=param.cepliftpresdc)
         return false;
     if(win.size()!=param.win.size())
         return false;
@@ -46,7 +51,7 @@ STFTComputeThread::STFTComputeThread(QObject* parent)
 //    setPriority(QThread::IdlePriority);
 }
 
-void STFTComputeThread::compute(FTSound* snd, const std::vector<FFTTYPE>& win, int stepsize, int dftlen) {
+void STFTComputeThread::compute(FTSound* snd, const std::vector<FFTTYPE>& win, int stepsize, int dftlen, int cepliftorder, bool cepliftpresdc) {
 
     if(win.size()<2)
         throw QString("Window's length is too short");
@@ -55,7 +60,7 @@ void STFTComputeThread::compute(FTSound* snd, const std::vector<FFTTYPE>& win, i
 
 //    std::cout << "STFTComputeThread::compute winlen=" << winlen << " stepsize=" << stepsize << " dftlen=" << dftlen << std::endl;
 
-    Parameters reqparams(snd, win, stepsize, dftlen);
+    Parameters reqparams(snd, win, stepsize, dftlen, cepliftorder, cepliftpresdc);
 
     if(m_mutex_computing.tryLock()){
         // Currently not computing, but it will be very soon ...
@@ -105,7 +110,7 @@ void STFTComputeThread::run() {
         int maxsampleindex = wav->size()-1 + int(m_params_current.snd->m_delay);
 
         for(int si=0; !gMW->ui->pbSTFTComputingCancel->isChecked(); si++){
-            if(si*m_params_current.stepsize+m_params_current.win.size()-1 > maxsampleindex)
+            if(si*m_params_current.stepsize+(m_params_current.win.size())-1 > maxsampleindex)
                 break;
 
             m_params_current.snd->m_stft.push_back(std::vector<WAVTYPE>(m_params_current.dftlen/2+1));
@@ -135,8 +140,22 @@ void STFTComputeThread::run() {
 
                 m_fft->execute(); // Compute the DFT
 
+                for(n=0; n<m_params_current.dftlen/2+1; n++)
+                    m_params_current.snd->m_stft[si][n] = std::log(std::abs(m_fft->out[n]));
+
+                if(m_params_current.cepliftorder>0){
+                    std::vector<FFTTYPE> cc;
+                    hspec2rcc(m_params_current.snd->m_stft[si], m_fft, cc);
+                    std::vector<FFTTYPE> win = sigproc::hamming(m_params_current.cepliftorder*2+1);
+                    for(int n=0; n<m_params_current.cepliftorder && n<int(cc.size())-1; ++n)
+                        cc[n+1] *= win[n];
+                    if(!m_params_current.cepliftpresdc)
+                        cc[0] = 0.0;
+                    rcc2hspec(cc, m_fft, m_params_current.snd->m_stft[si]);
+                }
+
                 for(n=0; n<m_params_current.dftlen/2+1; n++) {
-                    double y = sigproc::log2db*std::log(std::abs(m_fft->out[n]));
+                    double y = sigproc::log2db*m_params_current.snd->m_stft[si][n];
 
                     m_params_current.snd->m_stft[si][n] = y;
 

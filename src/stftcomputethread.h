@@ -34,6 +34,9 @@ public:
         int stepsize;
         int dftlen;
 
+        int cepliftorder;
+        bool cepliftpresdc;
+
         void clear(){
             snd = NULL;
             ampscale = 1.0;
@@ -41,12 +44,14 @@ public:
             win.clear();
             stepsize = -1;
             dftlen = -1;
+            cepliftorder = -1;
+            cepliftpresdc = false;
         }
 
         Parameters(){
             clear();
         }
-        Parameters(FTSound* reqnd, const std::vector<FFTTYPE>& reqwin, int reqstepsize, int reqdftlen);
+        Parameters(FTSound* reqnd, const std::vector<FFTTYPE>& reqwin, int reqstepsize, int reqdftlen, int reqcepliftorder, bool reqcepliftpresdc);
 
         bool operator==(const Parameters& param);
         bool operator!=(const Parameters& param){
@@ -56,7 +61,7 @@ public:
         inline bool isEmpty(){return snd==NULL;}
     };
 
-    void compute(FTSound* snd, const std::vector<FFTTYPE>& win, int stepsize, int dftlen);     // Entry point
+    void compute(FTSound* snd, const std::vector<FFTTYPE>& win, int stepsize, int dftlen, int cepliftorder, bool cepliftpresdc);     // Entry point
 
     mutable QMutex m_mutex_computing;      // To protect the access to the FFT and external variables
     mutable QMutex m_mutex_changingparams; // To protect the access to the parameters above

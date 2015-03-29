@@ -46,7 +46,7 @@ QString FFTwrapper::getLibraryInfo(){
 
 FFTwrapper::FFTwrapper(bool forward)
 {
-	m_size = 0;
+    m_size = -1;
     m_forward = forward;
 
     #ifdef FFT_FFTW3
@@ -68,6 +68,8 @@ FFTwrapper::FFTwrapper(int n)
 void FFTwrapper::resize(int n)
 {
     assert(n>0);
+
+    if(n==m_size) return;
 
     m_size = n;
 
@@ -99,7 +101,7 @@ void FFTwrapper::resize(int n)
         m_fftreal_out = NULL;
 
         m_fftreal_fft = new ffft::FFTReal<FFTTYPE>(m_size);
-        m_fftreal_out =m_fftw3_plan new FFTTYPE[m_size];
+        m_fftreal_out = new FFTTYPE[m_size];
     #endif
 
     in.resize(m_size);
@@ -112,8 +114,6 @@ void FFTwrapper::execute() {
 
 void FFTwrapper::execute(const vector<FFTTYPE>& in, vector<std::complex<FFTTYPE> >& out)
 {
-    assert(int(in.size())>=m_size);
-
     int neededsize = (m_size%2==1)?(m_size-1)/2+1:m_size/2+1;
     if(int(out.size())!=neededsize)
         out.resize(neededsize);
@@ -166,6 +166,44 @@ FFTwrapper::~FFTwrapper()
         if(m_fftreal_fft)	delete m_fftreal_fft;
         if(m_fftreal_out)	delete[] m_fftreal_out;
     #endif
+}
+
+void sigproc::hspec2rcc(const std::vector<FFTTYPE>& loghA, FFTwrapper* fft, std::vector<FFTTYPE>& cc){
+    int dftlen = (loghA.size()-1)*2;
+
+    fft->in[0] = loghA[0];
+    fft->in[dftlen/2] = loghA[dftlen/2];
+    for(int n=1; n<int(loghA.size())-1; ++n){
+        fft->in[n] = loghA[n];
+        fft->in[dftlen/2+n] = loghA[int(loghA.size())-1-n];
+    }
+
+    fft->execute();
+
+    cc.resize(dftlen/2+1);
+    cc[0] = fft->out[0].real()/dftlen;
+    for(size_t n=1; n<cc.size(); ++n)
+        cc[n] = 2*fft->out[n].real()/dftlen; // Compensate for the energy loss
+    cc[dftlen/2] = fft->out[dftlen/2].real()/dftlen;
+
+}
+void sigproc::rcc2hspec(const std::vector<FFTTYPE>& cc, FFTwrapper* fft, std::vector<FFTTYPE>& loghA){
+    int dftlen = (loghA.size()-1)*2;
+
+    fft->resize(dftlen);
+
+    size_t n=0;
+    for(; n<cc.size(); ++n)
+        fft->in[n] = cc[n];
+    for(; n<size_t(dftlen); ++n)
+        fft->in[n] = 0.0;
+
+    fft->execute();
+
+    loghA.resize(dftlen/2+1);
+
+    for(size_t n=0; n<loghA.size(); ++n)
+        loghA[n] = fft->out[n].real();
 }
 
 

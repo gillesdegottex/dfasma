@@ -155,9 +155,9 @@ inline QString h2n(int ht, NotesName local=LOCAL_ANGLO, int tonality=0, bool sho
 }
 
 
-template<typename Type>	std::complex<Type> make_complex(Type value[]){return std::complex<Type>(value[0], value[1]);}
+template<typename Type>	inline std::complex<Type> make_complex(Type value[]){return std::complex<Type>(value[0], value[1]);}
 
-template<typename Type>	std::complex<Type> make_complex(Type real, Type imag){return std::complex<Type>(real, imag);}
+template<typename Type>	inline std::complex<Type> make_complex(Type real, Type imag){return std::complex<Type>(real, imag);}
 
 // Take closest value given time vector and corresponding data vector
 template<typename DataType, typename ContainerTimes, typename ContainerData>
@@ -495,6 +495,9 @@ public:
 
     ~FFTwrapper();
 };
+
+void hspec2rcc(const std::vector<FFTTYPE>& loghA, FFTwrapper* fft, std::vector<FFTTYPE>& cc);
+void rcc2hspec(const std::vector<FFTTYPE>& cc, FFTwrapper* fft, std::vector<FFTTYPE>& loghA);
 
 } // End namespace sigproc
 

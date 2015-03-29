@@ -349,9 +349,13 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
 
         int stepsize = std::floor(0.5+gMW->getFs()*m_dlgSettings->ui->sbStepSize->value());
         int dftlen = pow(2, std::ceil(log2(float(m_win.size())))+m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());
+        int cepliftorder = -1;
+        if(gMW->m_gvSpectrogram->m_dlgSettings->ui->gbCepstralLiftering->isChecked())
+            cepliftorder = gMW->m_gvSpectrogram->m_dlgSettings->ui->sbCepstralLifteringOrder->value();
+        bool cepliftpresdc = gMW->m_gvSpectrogram->m_dlgSettings->ui->cbCepstralLifteringPreserveDC->isChecked();
 
-        if(csnd->m_stftparams != STFTComputeThread::Parameters(csnd, m_win, stepsize, dftlen)){
-            m_stftcomputethread->compute(csnd, m_win, stepsize, dftlen);
+        if(csnd->m_stftparams != STFTComputeThread::Parameters(csnd, m_win, stepsize, dftlen, cepliftorder, cepliftpresdc)){
+            m_stftcomputethread->compute(csnd, m_win, stepsize, dftlen, cepliftorder, cepliftpresdc);
         }
         else{
             // Be sure to wait for stftComputed (updateSTFTPlot can be called by other means)
@@ -1132,6 +1136,10 @@ void QGVSpectrogram::settingsSave() {
     settings.setValue("qgvspectrogram/sbStepSize", m_dlgSettings->ui->sbStepSize->value());
     settings.setValue("qgvspectrogram/sbWindowSize", m_dlgSettings->ui->sbWindowSize->value());
     settings.setValue("qgvspectrogram/sbSpectrogramOversamplingFactor", m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());
+
+    settings.setValue("qgvspectrogram/gbCepstralLiftering", m_dlgSettings->ui->gbCepstralLiftering->isChecked());
+    settings.setValue("qgvspectrogram/sbCepstralLifteringOrder", m_dlgSettings->ui->sbCepstralLifteringOrder->value());
+    settings.setValue("qgvspectrogram/cbCepstralLifteringPreserveDC", m_dlgSettings->ui->cbCepstralLifteringPreserveDC->isChecked());
 
     settings.setValue("qgvspectrogram/cbSpectrogramColorMaps", m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex());
     settings.setValue("qgvspectrogram/cbSpectrogramColorMapReversed", m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked());
