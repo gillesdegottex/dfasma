@@ -9,8 +9,8 @@
 
 namespace mkfilter {
 
-#include <math.h>
 #include <iostream>
+#include <QtMath>
 #include <QString>
 
 typedef unsigned int uint;

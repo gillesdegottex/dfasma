@@ -89,7 +89,7 @@ public:
     virtual bool isModified() {return m_isedited;}
     void updateTextsGeometry();
 
-    int getNbLabels() const {return starts.size();}
+    int getNbLabels() const {return int(starts.size());}
     void moveLabel(int index, double position);
     void changeText(int index, const QString& text);
 

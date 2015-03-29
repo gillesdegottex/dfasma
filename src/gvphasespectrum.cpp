@@ -712,7 +712,7 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
 }
 
 void QGVPhaseSpectrum::draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& ldft, double fs, double delay, const QRectF& rect) {
-    int dftlen = (ldft.size()-1)*2;
+    int dftlen = (int(ldft.size())-1)*2;
     if (dftlen<2)
         return;
 

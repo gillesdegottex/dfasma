@@ -107,10 +107,10 @@ void STFTComputeThread::run() {
         m_params_current.snd->m_stft_min = std::numeric_limits<double>::infinity();
         m_params_current.snd->m_stft_max = -std::numeric_limits<double>::infinity();
 
-        int maxsampleindex = wav->size()-1 + int(m_params_current.snd->m_delay);
+        int maxsampleindex = int(wav->size())-1 + int(m_params_current.snd->m_delay);
 
         for(int si=0; !gMW->ui->pbSTFTComputingCancel->isChecked(); si++){
-            if(si*m_params_current.stepsize+(m_params_current.win.size())-1 > maxsampleindex)
+            if(int(si*m_params_current.stepsize+m_params_current.win.size())-1 > maxsampleindex)
                 break;
 
             m_params_current.snd->m_stft.push_back(std::vector<WAVTYPE>(m_params_current.dftlen/2+1));

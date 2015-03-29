@@ -10,6 +10,30 @@
 #include <QColor>
 #include <QGraphicsView>
 
+#ifdef __MINGW32__
+    #define COMPILER "MinGW"
+#elif (defined(__GNUC__) || defined(__GNUG__))
+    #define COMPILER "GCC"
+#elif defined(_MSC_VER)
+    #define COMPILER "MSVC"
+#endif
+
+
+// Check if compiling using MSVC (Microsoft compiler)
+#ifndef MSVC_VERSION
+    // The following is necessary for MSVC 2012
+    inline bool qIsInf(float f){return std::abs(f)>std::numeric_limits<float>::max()/2;}
+    template<class Type> inline Type log2(Type v) {return std::log(v)/std::log(2.); }
+#endif
+
+#define QUOTE(name) #name
+#ifdef _MSC_VER
+    #define STR(val) QUOTE(val,"")
+#else
+    #define STR(val) QUOTE(val)
+#endif
+
+
 #define COUTD std::cout << QThread::currentThreadId() << " " << QDateTime::fromMSecsSinceEpoch(QDateTime::currentMSecsSinceEpoch()).toString("hh:mm:ss.zzz             ").toLocal8Bit().constData() << " " << __FILE__ << ":" << __LINE__ << " "
 
 #define FLAG COUTD << std::endl;
@@ -23,29 +47,25 @@ inline QRectF removeHiddenMargin(QGraphicsView* gv, const QRectF& sceneRect){
     return sceneRect.adjusted(mx, my, -mx, -my);
 }
 
-template<typename streamtype>
-streamtype& operator<<(streamtype& stream, const QRectF& rectf) {
+inline std::ostream& operator<<(std::ostream& stream, const QRectF& rectf) {
     stream << "[" << rectf.left() << "," << rectf.right() << "]x[" << rectf.top() << "," << rectf.bottom() << "]";
 
     return stream;
 }
 
-template<typename streamtype>
-streamtype& operator<<(streamtype& stream, const QSize& size) {
+inline std::ostream& operator<<(std::ostream& stream, const QSize& size) {
     stream << size.width() << "x" << size.height();
 
     return stream;
 }
 
-template<typename streamtype>
-streamtype& operator<<(streamtype& stream, const QPoint& p) {
+inline std::ostream& operator<<(std::ostream& stream, const QPoint& p) {
     stream << "(" << p.x() << "," << p.y() << ")";
 
     return stream;
 }
 
-template<typename streamtype>
-streamtype& operator<<(streamtype& stream, const QColor& c) {
+inline std::ostream& operator<<(std::ostream& stream, const QColor& c) {
     stream << "(" << c.red() << "," << c.green() << "," << c.blue() << ")";
 
     return stream;

@@ -65,11 +65,8 @@ using namespace std;
 #include "qthelper.h"
 
 #ifdef SUPPORT_SDIF
-#include <easdif/easdif.h>
+    #include <easdif/easdif.h>
 #endif
-
-#define QUOTE(name) #name
-#define STR(macro) QUOTE(macro)
 
 WMainWindow* gMW = NULL;
 
@@ -101,19 +98,19 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 
     ui->mainToolBar->setIconSize(QSize(1.5*m_dlgSettings->ui->sbToolBarSizes->value(),1.5*m_dlgSettings->ui->sbToolBarSizes->value()));
 
+    QString fftinfostr = "";
+    fftinfostr += "<br/><i>For the Fast Fourier Transform (FFT):</i> "+sigproc::FFTwrapper::getLibraryInfo();
+    fftinfostr += " ("+QString::number(sizeof(FFTTYPE)*8)+"bits; smallest: "+QString::number(20*log10(std::numeric_limits<FFTTYPE>::min()))+"dB)";
+    fftinfostr += "</p>";
+    m_dlgSettings->ui->vlLibraries->addWidget(new QLabel(fftinfostr));
+
     QString sdifinfostr = "";
     #ifdef SUPPORT_SDIF
-        sdifinfostr = "<br/><i>SDIF file format:</i> <a href=\"http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/\">Easdif</a> version "+QString(EASDIF_VERSION_STRING);
+        sdifinfostr = "<br/><i>For SDIF file format:</i> <a href=\"http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/\">Easdif</a> version "+QString(EASDIF_VERSION_STRING);
     #else
         sdifinfostr = "<br/><i>No support for SDIF file format</i>";
     #endif
     m_dlgSettings->ui->vlLibraries->addWidget(new QLabel(sdifinfostr));
-
-    QString fftinfostr = "";
-    fftinfostr += "<br/><i>Fast Fourier Transform (FFT):</i> "+sigproc::FFTwrapper::getLibraryInfo();
-    fftinfostr += " ("+QString::number(sizeof(FFTTYPE)*8)+"bits; smallest: "+QString::number(20*log10(std::numeric_limits<FFTTYPE>::min()))+"dB)";
-    fftinfostr += "</p>";
-    m_dlgSettings->ui->vlLibraries->addWidget(new QLabel(fftinfostr));
 
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(execAbout()));
     connect(ui->actionSelectedFilesReload, SIGNAL(triggered()), this, SLOT(selectedFilesReload()));
@@ -319,11 +316,18 @@ void WMainWindow::execAbout(){
         readmefilestream.readLine();
         dfasmaversion = readmefilestream.readLine();
     }
-
-    QString curdate = QString(__DATE__)+" at "+__TIME__;
     QString txt = QString("\
     <h1>DFasma</h1>\
-    ")+dfasmaversion+" (compiled on "+curdate+")";
+    ")+dfasmaversion;
+
+    txt += " (compiled by "+QString(COMPILER)+" for ";
+    #ifdef Q_PROCESSOR_X86_32
+      txt += "32bits";
+    #endif
+    #ifdef Q_PROCESSOR_X86_64
+      txt += "64bits";
+    #endif
+    txt += " on "+QString(__DATE__)+")";
 
     txt += "<h4>Purpose</h4>";
     txt += "<i>DFasma</i> is an open-source software whose main purpose is to compare waveforms in time and spectral domains. "; //  Even though there are a few scaling functionalities, DFasma is basically not an audio editor

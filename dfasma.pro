@@ -27,7 +27,7 @@
 CONFIG += fft_fftw3
 # For FFTW3: Allow to limit the time spent in the resize of the FFT
 #(available only from FFTW3's version 3.1)
-DEFINES += FFTW3RESIZINGMAXTIMESPENT
+# DEFINES += FFTW3RESIZINGMAXTIMESPENT
 
 # For the audio file support
 # Chose among: audiofilereading_libsndfile, audiofilereading_libsox,
@@ -37,7 +37,7 @@ CONFIG += audiofilereading_libsndfile
 
 # Additional file format support
 # SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
-CONFIG += sdifreading
+# CONFIG += sdifreading
 
 ## OS specific options
 #QMAKE_MAC_SDK = macosx10.6
@@ -50,6 +50,10 @@ CONFIG += sdifreading
 # (if fail, fall back on the version present in the README.txt file)
 DEFINES += DFASMAVERSIONGIT=$$system(git describe --tags --always)
 
+win32:message(Build for Windows)
+unix:message(Build for Linux)
+contains(QMAKE_TARGET.arch, x86):message(Build for 32bits)
+contains(QMAKE_TARGET.arch, x86_64):message(Build for 64bits)
 
 # SDIF file library ------------------------------------------------------------
 
@@ -81,15 +85,24 @@ CONFIG(audiofilereading_libsndfile) {
     message(Building with libsndfile support for audio file reading.)
     QMAKE_CXXFLAGS += -DAUDIOFILEREADING_LIBSNDFILE
     SOURCES  += external/iodsound_load_libsndfile.cpp
-    LIBS += -lsndfile
+    win32 {
+        contains(QMAKE_TARGET.arch, x86_64) {
+            INCLUDEPATH += "$$_PRO_FILE_PWD_/../libsndfile-1.0.25-w64/include/"
+            LIBS += "$$_PRO_FILE_PWD_/../libsndfile-1.0.25-w64/lib/libsndfile-1.lib"
+        } else {
+            INCLUDEPATH += "$$_PRO_FILE_PWD_/../libsndfile-1.0.25-w32/include/"
+            LIBS += "$$_PRO_FILE_PWD_/../libsndfile-1.0.25-w32/lib/libsndfile-1.lib"
+        }
+    }
+    unix:LIBS += -lsndfile
 }
 CONFIG(audiofilereading_libsox) {
     message(Building with libsox support for audio file reading.)
     QMAKE_CXXFLAGS += -DAUDIOFILEREADING_LIBSOX
     SOURCES  += external/iodsound_load_libsox.cpp
-    win32:INCLUDEPATH += "$$_PRO_FILE_PWD_/../libsox/include/"
+    win32:INCLUDEPATH += "$$_PRO_FILE_PWD_/../libsox-14.4.0-32b/include/"
     unix:LIBS += -lsox
-    win32:LIBS += "$$_PRO_FILE_PWD_/../libsox/lib/libsox.dll.a"
+    win32:LIBS += "$$_PRO_FILE_PWD_/../libsox-14.4.0-32b/lib/libsox.dll.a"
 }
 CONFIG(audiofilereading_libav) {
     message(Building with libav support for audio file reading.)
@@ -101,12 +114,21 @@ CONFIG(audiofilereading_libav) {
 # DFT computation libraries ----------------------------------------------------
 
 CONFIG(fft_fftw3){
+    message(Building with FFTW3.)
     QMAKE_CXXFLAGS += -DFFT_FFTW3
-    win32:INCLUDEPATH += "$$_PRO_FILE_PWD_/../fftw-3.3.4-dll32/"
+    win32 {
+        contains(QMAKE_TARGET.arch, x86_64) {
+            INCLUDEPATH += "$$_PRO_FILE_PWD_/../fftw-3.3.4-dll64/"
+            LIBS += "$$_PRO_FILE_PWD_/../fftw-3.3.4-dll64/libfftw3-3.lib"
+        } else {
+            INCLUDEPATH += "$$_PRO_FILE_PWD_/../fftw-3.3.4-dll32/"
+            LIBS += "$$_PRO_FILE_PWD_/../fftw-3.3.4-dll32/libfftw3-3.lib"
+        }
+    }
     unix:LIBS += -lfftw3
-    win32:LIBS += "$$_PRO_FILE_PWD_/../fftw-3.3.4-dll32/libfftw3-3.dll"
 }
 CONFIG(fft_builtin_fftreal){
+    message(Building with built-in FFTReal.)
     QMAKE_CXXFLAGS += -DFFT_FFTREAL
     HEADERS +=  external/FFTReal/FFTReal.h \
                 external/FFTReal/FFTReal.hpp \

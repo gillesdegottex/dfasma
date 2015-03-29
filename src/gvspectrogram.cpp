@@ -38,6 +38,7 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include <iostream>
 #include <algorithm>
+#include <cmath>
 using namespace std;
 
 #include <QWheelEvent>
@@ -365,7 +366,7 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
 
                     updateAmplitudeExtent();
 
-                    int dftlen = (csnd->m_stft[0].size()-1)*2;
+                    int dftlen = (int(csnd->m_stft[0].size())-1)*2;
 
                     ImageParameters reqImgParams(csnd->m_stftparams, gMW->ui->sldSpectrogramAmplitudeMin->value(), gMW->ui->sldSpectrogramAmplitudeMax->value(), m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex(), m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked());
 
@@ -378,12 +379,12 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
                         m_imgSTFTParams = reqImgParams;
 
                         // Update the image from the sound's STFT
-                        m_imgSTFT = QImage(csnd->m_stft.size(), csnd->m_stft[0].size(), QImage::Format_RGB32);
+                        m_imgSTFT = QImage(int(csnd->m_stft.size()), int(csnd->m_stft[0].size()), QImage::Format_RGB32);
 
                         ColorMap& cmap = ColorMap::getAt(m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex());
                         bool reversed = m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked();
 
-                        for(size_t si=0; si<csnd->m_stft.size(); si++){
+                        for(int si=0; si<int(csnd->m_stft.size()); si++){
                             for(int n=0; n<int(csnd->m_stft[si].size()); n++) {
                                 double y = csnd->m_stft[si][n];
                                 y = (y+gMW->ui->sldSpectrogramAmplitudeMin->value())/(gMW->ui->sldSpectrogramAmplitudeMax->value()+gMW->ui->sldSpectrogramAmplitudeMin->value());
