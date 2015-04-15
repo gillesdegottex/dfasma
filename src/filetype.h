@@ -58,7 +58,7 @@ public:
     virtual void setVisible(bool shown);
     bool isVisible(){return m_actionShow->isChecked();}
     virtual bool isModified() {return false;}
-    void setColor(const QColor& _color);
+    virtual void setColor(const QColor& _color);
     virtual double getLastSampleTime() const =0;
     virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
     virtual FileType* duplicate();

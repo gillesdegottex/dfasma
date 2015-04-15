@@ -645,6 +645,22 @@ void FTLabels::setVisible(bool shown){
         spectrogram_lines[u]->setVisible(shown);
     }
 }
+void FTLabels::setColor(const QColor& _color) {
+    FileType::setColor(_color);
+
+    QPen pen(color);
+    pen.setWidth(0);
+    QBrush brush(color);
+    QPen whitepen(Qt::white);
+    whitepen.setWidth(1);
+
+    for(size_t u=0; u<starts.size(); ++u){
+        waveform_labels[u]->setDefaultTextColor(color);
+        spectrogram_labels[u]->setBrush(brush);
+        waveform_lines[u]->setPen(pen);
+        spectrogram_lines[u]->setPen(pen);
+    }
+}
 
 void FTLabels::removeLabel(int index){
 
@@ -725,7 +741,4 @@ void FTLabels::sort(){
 
 FTLabels::~FTLabels() {
     clear();
-
-//    delete m_waveform_labels_all;
-//    delete m_spectrogram_labels_all;
 }

@@ -92,6 +92,7 @@ public:
     int getNbLabels() const {return int(starts.size());}
     void moveLabel(int index, double position);
     void changeText(int index, const QString& text);
+    void setColor(const QColor& _color);
 
     ~FTLabels();
 

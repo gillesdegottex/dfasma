@@ -167,7 +167,7 @@ void FileType::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
     contextmenu.addAction(m_actionShow);
     contextmenu.addAction(mainwindow->ui->actionSelectedFilesReload);
     contextmenu.addAction(m_actionDuplicate);
-    QColorDialog* colordialog = new QColorDialog(&contextmenu);
+    QColorDialog* colordialog = new QColorDialog(&contextmenu); // TODO delete this !!!
     QObject::connect(colordialog, SIGNAL(colorSelected(const QColor &)), gMW, SLOT(colorSelected(const QColor &)));
 //    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), gMW, SLOT(colorSelected(const QColor &)));
 //    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), gMW->m_gvSpectrum, SLOT(allSoundsChanged()));
