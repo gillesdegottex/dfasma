@@ -104,6 +104,8 @@ public:
     void selectSegmentFindStartEnd(double x, FTLabels* ftl, double& start, double& end);
     void selectSegment(double x, bool add);
     void selectRemoveSegment(double x);
+    bool hasSelection(){return m_selection.width()>0.0;}
+    double getPlayCursorPosition();
 
     void viewSet(QRectF viewrect, bool sync=true);
 

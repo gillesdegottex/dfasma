@@ -1416,3 +1416,7 @@ void QGVWaveform::playCursorSet(double t, bool forwardsync){
     if(gMW->m_gvSpectrogram && forwardsync)
         gMW->m_gvSpectrogram->playCursorSet(t, false);
 }
+
+double QGVWaveform::getPlayCursorPosition(){
+    return m_giPlayCursor->pos().x();
+}
