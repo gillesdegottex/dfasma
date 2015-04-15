@@ -986,7 +986,7 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 
 //    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVSpectrogram::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
-//    double fs = gMW->getFs();
+    double fs = gMW->getFs();
 
     // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
 
@@ -1038,8 +1038,40 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
     if(m_aShowGrid->isChecked())
         draw_grid(painter, rect);
 
-//    cout << "QGVSpectrogram::~drawBackground" << endl;
+    // Draw the f0 grids
+    if(!gMW->ftfzeros.empty()) {
+        for(size_t fi=0; fi<gMW->ftfzeros.size(); fi++){
+            if(!gMW->ftfzeros[fi]->m_actionShow->isChecked() && gMW->ftfzeros[fi]->ts.size()>1)
+                continue;
 
+            // Draw the f0
+            QColor c = gMW->ftfzeros[fi]->color;
+            c.setAlphaF(1.0);
+            QPen outlinePen(c);
+            outlinePen.setWidth(0);
+            painter->setPen(outlinePen);
+            double f0min = fs/2;
+            for(int ti=0; ti<gMW->ftfzeros[fi]->ts.size()-1; ++ti){
+                if(gMW->ftfzeros[fi]->f0s[ti]>0.0)
+                    f0min = std::min(f0min, gMW->ftfzeros[fi]->f0s[ti]);
+                painter->drawLine(QLineF(gMW->ftfzeros[fi]->ts[ti], fs/2-gMW->ftfzeros[fi]->f0s[ti], gMW->ftfzeros[fi]->ts[ti+1], fs/2-gMW->ftfzeros[fi]->f0s[ti+1]));
+            }
+            if(gMW->ftfzeros[fi]->f0s.back()>0.0)
+                f0min = std::min(f0min, gMW->ftfzeros[fi]->f0s.back());
+
+            if(m_dlgSettings->ui->cbF0ShowHarmonics->isChecked()){
+                // Draw harmonics up to Nyquist
+                c.setAlphaF(0.5);
+                outlinePen.setColor(c);
+                painter->setPen(outlinePen);
+                for(int h=2; h<int(0.5*fs/f0min)+1; h++)
+                    for(int ti=0; ti<gMW->ftfzeros[fi]->ts.size()-1; ++ti)
+                        painter->drawLine(QLineF(gMW->ftfzeros[fi]->ts[ti], fs/2-h*gMW->ftfzeros[fi]->f0s[ti], gMW->ftfzeros[fi]->ts[ti+1], fs/2-h*gMW->ftfzeros[fi]->f0s[ti+1]));
+            }
+        }
+    }
+
+//    cout << "QGVSpectrogram::~drawBackground" << endl;
 }
 
 void QGVSpectrogram::draw_grid(QPainter* painter, const QRectF& rect) {
@@ -1144,6 +1176,7 @@ void QGVSpectrogram::settingsSave() {
 
     settings.setValue("qgvspectrogram/cbSpectrogramColorMaps", m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex());
     settings.setValue("qgvspectrogram/cbSpectrogramColorMapReversed", m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked());
+    settings.setValue("qgvspectrogram/cbF0ShowHarmonics", m_dlgSettings->ui->cbF0ShowHarmonics->isChecked());
 }
 
 QGVSpectrogram::~QGVSpectrogram(){

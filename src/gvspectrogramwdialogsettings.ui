@@ -460,6 +460,13 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QCheckBox" name="cbF0ShowHarmonics">
+        <property name="text">
+         <string>Show the harmonics of the fundamental frequency curves</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

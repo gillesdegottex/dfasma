@@ -30,7 +30,6 @@ GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(QGVSpectrogram* paren
     ui->sbCepstralLifteringOrder->setValue(settings.value("qgvspectrogram/sbCepstralLifteringOrder", 8).toInt());
     ui->cbCepstralLifteringPreserveDC->setChecked(settings.value("qgvspectrogram/cbCepstralLifteringPreserveDC", true).toBool());
 
-
     ui->lblWindowNormSigma->hide();
     ui->spWindowNormSigma->hide();
     ui->lblWindowNormPower->hide();
@@ -43,6 +42,8 @@ GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(QGVSpectrogram* paren
         ui->cbSpectrogramColorMaps->addItem(*it);
     ui->cbSpectrogramColorMaps->setCurrentIndex(settings.value("qgvspectrogram/cbSpectrogramColorMaps", 0).toInt());
     ui->cbSpectrogramColorMapReversed->setChecked(settings.value("qgvspectrogram/cbSpectrogramColorMapReversed", true).toBool());
+
+    ui->cbF0ShowHarmonics->setChecked(settings.value("qgvspectrogram/cbF0ShowHarmonics", false).toBool());
 
     adjustSize();
 
