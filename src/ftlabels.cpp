@@ -139,8 +139,10 @@ FTLabels::FTLabels(QObject *parent)
 
     #ifdef SUPPORT_SDIF
         setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.sdif");
+        m_fileformat = FFSDIF;
     #else
-        setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.mrk.txt");
+        setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.bpf");
+        m_fileformat = FFAsciiTimeText;
     #endif
 
     gMW->ftlabels.push_back(this);
@@ -197,7 +199,7 @@ void FTLabels::load() {
     #ifdef SUPPORT_SDIF
         if(m_fileformat==FFAutoDetect)
             if(FileType::isFileSDIF(fileFullPath))
-                    m_fileformat = FFSDIF;
+                m_fileformat = FFSDIF;
     #endif
 
     // Check for text formats
@@ -209,16 +211,28 @@ void FTLabels::load() {
             throw QString("FTLabel:FFAutoDetect: Cannot open the file.");
         double t;
         string line, text;
+        // Check the first line only (Assuming it is enough)
         if(!std::getline(fin, line))
             throw QString("FTLabel:FFAutoDetect: There is not a single line in this file.");
 
+        // Check: <number> <text>
         std::istringstream iss(line);
         if((iss >> t >> text) && iss.eof())
             m_fileformat = FFAsciiTimeText;
         else {
+            // Check simple HTK Label: <integer> <integer> <text>
+            // No multiple levels or multiple alternatives managed
+            // http://www.ee.columbia.edu/ln/LabROSA/doc/HTKBook21/node82.html
+            int i;
             std::istringstream iss(line);
-            if((iss >> t >> t >> text) && iss.eof())
-                m_fileformat = FFAsciiSegments;
+            if((iss >> i >> i >> text) && iss.eof())
+                m_fileformat = FFAsciiSegmentsHTK;
+            else {
+                // Check: <number> <number> <text>
+                std::istringstream iss(line);
+                if((iss >> t >> t >> text) && iss.eof())
+                    m_fileformat = FFAsciiSegments;
+            }
         }
     }
 
@@ -248,7 +262,14 @@ void FTLabels::load() {
         addLabel(endt, "");
     }
     else if(m_fileformat==FFAsciiSegmentsHTK){
-        // TODO
+        ifstream fin(fileFullPath.toLatin1().constData());
+        double startt, endt;
+        string line, text;
+        while(std::getline(fin, line)) {
+            std::istringstream(line) >> startt >> endt >> text;
+            addLabel(1e-7*startt, text.c_str());
+        }
+        addLabel(1e-7*endt, "");
     }
     else if(m_fileformat==FFSDIF){
         #ifdef SUPPORT_SDIF
@@ -445,19 +466,21 @@ void FTLabels::save() {
         }
     }
     else if(m_fileformat==FFAsciiSegmentsHTK){
-        // TODO This was a blind coding. Check the actual format
         ofstream fout(fileFullPath.toLatin1().constData());
         for(size_t li=0; li<starts.size(); li++) {
-            fout << int(0.5+gMW->getFs()*starts[li]) << " ";
-            double last = starts[li] + 1.0/gMW->getFs();
+            // If this is the last one AND its text is empty, skip it.
+            // (thus, manage the read/write of segments files)
+            if(li==starts.size()-1 && waveform_labels[li]->toPlainText()=="")
+                continue;
+
+            double last = starts[li] + 1.0/gMW->getFs(); // If not end, add a single sample to start
             if(li<starts.size()-1)
-                last = starts[li+1];
+                last = starts[li+1]; // Otherwise use next start, if not the last label
             else {
                 if(gMW->ftsnds.size()>0)
-                    last = gMW->getCurrentFTSound(true)->getLastSampleTime();
+                    last = gMW->getCurrentFTSound(true)->getLastSampleTime(); // Or last wav's sample time
             }
-            fout << int(0.5+gMW->getFs()*last) << " ";
-            fout << waveform_labels[li]->toPlainText().toLatin1().constData() << endl;
+            fout << int(0.5+1e7*starts[li]) << " " << int(0.5+1e7*last) << " " << waveform_labels[li]->toPlainText().toLatin1().constData() << endl;
         }
     }
     else if(m_fileformat==FFSDIF){

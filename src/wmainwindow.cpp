@@ -645,7 +645,7 @@ void WMainWindow::addFile(const QString& filepath) {
         }
         #endif
         else {
-            throw QString("Cannot find any data or audio channel in this file that is handled by this version of DFasma.");
+            throw QString("Cannot find any data or audio channel in this file that is handled by this distribution of DFasma.");
         }
     }
     catch (QString err)
