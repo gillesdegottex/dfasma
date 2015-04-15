@@ -1078,7 +1078,7 @@ void QGVAmplitudeSpectrum::setMouseCursorPosition(QPointF p, bool forwardsync) {
 
     if(forwardsync){
         if(gMW->m_gvSpectrogram)
-            gMW->m_gvSpectrogram->setMouseCursorPosition(QPointF(0.0, p.x()), false);
+            gMW->m_gvSpectrogram->setMouseCursorPosition(QPointF(0.0, gMW->getFs()/2-p.x()), false);
         if(gMW->m_gvPhaseSpectrum)
             gMW->m_gvPhaseSpectrum->setMouseCursorPosition(QPointF(p.x(), 0.0), false);
     }
