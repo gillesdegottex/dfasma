@@ -21,6 +21,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "filetype.h"
 
 #include <iostream>
+#include <fstream>
 #include <deque>
 using namespace std;
 
@@ -236,6 +237,34 @@ FileType::~FileType() {
 }
 
 
+bool FileType::hasFileExtension(const QString& filepath, const QString& ext){
+    int ret = filepath.lastIndexOf(ext, -1, Qt::CaseInsensitive);
+
+    return ret!=-1 && (ret==filepath.length()-ext.length());
+}
+
+// This function TRY TO GUESS if the file is ASCII or not
+// It may say it is ASCII whereas it is a binary file
+// It always succeed if the file is simple ASCII (non-UTF)
+bool FileType::isFileASCII(const QString& filename) {
+
+    // ASCII chars should be 0< c <=127
+
+    int c;
+    // COUTD << "EOF='" << EOF << "'" << endl;
+    std::ifstream a(filename.toLatin1().constData());
+    int n = 0;
+    // Assume the first Ko is sufficient for testing ASCII content
+    while((c = a.get()) != EOF && n<1000){
+        // COUTD << "'" << c << "'" << endl;
+        if(c==0 || c>127)
+            return false;
+    }
+
+    return true;
+}
+
+
 #ifdef SUPPORT_SDIF
 // Based on EASDIF_SDIF/matlab/FSDIF_read_handler.cpp: Copyright (c) 2008 by IRCAM
 
@@ -271,8 +300,7 @@ bool CheckList(Easdif::SDIFEntity *p, EASDList::iterator&it) {
   return false;
 }
 
-
-bool FileType::SDIF_isSDIF(const QString& filename) {
+bool FileType::isFileSDIF(const QString& filename) {
     try{
         SDIFEntity readentity;
         if (readentity.OpenRead(filename.toLocal8Bit().constData())){
@@ -281,6 +309,8 @@ bool FileType::SDIF_isSDIF(const QString& filename) {
         }
     }
     catch(SDIFBadHeader& e) {
+    }
+    catch(SDIFEof& e) {
     }
 
     return false;

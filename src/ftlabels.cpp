@@ -147,7 +147,7 @@ FTLabels::FTLabels(QObject *parent)
 }
 
 // Construct from an existing file name
-FTLabels::FTLabels(const QString& _fileName, QObject *parent)
+FTLabels::FTLabels(const QString& _fileName, QObject *parent, FileFormat fileformat)
     : FileType(FTLABELS, _fileName, this)
 {
     Q_UNUSED(parent);
@@ -156,6 +156,8 @@ FTLabels::FTLabels(const QString& _fileName, QObject *parent)
         throw QString("This ctor use an existing file. Don't use this ctor for an empty label object.");
 
     init();
+
+    m_fileformat = fileformat;
 
     checkFileStatus(CFSMEXCEPTION);
     load();
@@ -187,7 +189,6 @@ FileType* FTLabels::duplicate(){
 }
 
 void FTLabels::load() {
-
     clear(); // First, ensure there is no leftover
 
     if(m_fileformat==FFNotSpecified)
@@ -195,16 +196,31 @@ void FTLabels::load() {
 
     #ifdef SUPPORT_SDIF
         if(m_fileformat==FFAutoDetect)
-            if(FileType::SDIF_isSDIF(fileFullPath))
+            if(FileType::isFileSDIF(fileFullPath))
                     m_fileformat = FFSDIF;
-    #else
-        if(m_fileformat==FFAutoDetect)
-            m_fileformat = FFAsciiTimeText;
     #endif
 
-//    if(m_fileformat==FFAutoDetect) {
-//        // TODO Check if text file or binary
-//    }
+    // Check for text formats
+    if(m_fileformat==FFAutoDetect) {
+        // Find the format using language check
+
+        ifstream fin(fileFullPath.toLatin1().constData());
+        if(!fin.is_open())
+            throw QString("FTLabel:FFAutoDetect: Cannot open the file.");
+        double t;
+        string line, text;
+        if(!std::getline(fin, line))
+            throw QString("FTLabel:FFAutoDetect: There is not a single line in this file.");
+
+        std::istringstream iss(line);
+        if((iss >> t >> text) && iss.eof())
+            m_fileformat = FFAsciiTimeText;
+        else {
+            std::istringstream iss(line);
+            if((iss >> t >> t >> text) && iss.eof())
+                m_fileformat = FFAsciiSegments;
+        }
+    }
 
     if(m_fileformat==FFAutoDetect)
         throw QString("Cannot detect the file format of this label file");
@@ -222,35 +238,17 @@ void FTLabels::load() {
         }
     }
     else if(m_fileformat==FFAsciiSegments){
-//        ofstream fout(fileFullPath.toLatin1().constData());
-//        for(size_t li=0; li<starts.size(); li++) {
-//            fout << starts[li] << " ";
-//            double last = starts[li] + 1.0/gMW->getFs();
-//            if(li<starts.size()-1)
-//                last = starts[li+1];
-//            else {
-//                if(gMW->ftsnds.size()>0)
-//                    last = gMW->getCurrentFTSound(true)->getLastSampleTime();
-//            }
-//            fout << last << " ";
-//            fout << waveform_labels[li]->text().toLatin1().constData() << endl;
-//        }
+        ifstream fin(fileFullPath.toLatin1().constData());
+        double startt, endt;
+        string line, text;
+        while(std::getline(fin, line)) {
+            std::istringstream(line) >> startt >> endt >> text;
+            addLabel(startt, text.c_str());
+        }
+        addLabel(endt, "");
     }
     else if(m_fileformat==FFAsciiSegmentsHTK){
-//        ofstream fout(fileFullPath.toLatin1().constData());
-//        // TODO check the format
-//        for(size_t li=0; li<starts.size(); li++) {
-//            fout << int(0.5+gMW->getFs()*starts[li]) << " ";
-//            double last = starts[li] + 1.0/gMW->getFs();
-//            if(li<starts.size()-1)
-//                last = starts[li+1];
-//            else {
-//                if(gMW->ftsnds.size()>0)
-//                    last = gMW->getCurrentFTSound(true)->getLastSampleTime();
-//            }
-//            fout << int(0.5+gMW->getFs()*last) << " ";
-//            fout << waveform_labels[li]->text().toLatin1().constData() << endl;
-//        }
+        // TODO
     }
     else if(m_fileformat==FFSDIF){
         #ifdef SUPPORT_SDIF
@@ -415,7 +413,7 @@ void FTLabels::saveAs() {
 
 void FTLabels::save() {
 
-    sort(); // In the file, we want the label' times in ascending order
+    sort(); // In the file, we want the labels' time in ascending order
 
     if(m_fileformat==FFNotSpecified || m_fileformat==FFAutoDetect)
         m_fileformat = FFAsciiTimeText;
@@ -431,21 +429,24 @@ void FTLabels::save() {
     else if(m_fileformat==FFAsciiSegments){
         ofstream fout(fileFullPath.toLatin1().constData());
         for(size_t li=0; li<starts.size(); li++) {
-            fout << starts[li] << " ";
-            double last = starts[li] + 1.0/gMW->getFs();
+            // If this is the last one AND its text is empty, skip it.
+            // (thus, manage the read/write of segments files)
+            if(li==starts.size()-1 && waveform_labels[li]->toPlainText()=="")
+                continue;
+
+            double last = starts[li] + 1.0/gMW->getFs(); // If not end, add a single sample to start
             if(li<starts.size()-1)
-                last = starts[li+1];
+                last = starts[li+1]; // Otherwise use next start, if not the last label
             else {
                 if(gMW->ftsnds.size()>0)
-                    last = gMW->getCurrentFTSound(true)->getLastSampleTime();
+                    last = gMW->getCurrentFTSound(true)->getLastSampleTime(); // Or last wav's sample time
             }
-            fout << last << " ";
-            fout << waveform_labels[li]->toPlainText().toLatin1().constData() << endl;
+            fout << starts[li] << " " << last << " " << waveform_labels[li]->toPlainText().toLatin1().constData() << endl;
         }
     }
     else if(m_fileformat==FFAsciiSegmentsHTK){
+        // TODO This was a blind coding. Check the actual format
         ofstream fout(fileFullPath.toLatin1().constData());
-        // TODO check the format
         for(size_t li=0; li<starts.size(); li++) {
             fout << int(0.5+gMW->getFs()*starts[li]) << " ";
             double last = starts[li] + 1.0/gMW->getFs();

@@ -49,8 +49,10 @@ public:
 
     ~FileType();
 
+    static bool hasFileExtension(const QString& filepath, const QString& ext);
+    static bool isFileASCII(const QString& filename);
     #ifdef SUPPORT_SDIF
-    static bool SDIF_isSDIF(const QString& filename);
+    static bool isFileSDIF(const QString& filename);
     static bool SDIF_hasFrame(const QString& filename, const QString& framesignature);
     #endif
 

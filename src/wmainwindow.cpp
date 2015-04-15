@@ -573,12 +573,6 @@ void WMainWindow::openFile() {
     }
 }
 
-bool isOfExtension(const QString& filepath, const QString& ext){
-    int ret = filepath.lastIndexOf(ext, -1, Qt::CaseInsensitive);
-
-    return ret!=-1 && (ret==filepath.length()-ext.length());
-}
-
 void WMainWindow::addFile(const QString& filepath) {
 //    cout << "INFO: Add file: " << filepath.toLocal8Bit().constData() << endl;
 
@@ -588,42 +582,16 @@ void WMainWindow::addFile(const QString& filepath) {
 
         FileType* ft = NULL;
 
-        if(isOfExtension(filepath, ".sdif")) {
-            #ifdef SUPPORT_SDIF
-                // SdifCheckFileFormat doesnt work for some files which can be loaded
-                if(!FileType::SDIF_isSDIF(filepath.toLocal8Bit()))
-                    throw QString("This file looks like an SDIF file, but it does not contain SDIF data.");
-
-                if(FileType::SDIF_hasFrame(filepath, "1FQ0"))
-                    ft = new FTFZero(filepath, this);
-                else if (FileType::SDIF_hasFrame(filepath, "1MRK"))
-                    ft = new FTLabels(filepath, this);
-                else
-                    throw QString("Unsupported SDIF data.");
-            #else
-                throw QString("Support of SDIF files not compiled in this version.");
-            #endif
-
-            ui->listSndFiles->addItem(ft);
-        }
-        else if(isOfExtension(filepath, ".mrk.txt")) {
-
-            ft = new FTLabels(filepath, this);
-
-            ui->listSndFiles->addItem(ft);
-        }
-
-        if(ft==NULL){
-            int nchan = FTSound::getNumberOfChannels(filepath);
-
-            if(nchan==0)
-                throw QString("cannot find any audio channel in this file.");
-            else if(nchan==1){
+        int nchan = FTSound::getNumberOfChannels(filepath);
+        if(nchan>0){
+            if(nchan==1){
+                // If there is only one channel, just load it
                 ft = new FTSound(filepath, this);
                 ui->listSndFiles->addItem(ft);
             }
             else{
-                m_dlgProgress->setValue(m_dlgProgress->maximum());
+                // If more than one channel, ask what to do
+                m_dlgProgress->setValue(m_dlgProgress->maximum()); // Stop the loading bar
                 WDialogSelectChannel dlg(filepath, nchan, this);
                 if(dlg.exec()) {
                     if(dlg.ui->rdbImportEachChannel->isChecked()){
@@ -643,12 +611,41 @@ void WMainWindow::addFile(const QString& filepath) {
                 }
             }
 
-            // The first sound determines the common fs for the audio output
-            if(isfirsts && ftsnds.size()>0)
-                initializeSoundSystem(ftsnds[0]->fs);
+            if(ftsnds.size()>0){
+                // The first sound determines the common sampling frequency for the audio output
+                if(isfirsts)
+                    initializeSoundSystem(ftsnds[0]->fs);
 
-            m_gvWaveform->fitViewToSoundsAmplitude();
-        //    cout << "~MainWindow::addFile" << endl;
+                m_gvWaveform->fitViewToSoundsAmplitude();
+            }
+        }
+        #ifdef SUPPORT_SDIF
+        else if(FileType::isFileSDIF(filepath)) {
+            if(FileType::SDIF_hasFrame(filepath, "1FQ0"))
+                ft = new FTFZero(filepath, this);
+            else if (FileType::SDIF_hasFrame(filepath, "1MRK"))
+                ft = new FTLabels(filepath, this, FTLabels::FFSDIF);
+            else
+                throw QString("Unsupported SDIF data.");
+
+            ui->listSndFiles->addItem(ft);
+        }
+        #endif
+        else if(FileType::isFileASCII(filepath)) {
+
+            ft = new FTLabels(filepath, this);
+
+            // TODO Manage F0 bpf
+
+            ui->listSndFiles->addItem(ft);
+        }
+        #ifndef SUPPORT_SDIF
+        else if(FileType::hasFileExtension(filepath, ".sdif")) {
+            throw QString("Support of SDIF files not compiled in this version.");
+        }
+        #endif
+        else {
+            throw QString("Cannot find any data or audio channel in this file that is handled by this version of DFasma.");
         }
     }
     catch (QString err)
