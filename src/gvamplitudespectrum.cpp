@@ -1104,30 +1104,34 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
             if(!gMW->ftfzeros[fi]->m_actionShow->isChecked())
                 continue;
 
-            QPen outlinePen(gMW->ftfzeros[fi]->color);
-            outlinePen.setWidth(0);
-            painter->setPen(outlinePen);
-            painter->setBrush(QBrush(gMW->ftfzeros[fi]->color));
+//            QPen outlinePen(gMW->ftfzeros[fi]->color);
+//            outlinePen.setWidth(0);
+//            painter->setPen(outlinePen);
+//            painter->setBrush(QBrush(gMW->ftfzeros[fi]->color));
 
-            double ct = 0.5*(m_nl+m_nr)/fs;
+            double ct = 0.0; // The time where the f0 curve has to be sampled
+            if(gMW->m_gvWaveform->hasSelection())
+                ct = 0.5*(m_nl+m_nr)/fs;
+            else
+                ct = gMW->m_gvWaveform->getPlayCursorPosition();
             double cf0 = sigproc::nearest<double>(gMW->ftfzeros[fi]->ts, gMW->ftfzeros[fi]->f0s, ct, -1.0);
 
-            // cout << ct << ":" << cf0 << endl;
             if(cf0==-1) continue;
 
+            // Draw the f0
             QColor c = gMW->ftfzeros[fi]->color;
             c.setAlphaF(1.0);
-            outlinePen.setColor(c);
+            QPen outlinePen(c);
+            outlinePen.setWidth(0);
             painter->setPen(outlinePen);
             painter->drawLine(QLineF(cf0, -3000, cf0, 3000));
 
+            // Draw harmonics up to Nyquist
             c.setAlphaF(0.5);
             outlinePen.setColor(c);
             painter->setPen(outlinePen);
-
-            for(int h=2; h<int(0.5*fs/cf0)+1; h++) {
+            for(int h=2; h<int(0.5*fs/cf0)+1; h++)
                 painter->drawLine(QLineF(h*cf0, -3000, h*cf0, 3000));
-            }
         }
     }
 
