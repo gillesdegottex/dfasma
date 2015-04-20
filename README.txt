@@ -17,7 +17,7 @@ Goals
     * The interface and the audio files have to be loaded as quick as possible.
     * Any kind of lossless audio files should be easily loaded (it can
       currently use libsndfile or libsox which support ~25 different formats).
-    * All features should run on Linux, OS X and Migrosoft operating systems.
+    * All features should run on Linux, OS X and Windows operating systems.
     * Manage mono audio files (tracks of multi-channel files (e.g. stereo) can
       be loaded separately. A more advanced management of multi-channel files
       could be addressed in the future)
