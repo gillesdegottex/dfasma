@@ -54,6 +54,7 @@ using namespace Easdif;
 
 
 bool FTGraphicsLabelItem::sm_isEditing = false;
+std::deque<QString> FTLabels::m_formatstrings;
 
 FTGraphicsLabelItem::FTGraphicsLabelItem(FTLabels* ftl, const QString & text)
     : QGraphicsTextItem(text)
@@ -116,6 +117,16 @@ void FTGraphicsLabelItem::paint(QPainter *painter,const QStyleOptionGraphicsItem
 
 
 void FTLabels::init(){
+    // Map FileFormat with corresponding strings
+    if(m_formatstrings.empty()){
+        m_formatstrings.push_back("Unspecified");
+        m_formatstrings.push_back("Auto");
+        m_formatstrings.push_back("ASCII Time/Text (*.bpf)");
+        m_formatstrings.push_back("ASCII Segment (*.lab)");
+        m_formatstrings.push_back("ASCII Segment HTK (*.lab)");
+        m_formatstrings.push_back("SDIF 1MRK/1LAB (*.sdif)");
+    }
+
     m_isedited = false;
 
     connect(m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setVisible(bool)));
@@ -137,13 +148,9 @@ FTLabels::FTLabels(QObject *parent)
 
     init();
 
-    #ifdef SUPPORT_SDIF
-        setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.sdif");
-        m_fileformat = FFSDIF;
-    #else
-        setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.bpf");
-        m_fileformat = FFAsciiTimeText;
-    #endif
+    // TODO Manage a default user format
+    setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.bpf");
+    m_fileformat = FFAsciiTimeText;
 
     gMW->ftlabels.push_back(this);
 }
@@ -416,12 +423,32 @@ void FTLabels::saveAs() {
         return;
     }
 
-    // TODO Ask the desired format in the qfiledialog
+    // Build the filter string
+    QString filters;
+    filters += m_formatstrings[FFAsciiTimeText];
+    filters += ";;"+m_formatstrings[FFAsciiSegments];
+    filters += ";;"+m_formatstrings[FFAsciiSegmentsHTK];
+    #ifdef SUPPORT_SDIF
+        filters += ";;"+m_formatstrings[FFSDIF];
+    #endif
+    QString selectedFilter = m_formatstrings[m_fileformat];
 
-    QString fp = QFileDialog::getSaveFileName(NULL, "Save file as...", fileFullPath);
+    QString fp = QFileDialog::getSaveFileName(gMW, "Save file as...", fileFullPath, filters, &selectedFilter);
+
     if(!fp.isEmpty()){
         try{
             setFullPath(fp);
+            if(selectedFilter==m_formatstrings[FFAsciiTimeText])
+                m_fileformat = FFAsciiTimeText;
+            else if(selectedFilter==m_formatstrings[FFAsciiSegments])
+                m_fileformat = FFAsciiSegments;
+            else if(selectedFilter==m_formatstrings[FFAsciiSegmentsHTK])
+                m_fileformat = FFAsciiSegmentsHTK;
+            #ifdef SUPPORT_SDIF
+            else if(selectedFilter==m_formatstrings[FFSDIF])
+                m_fileformat = FFSDIF;
+            #endif
+
             if(m_fileformat==FFNotSpecified || m_fileformat==FFAutoDetect)
                 m_fileformat = FFAsciiTimeText;
             save();
