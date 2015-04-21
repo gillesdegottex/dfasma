@@ -82,6 +82,7 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     , m_gvPhaseSpectrum(NULL)
     , m_gvSpectrogram(NULL)
     , m_audioengine(NULL)
+    , m_playingftsound(NULL)
 {
     m_loading = true;
 
@@ -1085,6 +1086,7 @@ void WMainWindow::play()
                         statusBar()->showMessage("WARNING: Playing a hidden waveform!");
 
                     m_gvWaveform->m_initialPlayPosition = tstart;
+                    m_playingftsound = currentftsound;
                     m_audioengine->startPlayback(currentftsound, tstart, tstop, fstart, fstop);
 
                     if(fstart!=0.0 || fstop!=getFs()) {
@@ -1132,6 +1134,8 @@ void WMainWindow::audioStateChanged(QAudio::State state){
     else if(state==QAudio::StoppedState){
         // Stopped playing
         ui->actionPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+        if(m_playingftsound)
+            m_playingftsound->setToDefaultIcon();
     }
 
 //    DEBUGSTRING << "~MainWindow::stateChanged " << state << endl;

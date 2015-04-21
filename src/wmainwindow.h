@@ -148,6 +148,7 @@ public:
     QGVSpectrogram* m_gvSpectrogram;
 
     AudioEngine* m_audioengine;
+    FTSound* m_playingftsound;
 };
 
 #endif // WMAINWINDOW_H

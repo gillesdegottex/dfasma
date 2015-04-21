@@ -93,9 +93,7 @@ FileType::FileType(FILETYPE _type, const QString& _fileName, QObject * parent)
 {
 //    cout << "FileType::FileType: " << _fileName.toLocal8Bit().constData() << endl;
 
-    QPixmap pm(32,32);
-    pm.fill(color);
-    setIcon(QIcon(pm));
+    setToDefaultIcon();
 
     // Set properties common to all files
     QFileInfo fileInfo(fileFullPath);
@@ -159,6 +157,11 @@ bool FileType::checkFileStatus(CHECKFILESTATUSMGT cfsmgt){
 
 void FileType::setColor(const QColor& _color) {
     color = _color;
+    setToDefaultIcon();
+}
+
+void FileType::setToDefaultIcon(){
+    // Clear the File icon
     QPixmap pm(32,32);
     pm.fill(color);
     setIcon(QIcon(pm));

@@ -348,6 +348,18 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
 
     m_outputaudioformat = format;
 
+    // Draw an arrow in the icon
+    QPixmap pm(32,32);
+    pm.fill(color);
+    QPainter p(&pm);
+    QPolygon poly(3);
+    poly.setPoint(0, 8,8);
+    poly.setPoint(1, 24,16);
+    poly.setPoint(2, 8,24);
+    p.setBrush(QColor(255,255,255));
+    p.drawConvexPolygon(poly);
+    setIcon(QIcon(pm));
+
     s_play_power = 0;
     s_play_power_values.clear();
     m_avoidclickswinpos = 0;
@@ -497,7 +509,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
             wavtoplay = &wavfiltered;
 
             gMW->m_gvWaveform->m_scene->invalidate();
-            gMW->m_gvSpectrum->computeDFTs();
+            gMW->m_gvSpectrum->computeDFTs(); // TODO SPEEDUP This compute DFTS of ALL sounds !
             gMW->m_gvSpectrum->m_scene->invalidate();
         }
         catch(QString err){
