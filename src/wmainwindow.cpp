@@ -580,82 +580,90 @@ void WMainWindow::openFile() {
 void WMainWindow::addFile(const QString& filepath) {
 //    cout << "INFO: Add file: " << filepath.toLocal8Bit().constData() << endl;
 
-    try
-    {
-        bool isfirsts = ftsnds.size()==0;
+    if(QFileInfo(filepath).isDir()){
+        QDir fpd(filepath);
+        fpd.setFilter(QDir::Files | QDir::AllEntries | QDir::NoDotAndDotDot);
+        for(int fpdi=0; fpdi<int(fpd.count()); ++fpdi)
+            addFile(fpd.filePath(fpd[fpdi]));
+    }
+    else{
+        try
+        {
+            bool isfirsts = ftsnds.size()==0;
 
-        FileType* ft = NULL;
+            FileType* ft = NULL;
 
-        int nchan = FTSound::getNumberOfChannels(filepath);
-        if(nchan>0){
-            if(nchan==1){
-                // If there is only one channel, just load it
-                ft = new FTSound(filepath, this);
-                ui->listSndFiles->addItem(ft);
-            }
-            else{
-                // If more than one channel, ask what to do
-                m_dlgProgress->setValue(m_dlgProgress->maximum()); // Stop the loading bar
-                WDialogSelectChannel dlg(filepath, nchan, this);
-                if(dlg.exec()) {
-                    if(dlg.ui->rdbImportEachChannel->isChecked()){
-                        for(int ci=1; ci<=nchan; ci++){
-                            ft = new FTSound(filepath, this, ci);
+            int nchan = FTSound::getNumberOfChannels(filepath);
+            if(nchan>0){
+                if(nchan==1){
+                    // If there is only one channel, just load it
+                    ft = new FTSound(filepath, this);
+                    ui->listSndFiles->addItem(ft);
+                }
+                else{
+                    // If more than one channel, ask what to do
+                    m_dlgProgress->setValue(m_dlgProgress->maximum()); // Stop the loading bar
+                    WDialogSelectChannel dlg(filepath, nchan, this);
+                    if(dlg.exec()) {
+                        if(dlg.ui->rdbImportEachChannel->isChecked()){
+                            for(int ci=1; ci<=nchan; ci++){
+                                ft = new FTSound(filepath, this, ci);
+                                ui->listSndFiles->addItem(ft);
+                            }
+                        }
+                        else if(dlg.ui->rdbImportOnlyOneChannel->isChecked()){
+                            ft = new FTSound(filepath, this, dlg.ui->sbChannelID->value());
+                            ui->listSndFiles->addItem(ft);
+                        }
+                        else if(dlg.ui->rdbMergeAllChannels->isChecked()){
+                            ft = new FTSound(filepath, this, -2); // -2 is a code for merging the channels
                             ui->listSndFiles->addItem(ft);
                         }
                     }
-                    else if(dlg.ui->rdbImportOnlyOneChannel->isChecked()){
-                        ft = new FTSound(filepath, this, dlg.ui->sbChannelID->value());
-                        ui->listSndFiles->addItem(ft);
-                    }
-                    else if(dlg.ui->rdbMergeAllChannels->isChecked()){
-                        ft = new FTSound(filepath, this, -2); // -2 is a code for merging the channels
-                        ui->listSndFiles->addItem(ft);
-                    }
+                }
+
+                if(ftsnds.size()>0){
+                    // The first sound determines the common sampling frequency for the audio output
+                    if(isfirsts)
+                        initializeSoundSystem(ftsnds[0]->fs);
+
+                    m_gvWaveform->fitViewToSoundsAmplitude();
                 }
             }
+            #ifdef SUPPORT_SDIF
+            else if(FileType::isFileSDIF(filepath)) {
+                if(FileType::SDIF_hasFrame(filepath, "1FQ0"))
+                    ft = new FTFZero(filepath, this);
+                else if (FileType::SDIF_hasFrame(filepath, "1MRK"))
+                    ft = new FTLabels(filepath, this, FTLabels::FFSDIF);
+                else
+                    throw QString("Unsupported SDIF data.");
 
-            if(ftsnds.size()>0){
-                // The first sound determines the common sampling frequency for the audio output
-                if(isfirsts)
-                    initializeSoundSystem(ftsnds[0]->fs);
+                ui->listSndFiles->addItem(ft);
+            }
+            #endif
+            else if(FileType::isFileASCII(filepath)) {
 
-                m_gvWaveform->fitViewToSoundsAmplitude();
+                ft = new FTLabels(filepath, this);
+
+                // TODO Manage F0 bpf
+
+                ui->listSndFiles->addItem(ft);
+            }
+            #ifndef SUPPORT_SDIF
+            else if(FileType::hasFileExtension(filepath, ".sdif")) {
+                throw QString("Support of SDIF files not compiled in this version.");
+            }
+            #endif
+            else {
+                throw QString("Cannot find any data or audio channel in this file that is handled by this distribution of DFasma.");
             }
         }
-        #ifdef SUPPORT_SDIF
-        else if(FileType::isFileSDIF(filepath)) {
-            if(FileType::SDIF_hasFrame(filepath, "1FQ0"))
-                ft = new FTFZero(filepath, this);
-            else if (FileType::SDIF_hasFrame(filepath, "1MRK"))
-                ft = new FTLabels(filepath, this, FTLabels::FFSDIF);
-            else
-                throw QString("Unsupported SDIF data.");
-
-            ui->listSndFiles->addItem(ft);
+        catch (QString err)
+        {
+            m_dlgProgress->setValue(m_dlgProgress->maximum());
+            QMessageBox::warning(this, "Failed to load file ...", "Data from the following file can't be loaded:\n"+filepath+"'\n\nReason:\n"+err);
         }
-        #endif
-        else if(FileType::isFileASCII(filepath)) {
-
-            ft = new FTLabels(filepath, this);
-
-            // TODO Manage F0 bpf
-
-            ui->listSndFiles->addItem(ft);
-        }
-        #ifndef SUPPORT_SDIF
-        else if(FileType::hasFileExtension(filepath, ".sdif")) {
-            throw QString("Support of SDIF files not compiled in this version.");
-        }
-        #endif
-        else {
-            throw QString("Cannot find any data or audio channel in this file that is handled by this distribution of DFasma.");
-        }
-    }
-    catch (QString err)
-    {
-        m_dlgProgress->setValue(m_dlgProgress->maximum());
-        QMessageBox::warning(this, "Failed to load file ...", "Data from the following file can't be loaded:\n"+filepath+"'\n\nReason:\n"+err);
     }
 }
 
