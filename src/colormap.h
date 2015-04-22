@@ -36,6 +36,8 @@ class ColorMapGray : public  ColorMap {
 public:
     virtual QString name() {return "Gray";}
     virtual QRgb map(float y){
+        y = 1.0-y;
+
         int color = 255;
         if(!qIsInf(y))
             color = 255*y;
