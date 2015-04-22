@@ -27,6 +27,8 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "wdialogselectchannel.h"
 #include "ui_wdialogselectchannel.h"
 
+#include "../external/libqxt/qxtspanslider.h"
+
 #include "gvwaveform.h"
 #include "gvamplitudespectrum.h"
 #include "gvphasespectrum.h"
@@ -86,9 +88,18 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 {
     m_loading = true;
 
+    // Prepare the UI (everything which is independent of settings)
     ui->setupUi(this);
     ui->lblFileInfo->hide();
     ui->pbSpectrogramSTFTUpdate->hide();
+    m_qxtspanslider = new QxtSpanSlider(Qt::Vertical, this);
+    m_qxtspanslider->setMinimum(0);
+    m_qxtspanslider->setMaximum(100);
+    m_qxtspanslider->setLowerValue(0);
+    m_qxtspanslider->setUpperValue(100);
+    m_qxtspanslider->setMaximumWidth(ui->sldWaveformAmplitude->maximumWidth());
+    m_qxtspanslider->setHandleMovementMode(QxtSpanSlider::NoOverlapping);
+    ui->horizontalLayout_6->insertWidget(1, m_qxtspanslider);
 
     gMW = this;
 

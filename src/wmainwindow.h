@@ -48,6 +48,7 @@ class QHBoxLayout;
 class QProgressBar;
 class QLabel;
 class QProgressDialog;
+class QxtSpanSlider;
 
 namespace Ui {
 class WMainWindow;
@@ -146,6 +147,7 @@ public:
     QGVAmplitudeSpectrum* m_gvSpectrum;
     QGVPhaseSpectrum* m_gvPhaseSpectrum;
     QGVSpectrogram* m_gvSpectrogram;
+    QxtSpanSlider* m_qxtspanslider;
 
     AudioEngine* m_audioengine;
     FTSound* m_playingftsound;

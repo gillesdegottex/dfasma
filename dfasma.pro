@@ -154,6 +154,7 @@ TEMPLATE = app
 RC_ICONS = icons/dfasma.ico
 
 SOURCES   += src/main.cpp\
+             external/libqxt/qxtspanslider.cpp \
              src/wmainwindow.cpp \
              src/wdialogselectchannel.cpp \
              src/filetype.cpp \
@@ -175,6 +176,10 @@ SOURCES   += src/main.cpp\
              src/colormap.cpp
 
 HEADERS   += src/wmainwindow.h \
+             external/libqxt/qxtglobal.h \
+             external/libqxt/qxtnamespace.h \
+             external/libqxt/qxtspanslider.h \
+             external/libqxt/qxtspanslider_p.h \
              src/wdialogselectchannel.h \
              src/sigproc.h \
              external/mkfilter/mkfilter.h \

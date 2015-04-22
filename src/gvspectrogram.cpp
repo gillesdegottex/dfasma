@@ -50,6 +50,7 @@ using namespace std;
 #include <QDebug>
 #include <QTime>
 #include <QToolTip>
+#include "../external/libqxt/qxtspanslider.h"
 
 #include "qthelper.h"
 
@@ -63,8 +64,8 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_dlgSettings = new GVSpectrogramWDialogSettings(this);
 
     QSettings settings;
-    gMW->ui->sldSpectrogramAmplitudeMin->setValue(-settings.value("qgvspectrogram/sldSpectrogramAmplitudeMin", -250).toInt());
-    gMW->ui->sldSpectrogramAmplitudeMax->setValue(settings.value("qgvspectrogram/sldSpectrogramAmplitudeMax", 0).toInt());
+    gMW->m_qxtspanslider->setLowerValue(settings.value("qgvspectrogram/sldSpectrogramAmplitudeMin", 0).toInt());
+    gMW->m_qxtspanslider->setUpperValue(settings.value("qgvspectrogram/sldSpectrogramAmplitudeMax", 100).toInt());
 
     m_imgSTFT.fill(Qt::white);
 
@@ -206,20 +207,18 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
 
     connect(m_dlgSettings->ui->buttonBox->button(QDialogButtonBox::Apply), SIGNAL(clicked()), this, SLOT(updateDFTSettings()));
 
-    connect(gMW->ui->sldSpectrogramAmplitudeMin, SIGNAL(valueChanged(int)), this, SLOT(updateSTFTPlot()));
-    connect(gMW->ui->sldSpectrogramAmplitudeMax, SIGNAL(valueChanged(int)), this, SLOT(updateSTFTPlot()));
+    connect(gMW->m_qxtspanslider, SIGNAL(lowerValueChanged(int)), this, SLOT(updateSTFTPlot()));
+    connect(gMW->m_qxtspanslider, SIGNAL(upperValueChanged(int)), this, SLOT(updateSTFTPlot()));
 
-    connect(gMW->ui->sldSpectrogramAmplitudeMin, SIGNAL(sliderPressed()), SLOT(amplitudeExtentSlidersChanged()));
-    connect(gMW->ui->sldSpectrogramAmplitudeMax, SIGNAL(sliderPressed()), SLOT(amplitudeExtentSlidersChanged()));
-    connect(gMW->ui->sldSpectrogramAmplitudeMin, SIGNAL(sliderMoved(int)), SLOT(amplitudeExtentSlidersChanged()));
-    connect(gMW->ui->sldSpectrogramAmplitudeMax, SIGNAL(sliderMoved(int)), SLOT(amplitudeExtentSlidersChanged()));
+    connect(gMW->m_qxtspanslider, SIGNAL(sliderPressed()), SLOT(amplitudeExtentSlidersChanged()));
+    connect(gMW->m_qxtspanslider, SIGNAL(spanChanged(int,int)), SLOT(amplitudeExtentSlidersChanged()));
 
     updateDFTSettings(); // Prepare a window from loaded settings
 }
 
 void QGVSpectrogram::amplitudeExtentSlidersChanged(){
     if(!gMW->isLoading())
-        QToolTip::showText(QCursor::pos(), QString("[%1,%2]dB").arg(-gMW->ui->sldSpectrogramAmplitudeMin->value()).arg(gMW->ui->sldSpectrogramAmplitudeMax->value()), this);
+        QToolTip::showText(QCursor::pos(), QString("[%1,%2]\%").arg(gMW->m_qxtspanslider->lowerValue()).arg(gMW->m_qxtspanslider->upperValue()), this);
 }
 
 void QGVSpectrogram::updateAmplitudeExtent(){
@@ -239,15 +238,7 @@ void QGVSpectrogram::updateAmplitudeExtent(){
         }
 
 //        cout << "mindb=" << mindb << " maxdb=" << maxdb << endl;
-
-        gMW->ui->sldSpectrogramAmplitudeMax->setMaximum(maxdb);
-        gMW->ui->sldSpectrogramAmplitudeMax->setMinimum(mindb+1);
-        gMW->ui->sldSpectrogramAmplitudeMin->setMinimum(-(maxdb-1));
-        gMW->ui->sldSpectrogramAmplitudeMin->setMaximum(-(mindb));
     }
-
-    gMW->ui->sldSpectrogramAmplitudeMax->setMinimum(-gMW->ui->sldSpectrogramAmplitudeMin->value()+1);
-    gMW->ui->sldSpectrogramAmplitudeMin->setMinimum(-(gMW->ui->sldSpectrogramAmplitudeMax->value()-1));
 
 //    cout << "QGVSpectrogram::~updateAmplitudeExtent" << endl;
 }
@@ -368,7 +359,7 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
 
                     int dftlen = (int(csnd->m_stft[0].size())-1)*2;
 
-                    ImageParameters reqImgParams(csnd->m_stftparams, gMW->ui->sldSpectrogramAmplitudeMin->value(), gMW->ui->sldSpectrogramAmplitudeMax->value(), m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex(), m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked());
+                    ImageParameters reqImgParams(csnd->m_stftparams, gMW->m_qxtspanslider->lowerValue(), gMW->m_qxtspanslider->upperValue(), m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex(), m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked());
 
                     if(m_imgSTFTParams!=reqImgParams){
                         gMW->ui->pbSTFTComputingCancel->hide();
@@ -384,10 +375,19 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
                         ColorMap& cmap = ColorMap::getAt(m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex());
                         bool reversed = m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked();
 
+//                        COUTD << "---" << endl;
+//                        COUTD << "[" << csnd->m_stft_min << "," << csnd->m_stft_max << "]" << endl;
+//                        COUTD << "[" << gMW->m_qxtspanslider->lowerValue() << "," << gMW->m_qxtspanslider->upperValue() << "]" << endl;
+                        double ymin = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtspanslider->lowerValue()/100.0;
+                        double ymax = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtspanslider->upperValue()/100.0;
+//                        COUTD << "[" << ymin << "," << ymax << "]" << endl;
                         for(int si=0; si<int(csnd->m_stft.size()); si++){
                             for(int n=0; n<int(csnd->m_stft[si].size()); n++) {
                                 double y = csnd->m_stft[si][n];
-                                y = (y+gMW->ui->sldSpectrogramAmplitudeMin->value())/(gMW->ui->sldSpectrogramAmplitudeMax->value()+gMW->ui->sldSpectrogramAmplitudeMin->value());
+
+                                y = (y-ymin)/(ymax-ymin);
+
+                                y = std::min(std::max(y, 0.0), 1.0);
 
                                 if(reversed)
                                     y = 1.0-y;
@@ -1051,7 +1051,7 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
             outlinePen.setWidth(0);
             painter->setPen(outlinePen);
             double f0min = fs/2;
-            for(int ti=0; ti<gMW->ftfzeros[fi]->ts.size()-1; ++ti){
+            for(int ti=0; ti<int(gMW->ftfzeros[fi]->ts.size())-1; ++ti){
                 if(gMW->ftfzeros[fi]->f0s[ti]>0.0)
                     f0min = std::min(f0min, gMW->ftfzeros[fi]->f0s[ti]);
                 painter->drawLine(QLineF(gMW->ftfzeros[fi]->ts[ti], fs/2-gMW->ftfzeros[fi]->f0s[ti], gMW->ftfzeros[fi]->ts[ti+1], fs/2-gMW->ftfzeros[fi]->f0s[ti+1]));
@@ -1065,7 +1065,7 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
                 outlinePen.setColor(c);
                 painter->setPen(outlinePen);
                 for(int h=2; h<int(0.5*fs/f0min)+1; h++)
-                    for(int ti=0; ti<gMW->ftfzeros[fi]->ts.size()-1; ++ti)
+                    for(int ti=0; ti<int(gMW->ftfzeros[fi]->ts.size())-1; ++ti)
                         painter->drawLine(QLineF(gMW->ftfzeros[fi]->ts[ti], fs/2-h*gMW->ftfzeros[fi]->f0s[ti], gMW->ftfzeros[fi]->ts[ti+1], fs/2-h*gMW->ftfzeros[fi]->f0s[ti+1]));
             }
         }
@@ -1157,8 +1157,8 @@ void QGVSpectrogram::draw_grid(QPainter* painter, const QRectF& rect) {
 void QGVSpectrogram::settingsSave() {
     QSettings settings;
     settings.setValue("qgvspectrogram/m_aShowGrid", m_aShowGrid->isChecked());
-    settings.setValue("qgvspectrogram/sldSpectrogramAmplitudeMin", -gMW->ui->sldSpectrogramAmplitudeMin->value());
-    settings.setValue("qgvspectrogram/sldSpectrogramAmplitudeMax", gMW->ui->sldSpectrogramAmplitudeMax->value());
+    settings.setValue("qgvspectrogram/sldSpectrogramAmplitudeMin", gMW->m_qxtspanslider->lowerValue());
+    settings.setValue("qgvspectrogram/sldSpectrogramAmplitudeMax", gMW->m_qxtspanslider->upperValue());
     settings.setValue("qgvspectrogram/sbSpectrogramOversamplingFactor", m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());
     settings.setValue("qgvspectrogram/cbWindowSizeForcedOdd", m_dlgSettings->ui->cbWindowSizeForcedOdd->isChecked());
     settings.setValue("qgvspectrogram/cbSpectrogramWindowType", m_dlgSettings->ui->cbSpectrogramWindowType->currentIndex());
