@@ -44,6 +44,9 @@
         </item>
         <item>
          <widget class="QComboBox" name="cbSpectrogramWindowType">
+          <property name="currentIndex">
+           <number>2</number>
+          </property>
           <item>
            <property name="text">
             <string>Hann</string>
@@ -330,7 +333,7 @@
         <item>
          <widget class="QSpinBox" name="sbSpectrogramOversamplingFactor">
           <property name="value">
-           <number>1</number>
+           <number>0</number>
           </property>
          </widget>
         </item>
@@ -381,7 +384,7 @@
               <number>256</number>
              </property>
              <property name="value">
-              <number>8</number>
+              <number>2</number>
              </property>
             </widget>
            </item>

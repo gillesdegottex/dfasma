@@ -77,8 +77,9 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_aAmplitudeSpectrumShowGrid = new QAction(tr("Show &grid"), this);
     m_aAmplitudeSpectrumShowGrid->setObjectName("m_aAmplitudeSpectrumShowGrid");
     m_aAmplitudeSpectrumShowGrid->setStatusTip(tr("Show &grid"));
-    m_aAmplitudeSpectrumShowGrid->setCheckable(true);
     m_aAmplitudeSpectrumShowGrid->setIcon(QIcon(":/icons/grid.svg"));
+    m_aAmplitudeSpectrumShowGrid->setCheckable(true);
+    m_aAmplitudeSpectrumShowGrid->setChecked(true);
     gMW->m_settings.add(m_aAmplitudeSpectrumShowGrid);
     connect(m_aAmplitudeSpectrumShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
 

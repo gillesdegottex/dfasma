@@ -76,6 +76,7 @@ class QSettingsAuto : public QSettings
     void save(QAction* el);
     void load(QAction* el);
 
+    bool contains(const QString & key);
 
     void saveAll();
     void loadAll();

@@ -32,13 +32,13 @@ QSettingsAuto::QSettingsAuto(const QString& domain, const QString& product, cons
 	: QSettings(QSettings::UserScope, domain, product)
 {
 //	beginGroup(QString("/")+product+setting_version+"/");
-    cerr << "QSettingsAuto: " << fileName().toStdString() << endl;
+    cout << "INFO: QSettingsAuto: " << fileName().toStdString() << endl;
 }
 
 QSettingsAuto::QSettingsAuto()
 {
 //    beginGroup(QString("/")+product+setting_version+"/");
-    cerr << "QSettingsAuto: " << fileName().toStdString() << endl;
+    cout << "INFO: QSettingsAuto: " << fileName().toStdString() << endl;
 }
 
 void QSettingsAuto::add(QCheckBox* el)
@@ -208,6 +208,15 @@ void QSettingsAuto::add(QAction* el)
     if(contains(el->objectName()))
         load(el);
 }
+bool QSettingsAuto::contains(const QString & key) {
+    bool ret;
+
+    beginGroup("QSettingsAuto/");
+    ret = QSettings::contains(key);
+    endGroup();
+
+    return ret;
+}
 void QSettingsAuto::save(QAction* el)
 {
     beginGroup("QSettingsAuto/");
@@ -289,3 +298,9 @@ void QSettingsAuto::clearAll()
 
     sync();
 }
+
+
+//    QStringList	l = allKeys();
+//    for(int f=0; f<l.size(); f++){
+//        cout << f << ": " << l.at(f).toLatin1().constData() << endl;
+//    }
