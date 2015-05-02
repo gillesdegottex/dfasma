@@ -68,7 +68,6 @@ public:
 
     inline const Parameters& getCurrentParameters() const {return m_params_current;}
 
-private:
     Parameters m_params_current;   // The params which are in preparation by the thread
     Parameters m_params_todo;      // The params which have to be done by the thread
 };

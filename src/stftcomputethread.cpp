@@ -181,7 +181,7 @@ void STFTComputeThread::run() {
 //        COUTD << "STFTComputeThread::run compute finished" << std::endl;
 
 //        COUTD << "STFTComputeThread::run check for computing again ..." << std::endl;
-        // Check if it has to be computed again
+        // Check if it has to compute another
         m_mutex_changingparams.lock();
         if(!m_params_todo.isEmpty()){
 //            COUTD << "STFTComputeThread::run something to compute again !" << std::endl;
