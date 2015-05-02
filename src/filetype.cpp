@@ -123,14 +123,16 @@ QString FileType::info() const {
         str += "Loaded at "+datestr+"<br/>";
 
     if(m_lastreadtime==QDateTime())
-        str += "<b>Not saved yet</b><br/>";
+        str += "<b>Not saved yet</b>";
     else if(m_modifiedtime==QDateTime())
-        str += "<b>Currently inaccessible</b><br/>";
+        str += "<b>Currently inaccessible</b>";
     else{
         datestr = m_modifiedtime.toString("HH:mm:ss ddMMM");
         if(m_modifiedtime>m_lastreadtime) datestr = "<b>"+datestr+"</b>";
-        str += "Last file modification at "+datestr+"<br/>";
+        str += "Last file modification at "+datestr;
     }
+
+    str += "<hr/>";
 
     return str;
 }
