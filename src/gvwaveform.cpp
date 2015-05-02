@@ -800,7 +800,7 @@ void QGVWaveform::mouseDoubleClickEvent(QMouseEvent* event){
 
     QPointF p = mapToScene(event->pos());
 
-    if(gMW->ui->actionSelectionMode->isChecked()){
+//    if(gMW->ui->actionSelectionMode->isChecked()){
         if(event->modifiers().testFlag(Qt::ShiftModifier)){
         }
         else if(event->modifiers().testFlag(Qt::ControlModifier)){
@@ -812,9 +812,9 @@ void QGVWaveform::mouseDoubleClickEvent(QMouseEvent* event){
         else{
             selectSegment(p.x(), false);
         }
-    }
-    else if(gMW->ui->actionEditMode->isChecked()){
-    }
+//    }
+//    else if(gMW->ui->actionEditMode->isChecked()){
+//    }
 
 }
 
@@ -1073,9 +1073,9 @@ void QGVWaveform::updateSelectionText(){
     // gMW->ui->lblSelectionTxt->setText(QString("[%1").arg(m_selection.left()).append(",%1] ").arg(m_selection.right()).append("%1 s").arg(m_selection.width())); // start, end and duration
 
     if(gMW->m_gvWaveform->m_aShowWindow->isChecked() && gMW->m_gvSpectrum->m_win.size()>0)
-        gMW->ui->lblSelectionTxt->setText(QString("%1s window centered at %2").arg(gMW->m_gvSpectrum->m_win.size()/gMW->getFs(), 0,'f',4).arg(m_selection.left()+((gMW->m_gvSpectrum->m_win.size()-1)/2.0)/gMW->getFs(), 0,'f',5)); // duration and center
+        gMW->ui->lblSelectionTxt->setText(QString("%1s window centered at %2").arg(gMW->m_gvSpectrum->m_win.size()/gMW->getFs(), 0,'f',gMW->m_dlgSettings->ui->spViewTimeDecimals->value()).arg(m_selection.left()+((gMW->m_gvSpectrum->m_win.size()-1)/2.0)/gMW->getFs(), 0,'f',gMW->m_dlgSettings->ui->spViewTimeDecimals->value())); // duration and center
     else
-        gMW->ui->lblSelectionTxt->setText(QString("%1s selection ").arg(m_selection.width(), 0,'f',5).append(" starting at %1s").arg(m_selection.left(), 0,'f',4)); // duration and start
+        gMW->ui->lblSelectionTxt->setText(QString("%1s selection ").arg(m_selection.width(), 0,'f',gMW->m_dlgSettings->ui->spViewTimeDecimals->value()).append(" starting at %1s").arg(m_selection.left(), 0,'f',gMW->m_dlgSettings->ui->spViewTimeDecimals->value())); // duration and start
 }
 
 void QGVWaveform::selectionZoomOn(){
