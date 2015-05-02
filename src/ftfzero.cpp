@@ -34,6 +34,7 @@ using namespace Easdif;
 #include <qendian.h>
 
 #include "wmainwindow.h"
+#include "ui_wdialogsettings.h"
 
 void FTFZero::init(){
 
@@ -171,6 +172,25 @@ void FTFZero::reload() {
 
 QString FTFZero::info() const {
     QString str = FileType::info();
+    str += "Number of f0 values: " + QString::number(ts.size()) + "<br/>";
+    if(ts.size()>0){
+        // TODO Should be done once
+        double meandts = 0.0;
+        double meanf0 = f0s[0];
+        double f0min = f0s[0];
+        double f0max = f0s[0];
+        for(size_t i=1; i<ts.size(); ++i){
+            f0min = std::min(f0min, f0s[i]);
+            f0max = std::max(f0max, f0s[i]);
+            meandts += ts[i]-ts[i-1];
+            meanf0 += f0s[i];
+        }
+        meandts /= ts.size();
+        meanf0 /= f0s.size();
+        str += "Average sampling: " + QString("%1").arg(meandts, 0,'f',gMW->m_dlgSettings->ui->spViewTimeDecimals->value()) + "s<br/>";
+        str += QString("F0 in [%1,%2]Hz<br/>").arg(f0min, 0,'g',3).arg(f0max, 0,'g',5);
+        str += QString("Mean f0=%3Hz").arg(meanf0, 0,'g',5);
+    }
     return str;
 }
 
