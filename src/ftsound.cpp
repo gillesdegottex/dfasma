@@ -229,7 +229,7 @@ QString FTSound::info() const {
     if(isClipped())
         str += "<font color=\"red\"><b>CLIPPED</b></font><br/>";
     if(m_delay!=0.0)
-        str += "<b>Delayed: "+QString::number(double(m_delay)/fs, 'f', 4)+"s ("+QString::number(m_delay)+")</b><br/>";
+        str += "<b>Delayed: "+QString("%1").arg(double(m_delay)/fs, 0,'f',gMW->m_dlgSettings->ui->spViewTimeDecimals->value())+"s ("+QString::number(m_delay)+")</b><br/>";
 
     return str;
 }
