@@ -1140,6 +1140,22 @@ void QGVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
     if(m_aShowGrid->isChecked())
         draw_grid(painter, rect);
 
+    // Plot STFT's window centers
+    if(m_aShowSTFTWindowCenters->isChecked()){
+        FTSound* currentftsound = gMW->getCurrentFTSound(true);
+        if(currentftsound && currentftsound->m_actionShow->isChecked()){
+            QPen outlinePen(QColor(192, 192, 192)); // currentftsound->color
+            outlinePen.setStyle(Qt::DashLine);
+            outlinePen.setWidth(0);
+            painter->setPen(outlinePen);
+//            painter->setBrush(QBrush(gMW->ftlabels[fi]->color));
+
+            for(size_t wci=0; wci<currentftsound->m_stftts.size(); wci++){
+                painter->drawLine(QLineF(currentftsound->m_stftts[wci], -1.0, currentftsound->m_stftts[wci], 1.0));
+            }
+        }
+    }
+
     draw_allwaveforms(painter, rect);
 
     m_giWindow->setVisible(m_aShowWindow->isChecked() && m_selection.width()>0.0);
@@ -1288,21 +1304,6 @@ void QGVWaveform::draw_allwaveforms(QPainter* painter, const QRectF& rect){
             draw_waveform(painter, rect, gMW->ftsnds[fi]);
     if(m_aShowSelectedWaveformOnTop->isChecked())
         draw_waveform(painter, rect, currsnd);
-
-    // Plot STFT's window centers
-    if(m_aShowSTFTWindowCenters->isChecked()){
-        FTSound* currentftsound = gMW->getCurrentFTSound();
-        if(currentftsound && currentftsound->m_actionShow->isChecked()){
-            QPen outlinePen(currentftsound->color);
-            outlinePen.setWidth(0);
-            painter->setPen(outlinePen);
-//            painter->setBrush(QBrush(gMW->ftlabels[fi]->color));
-
-            for(size_t wci=0; wci<currentftsound->m_stftts.size(); wci++){
-                painter->drawLine(QLineF(currentftsound->m_stftts[wci], -1.0, currentftsound->m_stftts[wci], 1.0));
-            }
-        }
-    }
 }
 
 void QGVWaveform::draw_grid(QPainter* painter, const QRectF& rect){
