@@ -892,6 +892,7 @@ void WMainWindow::selectedFilesToggleShown() {
             m_gvSpectrogram->updateSTFTPlot();
     }
     m_gvWaveform->m_scene->update();
+    m_gvSpectrogram->m_scene->update();
     m_gvAmplitudeSpectrum->allSoundsChanged();
 }
 
