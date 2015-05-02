@@ -121,6 +121,7 @@ void FTLabels::init(){
     if(m_formatstrings.empty()){
         m_formatstrings.push_back("Unspecified");
         m_formatstrings.push_back("Auto");
+        m_formatstrings.push_back("Auto ASCII");
         m_formatstrings.push_back("ASCII Time/Text (*.bpf)");
         m_formatstrings.push_back("ASCII Segment (*.lab)");
         m_formatstrings.push_back("ASCII Segment HTK (*.lab)");
@@ -438,7 +439,7 @@ void FTLabels::saveAs() {
     #endif
     QString selectedFilter = m_formatstrings[m_fileformat];
 
-    QString fp = QFileDialog::getSaveFileName(gMW, "Save file as...", fileFullPath, filters, &selectedFilter);
+    QString fp = QFileDialog::getSaveFileName(gMW, "Save file as...", fileFullPath, filters, &selectedFilter, QFileDialog::DontUseNativeDialog);
 
     if(!fp.isEmpty()){
         try{

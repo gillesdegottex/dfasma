@@ -554,7 +554,7 @@ void WMainWindow::openFile() {
     filter += ";;Sound (*.wav *.aiff *.pcm *.snd *.raw *.flac *.ogg)";
     filter += ";;Label (*.bpf *.lab *.sdif)";
     filter += ";;F0 (*.bpf *.sdif)";
-    QStringList l = QFileDialog::getOpenFileNames(this, "Open File(s) ...", QString(), filter, 0, QFileDialog::ReadOnly);
+    QStringList l = QFileDialog::getOpenFileNames(this, "Open File(s) ...", QString(), filter, 0, QFileDialog::ReadOnly | QFileDialog::DontUseNativeDialog);
 
     if(l.size()>0){
         m_dlgProgress->setMaximum(l.size());
