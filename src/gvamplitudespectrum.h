@@ -102,8 +102,8 @@ public:
 
     ~QGVAmplitudeSpectrum();
 
-    QAction* m_aShowGrid;
-    QAction* m_aShowWindow;
+    QAction* m_aAmplitudeSpectrumShowGrid;
+    QAction* m_aAmplitudeSpectrumShowWindow;
     QAction* m_aZoomOnSelection;
     QAction* m_aSelectionClear;
     QAction* m_aZoomIn;
@@ -115,7 +115,6 @@ public:
 signals:
     
 public slots:
-    void settingsSave();
     void allSoundsChanged(); // Triggered when any waveform sample changed
 
     void setWindowRange(double tstart, double tend, bool winforceupdate);

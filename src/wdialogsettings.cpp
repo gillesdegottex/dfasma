@@ -27,6 +27,11 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "ftsound.h"
 #include "wmainwindow.h"
+#include "gvwaveform.h"
+#include "gvamplitudespectrum.h"
+#include "gvphasespectrum.h"
+#include "gvspectrogram.h"
+#include "gvspectrogramwdialogsettings.h"
 
 WDialogSettings::WDialogSettings(QWidget *parent) :
     QDialog(parent),
@@ -38,31 +43,30 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     setWindowIconText("Settings");
     setWindowTitle("Settings");
 
-    connect(ui->ckAvoidClicksAddWindows, SIGNAL(toggled(bool)), this, SLOT(setCKAvoidClicksAddWindows(bool)));
-    connect(ui->sbButterworthOrder, SIGNAL(valueChanged(int)), this, SLOT(setSBButterworthOrderChangeValue(int)));
-    connect(ui->sbAvoidClicksWindowDuration, SIGNAL(valueChanged(double)), this, SLOT(setSBAvoidClicksWindowDuration(double)));
+    connect(ui->ckPlaybackAvoidClicksAddWindows, SIGNAL(toggled(bool)), this, SLOT(setCKAvoidClicksAddWindows(bool)));
+    connect(ui->sbPlaybackButterworthOrder, SIGNAL(valueChanged(int)), this, SLOT(setSBButterworthOrderChangeValue(int)));
+    connect(ui->sbPlaybackAvoidClicksWindowDuration, SIGNAL(valueChanged(double)), this, SLOT(setSBAvoidClicksWindowDuration(double)));
     connect(ui->btnSettingsSave, SIGNAL(clicked()), this, SLOT(settingsSave()));
     connect(ui->btnSettingsClear, SIGNAL(clicked()), this, SLOT(settingsClear()));
 
-    QSettings settings;
-    ui->sbButterworthOrder->setValue(settings.value("playback/sbButterworthOrder", 32).toInt());
-    ui->cbFilteringCompensateEnergy->setChecked(settings.value("playback/cbFilteringCompensateEnergy", false).toBool());
-    ui->ckAvoidClicksAddWindows->setChecked(settings.value("playback/ckAvoidClicksAddWindows", false).toBool());
-    ui->sbAvoidClicksWindowDuration->setValue(settings.value("playback/sbAvoidClicksWindowDuration", 0.050).toDouble());
-
-    ui->cbShowMusicNoteNames->setChecked(settings.value("cbShowMusicNoteNames", false).toBool());
-    ui->sbToolBarSizes->setValue(settings.value("sbToolBarSizes", 32).toInt());
+    gMW->m_settings.add(ui->sbPlaybackButterworthOrder);
+    gMW->m_settings.add(ui->cbPlaybackFilteringCompensateEnergy);
+    gMW->m_settings.add(ui->ckPlaybackAvoidClicksAddWindows);
+    gMW->m_settings.add(ui->sbPlaybackAvoidClicksWindowDuration);
+    gMW->m_settings.add(ui->cbViewsShowMusicNoteNames);
+    gMW->m_settings.add(ui->sbViewsToolBarSizes);
+    gMW->m_settings.add(ui->sbViewsTimeDecimals);
 }
 
 void WDialogSettings::setSBButterworthOrderChangeValue(int order) {
     if(order%2==1)
-        ui->sbButterworthOrder->setValue(order+1);
+        ui->sbPlaybackButterworthOrder->setValue(order+1);
 }
 
 void WDialogSettings::setCKAvoidClicksAddWindows(bool add) {
     FTSound::sm_playwin_use = add;
-    FTSound::setAvoidClicksWindowDuration(ui->sbAvoidClicksWindowDuration->value());
-    ui->sbAvoidClicksWindowDuration->setEnabled(add);
+    FTSound::setAvoidClicksWindowDuration(ui->sbPlaybackAvoidClicksWindowDuration->value());
+    ui->sbPlaybackAvoidClicksWindowDuration->setEnabled(add);
     ui->lblAvoidClicksWindowDurationLabel->setEnabled(add);
 }
 
@@ -71,21 +75,17 @@ void WDialogSettings::setSBAvoidClicksWindowDuration(double halfduration) {
 }
 
 void WDialogSettings::settingsSave() {
-    QSettings settings;
-    settings.setValue("playback/AudioOutputDeviceName", ui->cbAudioOutputDevices->currentText());
-    settings.setValue("playback/sbButterworthOrder", ui->sbButterworthOrder->value());
-    settings.setValue("playback/cbFilteringCompensateEnergy", ui->cbFilteringCompensateEnergy->isChecked());
-    settings.setValue("playback/ckAvoidClicksAddWindows", ui->ckAvoidClicksAddWindows->isChecked());
-    settings.setValue("playback/sbAvoidClicksWindowDuration", ui->sbAvoidClicksWindowDuration->value());
+    // Save all the automatic settings
+    gMW->m_settings.saveAll();
 
-    settings.setValue("cbShowMusicNoteNames", ui->cbShowMusicNoteNames->isChecked());
-    settings.setValue("sbToolBarSizes", ui->sbToolBarSizes->value());
+    // Save the particular global settings
+    gMW->m_settings.setValue("cbPlaybackAudioOutputDevices", ui->cbPlaybackAudioOutputDevices->currentText());
 
-    gMW->settingsSave();
+    // Save the particular settings of different widgets
+    gMW->m_gvSpectrogram->settingsSave();
 }
 void WDialogSettings::settingsClear() {
-    QSettings settings;
-    settings.clear();
+    gMW->m_settings.clearAll();
     QMessageBox::information(this, "Reset factory settings", "<p>The settings have been reset to their original values.</p><p>Please restart DFasma</p>");
 }
 

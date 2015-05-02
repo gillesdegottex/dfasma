@@ -13,77 +13,69 @@ GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(QGVSpectrogram* paren
 
     m_spectrogram = parent;
 
-    // Load the settings
-    QSettings settings;
-    ui->cbWindowSizeForcedOdd->setChecked(settings.value("qgvspectrogram/cbWindowSizeForcedOdd", false).toBool());
-    ui->cbSpectrogramWindowType->setCurrentIndex(settings.value("qgvspectrogram/cbSpectrogramWindowType", 0).toInt());
-    ui->spWindowNormPower->setValue(settings.value("qgvspectrogram/spWindowNormPower", 2.0).toDouble());
-    ui->spWindowNormSigma->setValue(settings.value("qgvspectrogram/spWindowNormSigma", 0.3).toDouble());
-    ui->spWindowExpDecay->setValue(settings.value("qgvspectrogram/spWindowExpDecay", 60.0).toDouble());
-    ui->sbSpectrogramOversamplingFactor->setValue(settings.value("qgvspectrogram/sbSpectrogramOversamplingFactor", 1).toInt());
-
-    ui->sbStepSize->setValue(settings.value("qgvspectrogram/sbStepSize", 0.005).toDouble());
-    ui->sbWindowSize->setValue(settings.value("qgvspectrogram/sbWindowSize", 0.030).toDouble());
-    ui->sbSpectrogramOversamplingFactor->setValue(settings.value("qgvspectrogram/sbSpectrogramOversamplingFactor", 1).toInt());
-
-    ui->gbCepstralLiftering->setChecked(settings.value("qgvspectrogram/gbCepstralLiftering", false).toBool());
-    ui->sbCepstralLifteringOrder->setValue(settings.value("qgvspectrogram/sbCepstralLifteringOrder", 8).toInt());
-    ui->cbCepstralLifteringPreserveDC->setChecked(settings.value("qgvspectrogram/cbCepstralLifteringPreserveDC", true).toBool());
-
+    gMW->m_settings.add(ui->cbSpectrogramWindowSizeForcedOdd);
+    gMW->m_settings.add(ui->cbSpectrogramWindowType);
+    gMW->m_settings.add(ui->spSpectrogramWindowNormPower);
+    gMW->m_settings.add(ui->spSpectrogramWindowNormSigma);
+    gMW->m_settings.add(ui->spSpectrogramWindowExpDecay);
     ui->lblWindowNormSigma->hide();
-    ui->spWindowNormSigma->hide();
+    ui->spSpectrogramWindowNormSigma->hide();
     ui->lblWindowNormPower->hide();
-    ui->spWindowNormPower->hide();
+    ui->spSpectrogramWindowNormPower->hide();
     ui->lblWindowExpDecay->hide();
-    ui->spWindowExpDecay->hide();
-
+    ui->spSpectrogramWindowExpDecay->hide();
+    gMW->m_settings.add(ui->sbSpectrogramStepSize);
+    gMW->m_settings.add(ui->sbSpectrogramWindowSize);
+    gMW->m_settings.add(ui->sbSpectrogramOversamplingFactor);
+    gMW->m_settings.add(ui->gbSpectrogramCepstralLiftering);
+    gMW->m_settings.add(ui->sbSpectrogramCepstralLifteringOrder);
+    gMW->m_settings.add(ui->cbSpectrogramCepstralLifteringPreserveDC);
     QStringList colormaps = ColorMap::getAvailableColorMaps();
     for(QStringList::Iterator it=colormaps.begin(); it!=colormaps.end(); ++it)
         ui->cbSpectrogramColorMaps->addItem(*it);
-    ui->cbSpectrogramColorMaps->setCurrentIndex(settings.value("qgvspectrogram/cbSpectrogramColorMaps", 0).toInt());
-    ui->cbSpectrogramColorMapReversed->setChecked(settings.value("qgvspectrogram/cbSpectrogramColorMapReversed", true).toBool());
-
-    ui->cbF0ShowHarmonics->setChecked(settings.value("qgvspectrogram/cbF0ShowHarmonics", false).toBool());
+    gMW->m_settings.add(ui->cbSpectrogramColorMaps);
+    gMW->m_settings.add(ui->cbSpectrogramColorMapReversed);
+    gMW->m_settings.add(ui->cbSpectrogramF0ShowHarmonics);
 
     adjustSize();
 
     connect(ui->cbSpectrogramWindowType, SIGNAL(currentIndexChanged(QString)), this, SLOT(CBSpectrumWindowTypeCurrentIndexChanged(QString)));
-
 }
 
 void GVSpectrogramWDialogSettings::CBSpectrumWindowTypeCurrentIndexChanged(QString txt) {
     ui->lblWindowNormSigma->hide();
-    ui->spWindowNormSigma->hide();
+    ui->spSpectrogramWindowNormSigma->hide();
     ui->lblWindowNormPower->hide();
-    ui->spWindowNormPower->hide();
+    ui->spSpectrogramWindowNormPower->hide();
     ui->lblWindowExpDecay->hide();
-    ui->spWindowExpDecay->hide();
+    ui->spSpectrogramWindowExpDecay->hide();
     ui->lblWindowNormSigma->setToolTip("");
-    ui->spWindowNormSigma->setToolTip("");
+    ui->spSpectrogramWindowNormSigma->setToolTip("");
 
     if(txt=="Generalized Normal") {
         ui->lblWindowNormSigma->show();
         ui->lblWindowNormSigma->setText("sigma=");
         ui->lblWindowNormSigma->setToolTip("Warning! If using the Generalized Normal window, sigma=sqrt(2)*std, thus, not equivalent to the standard-deviation of the Gaussian window.");
-        ui->spWindowNormSigma->show();
-        ui->spWindowNormSigma->setToolTip("Warning! If using the Generalized Normal window, sigma=sqrt(2)*std, thus, not equivalent to the standard-deviation of the Gaussian window.");
+        ui->spSpectrogramWindowNormSigma->show();
+        ui->spSpectrogramWindowNormSigma->setToolTip("Warning! If using the Generalized Normal window, sigma=sqrt(2)*std, thus, not equivalent to the standard-deviation of the Gaussian window.");
         ui->lblWindowNormPower->show();
-        ui->spWindowNormPower->show();
+        ui->spSpectrogramWindowNormPower->show();
     }
     else if(txt=="Gaussian") {
         ui->lblWindowNormSigma->show();
         ui->lblWindowNormSigma->setText("standard-deviation=");
         ui->lblWindowNormSigma->setToolTip("The standard-deviation relative to the half window size");
-        ui->spWindowNormSigma->show();
-        ui->spWindowNormSigma->setToolTip("The standard-deviation relative to the half window size");
+        ui->spSpectrogramWindowNormSigma->show();
+        ui->spSpectrogramWindowNormSigma->setToolTip("The standard-deviation relative to the half window size");
     }
     else if(txt=="Exponential") {
         ui->lblWindowExpDecay->show();
-        ui->spWindowExpDecay->show();
+        ui->spSpectrogramWindowExpDecay->show();
     }
 
     adjustSize();
 }
+
 GVSpectrogramWDialogSettings::~GVSpectrogramWDialogSettings()
 {
     delete ui;

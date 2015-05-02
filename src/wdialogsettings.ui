@@ -50,7 +50,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QComboBox" name="cbAudioOutputDevices">
+             <widget class="QComboBox" name="cbPlaybackAudioOutputDevices">
               <property name="sizePolicy">
                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -78,7 +78,7 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_5">
           <item>
-           <widget class="QCheckBox" name="ckAvoidClicksAddWindows">
+           <widget class="QCheckBox" name="ckPlaybackAvoidClicksAddWindows">
             <property name="text">
              <string>Add half-windows at the begining and end of the played sounds to avoid clicks</string>
             </property>
@@ -87,7 +87,7 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_3">
             <item>
-             <widget class="QDoubleSpinBox" name="sbAvoidClicksWindowDuration">
+             <widget class="QDoubleSpinBox" name="sbPlaybackAvoidClicksWindowDuration">
               <property name="enabled">
                <bool>false</bool>
               </property>
@@ -141,7 +141,7 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
-             <widget class="QSpinBox" name="sbButterworthOrder">
+             <widget class="QSpinBox" name="sbPlaybackButterworthOrder">
               <property name="minimum">
                <number>4</number>
               </property>
@@ -172,7 +172,7 @@
            </layout>
           </item>
           <item>
-           <widget class="QCheckBox" name="cbFilteringCompensateEnergy">
+           <widget class="QCheckBox" name="cbPlaybackFilteringCompensateEnergy">
             <property name="text">
              <string>Compensate for the energy loss</string>
             </property>
@@ -191,7 +191,7 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_6">
          <item>
-          <widget class="QSpinBox" name="sbToolBarSizes">
+          <widget class="QSpinBox" name="sbViewsToolBarSizes">
            <property name="minimum">
             <number>8</number>
            </property>
@@ -199,7 +199,7 @@
             <number>128</number>
            </property>
            <property name="value">
-            <number>32</number>
+            <number>16</number>
            </property>
           </widget>
          </item>
@@ -221,7 +221,7 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_7">
          <item>
-          <widget class="QSpinBox" name="spViewTimeDecimals">
+          <widget class="QSpinBox" name="sbViewsTimeDecimals">
            <property name="maximum">
             <number>18</number>
            </property>
@@ -246,7 +246,7 @@
         </layout>
        </item>
        <item>
-        <widget class="QCheckBox" name="cbShowMusicNoteNames">
+        <widget class="QCheckBox" name="cbViewsShowMusicNoteNames">
          <property name="text">
           <string>Show music note names aside frequencies in Hertz</string>
          </property>

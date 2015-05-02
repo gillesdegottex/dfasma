@@ -187,7 +187,7 @@ QString FTFZero::info() const {
         }
         meandts /= ts.size();
         meanf0 /= f0s.size();
-        str += "Average sampling: " + QString("%1").arg(meandts, 0,'f',gMW->m_dlgSettings->ui->spViewTimeDecimals->value()) + "s<br/>";
+        str += "Average sampling: " + QString("%1").arg(meandts, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()) + "s<br/>";
         str += QString("F0 in [%1,%2]Hz<br/>").arg(f0min, 0,'g',3).arg(f0max, 0,'g',5);
         str += QString("Mean f0=%3Hz").arg(meanf0, 0,'g',5);
     }

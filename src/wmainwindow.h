@@ -34,6 +34,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QTimer>
 #include <QSettings>
 
+#include "QSettingsAuto.h"
 #include "wdialogsettings.h"
 
 class FTSound;
@@ -110,7 +111,6 @@ public slots:
     void allSoundsChanged();
     void selectAudioOutputDevice(int di);
     void selectAudioOutputDevice(const QString& devicename);
-    void settingsSave();
     void colorSelected(const QColor& color);
     void checkFileModifications();
     void duplicateCurrentFile();
@@ -121,10 +121,11 @@ public:
     explicit WMainWindow(QStringList sndfiles, QWidget* parent=0);
     ~WMainWindow();
 
+    QSettingsAuto m_settings;
+    WDialogSettings* m_dlgSettings;
+
     Ui::WMainWindow* ui;
     bool isLoading() const {return m_loading;}
-
-    WDialogSettings* m_dlgSettings;
 
     // Waiting bar for operations blocking the main window
     // (The DFT resizing is NOT blocking because in a separate thread)
@@ -144,10 +145,10 @@ public:
     double getMaxLastSampleTime();
 
     QGVWaveform* m_gvWaveform;
-    QGVAmplitudeSpectrum* m_gvSpectrum;
+    QGVAmplitudeSpectrum* m_gvAmplitudeSpectrum;
     QGVPhaseSpectrum* m_gvPhaseSpectrum;
     QGVSpectrogram* m_gvSpectrogram;
-    QxtSpanSlider* m_qxtspanslider;
+    QxtSpanSlider* m_qxtSpectrogramSpanSlider;
 
     AudioEngine* m_audioengine;
     FTSound* m_playingftsound;

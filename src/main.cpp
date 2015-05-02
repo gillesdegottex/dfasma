@@ -62,6 +62,8 @@ int main(int argc, char *argv[])
     #endif
 
     QApplication a(argc, argv);
+
+    // The following is also necessary for QSettings
     QCoreApplication::setOrganizationName("DFasma");
     QCoreApplication::setOrganizationDomain("gillesdegottex.eu");
     QCoreApplication::setApplicationName("DFasma");
@@ -77,7 +79,7 @@ int main(int argc, char *argv[])
 
     int ret = a.exec();
 
-    exit(0); // WORKAROUND?: won't quit otherwise on some platform (e.g. bouzouki)
+    exit(0); // WORKAROUND?: won't quit otherwise on some platform (e.g. bouzouki) TODO
 
     return ret;
 }

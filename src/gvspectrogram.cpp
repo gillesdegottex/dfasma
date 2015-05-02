@@ -62,10 +62,8 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     setScene(m_scene);
 
     m_dlgSettings = new GVSpectrogramWDialogSettings(this);
-
-    QSettings settings;
-    gMW->m_qxtspanslider->setLowerValue(settings.value("qgvspectrogram/sldSpectrogramAmplitudeMin", 0).toInt());
-    gMW->m_qxtspanslider->setUpperValue(settings.value("qgvspectrogram/sldSpectrogramAmplitudeMax", 100).toInt());
+    gMW->m_qxtSpectrogramSpanSlider->setUpperValue(gMW->m_settings.value("m_qxtSpectrogramSpanSlider_upper", 90).toInt());
+    gMW->m_qxtSpectrogramSpanSlider->setLowerValue(gMW->m_settings.value("m_qxtSpectrogramSpanSlider_lower", 10).toInt());
 
     m_imgSTFT.fill(Qt::white);
 
@@ -78,12 +76,13 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_gridFont.setPointSize(8);
     m_gridFont.setFamily("Helvetica");
 
-    m_aShowGrid = new QAction(tr("Show &grid"), this);
-    m_aShowGrid->setStatusTip(tr("Show &grid"));
-    m_aShowGrid->setCheckable(true);
-    m_aShowGrid->setIcon(QIcon(":/icons/grid.svg"));
-    m_aShowGrid->setChecked(settings.value("qgvspectrogram/m_aShowGrid", true).toBool());
-    connect(m_aShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
+    m_aSpectrogramShowGrid = new QAction(tr("Show &grid"), this);
+    m_aSpectrogramShowGrid->setObjectName("m_aSpectrogramShowGrid"); // For auto settings
+    m_aSpectrogramShowGrid->setStatusTip(tr("Show &grid"));
+    m_aSpectrogramShowGrid->setCheckable(true);
+    m_aSpectrogramShowGrid->setIcon(QIcon(":/icons/grid.svg"));
+    gMW->m_settings.add(m_aSpectrogramShowGrid);
+    connect(m_aSpectrogramShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
 
     m_stftcomputethread = new STFTComputeThread(this);
 
@@ -192,12 +191,12 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
 //    m_toolBar->addSeparator();
     m_toolBar->addAction(m_aZoomOnSelection);
     m_toolBar->addAction(m_aSelectionClear);
-    m_toolBar->setIconSize(QSize(gMW->m_dlgSettings->ui->sbToolBarSizes->value(),gMW->m_dlgSettings->ui->sbToolBarSizes->value()));
+    m_toolBar->setIconSize(QSize(gMW->m_dlgSettings->ui->sbViewsToolBarSizes->value(),gMW->m_dlgSettings->ui->sbViewsToolBarSizes->value()));
     m_toolBar->setOrientation(Qt::Vertical);
     gMW->ui->lSpectrogramToolBar->addWidget(m_toolBar);
 
     // Build the context menu
-    m_contextmenu.addAction(m_aShowGrid);
+    m_contextmenu.addAction(m_aSpectrogramShowGrid);
     m_contextmenu.addSeparator();
     m_contextmenu.addAction(m_aShowProperties);
     connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
@@ -207,18 +206,23 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
 
     connect(m_dlgSettings->ui->buttonBox->button(QDialogButtonBox::Apply), SIGNAL(clicked()), this, SLOT(updateDFTSettings()));
 
-    connect(gMW->m_qxtspanslider, SIGNAL(lowerValueChanged(int)), this, SLOT(updateSTFTPlot()));
-    connect(gMW->m_qxtspanslider, SIGNAL(upperValueChanged(int)), this, SLOT(updateSTFTPlot()));
+    connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(lowerValueChanged(int)), this, SLOT(updateSTFTPlot()));
+    connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(upperValueChanged(int)), this, SLOT(updateSTFTPlot()));
 
-    connect(gMW->m_qxtspanslider, SIGNAL(sliderPressed()), SLOT(amplitudeExtentSlidersChanged()));
-    connect(gMW->m_qxtspanslider, SIGNAL(spanChanged(int,int)), SLOT(amplitudeExtentSlidersChanged()));
+    connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(sliderPressed()), SLOT(amplitudeExtentSlidersChanged()));
+    connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(spanChanged(int,int)), SLOT(amplitudeExtentSlidersChanged()));
 
     updateDFTSettings(); // Prepare a window from loaded settings
 }
 
+void QGVSpectrogram::settingsSave(){
+    gMW->m_settings.setValue("m_qxtSpectrogramSpanSlider_lower", gMW->m_qxtSpectrogramSpanSlider->lowerValue());
+    gMW->m_settings.setValue("m_qxtSpectrogramSpanSlider_upper", gMW->m_qxtSpectrogramSpanSlider->upperValue());
+}
+
 void QGVSpectrogram::amplitudeExtentSlidersChanged(){
     if(!gMW->isLoading())
-        QToolTip::showText(QCursor::pos(), QString("[%1,%2]\%").arg(gMW->m_qxtspanslider->lowerValue()).arg(gMW->m_qxtspanslider->upperValue()), this);
+        QToolTip::showText(QCursor::pos(), QString("[%1,%2]\%").arg(gMW->m_qxtSpectrogramSpanSlider->lowerValue()).arg(gMW->m_qxtSpectrogramSpanSlider->upperValue()), this);
 }
 
 void QGVSpectrogram::updateAmplitudeExtent(){
@@ -248,10 +252,10 @@ void QGVSpectrogram::updateDFTSettings(){
 
     gMW->ui->pbSpectrogramSTFTUpdate->hide();
 
-    int winlen = std::floor(0.5+gMW->getFs()*m_dlgSettings->ui->sbWindowSize->value());
+    int winlen = std::floor(0.5+gMW->getFs()*m_dlgSettings->ui->sbSpectrogramWindowSize->value());
     //    cout << "QGVSpectrogram::updateDFTSettings winlen=" << winlen << endl;
 
-    if(winlen%2==0 && m_dlgSettings->ui->cbWindowSizeForcedOdd->isChecked())
+    if(winlen%2==0 && m_dlgSettings->ui->cbSpectrogramWindowSizeForcedOdd->isChecked())
         winlen++;
 
     // Create the window
@@ -273,11 +277,11 @@ void QGVSpectrogram::updateDFTSettings(){
     else if(wintype==7)
         m_win = sigproc::rectangular(winlen);
     else if(wintype==8)
-        m_win = sigproc::normwindow(winlen, m_dlgSettings->ui->spWindowNormSigma->value());
+        m_win = sigproc::normwindow(winlen, m_dlgSettings->ui->spSpectrogramWindowNormSigma->value());
     else if(wintype==9)
-        m_win = sigproc::expwindow(winlen, m_dlgSettings->ui->spWindowExpDecay->value());
+        m_win = sigproc::expwindow(winlen, m_dlgSettings->ui->spSpectrogramWindowExpDecay->value());
     else if(wintype==10)
-        m_win = sigproc::gennormwindow(winlen, m_dlgSettings->ui->spWindowNormSigma->value(), m_dlgSettings->ui->spWindowNormPower->value());
+        m_win = sigproc::gennormwindow(winlen, m_dlgSettings->ui->spSpectrogramWindowNormSigma->value(), m_dlgSettings->ui->spSpectrogramWindowNormPower->value());
     else
         throw QString("No window selected");
 
@@ -339,12 +343,12 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
             m_imgSTFTParams.clear();
         }
 
-        int stepsize = std::floor(0.5+gMW->getFs()*m_dlgSettings->ui->sbStepSize->value());
+        int stepsize = std::floor(0.5+gMW->getFs()*m_dlgSettings->ui->sbSpectrogramStepSize->value());
         int dftlen = pow(2, std::ceil(log2(float(m_win.size())))+m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());
         int cepliftorder = -1;
-        if(gMW->m_gvSpectrogram->m_dlgSettings->ui->gbCepstralLiftering->isChecked())
-            cepliftorder = gMW->m_gvSpectrogram->m_dlgSettings->ui->sbCepstralLifteringOrder->value();
-        bool cepliftpresdc = gMW->m_gvSpectrogram->m_dlgSettings->ui->cbCepstralLifteringPreserveDC->isChecked();
+        if(gMW->m_gvSpectrogram->m_dlgSettings->ui->gbSpectrogramCepstralLiftering->isChecked())
+            cepliftorder = gMW->m_gvSpectrogram->m_dlgSettings->ui->sbSpectrogramCepstralLifteringOrder->value();
+        bool cepliftpresdc = gMW->m_gvSpectrogram->m_dlgSettings->ui->cbSpectrogramCepstralLifteringPreserveDC->isChecked();
 
         if(csnd->m_stftparams != STFTComputeThread::Parameters(csnd, m_win, stepsize, dftlen, cepliftorder, cepliftpresdc)){
             m_stftcomputethread->compute(csnd, m_win, stepsize, dftlen, cepliftorder, cepliftpresdc);
@@ -359,7 +363,7 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
 
                     int dftlen = (int(csnd->m_stft[0].size())-1)*2;
 
-                    ImageParameters reqImgParams(csnd->m_stftparams, gMW->m_qxtspanslider->lowerValue(), gMW->m_qxtspanslider->upperValue(), m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex(), m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked());
+                    ImageParameters reqImgParams(csnd->m_stftparams, gMW->m_qxtSpectrogramSpanSlider->lowerValue(), gMW->m_qxtSpectrogramSpanSlider->upperValue(), m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex(), m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked());
 
                     if(m_imgSTFTParams!=reqImgParams){
                         gMW->ui->pbSTFTComputingCancel->hide();
@@ -378,8 +382,8 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
 //                        COUTD << "---" << endl;
 //                        COUTD << "[" << csnd->m_stft_min << "," << csnd->m_stft_max << "]" << endl;
 //                        COUTD << "[" << gMW->m_qxtspanslider->lowerValue() << "," << gMW->m_qxtspanslider->upperValue() << "]" << endl;
-                        double ymin = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtspanslider->lowerValue()/100.0;
-                        double ymax = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtspanslider->upperValue()/100.0;
+                        double ymin = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0;
+                        double ymax = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0;
 //                        COUTD << "[" << ymin << "," << ymax << "]" << endl;
                         for(int si=0; si<int(csnd->m_stft.size()); si++){
                             for(int n=0; n<int(csnd->m_stft[si].size()); n++) {
@@ -747,7 +751,7 @@ void QGVSpectrogram::selectionClear(bool forwardsync) {
 
     if(forwardsync){
         if(gMW->m_gvWaveform)      gMW->m_gvWaveform->selectionClear(false);
-        if(gMW->m_gvSpectrum)      gMW->m_gvSpectrum->selectionClear(false);
+        if(gMW->m_gvAmplitudeSpectrum)      gMW->m_gvAmplitudeSpectrum->selectionClear(false);
         if(gMW->m_gvPhaseSpectrum) gMW->m_gvPhaseSpectrum->selectionClear(false);
     }
 }
@@ -774,7 +778,7 @@ void QGVSpectrogram::selectionSetTextInForm() {
             left = gMW->m_gvPhaseSpectrum->m_selection.left();
             right = gMW->m_gvPhaseSpectrum->m_selection.right();
         }
-        str += QString("[%1,%2]%3s").arg(left, 0,'f',gMW->m_dlgSettings->ui->spViewTimeDecimals->value()).arg(right, 0,'f',gMW->m_dlgSettings->ui->spViewTimeDecimals->value()).arg(right-left, 0,'f',gMW->m_dlgSettings->ui->spViewTimeDecimals->value());
+        str += QString("[%1,%2]%3s").arg(left, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()).arg(right, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()).arg(right-left, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value());
 
         if (m_selection.height()>0) {
             str += QString(" x [%4,%5]%6Hz").arg(gMW->getFs()/2-m_selection.bottom()).arg(gMW->getFs()/2-m_selection.top()).arg(m_selection.height());
@@ -808,7 +812,7 @@ void QGVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
     m_giShownSelection->setRect(m_selection);
     m_giShownSelection->show();
 
-    m_giSelectionTxt->setText(QString("%1s,%2Hz").arg(m_selection.width(), 0,'f',gMW->m_dlgSettings->ui->spViewTimeDecimals->value()).arg(m_selection.height()));
+    m_giSelectionTxt->setText(QString("%1s,%2Hz").arg(m_selection.width(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()).arg(m_selection.height()));
     updateTextsGeometry();
 
     selectionSetTextInForm();
@@ -822,15 +826,15 @@ void QGVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
         if(gMW->m_gvWaveform)
             gMW->m_gvWaveform->selectionSet(QRectF(m_selection.left(), -1.0, m_selection.width(), 2.0), true, false);
 
-        if(gMW->m_gvSpectrum){
-            QRectF rect = gMW->m_gvSpectrum->m_mouseSelection;
+        if(gMW->m_gvAmplitudeSpectrum){
+            QRectF rect = gMW->m_gvAmplitudeSpectrum->m_mouseSelection;
             rect.setLeft(gMW->getFs()/2-m_selection.bottom());
             rect.setRight(gMW->getFs()/2-m_selection.top());
             if(rect.height()==0){
-                rect.setTop(gMW->m_gvSpectrum->m_scene->sceneRect().top());
-                rect.setBottom(gMW->m_gvSpectrum->m_scene->sceneRect().bottom());
+                rect.setTop(gMW->m_gvAmplitudeSpectrum->m_scene->sceneRect().top());
+                rect.setBottom(gMW->m_gvAmplitudeSpectrum->m_scene->sceneRect().bottom());
             }
-            gMW->m_gvSpectrum->selectionSet(rect, false);
+            gMW->m_gvAmplitudeSpectrum->selectionSet(rect, false);
         }
         if(gMW->m_gvPhaseSpectrum){
             QRectF rect = gMW->m_gvPhaseSpectrum->m_mouseSelection;
@@ -885,8 +889,8 @@ void QGVSpectrogram::selectionZoomOn(){
         updateTextsGeometry();
 //        if(gMW->m_gvPhaseSpectrum)
 //            gMW->m_gvPhaseSpectrum->viewUpdateTexts();
-//        if(gMW->m_gvSpectrum)
-//            gMW->m_gvSpectrum->viewUpdateTexts();
+//        if(gMW->m_gvAmplitudeSpectrum)
+//            gMW->m_gvAmplitudeSpectrum->viewUpdateTexts();
 
         setMouseCursorPosition(QPointF(-1,0), false);
 //        m_aZoomOnSelection->setEnabled(false);
@@ -945,7 +949,7 @@ void QGVSpectrogram::setMouseCursorPosition(QPointF p, bool forwardsync) {
         QRectF br = m_giMouseCursorTxtTime->boundingRect();
         qreal x = p.x()+1/trans.m11();
         x = min(x, viewrect.right()-br.width()/trans.m11());
-        m_giMouseCursorTxtTime->setText(QString("%1s").arg(p.x(), 0,'f',gMW->m_dlgSettings->ui->spViewTimeDecimals->value()));
+        m_giMouseCursorTxtTime->setText(QString("%1s").arg(p.x(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()));
         m_giMouseCursorTxtTime->setPos(x, viewrect.top()-3/trans.m22());
         m_giMouseCursorTxtTime->setTransform(txttrans);
         m_giMouseCursorTxtTime->show();
@@ -959,8 +963,8 @@ void QGVSpectrogram::setMouseCursorPosition(QPointF p, bool forwardsync) {
         if(forwardsync){
             if(gMW->m_gvWaveform)
                 gMW->m_gvWaveform->setMouseCursorPosition(p.x(), false);
-            if(gMW->m_gvSpectrum)
-                gMW->m_gvSpectrum->setMouseCursorPosition(QPointF(0.5*gMW->getFs()-p.y(), 0.0), false);
+            if(gMW->m_gvAmplitudeSpectrum)
+                gMW->m_gvAmplitudeSpectrum->setMouseCursorPosition(QPointF(0.5*gMW->getFs()-p.y(), 0.0), false);
             if(gMW->m_gvPhaseSpectrum)
                 gMW->m_gvPhaseSpectrum->setMouseCursorPosition(QPointF(0.5*gMW->getFs()-p.y(), 0.0), false);
         }
@@ -1035,7 +1039,7 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
     }
 
     // Draw the grid above the spectrogram
-    if(m_aShowGrid->isChecked())
+    if(m_aSpectrogramShowGrid->isChecked())
         draw_grid(painter, rect);
 
     // Draw the f0 grids
@@ -1059,7 +1063,7 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
             if(gMW->ftfzeros[fi]->f0s.back()>0.0)
                 f0min = std::min(f0min, gMW->ftfzeros[fi]->f0s.back());
 
-            if(m_dlgSettings->ui->cbF0ShowHarmonics->isChecked()){
+            if(m_dlgSettings->ui->cbSpectrogramF0ShowHarmonics->isChecked()){
                 // Draw harmonics up to Nyquist
                 c.setAlphaF(0.5);
                 outlinePen.setColor(c);
@@ -1149,34 +1153,9 @@ void QGVSpectrogram::draw_grid(QPainter* painter, const QRectF& rect) {
         painter->save();
         painter->translate(QPointF(l, viewrect.bottom()-14/trans.m22()));
         painter->scale(1.0/trans.m11(), 1.0/trans.m22());
-        painter->drawStaticText(QPointF(0, 0), QStaticText(QString("%1s").arg(l, 0,'f',gMW->m_dlgSettings->ui->spViewTimeDecimals->value())));
+        painter->drawStaticText(QPointF(0, 0), QStaticText(QString("%1s").arg(l, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value())));
         painter->restore();
     }
-}
-
-void QGVSpectrogram::settingsSave() {
-    QSettings settings;
-    settings.setValue("qgvspectrogram/m_aShowGrid", m_aShowGrid->isChecked());
-    settings.setValue("qgvspectrogram/sldSpectrogramAmplitudeMin", gMW->m_qxtspanslider->lowerValue());
-    settings.setValue("qgvspectrogram/sldSpectrogramAmplitudeMax", gMW->m_qxtspanslider->upperValue());
-    settings.setValue("qgvspectrogram/sbSpectrogramOversamplingFactor", m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());
-    settings.setValue("qgvspectrogram/cbWindowSizeForcedOdd", m_dlgSettings->ui->cbWindowSizeForcedOdd->isChecked());
-    settings.setValue("qgvspectrogram/cbSpectrogramWindowType", m_dlgSettings->ui->cbSpectrogramWindowType->currentIndex());
-    settings.setValue("qgvspectrogram/spWindowNormPower", m_dlgSettings->ui->spWindowNormPower->value());
-    settings.setValue("qgvspectrogram/spWindowNormSigma", m_dlgSettings->ui->spWindowNormSigma->value());
-    settings.setValue("qgvspectrogram/spWindowExpDecay", m_dlgSettings->ui->spWindowExpDecay->value());
-
-    settings.setValue("qgvspectrogram/sbStepSize", m_dlgSettings->ui->sbStepSize->value());
-    settings.setValue("qgvspectrogram/sbWindowSize", m_dlgSettings->ui->sbWindowSize->value());
-    settings.setValue("qgvspectrogram/sbSpectrogramOversamplingFactor", m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());
-
-    settings.setValue("qgvspectrogram/gbCepstralLiftering", m_dlgSettings->ui->gbCepstralLiftering->isChecked());
-    settings.setValue("qgvspectrogram/sbCepstralLifteringOrder", m_dlgSettings->ui->sbCepstralLifteringOrder->value());
-    settings.setValue("qgvspectrogram/cbCepstralLifteringPreserveDC", m_dlgSettings->ui->cbCepstralLifteringPreserveDC->isChecked());
-
-    settings.setValue("qgvspectrogram/cbSpectrogramColorMaps", m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex());
-    settings.setValue("qgvspectrogram/cbSpectrogramColorMapReversed", m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked());
-    settings.setValue("qgvspectrogram/cbF0ShowHarmonics", m_dlgSettings->ui->cbF0ShowHarmonics->isChecked());
 }
 
 QGVSpectrogram::~QGVSpectrogram(){

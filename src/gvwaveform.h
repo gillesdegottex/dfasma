@@ -68,16 +68,16 @@ public:
 
     QGraphicsScene* m_scene;
 
-    QAction* m_aShowGrid;
-    QAction* m_aShowWindow;
-    QAction* m_aShowSTFTWindowCenters;
+    QAction* m_aWaveformShowGrid;
+    QAction* m_aWaveformShowWindow;
+    QAction* m_aWaveformShowSTFTWindowCenters;
     QAction* m_aZoomOnSelection;
     QAction* m_aSelectionClear;
     QAction* m_aZoomIn;
     QAction* m_aZoomOut;
     QAction* m_aUnZoom;
     QAction* m_aFitViewToSoundsAmplitude;
-    QAction* m_aShowSelectedWaveformOnTop;
+    QAction* m_aWaveformShowSelectedWaveformOnTop;
     QMenu m_contextmenu;
 
     explicit QGVWaveform(WMainWindow* parent);
@@ -112,7 +112,6 @@ public:
 signals:
 
 public slots:
-    void settingsSave();
     void updateSceneRect();
     void updateTextsGeometry();
     void updateSelectionText();

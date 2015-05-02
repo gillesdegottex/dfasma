@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>575</width>
-    <height>487</height>
+    <height>425</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,7 +27,7 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_10">
         <item>
-         <widget class="QCheckBox" name="cbSpectrumAmplitudeLimitWindowDuration">
+         <widget class="QCheckBox" name="cbAmplitudeSpectrumLimitWindowDuration">
           <property name="sizePolicy">
            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -43,7 +43,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QDoubleSpinBox" name="sbSpectrumAmplitudeWindowDurationLimit">
+         <widget class="QDoubleSpinBox" name="sbAmplitudeSpectrumWindowDurationLimit">
           <property name="suffix">
            <string>s</string>
           </property>
@@ -67,7 +67,7 @@
        </layout>
       </item>
       <item>
-       <widget class="QCheckBox" name="cbWindowSizeForcedOdd">
+       <widget class="QCheckBox" name="cbAmplitudeSpectrumWindowSizeForcedOdd">
         <property name="text">
          <string>Force odd window size</string>
         </property>
@@ -89,7 +89,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="cbSpectrumWindowType">
+         <widget class="QComboBox" name="cbAmplitudeSpectrumWindowType">
           <item>
            <property name="text">
             <string>Hann</string>
@@ -169,7 +169,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QDoubleSpinBox" name="spWindowNormPower">
+             <widget class="QDoubleSpinBox" name="spAmplitudeSpectrumWindowNormPower">
               <property name="toolTip">
                <string>Power of the exponential's argument</string>
               </property>
@@ -213,7 +213,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QDoubleSpinBox" name="spWindowNormSigma">
+           <widget class="QDoubleSpinBox" name="spAmplitudeSpectrumWindowNormSigma">
             <property name="decimals">
              <number>6</number>
             </property>
@@ -248,7 +248,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QDoubleSpinBox" name="spWindowExpDecay">
+         <widget class="QDoubleSpinBox" name="spAmplitudeSpectrumWindowExpDecay">
           <property name="toolTip">
            <string>Targeted decay over half of the window length</string>
           </property>
@@ -296,7 +296,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="sbSpectrumOversamplingFactor">
+         <widget class="QSpinBox" name="sbAmplitudeSpectrumOversamplingFactor">
           <property name="value">
            <number>1</number>
           </property>
@@ -323,7 +323,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QDoubleSpinBox" name="sbFFTW3ResizingMaxTimeSpent">
+         <widget class="QDoubleSpinBox" name="sbAmplitudeSpectrumFFTW3ResizingMaxTimeSpent">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -353,7 +353,7 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QCheckBox" name="cbAddMarginsOnSelection">
+       <widget class="QCheckBox" name="cbAmplitudeSpectrumAddMarginsOnSelection">
         <property name="text">
          <string>Add margins around selection when zoom on selection</string>
         </property>

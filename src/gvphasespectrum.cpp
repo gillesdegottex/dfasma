@@ -106,7 +106,7 @@ QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
     setMouseTracking(true);
 
     // Build the context menu
-    m_contextmenu.addAction(gMW->m_gvSpectrum->m_aShowGrid);
+    m_contextmenu.addAction(gMW->m_gvAmplitudeSpectrum->m_aAmplitudeSpectrumShowGrid);
 //    m_contextmenu.addAction(gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop);
     m_contextmenu.addSeparator();
 //    m_aShowProperties = new QAction(tr("&Properties"), this);
@@ -115,8 +115,8 @@ QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
 //    connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
 //    connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(updateSceneRect()));
 
-    connect(gMW->m_gvSpectrum->m_aShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
-    connect(gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop, SIGNAL(triggered()), m_scene, SLOT(update()));
+    connect(gMW->m_gvAmplitudeSpectrum->m_aAmplitudeSpectrumShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
+    connect(gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop, SIGNAL(triggered()), m_scene, SLOT(update()));
 }
 
 // Remove hard coded margin (Bug 11945)
@@ -126,9 +126,6 @@ QRectF QGVPhaseSpectrum::removeHiddenMargin(const QRectF& sceneRect){
     const double mx = sceneRect.width()/viewport()->size().width()*bugMargin;
     const double my = sceneRect.height()/viewport()->size().height()*bugMargin;
     return sceneRect.adjusted(mx, my, -mx, -my);
-}
-
-void QGVPhaseSpectrum::settingsSave() {
 }
 
 void QGVPhaseSpectrum::updateSceneRect() {
@@ -156,15 +153,15 @@ void QGVPhaseSpectrum::viewSet(QRectF viewrect, bool sync) {
         fitInView(removeHiddenMargin(viewrect));
 
         if(sync){
-            if(gMW->m_gvSpectrum && gMW->ui->actionShowAmplitudeSpectrum->isChecked()) {
-                QRectF amprect = gMW->m_gvSpectrum->mapToScene(gMW->m_gvSpectrum->viewport()->rect()).boundingRect();
+            if(gMW->m_gvAmplitudeSpectrum && gMW->ui->actionShowAmplitudeSpectrum->isChecked()) {
+                QRectF amprect = gMW->m_gvAmplitudeSpectrum->mapToScene(gMW->m_gvAmplitudeSpectrum->viewport()->rect()).boundingRect();
                 amprect.setLeft(viewrect.left());
                 amprect.setRight(viewrect.right());
-                gMW->m_gvSpectrum->viewSet(amprect, false);
+                gMW->m_gvAmplitudeSpectrum->viewSet(amprect, false);
 
-        //        QPointF p = gMW->m_gvSpectrum->mapToScene(gMW->m_gvSpectrum->viewport()->rect()).boundingRect().center();
+        //        QPointF p = gMW->m_gvAmplitudeSpectrum->mapToScene(gMW->m_gvAmplitudeSpectrum->viewport()->rect()).boundingRect().center();
         //        p.setX(viewrect.center().x());
-        //        gMW->m_gvSpectrum->centerOn(p);
+        //        gMW->m_gvAmplitudeSpectrum->centerOn(p);
             }
         }
     }
@@ -180,8 +177,8 @@ void QGVPhaseSpectrum::resizeEvent(QResizeEvent* event) {
 
         updateSceneRect();
 
-        if(gMW->m_gvSpectrum->viewport()->rect().width()*gMW->m_gvSpectrum->viewport()->rect().height()>0){
-            QRectF phaserect = gMW->m_gvSpectrum->mapToScene(gMW->m_gvSpectrum->viewport()->rect()).boundingRect();
+        if(gMW->m_gvAmplitudeSpectrum->viewport()->rect().width()*gMW->m_gvAmplitudeSpectrum->viewport()->rect().height()>0){
+            QRectF phaserect = gMW->m_gvAmplitudeSpectrum->mapToScene(gMW->m_gvAmplitudeSpectrum->viewport()->rect()).boundingRect();
 
             QRectF viewrect;
             viewrect.setLeft(phaserect.left());
@@ -200,9 +197,9 @@ void QGVPhaseSpectrum::resizeEvent(QResizeEvent* event) {
 
 //    // Set the scroll bars in the amplitude and phase views
 //    if(event->size().height()==0)
-//        gMW->m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+//        gMW->m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 //    else
-//        gMW->m_gvSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+//        gMW->m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     viewUpdateTexts();
     setMouseCursorPosition(QPointF(-1,0), false);
@@ -407,7 +404,7 @@ void QGVPhaseSpectrum::mouseMoveEvent(QMouseEvent* event){
         if(currentftsound){
             currentftsound->m_delay = m_pressed_delay - dt*gMW->getFs();
             gMW->m_gvWaveform->m_scene->update();
-            gMW->m_gvSpectrum->allSoundsChanged();
+            gMW->m_gvAmplitudeSpectrum->allSoundsChanged();
             gMW->fileInfoUpdate();
             gMW->ui->pbSpectrogramSTFTUpdate->show();
         }
@@ -483,7 +480,7 @@ void QGVPhaseSpectrum::mouseReleaseEvent(QMouseEvent* event){
     }
 
     if(abs(m_selection.width())<=0 || abs(m_selection.height())<=0)
-        gMW->m_gvSpectrum->selectionClear();
+        gMW->m_gvAmplitudeSpectrum->selectionClear();
 
     QGraphicsView::mouseReleaseEvent(event);
 //    std::cout << "~QGVWaveform::mouseReleaseEvent " << endl;
@@ -491,12 +488,13 @@ void QGVPhaseSpectrum::mouseReleaseEvent(QMouseEvent* event){
 
 void QGVPhaseSpectrum::keyPressEvent(QKeyEvent* event){
     if(event->key()==Qt::Key_Escape)
-        gMW->m_gvSpectrum->selectionClear();
+        gMW->m_gvAmplitudeSpectrum->selectionClear();
 
     QGraphicsView::keyPressEvent(event);
 }
 
 void QGVPhaseSpectrum::selectionClear(bool forwardsync){
+    Q_UNUSED(forwardsync)
     m_selection = QRectF(0, 0, 0, 0);
     m_mouseSelection = QRectF(0, 0, 0, 0);
     m_giShownSelection->hide();
@@ -532,15 +530,15 @@ void QGVPhaseSpectrum::selectionSet(QRectF selection, bool forwardsync){
 //    m_giSelectionTxt->show();
     viewUpdateTexts();
 
-    if(gMW->m_gvSpectrum && forwardsync){
-        QRectF rect = gMW->m_gvSpectrum->m_mouseSelection;
+    if(gMW->m_gvAmplitudeSpectrum && forwardsync){
+        QRectF rect = gMW->m_gvAmplitudeSpectrum->m_mouseSelection;
         rect.setLeft(m_mouseSelection.left());
         rect.setRight(m_mouseSelection.right());
         if(rect.height()==0) {
-            rect.setTop(gMW->m_gvSpectrum->m_scene->sceneRect().top());
-            rect.setBottom(gMW->m_gvSpectrum->m_scene->sceneRect().bottom());
+            rect.setTop(gMW->m_gvAmplitudeSpectrum->m_scene->sceneRect().top());
+            rect.setBottom(gMW->m_gvAmplitudeSpectrum->m_scene->sceneRect().bottom());
         }
-        gMW->m_gvSpectrum->selectionSet(rect, false);
+        gMW->m_gvAmplitudeSpectrum->selectionSet(rect, false);
     }
 }
 
@@ -629,8 +627,8 @@ void QGVPhaseSpectrum::setMouseCursorPosition(QPointF p, bool forwardsync) {
     if(forwardsync){
         if(gMW->m_gvSpectrogram)
             gMW->m_gvSpectrogram->setMouseCursorPosition(QPointF(0.0, p.x()), false);
-        if(gMW->m_gvSpectrum)
-            gMW->m_gvSpectrum->setMouseCursorPosition(QPointF(p.x(), 0.0), false);
+        if(gMW->m_gvAmplitudeSpectrum)
+            gMW->m_gvAmplitudeSpectrum->setMouseCursorPosition(QPointF(p.x(), 0.0), false);
     }
 }
 
@@ -641,7 +639,7 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
     // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
 
     // Draw grid
-    if(gMW->m_gvSpectrum->m_aShowGrid->isChecked())
+    if(gMW->m_gvAmplitudeSpectrum->m_aAmplitudeSpectrumShowGrid->isChecked())
         draw_grid(painter, rect);
 
     // Draw the f0 grids
@@ -656,7 +654,7 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
             painter->setPen(outlinePen);
             painter->setBrush(QBrush(gMW->ftfzeros[fi]->color));
 
-            double ct = 0.5*(gMW->m_gvSpectrum->m_nl+gMW->m_gvSpectrum->m_nr)/gMW->getFs();
+            double ct = 0.5*(gMW->m_gvAmplitudeSpectrum->m_nl+gMW->m_gvAmplitudeSpectrum->m_nr)/gMW->getFs();
             double cf0 = sigproc::nearest<double>(gMW->ftfzeros[fi]->ts, gMW->ftfzeros[fi]->f0s, ct, -1.0);
 
             // cout << ct << ":" << cf0 << endl;
@@ -685,26 +683,26 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
     FTSound* currsnd = gMW->getCurrentFTSound(true);
 
     for(size_t fi=0; fi<gMW->ftsnds.size(); fi++){
-        if(!gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop->isChecked() || gMW->ftsnds[fi]!=currsnd){
+        if(!gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop->isChecked() || gMW->ftsnds[fi]!=currsnd){
             if(gMW->ftsnds[fi]->m_actionShow->isChecked()){
                 QPen outlinePen(gMW->ftsnds[fi]->color);
                 outlinePen.setWidth(0);
                 painter->setPen(outlinePen);
                 painter->setBrush(QBrush(gMW->ftsnds[fi]->color));
 
-                draw_spectrum(painter, gMW->ftsnds[fi]->m_dft, gMW->getFs(), (gMW->m_gvSpectrum->m_winlen-1)/2.0, rect);
+                draw_spectrum(painter, gMW->ftsnds[fi]->m_dft, gMW->getFs(), (gMW->m_gvAmplitudeSpectrum->m_winlen-1)/2.0, rect);
             }
         }
     }
 
-    if(gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop->isChecked()){
+    if(gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop->isChecked()){
         if(currsnd->m_actionShow->isChecked()){
             QPen outlinePen(currsnd->color);
             outlinePen.setWidth(0);
             painter->setPen(outlinePen);
             painter->setBrush(QBrush(currsnd->color));
 
-            draw_spectrum(painter, currsnd->m_dft, gMW->getFs(), (gMW->m_gvSpectrum->m_winlen-1)/2.0, rect);
+            draw_spectrum(painter, currsnd->m_dft, gMW->getFs(), (gMW->m_gvAmplitudeSpectrum->m_winlen-1)/2.0, rect);
         }
     }
 

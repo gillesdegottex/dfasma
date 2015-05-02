@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>575</width>
-    <height>643</height>
+    <height>606</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,17 +21,7 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QCheckBox" name="checkBox">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>identical to Spectrum settings</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="cbWindowSizeForcedOdd">
+       <widget class="QCheckBox" name="cbSpectrogramWindowSizeForcedOdd">
         <property name="text">
          <string>Force odd window size</string>
         </property>
@@ -133,7 +123,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QDoubleSpinBox" name="spWindowNormPower">
+             <widget class="QDoubleSpinBox" name="spSpectrogramWindowNormPower">
               <property name="toolTip">
                <string>Power of the exponential's argument</string>
               </property>
@@ -177,7 +167,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QDoubleSpinBox" name="spWindowNormSigma">
+           <widget class="QDoubleSpinBox" name="spSpectrogramWindowNormSigma">
             <property name="decimals">
              <number>6</number>
             </property>
@@ -212,7 +202,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QDoubleSpinBox" name="spWindowExpDecay">
+         <widget class="QDoubleSpinBox" name="spSpectrogramWindowExpDecay">
           <property name="toolTip">
            <string>Targeted decay over half of the window length</string>
           </property>
@@ -245,16 +235,6 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QCheckBox" name="checkBox_2">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>identical to Spectrum settings</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <layout class="QHBoxLayout" name="horizontalLayout_16">
         <item>
          <widget class="QLabel" name="label_11">
@@ -270,7 +250,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QDoubleSpinBox" name="sbStepSize">
+         <widget class="QDoubleSpinBox" name="sbSpectrogramStepSize">
           <property name="suffix">
            <string>s</string>
           </property>
@@ -309,7 +289,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QDoubleSpinBox" name="sbWindowSize">
+         <widget class="QDoubleSpinBox" name="sbSpectrogramWindowSize">
           <property name="suffix">
            <string>s</string>
           </property>
@@ -357,7 +337,7 @@
        </layout>
       </item>
       <item>
-       <widget class="QGroupBox" name="gbCepstralLiftering">
+       <widget class="QGroupBox" name="gbSpectrogramCepstralLiftering">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
           <horstretch>0</horstretch>
@@ -393,7 +373,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QSpinBox" name="sbCepstralLifteringOrder">
+            <widget class="QSpinBox" name="sbSpectrogramCepstralLifteringOrder">
              <property name="minimum">
               <number>1</number>
              </property>
@@ -408,7 +388,7 @@
           </layout>
          </item>
          <item>
-          <widget class="QCheckBox" name="cbCepstralLifteringPreserveDC">
+          <widget class="QCheckBox" name="cbSpectrogramCepstralLifteringPreserveDC">
            <property name="text">
             <string>Preserve cepstrum's DC</string>
            </property>
@@ -451,7 +431,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="cbAddMarginsOnSelection">
+       <widget class="QCheckBox" name="cbSpectrogramAddMarginsOnSelection">
         <property name="text">
          <string>Add margins around selection when zoom on selection</string>
         </property>
@@ -461,7 +441,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="cbF0ShowHarmonics">
+       <widget class="QCheckBox" name="cbSpectrogramF0ShowHarmonics">
         <property name="text">
          <string>Show the harmonics of the fundamental frequency curves</string>
         </property>

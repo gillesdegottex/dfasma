@@ -26,6 +26,8 @@ public:
 
     Ui::GVSpectrogramWDialogSettings *ui;
 
+    void settingsSave();
+
 private:
 
 private slots:

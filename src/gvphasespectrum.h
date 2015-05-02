@@ -93,7 +93,6 @@ public:
 signals:
     
 public slots:
-    void settingsSave();
     void updateSceneRect();
 
     void azoomin();

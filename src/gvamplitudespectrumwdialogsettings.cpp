@@ -14,76 +14,72 @@ GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(QGVAmplit
 
     m_ampspec = parent;
 
+    // Load the settings
     #ifndef FFTW3RESIZINGMAXTIMESPENT
     ui->lblFFTW3ResizingMaxTimeSpent->hide();
     ui->sbFFTW3ResizingMaxTimeSpent->hide();
+    #else
+    gMW->m_settings.add(ui->sbAmplitudeSpectrumFFTW3ResizingMaxTimeSpent);
     #endif
-
-    // Load the settings
-    QSettings settings;
-    ui->sbSpectrumOversamplingFactor->setValue(settings.value("qgvamplitudespectrum/sbSpectrumOversamplingFactor", 1).toInt());
-    ui->sbFFTW3ResizingMaxTimeSpent->setValue(settings.value("qgvamplitudespectrum/sbFFTW3ResizingMaxTimeSpent", 1).toDouble());
-
-    ui->cbWindowSizeForcedOdd->setChecked(settings.value("qgvamplitudespectrum/cbWindowSizeForcedOdd", false).toBool());
-    ui->cbSpectrumAmplitudeLimitWindowDuration->setChecked(settings.value("qgvamplitudespectrum/cbSpectrumAmplitudeLimitWindowDuration", true).toBool());
-    ui->sbSpectrumAmplitudeWindowDurationLimit->setValue(settings.value("qgvamplitudespectrum/sbSpectrumAmplitudeWindowDurationLimit", 1.0).toDouble());
-
-    ui->cbSpectrumWindowType->setCurrentIndex(settings.value("qgvamplitudespectrum/cbSpectrumWindowType", 0).toInt());
-    ui->spWindowNormPower->setValue(settings.value("qgvamplitudespectrum/spWindowNormPower", 2.0).toDouble());
-    ui->spWindowNormSigma->setValue(settings.value("qgvamplitudespectrum/spWindowNormSigma", 0.3).toDouble());
-    ui->spWindowExpDecay->setValue(settings.value("qgvamplitudespectrum/spWindowExpDecay", 60.0).toDouble());
-
-    ui->cbAddMarginsOnSelection->setChecked(settings.value("qgvamplitudespectrum/cbAddMarginsOnSelection", true).toBool());
-
+    gMW->m_settings.add(ui->cbAmplitudeSpectrumWindowSizeForcedOdd);
+    gMW->m_settings.add(ui->cbAmplitudeSpectrumLimitWindowDuration);
+    gMW->m_settings.add(ui->sbAmplitudeSpectrumWindowDurationLimit);
+    gMW->m_settings.add(ui->cbAmplitudeSpectrumWindowType);
+    gMW->m_settings.add(ui->spAmplitudeSpectrumWindowNormPower);
+    gMW->m_settings.add(ui->spAmplitudeSpectrumWindowNormSigma);
+    gMW->m_settings.add(ui->spAmplitudeSpectrumWindowExpDecay);
     ui->lblWindowNormSigma->hide();
-    ui->spWindowNormSigma->hide();
+    ui->spAmplitudeSpectrumWindowNormSigma->hide();
     ui->lblWindowNormPower->hide();
-    ui->spWindowNormPower->hide();
+    ui->spAmplitudeSpectrumWindowNormPower->hide();
     ui->lblWindowExpDecay->hide();
-    ui->spWindowExpDecay->hide();
+    ui->spAmplitudeSpectrumWindowExpDecay->hide();
+    gMW->m_settings.add(ui->sbAmplitudeSpectrumOversamplingFactor);
+//    gMW->m_settings.add(ui->cbAmplitudeSpectrumF0ShowHarmonics); // TODO
+    gMW->m_settings.add(ui->cbAmplitudeSpectrumAddMarginsOnSelection);
 
     adjustSize();
 
-    connect(ui->cbSpectrumWindowType, SIGNAL(currentIndexChanged(QString)), this, SLOT(CBSpectrumWindowTypeCurrentIndexChanged(QString)));
+    connect(ui->cbAmplitudeSpectrumWindowType, SIGNAL(currentIndexChanged(QString)), this, SLOT(CBSpectrumWindowTypeCurrentIndexChanged(QString)));
 
     // Update the DFT view automatically
-    connect(ui->sbSpectrumOversamplingFactor, SIGNAL(valueChanged(int)), m_ampspec, SLOT(settingsModified()));
-    connect(ui->cbWindowSizeForcedOdd, SIGNAL(toggled(bool)), m_ampspec, SLOT(settingsModified()));
-    connect(ui->cbSpectrumWindowType, SIGNAL(currentIndexChanged(int)), m_ampspec, SLOT(settingsModified()));
-    connect(ui->spWindowNormPower, SIGNAL(valueChanged(double)), m_ampspec, SLOT(settingsModified()));
-    connect(ui->spWindowNormSigma, SIGNAL(valueChanged(double)), m_ampspec, SLOT(settingsModified()));
-    connect(ui->spWindowExpDecay, SIGNAL(valueChanged(double)), m_ampspec, SLOT(settingsModified()));
+    connect(ui->sbAmplitudeSpectrumOversamplingFactor, SIGNAL(valueChanged(int)), m_ampspec, SLOT(settingsModified()));
+    connect(ui->cbAmplitudeSpectrumWindowSizeForcedOdd, SIGNAL(toggled(bool)), m_ampspec, SLOT(settingsModified()));
+    connect(ui->cbAmplitudeSpectrumWindowType, SIGNAL(currentIndexChanged(int)), m_ampspec, SLOT(settingsModified()));
+    connect(ui->spAmplitudeSpectrumWindowNormPower, SIGNAL(valueChanged(double)), m_ampspec, SLOT(settingsModified()));
+    connect(ui->spAmplitudeSpectrumWindowNormSigma, SIGNAL(valueChanged(double)), m_ampspec, SLOT(settingsModified()));
+    connect(ui->spAmplitudeSpectrumWindowExpDecay, SIGNAL(valueChanged(double)), m_ampspec, SLOT(settingsModified()));
 }
 
 void GVAmplitudeSpectrumWDialogSettings::CBSpectrumWindowTypeCurrentIndexChanged(QString txt) {
     ui->lblWindowNormSigma->hide();
-    ui->spWindowNormSigma->hide();
+    ui->spAmplitudeSpectrumWindowNormSigma->hide();
     ui->lblWindowNormPower->hide();
-    ui->spWindowNormPower->hide();
+    ui->spAmplitudeSpectrumWindowNormPower->hide();
     ui->lblWindowExpDecay->hide();
-    ui->spWindowExpDecay->hide();
+    ui->spAmplitudeSpectrumWindowExpDecay->hide();
     ui->lblWindowNormSigma->setToolTip("");
-    ui->spWindowNormSigma->setToolTip("");
+    ui->spAmplitudeSpectrumWindowNormSigma->setToolTip("");
 
     if(txt=="Generalized Normal") {
         ui->lblWindowNormSigma->show();
         ui->lblWindowNormSigma->setText("sigma=");
         ui->lblWindowNormSigma->setToolTip("Warning! If using the Generalized Normal window, sigma=sqrt(2)*std, thus, not equivalent to the standard-deviation of the Gaussian window.");
-        ui->spWindowNormSigma->show();
-        ui->spWindowNormSigma->setToolTip("Warning! If using the Generalized Normal window, sigma=sqrt(2)*std, thus, not equivalent to the standard-deviation of the Gaussian window.");
+        ui->spAmplitudeSpectrumWindowNormSigma->show();
+        ui->spAmplitudeSpectrumWindowNormSigma->setToolTip("Warning! If using the Generalized Normal window, sigma=sqrt(2)*std, thus, not equivalent to the standard-deviation of the Gaussian window.");
         ui->lblWindowNormPower->show();
-        ui->spWindowNormPower->show();
+        ui->spAmplitudeSpectrumWindowNormPower->show();
     }
     else if(txt=="Gaussian") {
         ui->lblWindowNormSigma->show();
         ui->lblWindowNormSigma->setText("standard-deviation=");
         ui->lblWindowNormSigma->setToolTip("The standard-deviation relative to the half window size");
-        ui->spWindowNormSigma->show();
-        ui->spWindowNormSigma->setToolTip("The standard-deviation relative to the half window size");
+        ui->spAmplitudeSpectrumWindowNormSigma->show();
+        ui->spAmplitudeSpectrumWindowNormSigma->setToolTip("The standard-deviation relative to the half window size");
     }
     else if(txt=="Exponential") {
         ui->lblWindowExpDecay->show();
-        ui->spWindowExpDecay->show();
+        ui->spAmplitudeSpectrumWindowExpDecay->show();
     }
 
     adjustSize();
