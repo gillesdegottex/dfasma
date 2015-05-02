@@ -36,6 +36,7 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "QSettingsAuto.h"
 #include "wdialogsettings.h"
+#include "filetype.h"
 
 class FTSound;
 class FTFZero;
@@ -132,7 +133,7 @@ public:
     QLabel* m_globalWaitingBarLabel;
     QProgressBar* m_globalWaitingBar;
 
-    void addFile(const QString& filepath);
+    void addFile(const QString& filepath, FileType::FType type=FileType::FTUNSET);
     std::deque<FTSound*> ftsnds;
     std::deque<FTFZero*> ftfzeros;
     std::deque<FTLabels*> ftlabels;

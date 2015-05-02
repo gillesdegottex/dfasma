@@ -21,6 +21,8 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "ftfzero.h"
 
 #include <iostream>
+#include <fstream>
+#include <sstream>
 using namespace std;
 
 #ifdef SUPPORT_SDIF
@@ -37,15 +39,24 @@ using namespace Easdif;
 #include "ui_wdialogsettings.h"
 
 void FTFZero::init(){
-
+    m_fileformat = FFNotSpecified;
 }
 
-FTFZero::FTFZero(const QString& _fileName, QObject *parent)
+FTFZero::FTFZero(const QString& _fileName, QObject* parent, FileType::FileContainer container, FileFormat fileformat)
     : FileType(FTFZERO, _fileName, this)
 {
     Q_UNUSED(parent)
 
+    if(fileFullPath.isEmpty())
+        throw QString("This ctor is for existing files. Use the empty ctor for empty label object.");
+
     init();
+
+    m_fileformat = fileformat;
+    if(container==FileType::FCSDIF)
+        m_fileformat = FFSDIF;
+    else if(container==FileType::FCASCII)
+        m_fileformat = FFAsciiAutoDetect;
 
     if(!fileFullPath.isEmpty()){
         checkFileStatus(CFSMEXCEPTION);
@@ -76,9 +87,53 @@ FileType* FTFZero::duplicate(){
 
 void FTFZero::load() {
 
-    // TODO load text files
+    if(m_fileformat==FFNotSpecified)
+        m_fileformat = FFAutoDetect;
 
     #ifdef SUPPORT_SDIF
+    if(m_fileformat==FFAutoDetect)
+        if(FileType::isFileSDIF(fileFullPath))
+            m_fileformat = FFSDIF;
+    #endif
+
+    // Check for text/ascii formats
+    if(m_fileformat==FFAutoDetect || m_fileformat==FFAsciiAutoDetect){
+        // Find the format using grammar check
+
+        std::ifstream fin(fileFullPath.toLatin1().constData());
+        if(!fin.is_open())
+            throw QString("FTFZero:FFAutoDetect: Cannot open the file.");
+        double t;
+        string line, text;
+        // Check the first line only (Assuming it is enough)
+        if(!std::getline(fin, line))
+            throw QString("FTFZero:FFAutoDetect: There is not a single line in this file.");
+
+        // Check: <number> <number>
+        std::istringstream iss(line);
+        if((iss >> t >> t) && iss.eof())
+            m_fileformat = FFAsciiTimeValue;
+    }
+
+    if(m_fileformat==FFAutoDetect)
+        throw QString("Cannot detect the file format of this f0 file");
+
+    // Load the data given the format found or the one given
+    if(m_fileformat==FFAsciiTimeValue){
+        ifstream fin(fileFullPath.toLatin1().constData());
+        if(!fin.is_open())
+            throw QString("FTFZero:FFAsciiTimeValue: Cannot open file");
+
+        double t, value;
+        string line, text;
+        while(std::getline(fin, line)) {
+            std::istringstream(line) >> t >> value;
+            ts.push_back(t);
+            f0s.push_back(value);
+        }
+    }
+    else if(m_fileformat==FFSDIF){
+        #ifdef SUPPORT_SDIF
 
         SDIFEntity readentity;
 
@@ -150,7 +205,12 @@ void FTFZero::load() {
         catch(QString &e) {
             throw QString("SDIF: ")+e;
         }
-    #endif
+        #else
+            throw QString("SDIF file support is not compiled in this distribution of DFasma.");
+        #endif
+    }
+    else
+        throw QString("File format not recognized for loading this f0 file.");
 
     m_lastreadtime = QDateTime::currentDateTime();
     setStatus();

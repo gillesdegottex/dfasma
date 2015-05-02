@@ -86,7 +86,30 @@ QColor GetNextColor(){
     return color;
 }
 
-FileType::FileType(FILETYPE _type, const QString& _fileName, QObject * parent)
+FileType::FileContainer FileType::guessContainer(const QString& filepath){
+    // TODO Could make a ligther one based on the file extension, instead of opening the file
+
+    // This should be always "guessable"
+    FileContainer container = FileType::FCUNSET;
+
+    int nchan = FTSound::getNumberOfChannels(filepath);
+    if(nchan>0)
+        return FCANYSOUND;
+    #ifdef SUPPORT_SDIF
+    else if(FileType::isFileSDIF(filepath))
+        return FCSDIF;
+    #endif
+    else if(FileType::isFileASCII(filepath))// This detection is not 100% accurate
+        return FCASCII;
+    #ifndef SUPPORT_SDIF
+    else if(FileType::hasFileExtension(filepath, ".sdif"))
+        throw QString("Support of SDIF files not compiled in this distribution of DFasma.");
+    #endif
+    else
+        throw QString("The container(format) of this file is not managed by DFasma.");
+}
+
+FileType::FileType(FType _type, const QString& _fileName, QObject * parent)
     : type(_type)
     , fileFullPath(_fileName)
     , color(GetNextColor())

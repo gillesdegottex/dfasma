@@ -44,6 +44,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <iostream>
 #include <algorithm>
 #include <limits>
+#include <fstream>
 using namespace std;
 
 #include <QGraphicsWidget>
@@ -566,7 +567,7 @@ void WMainWindow::openFile() {
     }
 }
 
-void WMainWindow::addFile(const QString& filepath) {
+void WMainWindow::addFile(const QString& filepath, FileType::FType type) {
 //    cout << "INFO: Add file: " << filepath.toLocal8Bit().constData() << endl;
 
     if(QFileInfo(filepath).isDir()){
@@ -576,18 +577,61 @@ void WMainWindow::addFile(const QString& filepath) {
             addFile(fpd.filePath(fpd[fpdi]));
     }
     else{
-        try
-        {
+        try{
             bool isfirsts = ftsnds.size()==0;
 
-            FileType* ft = NULL;
+            // Attention: There is the type of data stored in DFasma (FILETYPE) (ex. FileType::FTSOUND)
+            //  and the format of the file (ex. FFSOUND)
 
-            int nchan = FTSound::getNumberOfChannels(filepath);
-            if(nchan>0){
+            // This should be always "guessable"
+            FileType::FileContainer container = FileType::guessContainer(filepath);
+
+//            can be replaced by an autodetect or "forced mode" in the future
+
+            // Then, guess the type of the data in the file, if no specified yet
+            if(type==FileType::FTUNSET){
+            // The format and the DFasma's type have to correspond
+                if(container==FileType::FCANYSOUND)
+                    type = FileType::FTSOUND; // These two have to match
+
+                #ifdef SUPPORT_SDIF
+                if(container==FileType::FCSDIF) {
+                    if(FileType::SDIF_hasFrame(filepath, "1FQ0"))
+                        type = FileType::FTFZERO;
+                    else if (FileType::SDIF_hasFrame(filepath, "1MRK"))
+                        type = FileType::FTLABELS;
+                    else
+                        throw QString("Unsupported SDIF data.");
+                }
+                #endif
+                if(container==FileType::FCASCII) {
+                    // Distinguish between f0, labels and future VUF files (and futur others ...)
+                    // Do a grammar check (But this won't help to diff F0 and VUF files)
+                    ifstream fin(filepath.toLatin1().constData());
+                    if(!fin.is_open())
+                        throw QString("Cannot open this file (even for format detection)");
+                    double t;
+                    string line, text;
+                    // Check the first line only (Assuming it is enough)
+                    if(!std::getline(fin, line))
+                        throw QString("There is not a single line in this file");
+                    // Check: <number> <number>
+                    std::istringstream iss(line);
+                    if((iss >> t >> t) && iss.eof())
+                        type = FileType::FTFZERO;
+                    else // Assume this is a label
+                        type = FileType::FTLABELS;
+                }
+            }
+
+            if(type==FileType::FTUNSET)
+                throw QString("Cannot find any data or audio channel in this file that is handled by this distribution of DFasma.");
+
+            if(type==FileType::FTSOUND){
+                int nchan = FTSound::getNumberOfChannels(filepath);
                 if(nchan==1){
                     // If there is only one channel, just load it
-                    ft = new FTSound(filepath, this);
-                    ui->listSndFiles->addItem(ft);
+                    ui->listSndFiles->addItem(new FTSound(filepath, this));
                 }
                 else{
                     // If more than one channel, ask what to do
@@ -596,17 +640,14 @@ void WMainWindow::addFile(const QString& filepath) {
                     if(dlg.exec()) {
                         if(dlg.ui->rdbImportEachChannel->isChecked()){
                             for(int ci=1; ci<=nchan; ci++){
-                                ft = new FTSound(filepath, this, ci);
-                                ui->listSndFiles->addItem(ft);
+                                ui->listSndFiles->addItem(new FTSound(filepath, this, ci));
                             }
                         }
                         else if(dlg.ui->rdbImportOnlyOneChannel->isChecked()){
-                            ft = new FTSound(filepath, this, dlg.ui->sbChannelID->value());
-                            ui->listSndFiles->addItem(ft);
+                            ui->listSndFiles->addItem(new FTSound(filepath, this, dlg.ui->sbChannelID->value()));
                         }
                         else if(dlg.ui->rdbMergeAllChannels->isChecked()){
-                            ft = new FTSound(filepath, this, -2); // -2 is a code for merging the channels
-                            ui->listSndFiles->addItem(ft);
+                            ui->listSndFiles->addItem(new FTSound(filepath, this, -2));// -2 is a code for merging the channels
                         }
                     }
                 }
@@ -619,36 +660,10 @@ void WMainWindow::addFile(const QString& filepath) {
                     m_gvWaveform->fitViewToSoundsAmplitude();
                 }
             }
-            #ifdef SUPPORT_SDIF
-            else if(FileType::isFileSDIF(filepath)) {
-                if(FileType::SDIF_hasFrame(filepath, "1FQ0"))
-                    ft = new FTFZero(filepath, this);
-                else if (FileType::SDIF_hasFrame(filepath, "1MRK"))
-                    ft = new FTLabels(filepath, this, FTLabels::FFSDIF);
-                else
-                    throw QString("Unsupported SDIF data.");
-
-                ui->listSndFiles->addItem(ft);
-            }
-            #endif
-            else if(FileType::isFileASCII(filepath)) {
-
-                // TODO Distinguish between f0 and labels (and futur others ?)
-
-                ft = new FTLabels(filepath, this);
-
-                // TODO Manage F0 bpf
-
-                ui->listSndFiles->addItem(ft);
-            }
-            #ifndef SUPPORT_SDIF
-            else if(FileType::hasFileExtension(filepath, ".sdif")) {
-                throw QString("Support of SDIF files not compiled in this version.");
-            }
-            #endif
-            else {
-                throw QString("Cannot find any data or audio channel in this file that is handled by this distribution of DFasma.");
-            }
+            else if(type == FileType::FTFZERO)
+                ui->listSndFiles->addItem(new FTFZero(filepath, this, container));
+            else if(type == FileType::FTLABELS)
+                ui->listSndFiles->addItem(new FTLabels(filepath, this, container));
         }
         catch (QString err)
         {

@@ -36,11 +36,12 @@ protected:
     QDateTime m_lastreadtime;
 
 public:
-    enum FILETYPE {FTUNSET, FTSOUND, FTFZERO, FTLABELS};
+    enum FType {FTUNSET=0, FTSOUND, FTFZERO, FTLABELS}; // Names corresponding to possible classes
+    enum FileContainer {FCUNSET=0, FCANYSOUND, FCASCII, FCSDIF}; // File Containers (not format !)
 
-    FileType(FILETYPE _type, const QString& _fileName, QObject *parent);
+    FileType(FType _type, const QString& _fileName, QObject *parent);
 
-    FILETYPE type;
+    FType type;
     QString fileFullPath;
     QColor color;
 
@@ -51,6 +52,7 @@ public:
 
     static bool hasFileExtension(const QString& filepath, const QString& ext);
     static bool isFileASCII(const QString& filename);
+    static FileContainer guessContainer(const QString& filepath);
     #ifdef SUPPORT_SDIF
     static bool isFileSDIF(const QString& filename);
     static bool SDIF_hasFrame(const QString& filename, const QString& framesignature);

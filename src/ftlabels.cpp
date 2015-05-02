@@ -156,17 +156,21 @@ FTLabels::FTLabels(QObject *parent)
 }
 
 // Construct from an existing file name
-FTLabels::FTLabels(const QString& _fileName, QObject *parent, FileFormat fileformat)
+FTLabels::FTLabels(const QString& _fileName, QObject* parent, FileType::FileContainer container, FileFormat fileformat)
     : FileType(FTLABELS, _fileName, this)
 {
     Q_UNUSED(parent);
 
     if(fileFullPath.isEmpty())
-        throw QString("This ctor use an existing file. Don't use this ctor for an empty label object.");
+        throw QString("This ctor is for existing files. Use the empty ctor for empty label object.");
 
     init();
 
     m_fileformat = fileformat;
+    if(container==FileType::FCSDIF)
+        m_fileformat = FFSDIF;
+    else if(container==FileType::FCASCII)
+        m_fileformat = FFAsciiAutoDetect;
 
     checkFileStatus(CFSMEXCEPTION);
     load();
@@ -204,13 +208,13 @@ void FTLabels::load() {
         m_fileformat = FFAutoDetect;
 
     #ifdef SUPPORT_SDIF
-        if(m_fileformat==FFAutoDetect)
-            if(FileType::isFileSDIF(fileFullPath))
-                m_fileformat = FFSDIF;
+    if(m_fileformat==FFAutoDetect)
+        if(FileType::isFileSDIF(fileFullPath))
+            m_fileformat = FFSDIF;
     #endif
 
     // Check for text formats
-    if(m_fileformat==FFAutoDetect) {
+    if(m_fileformat==FFAutoDetect || m_fileformat==FFAsciiAutoDetect) {
         // Find the format using language check
 
         ifstream fin(fileFullPath.toLatin1().constData());
@@ -246,6 +250,7 @@ void FTLabels::load() {
     if(m_fileformat==FFAutoDetect)
         throw QString("Cannot detect the file format of this label file");
 
+    // Load the data given the format found or the one given
     if(m_fileformat==FFAsciiTimeText){
         ifstream fin(fileFullPath.toLatin1().constData());
         if(!fin.is_open())
@@ -554,9 +559,8 @@ void FTLabels::save() {
             throw QString("SDIF file support is not compiled in this distribution of DFasma.");
         #endif
     }
-    else{
+    else
         throw QString("File format not recognized for writing this label file.");
-    }
 
     m_lastreadtime = QDateTime::currentDateTime();
     m_isedited = false;

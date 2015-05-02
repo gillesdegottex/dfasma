@@ -35,12 +35,15 @@ class FTFZero : public QObject, public FileType
     Q_OBJECT
 
     void init();
-
     void load();
 
+    int m_fileformat;
+
 public:
-    FTFZero(const QString& _fileName, QObject* parent);
+    enum FileFormat {FFNotSpecified=0, FFAutoDetect, FFAsciiAutoDetect, FFAsciiTimeValue, FFSDIF};
+//    FTFZero(QObject* parent);
     FTFZero(const FTFZero& ft);
+    FTFZero(const QString& _fileName, QObject* parent, FileType::FileContainer container=FileType::FCUNSET, FileFormat fileformat=FFNotSpecified);
     virtual FileType* duplicate();
 
     std::deque<double> ts;

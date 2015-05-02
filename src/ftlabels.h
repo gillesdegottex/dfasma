@@ -71,12 +71,12 @@ class FTLabels : public QObject, public FileType
     int m_fileformat;
 
 public:
-    enum FileFormat {FFNotSpecified=0, FFAutoDetect, FFAsciiTimeText, FFAsciiSegments, FFAsciiSegmentsHTK, FFSDIF};
+    enum FileFormat {FFNotSpecified=0, FFAutoDetect, FFAsciiAutoDetect, FFAsciiTimeText, FFAsciiSegments, FFAsciiSegmentsHTK, FFSDIF};
     static std::deque<QString> m_formatstrings;
 
     FTLabels(QObject *parent);
     FTLabels(const FTLabels& ft);
-    FTLabels(const QString& _fileName, QObject* parent, FileFormat fileformat=FFNotSpecified);
+    FTLabels(const QString& _fileName, QObject* parent, FileType::FileContainer container=FileType::FCUNSET, FileFormat fileformat=FFNotSpecified);
     virtual FileType* duplicate();
 
     std::deque<double> starts; // TODO Get ride of ?
