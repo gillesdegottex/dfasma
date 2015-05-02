@@ -28,7 +28,7 @@ using namespace std;
 #include <qradiobutton.h>
 #include <qaction.h>
 
-QSettingsAuto::QSettingsAuto(const QString& domain, const QString& product, const QString& setting_version)
+QSettingsAuto::QSettingsAuto(const QString& domain, const QString& product)
 	: QSettings(QSettings::UserScope, domain, product)
 {
 //	beginGroup(QString("/")+product+setting_version+"/");

@@ -45,8 +45,8 @@ class QSettingsAuto : public QSettings
     std::list<QAction*> m_elements_qaction;
 
   public:
-    QSettingsAuto(const QString& domain, const QString& product, const QString& setting_version);
     QSettingsAuto();
+    QSettingsAuto(const QString& domain, const QString& product);
 
 	void add(QCheckBox* el);
     void save(QCheckBox* el);
