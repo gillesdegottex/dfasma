@@ -627,6 +627,7 @@ void WMainWindow::addFile(const QString& filepath, FileType::FType type) {
             if(type==FileType::FTUNSET)
                 throw QString("Cannot find any data or audio channel in this file that is handled by this distribution of DFasma.");
 
+            // Finally, load the data knowing the type and the container
             if(type==FileType::FTSOUND){
                 int nchan = FTSound::getNumberOfChannels(filepath);
                 if(nchan==1){
