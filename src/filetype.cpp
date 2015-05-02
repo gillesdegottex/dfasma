@@ -89,9 +89,6 @@ QColor GetNextColor(){
 FileType::FileContainer FileType::guessContainer(const QString& filepath){
     // TODO Could make a ligther one based on the file extension, instead of opening the file
 
-    // This should be always "guessable"
-    FileContainer container = FileType::FCUNSET;
-
     int nchan = FTSound::getNumberOfChannels(filepath);
     if(nchan>0)
         return FCANYSOUND;
@@ -107,6 +104,8 @@ FileType::FileContainer FileType::guessContainer(const QString& filepath){
     #endif
     else
         throw QString("The container(format) of this file is not managed by DFasma.");
+
+    return FileType::FCUNSET;
 }
 
 FileType::FileType(FType _type, const QString& _fileName, QObject * parent)
