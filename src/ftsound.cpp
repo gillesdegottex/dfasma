@@ -256,7 +256,7 @@ void FTSound::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
     contextmenu.addAction(m_actionResetAmpScale);
     connect(m_actionResetAmpScale, SIGNAL(triggered()), this, SLOT(resetAmpScale()));
     connect(m_actionResetAmpScale, SIGNAL(triggered()), gMW, SLOT(fileInfoUpdate()));
-    m_actionResetDelay->setText(QString("Reset delay (%1s) to 0s").arg(m_delay/mainwindow->getFs(), 0, 'g', 3));
+    m_actionResetDelay->setText(QString("Reset delay (%1s) to 0s").arg(m_delay/mainwindow->getFs(), 0, 'g', gMW->m_dlgSettings->ui->spViewTimeDecimals->value()));
     m_actionResetDelay->setDisabled(m_delay==0);
     contextmenu.addAction(m_actionResetDelay);
     connect(m_actionResetDelay, SIGNAL(triggered()), this, SLOT(resetDelay()));
