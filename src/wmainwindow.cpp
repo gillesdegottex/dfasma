@@ -154,7 +154,6 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
     ui->actionFileOpen->setIcon(style()->standardIcon(QStyle::SP_DialogOpenButton));
     ui->actionFileNew->setIcon(style()->standardIcon(QStyle::SP_FileIcon));
     connect(ui->actionFileNew, SIGNAL(triggered()), this, SLOT(newFile()));
-    ui->actionFileNew->setVisible(false);
     ui->actionSelectedFilesClose->setIcon(style()->standardIcon(QStyle::SP_DialogCloseButton));
     ui->actionSelectedFilesClose->setEnabled(false);
     ui->actionSelectedFilesReload->setIcon(style()->standardIcon(QStyle::SP_BrowserReload));
@@ -519,8 +518,6 @@ void WMainWindow::setSelectionMode(bool checked){
             m_gvSpectrum->setCursor(Qt::OpenHandCursor);
         else
             m_gvSpectrum->setCursor(Qt::CrossCursor);
-
-        ui->actionFileNew->setVisible(false);
     }
     else
         setSelectionMode(true);
@@ -536,7 +533,6 @@ void WMainWindow::setEditMode(bool checked){
         m_gvSpectrum->setDragMode(QGraphicsView::NoDrag);
         m_gvWaveform->setCursor(Qt::SizeVerCursor);
         m_gvSpectrum->setCursor(Qt::SizeVerCursor);
-        ui->actionFileNew->setVisible(true);
     }
     else
         setSelectionMode(true);
@@ -655,6 +651,8 @@ void WMainWindow::addFile(const QString& filepath) {
             }
             #endif
             else if(FileType::isFileASCII(filepath)) {
+
+                // TODO Distinguish between f0 and labels (and futur others ?)
 
                 ft = new FTLabels(filepath, this);
 

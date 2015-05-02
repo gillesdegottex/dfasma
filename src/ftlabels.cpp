@@ -575,10 +575,8 @@ void FTLabels::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
 
     contextmenu.setTitle("Labels");
 
-    if(gMW->ui->actionEditMode->isChecked()){
-        contextmenu.addAction(m_actionSave);
-        contextmenu.addAction(m_actionSaveAs);
-    }
+    contextmenu.addAction(m_actionSave);
+    contextmenu.addAction(m_actionSaveAs);
 }
 
 double FTLabels::getLastSampleTime() const {
