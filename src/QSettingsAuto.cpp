@@ -32,13 +32,13 @@ QSettingsAuto::QSettingsAuto(const QString& domain, const QString& product, cons
 	: QSettings(QSettings::UserScope, domain, product)
 {
 //	beginGroup(QString("/")+product+setting_version+"/");
-    cout << "INFO: QSettingsAuto: " << fileName().toStdString() << endl;
+    cout << "INFO: QSettingsAuto: " << fileName().toStdString() << " " << allKeys().size() << " entries" << endl;
 }
 
 QSettingsAuto::QSettingsAuto()
 {
 //    beginGroup(QString("/")+product+setting_version+"/");
-    cout << "INFO: QSettingsAuto: " << fileName().toStdString() << endl;
+    cout << "INFO: QSettingsAuto: " << fileName().toStdString() << " " << allKeys().size() << " entries" << endl;
 }
 
 void QSettingsAuto::add(QCheckBox* el)
