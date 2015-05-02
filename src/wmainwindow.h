@@ -48,8 +48,8 @@ class QGVPhaseSpectrum;
 class QGVSpectrogram;
 class QHBoxLayout;
 class QProgressBar;
-class QLabel;
 class QProgressDialog;
+class QLabel;
 class QxtSpanSlider;
 
 namespace Ui {
@@ -66,10 +66,10 @@ class WMainWindow : public QMainWindow
     static WMainWindow* sm_mainwindow;
     bool m_loading;
 
-    QProgressDialog* m_dlgProgress;
-
     FTSound* m_lastSelectedSound;
     FTSound* m_lastFilteredSound;
+
+    QProgressDialog* m_prgdlg;
 
     void connectModes();
     void disconnectModes();
@@ -119,7 +119,7 @@ public slots:
     void updateViewsAfterAddFile(bool isfirsts);
 
 public:
-    explicit WMainWindow(QStringList sndfiles, QWidget* parent=0);
+    explicit WMainWindow(QStringList files, QWidget* parent=0);
     ~WMainWindow();
 
     QSettingsAuto m_settings;

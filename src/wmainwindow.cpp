@@ -73,11 +73,11 @@ using namespace std;
 
 WMainWindow* gMW = NULL;
 
-WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
+WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     : QMainWindow(parent)
-    , m_dlgProgress(NULL)
     , m_lastSelectedSound(NULL)
     , m_lastFilteredSound(NULL)
+    , m_prgdlg(NULL)
     , m_dlgSettings(NULL)
     , ui(new Ui::WMainWindow)
     , m_gvWaveform(NULL)
@@ -249,18 +249,19 @@ WMainWindow::WMainWindow(QStringList sndfiles, QWidget *parent)
 
     connect(m_dlgSettings->ui->sbViewsToolBarSizes, SIGNAL(valueChanged(int)), this, SLOT(changeToolBarSizes(int)));
 
-    m_dlgProgress = new QProgressDialog("Opening files...", "Abort", 0, sndfiles.size(), this);
-    m_dlgProgress->setWindowModality(Qt::WindowModal);
-    m_dlgProgress->setMinimumDuration(1000);
-    m_dlgProgress->setMaximum(sndfiles.size());
-    for(int f=0; f<sndfiles.size() && !m_dlgProgress->wasCanceled(); f++){
-        m_dlgProgress->setValue(f);
-        addFile(sndfiles[f]);
+    QProgressDialog prgdlg("Opening files...", "Abort", 0, files.size(), this);
+    prgdlg.setMinimumDuration(1000);
+    m_prgdlg = &prgdlg;
+    for(int f=0; f<files.size() && !prgdlg.wasCanceled(); f++){
+        prgdlg.setValue(f);
+        QCoreApplication::processEvents(); // To show the progress
+        addFile(files[f]);
     }
-    m_dlgProgress->setValue(sndfiles.size());
+    prgdlg.setValue(prgdlg.maximum());// Stop the loading bar
+    m_prgdlg = NULL;
     updateViewsAfterAddFile(true);
 
-    if(sndfiles.size()>0)
+    if(files.size()>0)
         m_gvSpectrogram->updateDFTSettings(); // This will update the window computation AND trigger the STFT computation
 
     connect(ui->pbSpectrogramSTFTUpdate, SIGNAL(clicked()), m_gvSpectrogram, SLOT(updateDFTSettings()));
@@ -551,18 +552,22 @@ void WMainWindow::openFile() {
 //      Options options = 0);
 
     QString filter = "All files (*.*)";
-    filter += ";;Sound (*.wav *.aiff *.pcm *.snd *.raw *.flac *.ogg)";
+    filter += ";;Sound (*.wav *.aiff *.pcm *.snd *.flac *.ogg)";
     filter += ";;Label (*.bpf *.lab *.sdif)";
     filter += ";;F0 (*.bpf *.sdif)";
     QStringList l = QFileDialog::getOpenFileNames(this, "Open File(s) ...", QString(), filter, 0, QFileDialog::ReadOnly | QFileDialog::DontUseNativeDialog);
 
     if(l.size()>0){
-        m_dlgProgress->setMaximum(l.size());
-        for(int f=0; f<l.size() && !m_dlgProgress->wasCanceled(); f++){
-            m_dlgProgress->setValue(f);
+        QProgressDialog prgdlg("Opening files...", "Abort", 0, l.size(), this);
+        prgdlg.setMinimumDuration(1000);
+        m_prgdlg = &prgdlg;
+        for(int f=0; f<l.size() && !prgdlg.wasCanceled(); f++){
+            prgdlg.setValue(f);
+            QCoreApplication::processEvents(); // To show the progress
             addFile(l.at(f));
         }
-        m_dlgProgress->setValue(l.size());
+        prgdlg.setValue(prgdlg.maximum());// Stop the loading bar
+        m_prgdlg = NULL;
         updateViewsAfterAddFile(isfirsts);
     }
 }
@@ -586,7 +591,7 @@ void WMainWindow::addFile(const QString& filepath, FileType::FType type) {
             // This should be always "guessable"
             FileType::FileContainer container = FileType::guessContainer(filepath);
 
-//            can be replaced by an autodetect or "forced mode" in the future
+            // can be replaced by an autodetect or "forced mode" in the future
 
             // Then, guess the type of the data in the file, if no specified yet
             if(type==FileType::FTUNSET){
@@ -636,7 +641,7 @@ void WMainWindow::addFile(const QString& filepath, FileType::FType type) {
                 }
                 else{
                     // If more than one channel, ask what to do
-                    m_dlgProgress->setValue(m_dlgProgress->maximum()); // Stop the loading bar
+                    if(m_prgdlg) m_prgdlg->setValue(m_prgdlg->maximum());// Stop the loading bar
                     WDialogSelectChannel dlg(filepath, nchan, this);
                     if(dlg.exec()) {
                         if(dlg.ui->rdbImportEachChannel->isChecked()){
@@ -668,7 +673,7 @@ void WMainWindow::addFile(const QString& filepath, FileType::FType type) {
         }
         catch (QString err)
         {
-            m_dlgProgress->setValue(m_dlgProgress->maximum());
+            if(m_prgdlg) m_prgdlg->setValue(m_prgdlg->maximum());// Stop the loading bar
             QMessageBox::warning(this, "Failed to load file ...", "Data from the following file can't be loaded:\n"+filepath+"'\n\nReason:\n"+err);
         }
     }
@@ -734,23 +739,32 @@ void WMainWindow::duplicateCurrentFile(){
 }
 
 void WMainWindow::dropEvent(QDropEvent *event){
-    cout << "Contents: " << event->mimeData()->text().toLatin1().data() << endl;
+//    COUTD << "Contents: " << event->mimeData()->text().toLatin1().data() << endl;
 
     bool isfirsts = ftsnds.size()==0;
 
     QList<QUrl>	lurl = event->mimeData()->urls();
+//    COUTD << "Contents: " << lurl.size() << " elements" << endl;
 
-    m_dlgProgress->setMaximum(lurl.size());
-    for(int lurli=0; lurli<lurl.size() && !m_dlgProgress->wasCanceled(); lurli++){
-        m_dlgProgress->setValue(lurli);
+    QProgressDialog prgdlg("Opening files...", "Abort", 0, lurl.size(), this);
+    prgdlg.setAutoClose(true);
+    prgdlg.setMinimumDuration(1000);
+    m_prgdlg = &prgdlg;
+    for(int lurli=0; lurli<lurl.size() && !prgdlg.wasCanceled(); lurli++){
+        prgdlg.setValue(lurli);
+        QCoreApplication::processEvents(); // To show the progress
+//        COUTD << lurl[lurli].toDisplayString().toLatin1().constData() << endl;
+//        COUTD << lurl[lurli].isLocalFile() << endl;
         if(!lurl[lurli].isLocalFile()){
-            m_dlgProgress->setValue(lurl.size());
+            prgdlg.setValue(prgdlg.maximum());// Stop the loading bar
+            QCoreApplication::processEvents(); // To show the progress
             QMessageBox::warning(this, "Failed to load file ...", "Data from the following file can't be loaded:\n"+lurl[lurli].toDisplayString()+"'\n\nReason:\n"+"It is a remote file.");
         }
         else
             addFile(lurl[lurli].toLocalFile());
     }
-    m_dlgProgress->setValue(lurl.size());
+    prgdlg.setValue(prgdlg.maximum());// Stop the loading bar
+    m_prgdlg = NULL;
     updateViewsAfterAddFile(isfirsts);
 }
 void WMainWindow::dragEnterEvent(QDragEnterEvent *event){
