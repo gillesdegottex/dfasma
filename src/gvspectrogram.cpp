@@ -774,7 +774,7 @@ void QGVSpectrogram::selectionSetTextInForm() {
             left = gMW->m_gvPhaseSpectrum->m_selection.left();
             right = gMW->m_gvPhaseSpectrum->m_selection.right();
         }
-        str += QString("[%1,%2]%3s").arg(left).arg(right).arg(right-left);
+        str += QString("[%1,%2]%3s").arg(left, 0,'f',gMW->m_dlgSettings->ui->spViewTimeDecimals->value()).arg(right, 0,'f',gMW->m_dlgSettings->ui->spViewTimeDecimals->value()).arg(right-left, 0,'f',gMW->m_dlgSettings->ui->spViewTimeDecimals->value());
 
         if (m_selection.height()>0) {
             str += QString(" x [%4,%5]%6Hz").arg(gMW->getFs()/2-m_selection.bottom()).arg(gMW->getFs()/2-m_selection.top()).arg(m_selection.height());
@@ -808,7 +808,7 @@ void QGVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
     m_giShownSelection->setRect(m_selection);
     m_giShownSelection->show();
 
-    m_giSelectionTxt->setText(QString("%1s,%2Hz").arg(m_selection.width()).arg(m_selection.height()));
+    m_giSelectionTxt->setText(QString("%1s,%2Hz").arg(m_selection.width(), 0,'f',gMW->m_dlgSettings->ui->spViewTimeDecimals->value()).arg(m_selection.height()));
     updateTextsGeometry();
 
     selectionSetTextInForm();
@@ -945,7 +945,7 @@ void QGVSpectrogram::setMouseCursorPosition(QPointF p, bool forwardsync) {
         QRectF br = m_giMouseCursorTxtTime->boundingRect();
         qreal x = p.x()+1/trans.m11();
         x = min(x, viewrect.right()-br.width()/trans.m11());
-        m_giMouseCursorTxtTime->setText(QString("%1s").arg(p.x()));
+        m_giMouseCursorTxtTime->setText(QString("%1s").arg(p.x(), 0,'f',gMW->m_dlgSettings->ui->spViewTimeDecimals->value()));
         m_giMouseCursorTxtTime->setPos(x, viewrect.top()-3/trans.m22());
         m_giMouseCursorTxtTime->setTransform(txttrans);
         m_giMouseCursorTxtTime->show();
@@ -1149,7 +1149,7 @@ void QGVSpectrogram::draw_grid(QPainter* painter, const QRectF& rect) {
         painter->save();
         painter->translate(QPointF(l, viewrect.bottom()-14/trans.m22()));
         painter->scale(1.0/trans.m11(), 1.0/trans.m22());
-        painter->drawStaticText(QPointF(0, 0), QStaticText(QString("%1s").arg(l)));
+        painter->drawStaticText(QPointF(0, 0), QStaticText(QString("%1s").arg(l, 0,'f',gMW->m_dlgSettings->ui->spViewTimeDecimals->value())));
         painter->restore();
     }
 }
