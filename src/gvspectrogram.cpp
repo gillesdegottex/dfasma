@@ -129,11 +129,6 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_giShownSelection = new QGraphicsRectItem();
     m_giShownSelection->hide();
     m_scene->addItem(m_giShownSelection);
-    m_giSelectionTxt = new QGraphicsSimpleTextItem();
-    m_giSelectionTxt->hide();
-    m_giSelectionTxt->setBrush(QColor(64, 64, 64));
-    m_giSelectionTxt->setFont(font);
-    m_scene->addItem(m_giSelectionTxt);
     QPen selectionPen(QColor(64, 64, 64));
     selectionPen.setWidth(0);
     QBrush selectionBrush(QColor(192, 192, 192));
@@ -739,7 +734,6 @@ void QGVSpectrogram::keyPressEvent(QKeyEvent* event){
 
 void QGVSpectrogram::selectionClear(bool forwardsync) {
     m_giShownSelection->hide();
-    m_giSelectionTxt->hide();
     m_selection = QRectF(0, 0, 0, 0);
     m_mouseSelection = QRectF(0, 0, 0, 0);
     m_giShownSelection->setRect(QRectF(0, 0, 0, 0));
@@ -781,7 +775,11 @@ void QGVSpectrogram::selectionSetTextInForm() {
         str += QString("[%1,%2]%3s").arg(left, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()).arg(right, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()).arg(right-left, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value());
 
         if (m_selection.height()>0) {
-            str += QString(" x [%4,%5]%6Hz").arg(gMW->getFs()/2-m_selection.bottom()).arg(gMW->getFs()/2-m_selection.top()).arg(m_selection.height());
+            // TODO The two lines below cannot be avoided exept by reversing the y coordinate of the
+            //      whole seen, and I don't know how to do this :(
+            double lower = gMW->getFs()/2-m_selection.bottom();
+            if(std::abs(lower)<1e-12) lower=0.0;
+            str += QString(" x [%4,%5]%6Hz").arg(lower).arg(gMW->getFs()/2-m_selection.top()).arg(m_selection.height());
         }
     }
 
@@ -812,7 +810,6 @@ void QGVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
     m_giShownSelection->setRect(m_selection);
     m_giShownSelection->show();
 
-    m_giSelectionTxt->setText(QString("%1s,%2Hz").arg(m_selection.width(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()).arg(m_selection.height()));
     updateTextsGeometry();
 
     selectionSetTextInForm();
@@ -862,11 +859,6 @@ void QGVSpectrogram::updateTextsGeometry() {
 
     // Play cursor
     m_giPlayCursor->setTransform(QTransform::fromScale(1.0/trans.m11(), 1.0));
-
-    // Selection
-    QRectF br = m_giSelectionTxt->boundingRect();
-    m_giSelectionTxt->setTransform(txttrans);
-    m_giSelectionTxt->setPos(m_selection.center()-QPointF(0.5*br.width()/trans.m11(), 0.5*br.height()/trans.m22()));
 
     // Labels
     for(size_t fi=0; fi<gMW->ftlabels.size(); fi++){

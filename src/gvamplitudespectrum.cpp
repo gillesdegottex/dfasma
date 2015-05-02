@@ -855,6 +855,10 @@ void QGVAmplitudeSpectrum::selectionSetTextInForm() {
             left = gMW->m_gvPhaseSpectrum->m_selection.left();
             right = gMW->m_gvPhaseSpectrum->m_selection.right();
         }
+        // TODO The line below cannot be avoided exept by reversing the y coordinate of the
+        //      whole seen of the spectrogram, and I don't know how to do this :(
+        if(std::abs(left)<1e-12) left=0.0;
+
         str += QString("[%1,%2]%3 Hz").arg(left).arg(right).arg(right-left);
 
         if (gMW->m_gvAmplitudeSpectrum->isVisible() && m_selection.height()>0) {

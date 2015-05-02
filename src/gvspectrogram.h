@@ -125,7 +125,6 @@ public:
 
     QRectF m_selection, m_mouseSelection;
     QGraphicsRectItem* m_giShownSelection;
-    QGraphicsSimpleTextItem* m_giSelectionTxt;
     void selectionSet(QRectF selection, bool forwardsync=true);
     void selectionSetTextInForm();
 
