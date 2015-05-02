@@ -947,6 +947,11 @@ void WMainWindow::selectedFilesClose() {
 
     updateWindowTitle();
 
+    if(m_gvWaveform->m_scene->sceneRect().right()>gMW->getMaxDuration()+1.0/gMW->getFs()){
+        m_gvWaveform->updateSceneRect();
+        m_gvWaveform->viewSet(m_gvWaveform->m_scene->sceneRect(), true);
+    }
+
     if(removeSelectedSound)
         m_gvSpectrogram->clearSTFTPlot();
 
