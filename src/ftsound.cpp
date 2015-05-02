@@ -640,6 +640,11 @@ qint64 FTSound::writeData(const char *data, qint64 askedlen){
 }
 
 FTSound::~FTSound(){
+    while(gMW->m_gvSpectrogram->m_stftcomputethread->isRunning()
+          && gMW->m_gvSpectrogram->m_stftcomputethread->getCurrentParameters().snd==this){
+        gMW->ui->pbSTFTComputingCancel->setChecked(true);
+        QThread::msleep(20);
+    }
     QIODevice::close();
 }
 
