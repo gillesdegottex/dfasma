@@ -482,77 +482,79 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
     QRect selview = mapFromScene(m_selection).boundingRect();
 
     if(event->buttons()&Qt::LeftButton){
-        if(gMW->ui->actionSelectionMode->isChecked()){
-
-            if(event->modifiers().testFlag(Qt::ShiftModifier)) {
-                // cout << "Scrolling the waveform" << endl;
-                m_currentAction = CAMoving;
-                setDragMode(QGraphicsView::ScrollHandDrag);
-                setMouseCursorPosition(-1, false);
-            }
-            else if(!event->modifiers().testFlag(Qt::ControlModifier) && m_selection.width()>0 && abs(selview.left()-event->x())<5){
-                // Resize left boundary of the selection
-                m_currentAction = CAModifSelectionLeft;
-                m_mouseSelection = m_selection;
-                m_selection_pressedx = p.x()-m_selection.left();
-                setCursor(Qt::SplitHCursor);
-            }
-            else if(!event->modifiers().testFlag(Qt::ControlModifier) && m_selection.width()>0 && abs(selview.right()-event->x())<5){
-                // Resize right boundary of the selection
-                m_currentAction = CAModifSelectionRight;
-                m_mouseSelection = m_selection;
-                m_selection_pressedx = p.x()-m_selection.right();
-                setCursor(Qt::SplitHCursor);
-            }
-            else if(m_selection.width()>0 && (event->modifiers().testFlag(Qt::ControlModifier) || (p.x()>=m_selection.left() && p.x()<=m_selection.right()))){
-                // cout << "Scrolling the selection" << endl;
-                m_currentAction = CAMovingSelection;
-                m_selection_pressedx = p.x();
-                m_mouseSelection = m_selection;
-                setCursor(Qt::ClosedHandCursor);
-            }
-            else if(!event->modifiers().testFlag(Qt::ControlModifier)){
-                // When selecting
-                m_currentAction = CASelecting;
-                m_selection_pressedx = p.x();
-                m_mouseSelection.setLeft(m_selection_pressedx);
-                m_mouseSelection.setRight(m_selection_pressedx);
-                selectionSet(m_mouseSelection);
-                m_giSelection->show();
-            }
+        if(event->modifiers().testFlag(Qt::ShiftModifier)) {
+            // cout << "Scrolling the waveform" << endl;
+            m_currentAction = CAMoving;
+            setDragMode(QGraphicsView::ScrollHandDrag);
+            setMouseCursorPosition(-1, false);
         }
-        else if(gMW->ui->actionEditMode->isChecked()){
+        else {
+            if(gMW->ui->actionSelectionMode->isChecked()){
 
-            // Look for a nearby marker to modify
-            m_ca_pressed_index=-1;
-            FTLabels* ftl = gMW->getCurrentFTLabels();
-            if(ftl){
-                for(int lli=0; m_ca_pressed_index==-1 && lli<int(ftl->starts.size()); lli++) {
-                    QPoint slp = mapFromScene(QPointF(ftl->starts[lli],0));
-                    if(std::abs(slp.x()-event->x())<5) {
-                        m_ca_pressed_index = lli;
-                        m_currentAction = CALabelModifPosition;
+                if(!event->modifiers().testFlag(Qt::ControlModifier) && m_selection.width()>0 && abs(selview.left()-event->x())<5){
+                    // Resize left boundary of the selection
+                    m_currentAction = CAModifSelectionLeft;
+                    m_mouseSelection = m_selection;
+                    m_selection_pressedx = p.x()-m_selection.left();
+                    setCursor(Qt::SplitHCursor);
+                }
+                else if(!event->modifiers().testFlag(Qt::ControlModifier) && m_selection.width()>0 && abs(selview.right()-event->x())<5){
+                    // Resize right boundary of the selection
+                    m_currentAction = CAModifSelectionRight;
+                    m_mouseSelection = m_selection;
+                    m_selection_pressedx = p.x()-m_selection.right();
+                    setCursor(Qt::SplitHCursor);
+                }
+                else if(m_selection.width()>0 && (event->modifiers().testFlag(Qt::ControlModifier) || (p.x()>=m_selection.left() && p.x()<=m_selection.right()))){
+                    // cout << "Scrolling the selection" << endl;
+                    m_currentAction = CAMovingSelection;
+                    m_selection_pressedx = p.x();
+                    m_mouseSelection = m_selection;
+                    setCursor(Qt::ClosedHandCursor);
+                }
+                else if(!event->modifiers().testFlag(Qt::ControlModifier)){
+                    // When selecting
+                    m_currentAction = CASelecting;
+                    m_selection_pressedx = p.x();
+                    m_mouseSelection.setLeft(m_selection_pressedx);
+                    m_mouseSelection.setRight(m_selection_pressedx);
+                    selectionSet(m_mouseSelection);
+                    m_giSelection->show();
+                }
+            }
+            else if(gMW->ui->actionEditMode->isChecked()){
+
+                // Look for a nearby marker to modify
+                m_ca_pressed_index=-1;
+                FTLabels* ftl = gMW->getCurrentFTLabels();
+                if(ftl){
+                    for(int lli=0; m_ca_pressed_index==-1 && lli<int(ftl->starts.size()); lli++) {
+                        QPoint slp = mapFromScene(QPointF(ftl->starts[lli],0));
+                        if(std::abs(slp.x()-event->x())<5) {
+                            m_ca_pressed_index = lli;
+                            m_currentAction = CALabelModifPosition;
+                        }
                     }
                 }
-            }
 
-            if(m_ca_pressed_index==-1) {
-                if(event->modifiers().testFlag(Qt::ShiftModifier)){
-                    // cout << "Scaling the waveform" << endl;
-                    m_currentAction = CAWaveformDelay;
-                    m_selection_pressedx = p.x();
-                    FTSound* currentftsound = gMW->getCurrentFTSound();
-                    if(currentftsound)
-                        m_tmpdelay = currentftsound->m_delay/gMW->getFs();
-                    setCursor(Qt::SizeHorCursor);
-                }
-                else if(event->modifiers().testFlag(Qt::ControlModifier)){
-                }
-                else{
-                    // cout << "Scaling the waveform" << endl;
-                    m_currentAction = CAWaveformScale;
-                    m_selection_pressedx = p.y();
-                    setCursor(Qt::SizeVerCursor);
+                if(m_ca_pressed_index==-1) {
+                    if(event->modifiers().testFlag(Qt::ShiftModifier)){
+                    }
+                    else if(event->modifiers().testFlag(Qt::ControlModifier)){
+                        // cout << "Scaling the waveform" << endl;
+                        m_currentAction = CAWaveformDelay;
+                        m_selection_pressedx = p.x();
+                        FTSound* currentftsound = gMW->getCurrentFTSound();
+                        if(currentftsound)
+                            m_tmpdelay = currentftsound->m_delay/gMW->getFs();
+                        setCursor(Qt::SizeHorCursor);
+                    }
+                    else{
+                        // cout << "Scaling the waveform" << endl;
+                        m_currentAction = CAWaveformScale;
+                        m_selection_pressedx = p.y();
+                        setCursor(Qt::SizeVerCursor);
+                    }
                 }
             }
         }
@@ -736,10 +738,10 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
             else                     setCursor(Qt::CrossCursor);
 
             if(event->modifiers().testFlag(Qt::ShiftModifier)){
-                if(!foundclosemarker)
-                    setCursor(Qt::SizeHorCursor);
             }
             else if(event->modifiers().testFlag(Qt::ControlModifier)){
+                if(!foundclosemarker)
+                    setCursor(Qt::SizeHorCursor);
             }
             else{
                 if(!foundclosemarker)
@@ -892,7 +894,7 @@ void QGVWaveform::selectRemoveSegment(double x){
 
 void QGVWaveform::keyPressEvent(QKeyEvent* event){
 
-//    cout << "QGVWaveform::keyPressEvent " << endl;
+//    COUTD << "QGVWaveform::keyPressEvent " << endl;
 
     if(event->key()==Qt::Key_Escape) {
         selectionClear();
@@ -903,7 +905,6 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
         if(m_currentAction==CALabelModifPosition) {
             FTLabels* ftlabel = gMW->getCurrentFTLabels(false);
             if(ftlabel){
-
                 ftlabel->removeLabel(m_ca_pressed_index);
                 m_currentAction = CANothing;
             }

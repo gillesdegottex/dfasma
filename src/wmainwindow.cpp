@@ -423,24 +423,19 @@ double WMainWindow::getMaxLastSampleTime(){
 }
 
 void WMainWindow::keyPressEvent(QKeyEvent* event){
-
-//    cout << "QGVWaveform::keyPressEvent " << endl;
-
     if(event->key()==Qt::Key_Shift){
-        if(ui->actionSelectionMode->isChecked()){
-            m_gvWaveform->setDragMode(QGraphicsView::ScrollHandDrag);
-            m_gvSpectrum->setDragMode(QGraphicsView::ScrollHandDrag);
-            m_gvSpectrogram->setDragMode(QGraphicsView::ScrollHandDrag);
-        }
-        else if(ui->actionEditMode->isChecked()){
-            m_gvWaveform->setCursor(Qt::SizeHorCursor);
-        }
+        m_gvWaveform->setDragMode(QGraphicsView::ScrollHandDrag);
+        m_gvSpectrum->setDragMode(QGraphicsView::ScrollHandDrag);
+        m_gvSpectrogram->setDragMode(QGraphicsView::ScrollHandDrag);
     }
     else if(event->key()==Qt::Key_Control){
         if(ui->actionSelectionMode->isChecked()){
             m_gvWaveform->setCursor(Qt::OpenHandCursor);
             m_gvSpectrum->setCursor(Qt::OpenHandCursor);
             m_gvSpectrogram->setCursor(Qt::OpenHandCursor);
+        }
+        else if(ui->actionEditMode->isChecked()){
+            m_gvWaveform->setCursor(Qt::SizeHorCursor);
         }
     }
     else{
@@ -453,15 +448,13 @@ void WMainWindow::keyPressEvent(QKeyEvent* event){
 }
 
 void WMainWindow::keyReleaseEvent(QKeyEvent* event){
-    Q_UNUSED(event);
-
     if(event->key()==Qt::Key_Shift){
+        m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
+        m_gvSpectrum->setDragMode(QGraphicsView::NoDrag);
+        m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
         if(ui->actionSelectionMode->isChecked()){
-            m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
             m_gvWaveform->setCursor(Qt::CrossCursor);
-            m_gvSpectrum->setDragMode(QGraphicsView::NoDrag);
             m_gvSpectrum->setCursor(Qt::CrossCursor);
-            m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
             m_gvSpectrogram->setCursor(Qt::CrossCursor);
         }
         else if(ui->actionEditMode->isChecked()){
@@ -478,7 +471,7 @@ void WMainWindow::keyReleaseEvent(QKeyEvent* event){
             m_gvSpectrogram->setCursor(Qt::CrossCursor);
         }
         else {
-
+            m_gvWaveform->setCursor(Qt::SizeVerCursor);
         }
     }
 }
