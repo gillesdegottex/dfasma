@@ -734,7 +734,7 @@ void WMainWindow::duplicateCurrentFile(){
 }
 
 void WMainWindow::dropEvent(QDropEvent *event){
-//    cout << "Contents: " << event->mimeData()->text().toLatin1().data() << endl;
+    cout << "Contents: " << event->mimeData()->text().toLatin1().data() << endl;
 
     bool isfirsts = ftsnds.size()==0;
 
@@ -743,7 +743,12 @@ void WMainWindow::dropEvent(QDropEvent *event){
     m_dlgProgress->setMaximum(lurl.size());
     for(int lurli=0; lurli<lurl.size() && !m_dlgProgress->wasCanceled(); lurli++){
         m_dlgProgress->setValue(lurli);
-        addFile(lurl[lurli].toLocalFile());
+        if(!lurl[lurli].isLocalFile()){
+            m_dlgProgress->setValue(lurl.size());
+            QMessageBox::warning(this, "Failed to load file ...", "Data from the following file can't be loaded:\n"+lurl[lurli].toDisplayString()+"'\n\nReason:\n"+"It is a remote file.");
+        }
+        else
+            addFile(lurl[lurli].toLocalFile());
     }
     m_dlgProgress->setValue(lurl.size());
     updateViewsAfterAddFile(isfirsts);
