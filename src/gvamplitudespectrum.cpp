@@ -220,7 +220,7 @@ void QGVAmplitudeSpectrum::settingsModified(){
 }
 
 void QGVAmplitudeSpectrum::updateAmplitudeExtent(){
-//    cout << "QGVAmplitudeSpectrum::updateAmplitudeExtent" << endl;
+//    COUTD << "QGVAmplitudeSpectrum::updateAmplitudeExtent" << endl;
 
     if(gMW->ftsnds.size()>0){
         // Get the maximum QSNR among all sound files
@@ -234,7 +234,7 @@ void QGVAmplitudeSpectrum::updateAmplitudeExtent(){
         updateSceneRect();
     }
 
-//    cout << "QGVAmplitudeSpectrum::~updateAmplitudeExtent" << endl;
+//    COUTD << "QGVAmplitudeSpectrum::~updateAmplitudeExtent" << endl;
 }
 
 void QGVAmplitudeSpectrum::amplitudeMinChanged() {
@@ -353,7 +353,7 @@ void QGVAmplitudeSpectrum::updateDFTSettings(){
 }
 
 void QGVAmplitudeSpectrum::computeDFTs(){
-    COUTD << "QGVAmplitudeSpectrum::computeDFTs " << m_winlen << endl;
+//    COUTD << "QGVAmplitudeSpectrum::computeDFTs " << m_winlen << endl;
     if(m_winlen<2) // Don't do the DFT of one sample ...
         return;
 
