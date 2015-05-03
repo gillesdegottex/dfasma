@@ -992,7 +992,8 @@ void WMainWindow::selectedFilesReload() {
 //    COUTD << "WMainWindow::~selectedFileReload" << endl;
 }
 
-
+// Put the program into a waiting-for-sound-files state
+// (initializeSoundSystem will wake up the necessary functions if a sound file arrived)
 void WMainWindow::setInWaitingForFileState(){
     if(ui->listSndFiles->count()>0)
         return;
