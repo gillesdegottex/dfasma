@@ -220,28 +220,6 @@ void QGVSpectrogram::amplitudeExtentSlidersChanged(){
         QToolTip::showText(QCursor::pos(), QString("[%1,%2]\%").arg(gMW->m_qxtSpectrogramSpanSlider->lowerValue()).arg(gMW->m_qxtSpectrogramSpanSlider->upperValue()), this);
 }
 
-void QGVSpectrogram::updateAmplitudeExtent(){
-//    cout << "QGVSpectrogram::updateAmplitudeExtent" << endl;
-
-    // If the current is NOT opaque:
-    if(gMW->ftsnds.size()>0){
-        double mindb = 500;
-        double maxdb = -500;
-        for(unsigned int si=0; si<gMW->ftsnds.size(); si++){
-//            cout << "m_stft_min=" << gMW->ftsnds[si]->m_stft_min << " m_stft_max=" << gMW->ftsnds[si]->m_stft_max << endl;
-
-            if(gMW->ftsnds[si]->m_stft.size()>0){
-                mindb = std::min(mindb, gMW->ftsnds[si]->m_stft_min);
-                maxdb = std::max(maxdb, gMW->ftsnds[si]->m_stft_max);
-            }
-        }
-
-//        cout << "mindb=" << mindb << " maxdb=" << maxdb << endl;
-    }
-
-//    cout << "QGVSpectrogram::~updateAmplitudeExtent" << endl;
-}
-
 void QGVSpectrogram::updateDFTSettings(){
 //    cout << "QGVSpectrogram::updateDFTSettings fs=" << gMW->getFs() << endl;
 
@@ -354,8 +332,6 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
 
                 if(csnd->m_stft.size()>0){
 
-                    updateAmplitudeExtent();
-
                     int dftlen = (int(csnd->m_stft[0].size())-1)*2;
 
                     ImageParameters reqImgParams(csnd->m_stftparams, gMW->m_qxtSpectrogramSpanSlider->lowerValue(), gMW->m_qxtSpectrogramSpanSlider->upperValue(), m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex(), m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked());
@@ -377,8 +353,8 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
 //                        COUTD << "---" << endl;
 //                        COUTD << "[" << csnd->m_stft_min << "," << csnd->m_stft_max << "]" << endl;
 //                        COUTD << "[" << gMW->m_qxtspanslider->lowerValue() << "," << gMW->m_qxtspanslider->upperValue() << "]" << endl;
-                        double ymin = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0;
-                        double ymax = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0;
+                        double ymin = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0; // Min of color range [dB]
+                        double ymax = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0; // Max of color range [dB]
 //                        COUTD << "[" << ymin << "," << ymax << "]" << endl;
                         for(int si=0; si<int(csnd->m_stft.size()); si++){
                             for(int n=0; n<int(csnd->m_stft[si].size()); n++) {
