@@ -268,6 +268,7 @@ void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend, bool winforc
     if(m_dlgSettings->ui->cbAmplitudeSpectrumLimitWindowDuration->isChecked() && (tend-tstart)>m_dlgSettings->ui->sbAmplitudeSpectrumWindowDurationLimit->value())
         tend = tstart+m_dlgSettings->ui->sbAmplitudeSpectrumWindowDurationLimit->value();
 
+    unsigned int nl_prev = m_nl;
     m_nl = std::max(0, int(0.5+tstart*gMW->getFs()));
     m_nr = int(0.5+std::min(gMW->getMaxLastSampleTime(),tend)*gMW->getFs());
 
@@ -279,6 +280,22 @@ void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend, bool winforc
 
     int winlen_prev = m_winlen;
     m_winlen = m_nr-m_nl+1;
+
+    // If the user is resizing the selection whereas the window size didn't change
+    // (because a maxmimum is set), do nothing.
+    if(winlen_prev==m_winlen && nl_prev==m_nl) {
+        if(gMW->m_gvSpectrogram->m_currentAction==QGVSpectrogram::CAModifSelectionRight
+                && gMW->m_gvSpectrogram->m_mouseSelection.right()>gMW->m_gvSpectrogram->m_mouseSelection.left())
+            return;
+        if(gMW->m_gvWaveform->m_currentAction==QGVWaveform::CAModifSelectionRight
+                && gMW->m_gvWaveform->m_mouseSelection.right()>gMW->m_gvWaveform->m_mouseSelection.left())
+            return;
+        if(gMW->m_gvWaveform->m_currentAction==QGVWaveform::CAModifSelectionLeft
+                && gMW->m_gvWaveform->m_mouseSelection.left()>gMW->m_gvWaveform->m_mouseSelection.right())
+            return;
+        if(gMW->m_gvWaveform->m_currentAction==QGVWaveform::CASelecting)
+            return;
+    }
 
     m_last_parameters_change = QTime::currentTime();
 
@@ -336,7 +353,7 @@ void QGVAmplitudeSpectrum::updateDFTSettings(){
 }
 
 void QGVAmplitudeSpectrum::computeDFTs(){
-//    COUTD << "QGVAmplitudeSpectrum::computeDFTs " << m_winlen << endl;
+    COUTD << "QGVAmplitudeSpectrum::computeDFTs " << m_winlen << endl;
     if(m_winlen<2) // Don't do the DFT of one sample ...
         return;
 

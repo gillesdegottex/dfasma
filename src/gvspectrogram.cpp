@@ -594,7 +594,7 @@ void QGVSpectrogram::mousePressEvent(QMouseEvent* event){
 }
 
 void QGVSpectrogram::mouseMoveEvent(QMouseEvent* event){
-//    std::cout << "QGVWaveform::mouseMoveEvent" << selection.width() << endl;
+//    COUTD << "QGVSpectrogram::mouseMoveEvent" << endl;
 
     QPointF p = mapToScene(event->pos());
 
@@ -661,13 +661,21 @@ void QGVSpectrogram::mouseMoveEvent(QMouseEvent* event){
             else if(event->modifiers().testFlag(Qt::ControlModifier)){
             }
             else{
-                if(m_selection.width()>0 && m_selection.height()>0 && abs(selview.left()-event->x())<5 && event->y()>=selview.top() && event->y()<=selview.bottom())
+                if(m_selection.width()>0 && m_selection.height()>0
+                        && abs(selview.left()-event->x())<5
+                        && event->y()>=selview.top() && event->y()<=selview.bottom())
                     setCursor(Qt::SplitHCursor);
-                else if(m_selection.width()>0 && m_selection.height()>0 && abs(selview.right()-event->x())<5 && selview.top()<=event->y() && selview.bottom()>=event->y())
+                else if(m_selection.width()>0 && m_selection.height()>0
+                        && abs(selview.right()-event->x())<5
+                        && selview.top()<=event->y() && selview.bottom()>=event->y())
                     setCursor(Qt::SplitHCursor);
-                else if(m_selection.width()>0 && m_selection.height()>0 && abs(selview.top()-event->y())<5 && event->x()>=selview.left() && event->x()<=selview.right())
+                else if(m_selection.width()>0 && m_selection.height()>0
+                        && abs(selview.top()-event->y())<5
+                        && event->x()>=selview.left() && event->x()<=selview.right())
                     setCursor(Qt::SplitVCursor);
-                else if(m_selection.width()>0 && m_selection.height()>0 && abs(selview.bottom()-event->y())<5 && event->x()>=selview.left() && event->x()<=selview.right())
+                else if(m_selection.width()>0 && m_selection.height()>0
+                        && abs(selview.bottom()-event->y())<5
+                        && event->x()>=selview.left() && event->x()<=selview.right()) // If inside the time interv
                     setCursor(Qt::SplitVCursor);
                 else if(p.x()>=m_selection.left() && p.x()<=m_selection.right() && p.y()>=m_selection.top() && p.y()<=m_selection.bottom())
                     setCursor(Qt::OpenHandCursor);
