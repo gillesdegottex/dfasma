@@ -690,7 +690,7 @@ void WMainWindow::updateViewsAfterAddFile(bool isfirsts) {
         updateWindowTitle();
         m_gvWaveform->updateSceneRect();
         m_gvSpectrogram->updateSceneRect();
-        m_gvAmplitudeSpectrum->updateSceneRect();
+        m_gvAmplitudeSpectrum->updateAmplitudeExtent();
         m_gvPhaseSpectrum->updateSceneRect();
         if(isfirsts){
             m_gvWaveform->viewSet(m_gvWaveform->m_scene->sceneRect(), false);
