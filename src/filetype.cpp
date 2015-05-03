@@ -291,40 +291,36 @@ bool FileType::isFileASCII(const QString& filename) {
     return true;
 }
 
-
 #ifdef SUPPORT_SDIF
-// Based on EASDIF_SDIF/matlab/FSDIF_read_handler.cpp: Copyright (c) 2008 by IRCAM
+namespace SDIFAccess {
+    // global list for all easdif file pointers
+    typedef std::list<std::pair<Easdif::SDIFEntity *,Easdif::SDIFEntity::const_iterator> > EASDList;
+    EASDList pList;
 
-// global list for all easdif file pointers
-typedef std::list<std::pair<Easdif::SDIFEntity *,Easdif::SDIFEntity::const_iterator> > EASDList;
-EASDList pList;
+    // validate file pointer
+    bool CheckList(Easdif::SDIFEntity *p, EASDList::iterator&it) {
+      it = pList.begin();
+      EASDList::iterator ite = pList.end();
+      while(it!=ite){
+        if(p==it->first){
+          return true;
+        }
+        ++it;
+      }
+      return false;
+    }
+};
 
 // mexAtExit cleanup function
-void cleanup() {
-  EASDList::iterator it = pList.begin();
-  EASDList::iterator ite = pList.end();
+void FileType::cleanupAndEEnd() {
+  SDIFAccess::EASDList::iterator it = SDIFAccess::pList.begin();
+  SDIFAccess::EASDList::iterator ite = SDIFAccess::pList.end();
   while(it!=ite){
     delete it->first;
     it->first = 0;
     ++it;
   }
-  pList.clear();
-}
-void cleanupAndEEnd() {
-  cleanup();
-}
-
-// validate file pointer
-bool CheckList(Easdif::SDIFEntity *p, EASDList::iterator&it) {
-  it = pList.begin();
-  EASDList::iterator ite = pList.end();
-  while(it!=ite){
-    if(p==it->first){
-      return true;
-    }
-    ++it;
-  }
-  return false;
+  SDIFAccess::pList.clear();
 }
 
 bool FileType::isFileSDIF(const QString& filename) {
@@ -347,8 +343,8 @@ bool FileType::SDIF_hasFrame(const QString& filename, const QString& framesignat
 
     // get a free slot in sdif file pointer list
     Easdif::SDIFEntity *p = 0;
-    EASDList::iterator it = pList.begin();
-    EASDList::iterator ite = pList.end();
+    SDIFAccess::EASDList::iterator it = SDIFAccess::pList.begin();
+    SDIFAccess::EASDList::iterator ite = SDIFAccess::pList.end();
     while(it!=ite){
       if(! it->first->IsOpen()){
         p = it->first;
@@ -359,8 +355,8 @@ bool FileType::SDIF_hasFrame(const QString& filename, const QString& framesignat
     if(it==ite){
       p = new Easdif::SDIFEntity();
       if(p){
-        pList.push_back(std::pair<Easdif::SDIFEntity*,Easdif::SDIFEntity::const_iterator>(p,Easdif::SDIFEntity::const_iterator()));
-        it = --pList.end();
+        SDIFAccess::pList.push_back(std::pair<Easdif::SDIFEntity*,Easdif::SDIFEntity::const_iterator>(p,Easdif::SDIFEntity::const_iterator()));
+        it = --SDIFAccess::pList.end();
       }
       else
         throw QString("Failed allocating Easdif file");
@@ -399,9 +395,9 @@ bool FileType::SDIF_hasFrame(const QString& filename, const QString& framesignat
     }
 
     // Close the file
-    EASDList::iterator itl;
+    SDIFAccess::EASDList::iterator itl;
     // validate pointer
-    if(CheckList(p,itl) && p->IsOpen())
+    if(SDIFAccess::CheckList(p,itl) && p->IsOpen())
         p->Close();
 
     return found;
