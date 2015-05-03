@@ -44,8 +44,9 @@
 #include <QObject>
 #include <QFile>
 #include <QAudioFormat>
-
+namespace wavfileaccess {
 QString formatToString(const QAudioFormat &format);
+};
 
 class WavFile : public QFile
 {

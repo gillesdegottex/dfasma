@@ -45,6 +45,8 @@
 //#include "utils.h"
 #include "wavfile.h"
 
+namespace wavfileaccess {
+
 QString formatToString(const QAudioFormat &format)
 {
     QString result;
@@ -128,6 +130,8 @@ struct CombinedHeader
 {
     RIFFHeader  riff;
     WAVEHeader  wave;
+};
+
 };
 
 WavFile::WavFile(QObject *parent)
