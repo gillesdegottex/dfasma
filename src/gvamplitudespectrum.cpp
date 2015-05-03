@@ -857,7 +857,7 @@ void QGVAmplitudeSpectrum::selectionSetTextInForm() {
         }
         // TODO The line below cannot be avoided exept by reversing the y coordinate of the
         //      whole seen of the spectrogram, and I don't know how to do this :(
-        if(std::abs(left)<1e-12) left=0.0;
+        if(std::abs(left)<1e-10) left=0.0;
 
         str += QString("[%1,%2]%3 Hz").arg(left).arg(right).arg(right-left);
 
