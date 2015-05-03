@@ -79,6 +79,12 @@ int main(int argc, char *argv[])
 
     int ret = a.exec();
 
+    #ifdef SUPPORT_SDIF
+//        std::cout << __LINE__ << std::endl;
+        FileType::cleanupAndEEnd();
+        Easdif::EasdifEnd();
+    #endif
+
     exit(0); // WORKAROUND?: won't quit otherwise on some platform (e.g. bouzouki) TODO
 
     return ret;
