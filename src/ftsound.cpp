@@ -76,15 +76,24 @@ void FTSound::init(){
     m_actionInvPolarity->setStatusTip(tr("Inverse the polarity of the sound"));
     m_actionInvPolarity->setCheckable(true);
     m_actionInvPolarity->setChecked(false);
+    connect(m_actionInvPolarity, SIGNAL(triggered()), this, SLOT(needDFTUpdate()));
+    connect(m_actionInvPolarity, SIGNAL(triggered()), gMW, SLOT(allSoundsChanged()));
 
     m_actionResetAmpScale = new QAction("Reset amplitude", this);
     m_actionResetAmpScale->setStatusTip(tr("Reset the amplitude scaling to 1"));
+    connect(m_actionResetAmpScale, SIGNAL(triggered()), this, SLOT(needDFTUpdate()));
+    connect(m_actionResetAmpScale, SIGNAL(triggered()), this, SLOT(resetAmpScale()));
+    connect(m_actionResetAmpScale, SIGNAL(triggered()), gMW, SLOT(fileInfoUpdate()));
 
     m_actionResetDelay = new QAction("Reset the delay", this);
     m_actionResetDelay->setStatusTip(tr("Reset the delay to 0s"));
+    connect(m_actionResetDelay, SIGNAL(triggered()), this, SLOT(needDFTUpdate()));
+    connect(m_actionResetDelay, SIGNAL(triggered()), this, SLOT(resetDelay()));
+    connect(m_actionResetDelay, SIGNAL(triggered()), gMW, SLOT(fileInfoUpdate()));
 
     m_actionResetFiltering = new QAction("Remove filtering effects", this);
     m_actionResetFiltering->setStatusTip(tr("Reset to original signal without filtering effects"));
+    connect(m_actionResetFiltering, SIGNAL(triggered()), this, SLOT(needDFTUpdate()));
     connect(m_actionResetFiltering, SIGNAL(triggered()), this, SLOT(resetFiltering()));
 }
 
@@ -148,7 +157,7 @@ void FTSound::setVisible(bool shown){
 void FTSound::reload() {
 //    COUTD << "FTSound::reload" << endl;
 
-    stop();
+    stopPlay();
 
     if(!checkFileStatus(CFSMMESSAGEBOX))
         return;
@@ -250,17 +259,16 @@ void FTSound::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
     contextmenu.addAction(mainwindow->ui->actionPlay);
     contextmenu.addAction(m_actionResetFiltering);
     contextmenu.addAction(m_actionInvPolarity);
-    connect(m_actionInvPolarity, SIGNAL(toggled(bool)), gMW, SLOT(allSoundsChanged()));
     m_actionResetAmpScale->setText(QString("Reset amplitude scaling (%1dB) to 0dB").arg(20*log10(m_ampscale), 0, 'g', 3));
     m_actionResetAmpScale->setDisabled(m_ampscale==1.0);
     contextmenu.addAction(m_actionResetAmpScale);
-    connect(m_actionResetAmpScale, SIGNAL(triggered()), this, SLOT(resetAmpScale()));
-    connect(m_actionResetAmpScale, SIGNAL(triggered()), gMW, SLOT(fileInfoUpdate()));
     m_actionResetDelay->setText(QString("Reset delay (%1s) to 0s").arg(m_delay/mainwindow->getFs(), 0, 'g', gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()));
     m_actionResetDelay->setDisabled(m_delay==0);
     contextmenu.addAction(m_actionResetDelay);
-    connect(m_actionResetDelay, SIGNAL(triggered()), this, SLOT(resetDelay()));
-    connect(m_actionResetDelay, SIGNAL(triggered()), gMW, SLOT(fileInfoUpdate()));
+}
+
+void FTSound::needDFTUpdate() {
+    m_dft_lastupdate = QTime();
 }
 
 void FTSound::setFiltered(bool filtered){
@@ -498,9 +506,11 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
                     m_filteredmaxamp = std::max(m_filteredmaxamp, std::abs(wavfiltered[n]));
                 }
             }
+            needDFTUpdate();
             updateClippedState();
 
-            // Convert to dB and multiply by 2 bcs of the filtfilt
+            // The filter response has been computed here above.
+            // Convert it to dB and multiply by 2 bcs the filtfilt doubled the effect.
             for(size_t k=0; k<gMW->m_gvAmplitudeSpectrum->m_filterresponse.size(); k++)
                 gMW->m_gvAmplitudeSpectrum->m_filterresponse[k] = 2*20*log10(gMW->m_gvAmplitudeSpectrum->m_filterresponse[k]);
             gMW->m_gvAmplitudeSpectrum->m_scene->invalidate();
@@ -509,7 +519,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
             wavtoplay = &wavfiltered;
 
             gMW->m_gvWaveform->m_scene->invalidate();
-            gMW->m_gvAmplitudeSpectrum->computeDFTs(); // TODO SPEEDUP This compute DFTS of ALL sounds !
+            gMW->m_gvAmplitudeSpectrum->computeDFTs();
             gMW->m_gvAmplitudeSpectrum->m_scene->invalidate();
         }
         catch(QString err){
@@ -540,7 +550,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
     return tobeplayed;
 }
 
-void FTSound::stop()
+void FTSound::stopPlay()
 {
     m_start = 0;
     m_pos = 0;

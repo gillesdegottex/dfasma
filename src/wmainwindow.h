@@ -74,7 +74,7 @@ class WMainWindow : public QMainWindow
     void connectModes();
     void disconnectModes();
 
-    void initializeSoundSystem(float fs);
+    void initializeSoundSystem(double fs);
     QProgressBar* m_pbVolume;
 
 protected:

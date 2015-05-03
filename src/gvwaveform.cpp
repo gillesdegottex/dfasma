@@ -653,6 +653,7 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
                 if(currentftsound->m_ampscale>1e10) currentftsound->m_ampscale = 1e10;
                 else if(currentftsound->m_ampscale<1e-10) currentftsound->m_ampscale = 1e-10;
 
+                currentftsound->needDFTUpdate();
                 currentftsound->setStatus();
 
                 m_scene->update();
@@ -676,6 +677,7 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
                 currentftsound->m_delay = int(0.5+m_tmpdelay*gMW->getFs());
                 if(m_tmpdelay<0) currentftsound->m_delay--;
 
+                currentftsound->needDFTUpdate();
                 currentftsound->setStatus();
 
                 m_scene->update();

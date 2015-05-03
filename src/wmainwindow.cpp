@@ -1009,7 +1009,7 @@ void WMainWindow::setInWaitingForFileState(){
 
 // Audio management ============================================================
 
-void WMainWindow::initializeSoundSystem(float fs) {
+void WMainWindow::initializeSoundSystem(double fs) {
 
     m_audioengine->initialize(fs);
 

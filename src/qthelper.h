@@ -71,4 +71,10 @@ inline std::ostream& operator<<(std::ostream& stream, const QColor& c) {
     return stream;
 }
 
+inline std::ostream& operator<<(std::ostream& stream, const QTime& t) {
+    stream << t.toString("hh:mm:ss.zzz").toLocal8Bit().constData();
+
+    return stream;
+}
+
 #endif // QTHELPER_H

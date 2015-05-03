@@ -40,7 +40,6 @@ using namespace std;
 #include <QGraphicsLineItem>
 #include <QStaticText>
 #include <QDebug>
-#include <QTime>
 
 #include "qthelper.h"
 
@@ -403,6 +402,9 @@ void QGVPhaseSpectrum::mouseMoveEvent(QMouseEvent* event){
         FTSound* currentftsound = gMW->getCurrentFTSound();
         if(currentftsound){
             currentftsound->m_delay = m_pressed_delay - dt*gMW->getFs();
+
+            currentftsound->needDFTUpdate();
+
             gMW->m_gvWaveform->m_scene->update();
             gMW->m_gvAmplitudeSpectrum->allSoundsChanged();
             gMW->fileInfoUpdate();
@@ -634,7 +636,7 @@ void QGVPhaseSpectrum::setMouseCursorPosition(QPointF p, bool forwardsync) {
 
 void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
 
-//    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVPhaseSpectrum::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
+//    COUTD << ": QGVPhaseSpectrum::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
     // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
 

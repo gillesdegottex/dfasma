@@ -186,9 +186,6 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     connect(m_fftresizethread, SIGNAL(fftResized(int,int)), this, SLOT(computeDFTs()));
     connect(m_fftresizethread, SIGNAL(fftResizing(int,int)), this, SLOT(fftResizing(int,int)));
 
-    m_maxsy = 10;
-    m_minsy = gMW->ui->sldAmplitudeSpectrumMin->value();
-
     // Fill the toolbar
     m_toolBar = new QToolBar(this);
 //    m_toolBar->addAction(m_aAutoUpdateDFT);
@@ -226,6 +223,7 @@ void QGVAmplitudeSpectrum::updateAmplitudeExtent(){
 //    cout << "QGVAmplitudeSpectrum::updateAmplitudeExtent" << endl;
 
     if(gMW->ftsnds.size()>0){
+        // Get the maximum QSNR among all sound files
         float maxsqnr = -std::numeric_limits<float>::infinity();
         for(unsigned int si=0; si<gMW->ftsnds.size(); si++)
             maxsqnr = std::max(maxsqnr, 20*std::log10(std::pow(2.0f,gMW->ftsnds[si]->format().sampleSize())));
@@ -273,13 +271,16 @@ void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend, bool winforc
     m_nl = std::max(0, int(0.5+tstart*gMW->getFs()));
     m_nr = int(0.5+std::min(gMW->getMaxLastSampleTime(),tend)*gMW->getFs());
 
-    if((m_nr-m_nl+1)%2==0 && m_dlgSettings->ui->cbAmplitudeSpectrumWindowSizeForcedOdd->isChecked())
+    if((m_nr-m_nl+1)%2==0
+       && m_dlgSettings->ui->cbAmplitudeSpectrumWindowSizeForcedOdd->isChecked())
         m_nr++;
 
     if(m_nl==m_nr) return;
 
     int winlen_prev = m_winlen;
     m_winlen = m_nr-m_nl+1;
+
+    m_last_parameters_change = QTime::currentTime();
 
     if(m_winlen!=winlen_prev || winforceupdate)
         updateDFTSettings();
@@ -328,13 +329,15 @@ void QGVAmplitudeSpectrum::updateDFTSettings(){
     // Set the DFT length
     m_dftlen = pow(2, std::ceil(log2(float(m_winlen)))+m_dlgSettings->ui->sbAmplitudeSpectrumOversamplingFactor->value());
 
+    m_last_parameters_change = QTime::currentTime();
+
     if(m_aAutoUpdateDFT->isChecked())
         computeDFTs();
 }
 
 void QGVAmplitudeSpectrum::computeDFTs(){
 //    COUTD << "QGVAmplitudeSpectrum::computeDFTs " << m_winlen << endl;
-    if(m_winlen<2)
+    if(m_winlen<2) // Don't do the DFT of one sample ...
         return;
 
     m_fftresizethread->resize(m_dftlen);
@@ -346,10 +349,19 @@ void QGVAmplitudeSpectrum::computeDFTs(){
         gMW->ui->pgbFFTResize->hide();
         gMW->ui->lblSpectrumInfoTxt->setText(QString("DFT size=%1").arg(dftlen));
 
-        m_minsy = std::numeric_limits<WAVTYPE>::infinity();
-        m_maxsy = -std::numeric_limits<WAVTYPE>::infinity();
         for(unsigned int fi=0; fi<gMW->ftsnds.size(); fi++){
+            if(!gMW->ftsnds[fi]->isVisible())
+                continue;
+
+            // If the DFT is more recent than the parameters update, do nothing.
+            if(!(gMW->ftsnds[fi]->m_dft_lastupdate.isNull()
+                 || gMW->ftsnds[fi]->m_dft_lastupdate < m_last_parameters_change))
+                continue;
+
             WAVTYPE gain = gMW->ftsnds[fi]->m_ampscale;
+
+            gMW->ftsnds[fi]->m_dft_min = std::numeric_limits<WAVTYPE>::infinity();
+            gMW->ftsnds[fi]->m_dft_max = -std::numeric_limits<WAVTYPE>::infinity();
             if(gMW->ftsnds[fi]->m_actionInvPolarity->isChecked())
                 gain *= -1;
 
@@ -379,16 +391,14 @@ void QGVAmplitudeSpectrum::computeDFTs(){
             for(n=0; n<dftlen/2+1; n++) {
                 (*pdft)[n] = std::complex<WAVTYPE>(std::log(std::abs(m_fft->out[n])),std::arg(m_fft->out[n]));
                 WAVTYPE y = (*pdft)[n].real();
-                m_minsy = std::min(m_minsy, y);
-                m_maxsy = std::max(m_maxsy, y);
+                gMW->ftsnds[fi]->m_dft_min = std::min(gMW->ftsnds[fi]->m_dft_min, y);
+                gMW->ftsnds[fi]->m_dft_max = std::max(gMW->ftsnds[fi]->m_dft_max, y);
             }
+            gMW->ftsnds[fi]->m_dft_lastupdate = QTime::currentTime();
         }
 
-        m_minsy = sigproc::log2db*m_minsy-3;
-        m_maxsy = sigproc::log2db*m_maxsy+3;
-
         // Compute the window's DFT
-        if (true) {
+        if (true) { // TODO #271 Avoid it if now shown
             int n = 0;
             for(; n<m_winlen; n++)
                 m_fft->in[n] = m_win[n];
@@ -415,10 +425,6 @@ void QGVAmplitudeSpectrum::computeDFTs(){
 void QGVAmplitudeSpectrum::allSoundsChanged(){
     if(gMW->ftsnds.size()>0)
         computeDFTs(); // Blocking FFT computation
-
-//    m_scene->update();
-//    if(gMW->m_gvPhaseSpectrum)
-//        gMW->m_gvPhaseSpectrum->m_scene->update();
 }
 
 void QGVAmplitudeSpectrum::viewSet(QRectF viewrect, bool sync) {
@@ -701,12 +707,15 @@ void QGVAmplitudeSpectrum::mouseMoveEvent(QMouseEvent* event){
             }
             else {
                 currentftsound->m_ampscale *= std::pow(10, -(p.y()-m_selection_pressedp.y())/20.0);
+
                 m_selection_pressedp = p;
 
                 if(currentftsound->m_ampscale>1e10)
                     currentftsound->m_ampscale = 1e10;
                 else if(currentftsound->m_ampscale<1e-10)
                     currentftsound->m_ampscale = 1e-10;
+
+                currentftsound->needDFTUpdate();
 
                 currentftsound->setStatus();
                 allSoundsChanged();
@@ -998,11 +1007,24 @@ void QGVAmplitudeSpectrum::azoomout(){
 }
 void QGVAmplitudeSpectrum::aunzoom(){
 
-    QRectF rect = QRectF(0.0, -m_maxsy, gMW->getFs()/2, (m_maxsy-m_minsy));
+    // Compute max and min among all visible files
+    double ymin = std::numeric_limits<WAVTYPE>::infinity();
+    double ymax = -std::numeric_limits<WAVTYPE>::infinity();
+    for(unsigned int fi=0; fi<gMW->ftsnds.size(); fi++){
+        if(!gMW->ftsnds[fi]->isVisible())
+            continue;
+
+        ymin = std::min(ymin, gMW->ftsnds[fi]->m_dft_min);
+        ymax = std::max(ymax, gMW->ftsnds[fi]->m_dft_max);
+    }
+    ymin = sigproc::log2db*ymin-3;
+    ymax = sigproc::log2db*ymax+3;
+
+    QRectF rect = QRectF(0.0, -ymax, gMW->getFs()/2, (ymax-ymin));
 
     if(rect.bottom()>(-gMW->ui->sldAmplitudeSpectrumMin->value()))
         rect.setBottom(-gMW->ui->sldAmplitudeSpectrumMin->value());
-    if(rect.top()<-m_maxsy)
+    if(rect.top()<-ymax)
         rect.setTop(-10);
 
     viewSet(rect, false);
@@ -1010,9 +1032,8 @@ void QGVAmplitudeSpectrum::aunzoom(){
 //    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 //    cout << "QGVAmplitudeSpectrum::aunzoom viewrect: " << viewrect.left() << "," << viewrect.right() << " X " << viewrect.top() << "," << viewrect.bottom() << endl;
 
-    if(gMW->m_gvPhaseSpectrum) {
+    if(gMW->m_gvPhaseSpectrum)
         gMW->m_gvPhaseSpectrum->viewSet(QRectF(0.0, -M_PI, gMW->getFs()/2, 2*M_PI), false);
-    }
 
 //    cursorUpdate(QPointF(-1,0));
 //    m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);

@@ -59,7 +59,6 @@ class FTSound : public QIODevice, public FileType
     bool m_isclipped;
     bool m_isfiltered;
 
-
 public:
 
     FTSound(const QString& _fileName, QObject* parent, int channelid=1);
@@ -80,7 +79,13 @@ public:
     qint64 m_delay;   // [sample index]
 
     // Spectrum
-    std::vector<std::complex<WAVTYPE> > m_dft; // Store the _log_ of the dft
+    std::vector<std::complex<WAVTYPE> > m_dft; // Store the _log_ of the DFT
+    QTime m_dft_lastupdate; // Use a simple time checking system for updating the least DFTs
+                            // (Could use a Parameters system (like for the STFT), but this would be
+                            //  a bit heavy since we don't need to avoid absolutely all re-computations)
+
+    qreal m_dft_min;
+    qreal m_dft_max;
 
     // Spectrogram
     std::deque<std::vector<WAVTYPE> > m_stft;
@@ -123,7 +128,7 @@ public:
     virtual void setStatus();
 
     double setPlay(const QAudioFormat& format, double tstart=0.0, double tstop=0.0, double fstart=0.0, double fstop=0.0);
-    void stop();
+    void stopPlay();
 
     static void setAvoidClicksWindowDuration(double halfduration);
     static QString getAudioFileReadingDescription();
@@ -133,6 +138,7 @@ public:
 
 public slots:
     void reload();
+    void needDFTUpdate();
     void resetFiltering();
     void resetAmpScale();
     void resetDelay();

@@ -26,6 +26,7 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include <QGraphicsView>
 #include <QMenu>
+#include <QTime>
 
 #include "wmainwindow.h"
 #include "fftresizethread.h"
@@ -41,11 +42,10 @@ class QGVAmplitudeSpectrum : public QGraphicsView
 {
     Q_OBJECT
 
-    WAVTYPE m_minsy;
-    WAVTYPE m_maxsy;
-
     QPen m_gridFontPen;
     QFont m_gridFont;
+
+    QTime m_last_parameters_change;
 
 public:
     explicit QGVAmplitudeSpectrum(WMainWindow* parent);
