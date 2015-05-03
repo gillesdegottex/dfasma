@@ -1003,6 +1003,7 @@ void WMainWindow::setInWaitingForFileState(){
     ui->actionSelectedFilesReload->setEnabled(false);
     ui->actionSelectedFilesToggleShown->setEnabled(false);
     ui->actionPlay->setEnabled(false);
+    ui->actionFileNew->setEnabled(false);
 }
 
 // Audio management ============================================================
@@ -1012,6 +1013,7 @@ void WMainWindow::initializeSoundSystem(float fs) {
     m_audioengine->initialize(fs);
 
     ui->actionPlay->setEnabled(true);
+    ui->actionFileNew->setEnabled(true);
 }
 
 void WMainWindow::selectAudioOutputDevice(int di) {
@@ -1133,7 +1135,7 @@ void WMainWindow::play()
 
                     ui->actionPlay->setEnabled(false);
                     // Delay the stop and re-play,
-                    // to avoid the audio engine to got hysterical and crash.
+                    // to avoid the audio engine to go hysterical and crash.
                     QTimer::singleShot(250, this, SLOT(enablePlay()));
                 }
                 catch(QString err) {
