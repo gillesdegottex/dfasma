@@ -118,6 +118,8 @@ public:
     } m_imgSTFTParams;
 
     QPointF m_selection_pressedp;
+    bool m_topismax;
+    bool m_bottomismin;
     QPointF m_pressed_mouseinviewport;
     QRectF m_pressed_viewrect;
     enum CurrentAction {CANothing, CAMoving, CAZooming, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight, CAModifSelectionTop, CAModifSelectionBottom, CAWaveformScale};

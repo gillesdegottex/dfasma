@@ -558,6 +558,8 @@ void QGVSpectrogram::mousePressEvent(QMouseEvent* event){
             else if((m_selection.width()>0 && m_selection.height()>0) && (event->modifiers().testFlag(Qt::ControlModifier) || (p.x()>=m_selection.left() && p.x()<=m_selection.right() && p.y()>=m_selection.top() && p.y()<=m_selection.bottom()))){
                 // When scroling the selection
                 m_currentAction = CAMovingSelection;
+                m_topismax = m_mouseSelection.top()<=0.0;
+                m_bottomismin = m_mouseSelection.bottom()>=gMW->getFs()/2.0;
                 m_selection_pressedp = p;
                 m_mouseSelection = m_selection;
                 setCursor(Qt::ClosedHandCursor);
@@ -639,6 +641,8 @@ void QGVSpectrogram::mouseMoveEvent(QMouseEvent* event){
     else if(m_currentAction==CAMovingSelection){
         // When scroling the selection
         m_mouseSelection.adjust(p.x()-m_selection_pressedp.x(), p.y()-m_selection_pressedp.y(), p.x()-m_selection_pressedp.x(), p.y()-m_selection_pressedp.y());
+        if(m_topismax) m_mouseSelection.setTop(0.0);
+        if(m_bottomismin) m_mouseSelection.setBottom(gMW->getFs()/2.0);
         selectionSet(m_mouseSelection, true);
         m_selection_pressedp = p;
     }
