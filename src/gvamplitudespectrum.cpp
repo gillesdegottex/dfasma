@@ -358,6 +358,8 @@ void QGVAmplitudeSpectrum::computeDFTs(){
                  || gMW->ftsnds[fi]->m_dft_lastupdate < m_last_parameters_change))
                 continue;
 
+//            COUTD << gMW->ftsnds[fi]->fileFullPath.toLatin1().constData() << endl;
+
             WAVTYPE gain = gMW->ftsnds[fi]->m_ampscale;
 
             gMW->ftsnds[fi]->m_dft_min = std::numeric_limits<WAVTYPE>::infinity();

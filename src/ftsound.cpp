@@ -144,6 +144,7 @@ void FTSound::load_finalize() {
 //    std::cout << "INFO: " << wav.size() << " samples loaded (" << wav.size()/fs << "s max amplitude=" << m_wavmaxamp << ")" << endl;
 
     m_lastreadtime = QDateTime::currentDateTime();
+    needDFTUpdate();
     setStatus();
 }
 
