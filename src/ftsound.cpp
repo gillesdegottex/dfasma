@@ -401,7 +401,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
         fstart = tmp;
     }
 
-    // Cannot ensure the numerical stability for very small cutoff
+    // Cannot ensure the numerical stability for very low or very high cutoff
     // Thus, clip the given values
     if(fstart<10) fstart=0;
     if(fstart>fs/2-10) fstart=fs/2;
