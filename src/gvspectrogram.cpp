@@ -778,7 +778,7 @@ void QGVSpectrogram::selectionSetTextInForm() {
             // TODO The two lines below cannot be avoided exept by reversing the y coordinate of the
             //      whole seen, and I don't know how to do this :(
             double lower = gMW->getFs()/2-m_selection.bottom();
-            if(std::abs(lower)<1e-12) lower=0.0;
+            if(std::abs(lower)<1e-10) lower=0.0;
             str += QString(" x [%4,%5]%6Hz").arg(lower).arg(gMW->getFs()/2-m_selection.top()).arg(m_selection.height());
         }
     }
