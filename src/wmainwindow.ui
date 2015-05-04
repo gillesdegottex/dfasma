@@ -295,6 +295,9 @@
                <height>20</height>
               </size>
              </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Cancel the STFT computation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
              <property name="icon">
               <iconset resource="../ressources.qrc">
                <normaloff>:/icons/cancel.svg</normaloff>:/icons/cancel.svg</iconset>
@@ -319,7 +322,7 @@
               </size>
              </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The waveform corresponding to this STFT has been modified without updating the STFT.&lt;br/&gt;Click on this button to update the STFT accordingly.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The waveform corresponding to this STFT has been modified without the STFT being updated.&lt;br/&gt;Click on this button to update the STFT.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="icon">
               <iconset resource="../ressources.qrc">

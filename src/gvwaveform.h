@@ -26,10 +26,11 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QGraphicsView>
 #include <QMenu>
 
+#include "ftsound.h"
+
 class WMainWindow;
 class QToolBar;
 class FTLabels;
-class FTSound;
 
 class QGVWaveform : public QGraphicsView
 {
@@ -40,6 +41,8 @@ class QGVWaveform : public QGraphicsView
 
     QGraphicsLineItem* m_giMouseCursorLine;
     QGraphicsSimpleTextItem* m_giMouseCursorTxt;
+
+    FTSound::DFTParameters m_windowParams;
 
 public:
 
@@ -122,7 +125,7 @@ public slots:
     void azoomin();
     void azoomout();
     void aunzoom();
-    void selectionSet(QRectF selection, bool winforceupdate=false, bool forwardsync=true);
+    void selectionSet(QRectF selection, bool forwardsync=true);
     void selectionClear(bool forwardsync=true);
     void selectionZoomOn();
 

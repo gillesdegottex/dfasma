@@ -406,7 +406,7 @@ void QGVPhaseSpectrum::mouseMoveEvent(QMouseEvent* event){
             currentftsound->needDFTUpdate();
 
             gMW->m_gvWaveform->m_scene->update();
-            gMW->m_gvAmplitudeSpectrum->allSoundsChanged();
+            gMW->m_gvAmplitudeSpectrum->updateDFTs();
             gMW->fileInfoUpdate();
             gMW->ui->pbSpectrogramSTFTUpdate->show();
         }
@@ -656,7 +656,7 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
             painter->setPen(outlinePen);
             painter->setBrush(QBrush(gMW->ftfzeros[fi]->color));
 
-            double ct = 0.5*(gMW->m_gvAmplitudeSpectrum->m_nl+gMW->m_gvAmplitudeSpectrum->m_nr)/gMW->getFs();
+            double ct = 0.5*(gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.nl+gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.nr)/gMW->getFs();
             double cf0 = sigproc::nearest<double>(gMW->ftfzeros[fi]->ts, gMW->ftfzeros[fi]->f0s, ct, -1.0);
 
             // cout << ct << ":" << cf0 << endl;
@@ -692,7 +692,7 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
                 painter->setPen(outlinePen);
                 painter->setBrush(QBrush(gMW->ftsnds[fi]->color));
 
-                draw_spectrum(painter, gMW->ftsnds[fi]->m_dft, gMW->getFs(), (gMW->m_gvAmplitudeSpectrum->m_winlen-1)/2.0, rect);
+                draw_spectrum(painter, gMW->ftsnds[fi]->m_dft, gMW->getFs(), (gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.winlen-1)/2.0, rect);
             }
         }
     }
@@ -704,7 +704,7 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
             painter->setPen(outlinePen);
             painter->setBrush(QBrush(currsnd->color));
 
-            draw_spectrum(painter, currsnd->m_dft, gMW->getFs(), (gMW->m_gvAmplitudeSpectrum->m_winlen-1)/2.0, rect);
+            draw_spectrum(painter, currsnd->m_dft, gMW->getFs(), (gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.winlen-1)/2.0, rect);
         }
     }
 

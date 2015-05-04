@@ -56,8 +56,6 @@ using namespace std;
 
 QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     : QGraphicsView(parent)
-    , m_winlen(0)
-    , m_dftlen(0)
 {
     m_scene = new QGraphicsScene(this);
     setScene(m_scene);
@@ -183,7 +181,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     gMW->ui->pgbFFTResize->hide();
     gMW->ui->lblSpectrumInfoTxt->setText("");
 
-    connect(m_fftresizethread, SIGNAL(fftResized(int,int)), this, SLOT(computeDFTs()));
+    connect(m_fftresizethread, SIGNAL(fftResized(int,int)), this, SLOT(updateDFTs()));
     connect(m_fftresizethread, SIGNAL(fftResizing(int,int)), this, SLOT(fftResizing(int,int)));
 
     // Fill the toolbar
@@ -215,6 +213,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
 }
 
 void QGVAmplitudeSpectrum::settingsModified(){
+//    COUTD << "QGVAmplitudeSpectrum::settingsModified" << endl;
     if(gMW->m_gvWaveform)
         gMW->m_gvWaveform->selectionSet(gMW->m_gvWaveform->m_mouseSelection, true);
 }
@@ -259,146 +258,138 @@ void QGVAmplitudeSpectrum::fftResizing(int prevSize, int newSize){
     gMW->ui->lblSpectrumInfoTxt->setText(QString("Resizing DFT to %1").arg(newSize));
 }
 
-void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend, bool winforceupdate){
+void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
     if(tstart==tend)
         return;
 
-//    DEBUGSTRING << "QGVAmplitudeSpectrum::setWindowRange " << m_windowDurationClipped << endl;
+//    COUTD << "QGVAmplitudeSpectrum::setWindowRange " << m_windowDurationClipped << endl;
 
     if(m_dlgSettings->ui->cbAmplitudeSpectrumLimitWindowDuration->isChecked() && (tend-tstart)>m_dlgSettings->ui->sbAmplitudeSpectrumWindowDurationLimit->value())
         tend = tstart+m_dlgSettings->ui->sbAmplitudeSpectrumWindowDurationLimit->value();
 
-    unsigned int nl_prev = m_nl;
-    m_nl = std::max(0, int(0.5+tstart*gMW->getFs()));
-    m_nr = int(0.5+std::min(gMW->getMaxLastSampleTime(),tend)*gMW->getFs());
+    unsigned int nl = std::max(0, int(0.5+tstart*gMW->getFs()));
+    unsigned int nr = int(0.5+std::min(gMW->getMaxLastSampleTime(),tend)*gMW->getFs());
 
-    if((m_nr-m_nl+1)%2==0
+    if((nr-nl+1)%2==0
        && m_dlgSettings->ui->cbAmplitudeSpectrumWindowSizeForcedOdd->isChecked())
-        m_nr++;
+        nr++;
 
-    if(m_nl==m_nr) return;
-
-    int winlen_prev = m_winlen;
-    m_winlen = m_nr-m_nl+1;
-
-    // If the user is resizing the selection whereas the window size didn't change
-    // (because a maxmimum is set), do nothing.
-    if(winlen_prev==m_winlen && nl_prev==m_nl) {
-        if(gMW->m_gvSpectrogram->m_currentAction==QGVSpectrogram::CAModifSelectionRight
-                && gMW->m_gvSpectrogram->m_mouseSelection.right()>gMW->m_gvSpectrogram->m_mouseSelection.left())
-            return;
-        if(gMW->m_gvWaveform->m_currentAction==QGVWaveform::CAModifSelectionRight
-                && gMW->m_gvWaveform->m_mouseSelection.right()>gMW->m_gvWaveform->m_mouseSelection.left())
-            return;
-        if(gMW->m_gvWaveform->m_currentAction==QGVWaveform::CAModifSelectionLeft
-                && gMW->m_gvWaveform->m_mouseSelection.left()>gMW->m_gvWaveform->m_mouseSelection.right())
-            return;
-        if(gMW->m_gvWaveform->m_currentAction==QGVWaveform::CASelecting)
-            return;
-    }
-
-    m_last_parameters_change = QTime::currentTime();
-
-    if(m_winlen!=winlen_prev || winforceupdate)
-        updateDFTSettings();
-    else if(m_aAutoUpdateDFT->isChecked())
-        computeDFTs();
-}
-
-void QGVAmplitudeSpectrum::updateDFTSettings(){
-
-    if(m_winlen<2) return;
-
-    // Create the window
-    int wintype = m_dlgSettings->ui->cbAmplitudeSpectrumWindowType->currentIndex();
-    if(wintype==0)
-        m_win = sigproc::hann(m_winlen);
-    else if(wintype==1)
-        m_win = sigproc::hamming(m_winlen);
-    else if(wintype==2)
-        m_win = sigproc::blackman(m_winlen);
-    else if(wintype==3)
-        m_win = sigproc::nutall(m_winlen);
-    else if(wintype==4)
-        m_win = sigproc::blackmannutall(m_winlen);
-    else if(wintype==5)
-        m_win = sigproc::blackmanharris(m_winlen);
-    else if(wintype==6)
-        m_win = sigproc::flattop(m_winlen);
-    else if(wintype==7)
-        m_win = sigproc::rectangular(m_winlen);
-    else if(wintype==8)
-        m_win = sigproc::normwindow(m_winlen, m_dlgSettings->ui->spAmplitudeSpectrumWindowNormSigma->value());
-    else if(wintype==9)
-        m_win = sigproc::expwindow(m_winlen, m_dlgSettings->ui->spAmplitudeSpectrumWindowExpDecay->value());
-    else if(wintype==10)
-        m_win = sigproc::gennormwindow(m_winlen, m_dlgSettings->ui->spAmplitudeSpectrumWindowNormSigma->value(), m_dlgSettings->ui->spAmplitudeSpectrumWindowNormPower->value());
-    else
-        throw QString("No window selected");
-
-    // Normalize the window energy to sum=1
-    double winsum = 0.0;
-    for(int n=0; n<m_winlen; n++)
-        winsum += m_win[n];
-    for(int n=0; n<m_winlen; n++)
-        m_win[n] /= winsum;
-
-    // Set the DFT length
-    m_dftlen = pow(2, std::ceil(log2(float(m_winlen)))+m_dlgSettings->ui->sbAmplitudeSpectrumOversamplingFactor->value());
-
-    m_last_parameters_change = QTime::currentTime();
-
-    if(m_aAutoUpdateDFT->isChecked())
-        computeDFTs();
-}
-
-void QGVAmplitudeSpectrum::computeDFTs(){
-    COUTD << "QGVAmplitudeSpectrum::computeDFTs " << m_winlen << endl;
-    if(m_winlen<2) // Don't do the DFT of one sample ...
+    if(nl==nr)
         return;
 
-    m_fftresizethread->resize(m_dftlen);
+    int winlen = nr-nl+1;
+    if(winlen<2)
+        return;
+
+    // The window's shape
+    int wintype = m_dlgSettings->ui->cbAmplitudeSpectrumWindowType->currentIndex();
+
+    FTSound::DFTParameters newDFTParams(nl, nr, winlen, wintype);
+
+    if(m_trgDFTParameters.isEmpty()
+       || m_trgDFTParameters.wintype!=newDFTParams.wintype
+       || m_trgDFTParameters.winlen!=newDFTParams.winlen
+       || wintype>7){// TODO 7
+        if(wintype==0)
+            m_win = sigproc::hann(newDFTParams.winlen);
+        else if(wintype==1)
+            m_win = sigproc::hamming(newDFTParams.winlen);
+        else if(wintype==2)
+            m_win = sigproc::blackman(newDFTParams.winlen);
+        else if(wintype==3)
+            m_win = sigproc::nutall(newDFTParams.winlen);
+        else if(wintype==4)
+            m_win = sigproc::blackmannutall(newDFTParams.winlen);
+        else if(wintype==5)
+            m_win = sigproc::blackmanharris(newDFTParams.winlen);
+        else if(wintype==6)
+            m_win = sigproc::flattop(newDFTParams.winlen);
+        else if(wintype==7)
+            m_win = sigproc::rectangular(newDFTParams.winlen);
+        else if(wintype==8)
+            m_win = sigproc::normwindow(newDFTParams.winlen, m_dlgSettings->ui->spAmplitudeSpectrumWindowNormSigma->value());
+        else if(wintype==9)
+            m_win = sigproc::expwindow(newDFTParams.winlen, m_dlgSettings->ui->spAmplitudeSpectrumWindowExpDecay->value());
+        else if(wintype==10)
+            m_win = sigproc::gennormwindow(newDFTParams.winlen, m_dlgSettings->ui->spAmplitudeSpectrumWindowNormSigma->value(), m_dlgSettings->ui->spAmplitudeSpectrumWindowNormPower->value());
+        else
+            throw QString("No window selected");
+
+        // Normalize the window energy to sum=1
+        // TODO Option for energy normalisation
+        double winsum = 0.0;
+        for(int n=0; n<newDFTParams.winlen; n++)
+            winsum += m_win[n];
+        for(int n=0; n<newDFTParams.winlen; n++)
+            m_win[n] /= winsum;
+
+        newDFTParams.win = m_win;
+    }
+
+    // Set the DFT length
+    newDFTParams.dftlen = pow(2, std::ceil(log2(float(newDFTParams.winlen)))+m_dlgSettings->ui->sbAmplitudeSpectrumOversamplingFactor->value());
+
+//    COUTD << newDFTParams << endl;
+//    COUTD << m_trgDFTParameters << endl;
+    if(newDFTParams==m_trgDFTParameters)
+        return;
+
+    // From now on we want the new parameters ...
+    m_trgDFTParameters = newDFTParams;
+
+    // ... so let's see which DFTs we have to update.
+    if(m_aAutoUpdateDFT->isChecked())
+        updateDFTs();
+}
+
+void QGVAmplitudeSpectrum::updateDFTs(){
+//    COUTD << "QGVAmplitudeSpectrum::computeDFTs " << m_trgDFTParameters.winlen << endl;
+    if(m_trgDFTParameters.win.size()<2) // Avoid the DFT of one sample ...
+        return;
+
+    m_fftresizethread->resize(m_trgDFTParameters.dftlen);
 
     if(m_fftresizethread->m_mutex_resizing.tryLock()){
-
         int dftlen = m_fft->size(); // Local copy of the actual dftlen
 
         gMW->ui->pgbFFTResize->hide();
         gMW->ui->lblSpectrumInfoTxt->setText(QString("DFT size=%1").arg(dftlen));
 
+        std::vector<FFTTYPE>& win = m_trgDFTParameters.win; // For speeding up access
+
         bool didany = false;
         for(unsigned int fi=0; fi<gMW->ftsnds.size(); fi++){
-            if(!gMW->ftsnds[fi]->isVisible())
+            FTSound* snd = gMW->ftsnds[fi];
+            if(!snd->isVisible())
                 continue;
 
-            // If the DFT is more recent than the parameters update, do nothing.
-            if(!(gMW->ftsnds[fi]->m_dft_lastupdate.isNull()
-                 || gMW->ftsnds[fi]->m_dft_lastupdate < m_last_parameters_change))
+            if(!snd->m_dftparams.isEmpty()
+               && snd->m_dftparams==m_trgDFTParameters
+               && snd->m_dftparams.ampscale==snd->m_ampscale
+               && snd->m_dftparams.delay==snd->m_delay)
                 continue;
 
             didany = true;
 
-//            COUTD << gMW->ftsnds[fi]->fileFullPath.toLatin1().constData() << endl;
+            WAVTYPE gain = snd->m_ampscale;
 
-            WAVTYPE gain = gMW->ftsnds[fi]->m_ampscale;
-
-            gMW->ftsnds[fi]->m_dft_min = std::numeric_limits<WAVTYPE>::infinity();
-            gMW->ftsnds[fi]->m_dft_max = -std::numeric_limits<WAVTYPE>::infinity();
+            snd->m_dft_min = std::numeric_limits<WAVTYPE>::infinity();
+            snd->m_dft_max = -std::numeric_limits<WAVTYPE>::infinity();
             if(gMW->ftsnds[fi]->m_actionInvPolarity->isChecked())
                 gain *= -1;
 
             int n = 0;
             int wn = 0;
-            for(; n<m_winlen; n++){
-                wn = m_nl+n - gMW->ftsnds[fi]->m_delay;
+            for(; n<m_trgDFTParameters.winlen; n++){
+                wn = m_trgDFTParameters.nl+n - snd->m_delay;
 
-                if(wn>=0 && wn<int(gMW->ftsnds[fi]->wavtoplay->size())) {
-                    WAVTYPE value = gain*(*(gMW->ftsnds[fi]->wavtoplay))[wn];
+                if(wn>=0 && wn<int(snd->wavtoplay->size())) {
+                    WAVTYPE value = gain*(*(snd->wavtoplay))[wn];
 
                     if(value>1.0)       value = 1.0;
                     else if(value<-1.0) value = -1.0;
 
-                    m_fft->in[n] = value*m_win[n];
+                    m_fft->in[n] = value*win[n];
                 }
                 else
                     m_fft->in[n] = 0.0;
@@ -408,22 +399,24 @@ void QGVAmplitudeSpectrum::computeDFTs(){
 
             m_fft->execute(); // Compute the DFT
 
-            std::vector<std::complex<WAVTYPE> >* pdft = &(gMW->ftsnds[fi]->m_dft);
-            gMW->ftsnds[fi]->m_dft.resize(dftlen/2+1);
+            std::vector<std::complex<WAVTYPE> >* pdft = &(snd->m_dft);
+            snd->m_dft.resize(dftlen/2+1);
             for(n=0; n<dftlen/2+1; n++) {
                 (*pdft)[n] = std::complex<WAVTYPE>(std::log(std::abs(m_fft->out[n])),std::arg(m_fft->out[n]));
                 WAVTYPE y = (*pdft)[n].real();
-                gMW->ftsnds[fi]->m_dft_min = std::min(gMW->ftsnds[fi]->m_dft_min, y);
-                gMW->ftsnds[fi]->m_dft_max = std::max(gMW->ftsnds[fi]->m_dft_max, y);
+                snd->m_dft_min = std::min(snd->m_dft_min, y);
+                snd->m_dft_max = std::max(snd->m_dft_max, y);
             }
-            gMW->ftsnds[fi]->m_dft_lastupdate = QTime::currentTime();
+            snd->m_dftparams = m_trgDFTParameters;
+            snd->m_dftparams.ampscale = snd->m_ampscale;
+            snd->m_dftparams.delay = snd->m_delay;
         }
 
         // Compute the window's DFT
         if (true) { // TODO #271 Avoid it if now shown
             int n = 0;
-            for(; n<m_winlen; n++)
-                m_fft->in[n] = m_win[n];
+            for(; n<m_trgDFTParameters.winlen; n++)
+                m_fft->in[n] = m_trgDFTParameters.win[n];
             for(; n<dftlen; n++)
                 m_fft->in[n] = 0.0;
 
@@ -444,11 +437,6 @@ void QGVAmplitudeSpectrum::computeDFTs(){
     }
 
 //    COUTD << "~QGVAmplitudeSpectrum::computeDFTs" << endl;
-}
-
-void QGVAmplitudeSpectrum::allSoundsChanged(){
-    if(gMW->ftsnds.size()>0)
-        computeDFTs(); // Blocking FFT computation
 }
 
 void QGVAmplitudeSpectrum::viewSet(QRectF viewrect, bool sync) {
@@ -492,10 +480,9 @@ void QGVAmplitudeSpectrum::viewSet(QRectF viewrect, bool sync) {
 }
 
 void QGVAmplitudeSpectrum::resizeEvent(QResizeEvent* event){
-//    cout << "QGVAmplitudeSpectrum::resizeEvent" << endl;
+//    COUTD << "QGVAmplitudeSpectrum::resizeEvent" << endl;
 
     // Note: Resized is called for all views so better to not forward modifications
-
     if(event->oldSize().isEmpty() && !event->size().isEmpty()) {
 
         updateSceneRect();
@@ -521,7 +508,12 @@ void QGVAmplitudeSpectrum::resizeEvent(QResizeEvent* event){
     viewUpdateTexts();
     setMouseCursorPosition(QPointF(-1,0), false);
 
-//    cout << "QGVAmplitudeSpectrum::~resizeEvent" << endl;
+    if((event->oldSize().width()==-1 || event->oldSize().height()==-1
+            || event->oldSize().width()*event->oldSize().height()==0)
+       && event->size().width()*event->size().height()>0)
+        updateDFTs();
+
+//    COUTD << "QGVAmplitudeSpectrum::~resizeEvent" << endl;
 }
 
 void QGVAmplitudeSpectrum::scrollContentsBy(int dx, int dy) {
@@ -742,7 +734,7 @@ void QGVAmplitudeSpectrum::mouseMoveEvent(QMouseEvent* event){
                 currentftsound->needDFTUpdate();
 
                 currentftsound->setStatus();
-                allSoundsChanged();
+                updateDFTs();
                 gMW->m_gvWaveform->m_scene->update();
                 gMW->fileInfoUpdate();
                 gMW->ui->pbSpectrogramSTFTUpdate->show();
@@ -1142,7 +1134,7 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
 
             double ct = 0.0; // The time where the f0 curve has to be sampled
             if(gMW->m_gvWaveform->hasSelection())
-                ct = 0.5*(m_nl+m_nr)/fs;
+                ct = 0.5*(m_trgDFTParameters.nl+m_trgDFTParameters.nr)/fs;
             else
                 ct = gMW->m_gvWaveform->getPlayCursorPosition();
             double cf0 = sigproc::nearest<double>(gMW->ftfzeros[fi]->ts, gMW->ftfzeros[fi]->f0s, ct, -1.0);

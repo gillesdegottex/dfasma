@@ -47,6 +47,8 @@ class QGVAmplitudeSpectrum : public QGraphicsView
 
     QTime m_last_parameters_change;
 
+    std::vector<FFTTYPE> m_win; // Keep one here to limit allocations
+
 public:
     explicit QGVAmplitudeSpectrum(WMainWindow* parent);
 
@@ -60,11 +62,7 @@ public:
     QToolBar* m_toolBar;
     QMenu m_contextmenu;
 
-    int m_winlen;
-    int m_dftlen; // The dftlen set through the settings
-    unsigned int m_nl;
-    unsigned int m_nr;
-    std::vector<FFTTYPE> m_win;
+    FTSound::DFTParameters m_trgDFTParameters;
     std::vector<std::complex<FFTTYPE> > m_windft; // Window spectrum
     std::vector<FFTTYPE> m_filterresponse;
 
@@ -115,15 +113,13 @@ public:
 signals:
     
 public slots:
-    void allSoundsChanged(); // Triggered when any waveform sample changed
-
-    void setWindowRange(double tstart, double tend, bool winforceupdate);
+    void setWindowRange(double tstart, double tend);
     void updateSceneRect(); // To call when fs has changed and limits in dB
     void updateAmplitudeExtent();
     void amplitudeMinChanged();
-    void updateDFTSettings();
+//    void updateDFTSettings();
     void settingsModified();
-    void computeDFTs();
+    void updateDFTs();
     void fftResizing(int prevSize, int newSize);
 
     void selectionZoomOn();

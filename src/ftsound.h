@@ -79,10 +79,46 @@ public:
     qint64 m_delay;   // [sample index]
 
     // Spectrum
+    class DFTParameters{
+    public:
+        // DFT related
+        unsigned int nl; // [samples]
+        unsigned int nr; // [samples]
+        int winlen;
+        int wintype;
+        std::vector<FFTTYPE> win; // Could avoid this by using classes of windows parameters
+        int dftlen;
+        qreal ampscale; // [linear]
+        qint64 delay;   // [sample index]
+
+        void clear(){
+            nl = 0;
+            nr = 0;
+            winlen = 0;
+            wintype = -1;
+            win.clear();
+            dftlen = 0;
+            ampscale = 1.0;
+            delay = 0;
+        }
+
+        DFTParameters(){
+            clear();
+        }
+        DFTParameters(unsigned int _nl, unsigned int _nr, int _winlen, int _wintype, const std::vector<FFTTYPE>& _win=std::vector<FFTTYPE>(), int _dftlen=0, qreal _ampscale=1.0, qint64 _delay=0);
+
+        DFTParameters& operator=(const DFTParameters &params);
+
+        bool operator==(const DFTParameters& param) const;
+        bool operator!=(const DFTParameters& param) const{
+            return !((*this)==param);
+        }
+
+        inline bool isEmpty() const {return winlen==0 || dftlen==0 || wintype==-1;}
+    };
+
     std::vector<std::complex<WAVTYPE> > m_dft; // Store the _log_ of the DFT
-    QTime m_dft_lastupdate; // Use a simple time checking system for updating the least DFTs
-                            // (Could use a Parameters system (like for the STFT), but this would be
-                            //  a bit heavy since we don't need to avoid absolutely all re-computations)
+    DFTParameters m_dftparams;
     qreal m_dft_min;
     qreal m_dft_max;
 

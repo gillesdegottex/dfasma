@@ -115,7 +115,7 @@ public slots:
     void amplitudeExtentSlidersChanged();
     void updateSceneRect(); // To call when fs has changed and limits in dB
     void updateTextsGeometry();
-    void updateDFTSettings();
+    void updateSTFTSettings();
     void updateSTFTPlot(bool force=false);
     void clearSTFTPlot();
     void stftComputingStateChanged(int state);

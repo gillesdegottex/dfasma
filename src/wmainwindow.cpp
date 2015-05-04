@@ -262,9 +262,9 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     updateViewsAfterAddFile(true);
 
     if(files.size()>0)
-        m_gvSpectrogram->updateDFTSettings(); // This will update the window computation AND trigger the STFT computation
+        m_gvSpectrogram->updateSTFTSettings(); // This will update the window computation AND trigger the STFT computation
 
-    connect(ui->pbSpectrogramSTFTUpdate, SIGNAL(clicked()), m_gvSpectrogram, SLOT(updateDFTSettings()));
+    connect(ui->pbSpectrogramSTFTUpdate, SIGNAL(clicked()), m_gvSpectrogram, SLOT(updateSTFTSettings()));
 
     connect(ui->actionFileOpen, SIGNAL(triggered()), this, SLOT(openFile()));
 
@@ -898,7 +898,7 @@ void WMainWindow::resetDelay(){
 void WMainWindow::allSoundsChanged(){
 //    COUTD << "WMainWindow::allSoundsChanged" << endl;
     m_gvWaveform->m_scene->update(); // Can be also very heavy if updating multiple files
-    m_gvAmplitudeSpectrum->allSoundsChanged(); // Can be also very heavy if updating multiple files
+    m_gvAmplitudeSpectrum->updateDFTs(); // Can be also very heavy if updating multiple files
     // m_gvSpectrogram->soundsChanged(); // Too heavy to be here, call updateSTFTPlot(force) instead
 //    COUTD << "WMainWindow::~allSoundsChanged" << endl;
 }
@@ -912,7 +912,7 @@ void WMainWindow::selectedFilesToggleShown() {
     }
     m_gvWaveform->m_scene->update();
     m_gvSpectrogram->m_scene->update();
-    m_gvAmplitudeSpectrum->allSoundsChanged();
+    m_gvAmplitudeSpectrum->updateDFTs();
 }
 
 void WMainWindow::selectedFilesClose() {
@@ -985,7 +985,7 @@ void WMainWindow::selectedFilesReload() {
 
     if(reloadSelectedSound){
         m_gvWaveform->m_scene->update();
-        m_gvAmplitudeSpectrum->allSoundsChanged(); // TODO The DFT of all files are updated here, whereas only the slected files need to be ! Need to run computeDFTs on a given file.
+        m_gvAmplitudeSpectrum->updateDFTs();
         m_gvSpectrogram->updateSTFTPlot(true); // Force the STFT computation
     }
 

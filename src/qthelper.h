@@ -10,6 +10,8 @@
 #include <QColor>
 #include <QGraphicsView>
 
+#include "ftsound.h"
+
 #ifdef __MINGW32__
     #define COMPILER "MinGW"
 #elif (defined(__GNUC__) || defined(__GNUG__))
@@ -76,5 +78,13 @@ inline std::ostream& operator<<(std::ostream& stream, const QTime& t) {
 
     return stream;
 }
+
+inline std::ostream& operator<<(std::ostream& stream, const FTSound::DFTParameters& params) {
+    stream << "samples[" << params.nl << "," << params.nr << "] winlen=" << params.winlen << " wintype=" << params.wintype << " win.size()=" << params.win.size() << " dftlen=" << params.dftlen << " ampscale=" << params.ampscale << " delay=" << params.delay;
+
+    return stream;
+}
+
+//            COUTD << snd->m_dftparams.nl << " " << snd->m_dftparams.nr << " " << snd->m_dftparams.winlen << " " << snd->m_dftparams.dftlen << " " << snd->m_dftparams.ampscale << " " << snd->m_dftparams.delay << endl;
 
 #endif // QTHELPER_H

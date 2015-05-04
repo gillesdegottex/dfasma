@@ -199,17 +199,17 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_contextmenu.addAction(m_aShowProperties);
     connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
 
-    connect(m_dlgSettings->ui->buttonBox->button(QDialogButtonBox::Ok), SIGNAL(clicked()), this, SLOT(updateDFTSettings()));
+    connect(m_dlgSettings->ui->buttonBox->button(QDialogButtonBox::Ok), SIGNAL(clicked()), this, SLOT(updateSTFTSettings()));
     connect(m_dlgSettings->ui->buttonBox->button(QDialogButtonBox::Ok), SIGNAL(clicked()), m_dlgSettings, SLOT(close()));
 
-    connect(m_dlgSettings->ui->buttonBox->button(QDialogButtonBox::Apply), SIGNAL(clicked()), this, SLOT(updateDFTSettings()));
+    connect(m_dlgSettings->ui->buttonBox->button(QDialogButtonBox::Apply), SIGNAL(clicked()), this, SLOT(updateSTFTSettings()));
 
     connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(sliderPressed()), SLOT(amplitudeExtentSlidersChanged()));
     connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(spanChanged(int,int)), SLOT(amplitudeExtentSlidersChanged()));
     connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(lowerValueChanged(int)), this, SLOT(updateSTFTPlot()));
     connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(upperValueChanged(int)), this, SLOT(updateSTFTPlot()));
 
-    updateDFTSettings(); // Prepare a window from loaded settings
+    updateSTFTSettings(); // Prepare a window from loaded settings
 }
 
 void QGVSpectrogram::settingsSave(){
@@ -224,13 +224,13 @@ void QGVSpectrogram::amplitudeExtentSlidersChanged(){
     updateSTFTPlot();
 }
 
-void QGVSpectrogram::updateDFTSettings(){
-//    cout << "QGVSpectrogram::updateDFTSettings fs=" << gMW->getFs() << endl;
+void QGVSpectrogram::updateSTFTSettings(){
+//    cout << "QGVSpectrogram::updateSTFTSettings fs=" << gMW->getFs() << endl;
 
     gMW->ui->pbSpectrogramSTFTUpdate->hide();
 
     int winlen = std::floor(0.5+gMW->getFs()*m_dlgSettings->ui->sbSpectrogramWindowSize->value());
-    //    cout << "QGVSpectrogram::updateDFTSettings winlen=" << winlen << endl;
+    //    cout << "QGVSpectrogram::updateSTFTSettings winlen=" << winlen << endl;
 
     if(winlen%2==0 && m_dlgSettings->ui->cbSpectrogramWindowSizeForcedOdd->isChecked())
         winlen++;
@@ -271,7 +271,7 @@ void QGVSpectrogram::updateDFTSettings(){
 
     updateSTFTPlot();
 
-//    cout << "QGVSpectrogram::~updateDFTSettings" << endl;
+//    cout << "QGVSpectrogram::~updateSTFTSettings" << endl;
 }
 
 
@@ -787,7 +787,7 @@ void QGVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
         if(gMW->m_gvWaveform) {
             if(gMW->m_gvWaveform->m_selection.left()!=m_selection.left()
                || gMW->m_gvWaveform->m_selection.right()!=m_selection.right()) {
-                gMW->m_gvWaveform->selectionSet(m_selection, true, false);
+                gMW->m_gvWaveform->selectionSet(m_selection, false);
             }
         }
 

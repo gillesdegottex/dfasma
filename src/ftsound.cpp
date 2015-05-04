@@ -53,8 +53,60 @@ double FTSound::fs_common = 0; // Initially, fs is undefined TODO put in wmainwi
 WAVTYPE FTSound::s_play_power = 0;
 std::deque<WAVTYPE> FTSound::s_play_power_values;
 
-void FTSound::init(){
+FTSound::DFTParameters::DFTParameters(unsigned int _nl, unsigned int _nr, int _winlen, int _wintype, const std::vector<FFTTYPE>& _win, int _dftlen, qreal _ampscale, qint64 _delay){
+    clear();
 
+    nl = _nl;
+    nr = _nr;
+    winlen = _winlen;
+    wintype = _wintype;
+    win = _win;
+    dftlen = _dftlen;
+    ampscale = _ampscale;
+    delay = _delay;
+}
+
+FTSound::DFTParameters& FTSound::DFTParameters::operator=(const DFTParameters &params) {
+    nl = params.nl;
+    nr = params.nr;
+    if(params.wintype>7      // TODO Replace with a Shape Parameters structure
+       || !(wintype==params.wintype
+         && winlen==params.winlen))
+        win = params.win;
+    winlen = params.winlen;
+    wintype = params.wintype;
+    dftlen = params.dftlen;
+    ampscale = params.ampscale;
+    delay = params.delay;
+
+    return *this;
+}
+
+
+bool FTSound::DFTParameters::operator==(const DFTParameters& param) const {
+    if(nl!=param.nl)
+        return false;
+    if(nr!=param.nr)
+        return false;
+    if(winlen!=param.winlen)
+        return false;
+    if(wintype!=param.wintype)
+        return false;
+    if(dftlen!=param.dftlen)
+        return false;
+    if(wintype>7){ // If this is a parametrizable window, check every sample // TODO 7
+        if(win.size()!=param.win.size())
+            return false;
+        for(size_t n=0; n<win.size(); n++)
+            if(win[n]!=param.win[n])
+                return false;
+    }
+
+    return true;
+}
+
+
+void FTSound::init(){
     connect(m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setVisible(bool)));
 
     m_channelid = 0;
@@ -269,7 +321,7 @@ void FTSound::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
 }
 
 void FTSound::needDFTUpdate() {
-    m_dft_lastupdate = QTime();
+    m_stftparams.clear();
 }
 
 void FTSound::setFiltered(bool filtered){
@@ -280,9 +332,7 @@ void FTSound::setFiltered(bool filtered){
 void FTSound::resetFiltering(){
     wavtoplay = &wav;
     gMW->m_gvWaveform->m_giFilteredSelection->hide();
-//    gMW->m_gvWaveform->m_scene->invalidate();
-    gMW->m_gvAmplitudeSpectrum->computeDFTs();
-//    gMW->m_gvAmplitudeSpectrum->m_scene->invalidate();
+    gMW->m_gvAmplitudeSpectrum->updateDFTs();
     gMW->m_gvAmplitudeSpectrum->m_filterresponse.clear();
     setFiltered(false);
     m_filteredmaxamp = 0.0;
@@ -296,7 +346,7 @@ void FTSound::resetAmpScale(){
         setStatus();
 
         gMW->m_gvWaveform->m_scene->update();
-        gMW->m_gvAmplitudeSpectrum->allSoundsChanged();
+        gMW->m_gvAmplitudeSpectrum->updateDFTs();
         gMW->ui->pbSpectrogramSTFTUpdate->show();
     }
 }
@@ -307,7 +357,7 @@ void FTSound::resetDelay(){
         setStatus();
 
         gMW->m_gvWaveform->m_scene->update();
-        gMW->m_gvAmplitudeSpectrum->allSoundsChanged();
+        gMW->m_gvAmplitudeSpectrum->updateDFTs();
         gMW->ui->pbSpectrogramSTFTUpdate->show();
     }
 }
@@ -520,7 +570,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
             wavtoplay = &wavfiltered;
 
             gMW->m_gvWaveform->m_scene->invalidate();
-            gMW->m_gvAmplitudeSpectrum->computeDFTs();
+            gMW->m_gvAmplitudeSpectrum->updateDFTs();
             gMW->m_gvAmplitudeSpectrum->m_scene->invalidate();
         }
         catch(QString err){
@@ -532,7 +582,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
     else {
         gMW->m_gvAmplitudeSpectrum->m_filterresponse.resize(0);
         wavtoplay = &wav;
-        gMW->m_gvAmplitudeSpectrum->computeDFTs();
+        gMW->m_gvAmplitudeSpectrum->updateDFTs();
     }
 
     QIODevice::open(QIODevice::ReadOnly);
