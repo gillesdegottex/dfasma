@@ -1088,8 +1088,10 @@ void WMainWindow::play()
             if(currentftsound) {
 
                 // Start by reseting any previously filtered sounds
-                if(m_lastFilteredSound && m_lastFilteredSound->isFiltered())
+                if(m_lastFilteredSound && m_lastFilteredSound->isFiltered()){
                     m_lastFilteredSound->resetFiltering();
+                    m_lastFilteredSound->needDFTUpdate();
+                }
 
                 double tstart = m_gvWaveform->m_giPlayCursor->pos().x();
                 double tstop = getMaxLastSampleTime();

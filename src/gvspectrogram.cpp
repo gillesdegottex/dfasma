@@ -171,9 +171,10 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
 
     gMW->ui->pbSTFTComputingCancel->hide();
     gMW->ui->pgbSpectrogramSTFTCompute->hide();
+    gMW->ui->pgbSpectrogramSTFTCompute->setMaximum(100);
     gMW->ui->lblSpectrogramInfoTxt->setText("");
 
-    connect(m_stftcomputethread, SIGNAL(stftComputing()), this, SLOT(stftComputing()));
+    connect(m_stftcomputethread, SIGNAL(stftComputingStateChanged(int)), this, SLOT(stftComputingStateChanged(int)));
     connect(m_stftcomputethread, SIGNAL(stftFinished(bool)), this, SLOT(stftFinished(bool)));
     connect(m_stftcomputethread, SIGNAL(stftProgressing(int)), gMW->ui->pgbSpectrogramSTFTCompute, SLOT(setValue(int)));
 
@@ -201,11 +202,10 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
 
     connect(m_dlgSettings->ui->buttonBox->button(QDialogButtonBox::Apply), SIGNAL(clicked()), this, SLOT(updateDFTSettings()));
 
-    connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(lowerValueChanged(int)), this, SLOT(updateSTFTPlot()));
-    connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(upperValueChanged(int)), this, SLOT(updateSTFTPlot()));
-
     connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(sliderPressed()), SLOT(amplitudeExtentSlidersChanged()));
     connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(spanChanged(int,int)), SLOT(amplitudeExtentSlidersChanged()));
+    connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(lowerValueChanged(int)), this, SLOT(updateSTFTPlot()));
+    connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(upperValueChanged(int)), this, SLOT(updateSTFTPlot()));
 
     updateDFTSettings(); // Prepare a window from loaded settings
 }
@@ -218,6 +218,8 @@ void QGVSpectrogram::settingsSave(){
 void QGVSpectrogram::amplitudeExtentSlidersChanged(){
     if(!gMW->isLoading())
         QToolTip::showText(QCursor::pos(), QString("[%1,%2]\%").arg(gMW->m_qxtSpectrogramSpanSlider->lowerValue()).arg(gMW->m_qxtSpectrogramSpanSlider->upperValue()), this);
+
+    updateSTFTPlot();
 }
 
 void QGVSpectrogram::updateDFTSettings(){
@@ -271,36 +273,52 @@ void QGVSpectrogram::updateDFTSettings(){
 }
 
 
-void QGVSpectrogram::stftComputing(){
+//template<typename streamtype>
+//streamtype& operator<<(streamtype& stream, const QGVSpectrogram::ImageParameters& imgparams){
+//    stream << imgparams.stftparams.snd << " win.size=" << imgparams.stftparams.win.size() << " stepsize=" << imgparams.stftparams.stepsize << " dftlen=" << imgparams.stftparams.dftlen << " amp=[" << imgparams.amplitudeMin << ", " << imgparams.amplitudeMax << "]";
+//}
+
+
+void QGVSpectrogram::stftComputingStateChanged(int state){
+    if(state==STFTComputeThread::SCSDFT){
+//        COUTD << "SCSDFT" << endl;
+        gMW->ui->pgbSpectrogramSTFTCompute->setValue(0);
+        gMW->ui->pgbSpectrogramSTFTCompute->show();
+        gMW->ui->lblSpectrogramInfoTxt->setText(QString("Computing STFT"));
+    }
+    else if(state==STFTComputeThread::SCSIMG){
+//        COUTD << "SCSIMG" << endl;
+        gMW->ui->pgbSpectrogramSTFTCompute->setValue(0);
+        gMW->ui->pgbSpectrogramSTFTCompute->show();
+        gMW->ui->lblSpectrogramInfoTxt->setText(QString("Updating Image"));
+    }
+    else if(state==STFTComputeThread::SCSIdle){
+//        COUTD << "SCSIdle" << endl;
+        gMW->ui->pbSTFTComputingCancel->setChecked(false);
+        gMW->ui->pbSTFTComputingCancel->hide();
+        gMW->ui->pgbSpectrogramSTFTCompute->hide();
+    }
 //    cout << "QGVSpectrogram::stftComputing" << endl;
-    gMW->ui->pgbSpectrogramSTFTCompute->setMaximum(100);
-    gMW->ui->pgbSpectrogramSTFTCompute->setValue(0);
-    gMW->ui->pgbSpectrogramSTFTCompute->show();
-    gMW->ui->lblSpectrogramInfoTxt->setText(QString("Computing STFT..."));
 }
 
-
-template<typename streamtype>
-streamtype& operator<<(streamtype& stream, const QGVSpectrogram::ImageParameters& imgparams){
-    stream << imgparams.stftparams.snd << " win.size=" << imgparams.stftparams.win.size() << " stepsize=" << imgparams.stftparams.stepsize << " dftlen=" << imgparams.stftparams.dftlen << " amp=[" << imgparams.amplitudeMin << ", " << imgparams.amplitudeMax << "]";
+void QGVSpectrogram::stftFinished(bool canceled){
+    gMW->ui->pbSTFTComputingCancel->hide();
+    if(canceled){
+        gMW->ui->pgbSpectrogramSTFTCompute->hide();
+        gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT Canceled"));
+        gMW->ui->pbSpectrogramSTFTUpdate->show();
+        clearSTFTPlot();
+    }
+    else {
+        m_scene->update();
+        gMW->ui->lblSpectrogramInfoTxt->setText(QString("DFT size=%1").arg(m_imgSTFTParams.stftparams.dftlen));
+    }
 }
 
 void QGVSpectrogram::clearSTFTPlot(){
     m_imgSTFTParams.clear();
     m_imgSTFT.fill(Qt::white);
     m_scene->update();
-}
-
-void QGVSpectrogram::stftFinished(bool canceled){
-    if(canceled){
-        gMW->ui->pbSTFTComputingCancel->hide();
-        gMW->ui->pgbSpectrogramSTFTCompute->hide();
-        gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT Canceled"));
-        clearSTFTPlot();
-    }
-    else {
-        updateSTFTPlot();
-    }
 }
 
 void QGVSpectrogram::updateSTFTPlot(bool force){
@@ -312,76 +330,29 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
 //        cout << "QGVSpectrogram::updateSTFTPlot " << csnd->fileFullPath.toLatin1().constData() << endl;
 
         if(force){
-            csnd->m_stftparams.clear();
             m_imgSTFTParams.clear();
         }
 
-        int stepsize = std::floor(0.5+gMW->getFs()*m_dlgSettings->ui->sbSpectrogramStepSize->value());
-        int dftlen = pow(2, std::ceil(log2(float(m_win.size())))+m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());
-        int cepliftorder = -1;
+        int stepsize = std::floor(0.5+gMW->getFs()*m_dlgSettings->ui->sbSpectrogramStepSize->value());//[samples]
+        int dftlen = pow(2, std::ceil(log2(float(m_win.size())))+m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());//[samples]
+        int cepliftorder = -1;//[samples]
         if(gMW->m_gvSpectrogram->m_dlgSettings->ui->gbSpectrogramCepstralLiftering->isChecked())
             cepliftorder = gMW->m_gvSpectrogram->m_dlgSettings->ui->sbSpectrogramCepstralLifteringOrder->value();
         bool cepliftpresdc = gMW->m_gvSpectrogram->m_dlgSettings->ui->cbSpectrogramCepstralLifteringPreserveDC->isChecked();
 
-        if(csnd->m_stftparams != STFTComputeThread::Parameters(csnd, m_win, stepsize, dftlen, cepliftorder, cepliftpresdc)){
-            m_stftcomputethread->compute(csnd, m_win, stepsize, dftlen, cepliftorder, cepliftpresdc);
-        }
-        else{
-            // Be sure to wait for stftComputed (updateSTFTPlot can be called by other means)
-            if(m_stftcomputethread->m_mutex_computing.tryLock()){
+        STFTComputeThread::STFTParameters reqSTFTParams(csnd, m_win, stepsize, dftlen, cepliftorder, cepliftpresdc);
+        STFTComputeThread::ImageParameters reqImgSTFTParams(reqSTFTParams, &m_imgSTFT, m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex(), m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked(), gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0, gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0);
 
-                if(csnd->m_stft.size()>0){
+        if(m_imgSTFTParams.isEmpty() || reqImgSTFTParams!=m_imgSTFTParams){
+            gMW->ui->pbSpectrogramSTFTUpdate->hide();
 
-                    int dftlen = (int(csnd->m_stft[0].size())-1)*2;
-
-                    ImageParameters reqImgParams(csnd->m_stftparams, gMW->m_qxtSpectrogramSpanSlider->lowerValue(), gMW->m_qxtSpectrogramSpanSlider->upperValue(), m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex(), m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked());
-
-                    if(m_imgSTFTParams!=reqImgParams){
-                        gMW->ui->pbSTFTComputingCancel->hide();
-                        gMW->ui->pgbSpectrogramSTFTCompute->hide();
-                        gMW->ui->lblSpectrogramInfoTxt->setText(QString("Updating Image ..."));
-                        QCoreApplication::processEvents(); // To apply the above before blocking on the image filling
-
-                        m_imgSTFTParams = reqImgParams;
-
-                        // Update the image from the sound's STFT
-                        m_imgSTFT = QImage(int(csnd->m_stft.size()), int(csnd->m_stft[0].size()), QImage::Format_RGB32);
-
-                        ColorMap& cmap = ColorMap::getAt(m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex());
-                        bool reversed = m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked();
-
-//                        COUTD << "---" << endl;
-//                        COUTD << "[" << csnd->m_stft_min << "," << csnd->m_stft_max << "]" << endl;
-//                        COUTD << "[" << gMW->m_qxtspanslider->lowerValue() << "," << gMW->m_qxtspanslider->upperValue() << "]" << endl;
-                        double ymin = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0; // Min of color range [dB]
-                        double ymax = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0; // Max of color range [dB]
-//                        COUTD << "[" << ymin << "," << ymax << "]" << endl;
-                        for(int si=0; si<int(csnd->m_stft.size()); si++){
-                            for(int n=0; n<int(csnd->m_stft[si].size()); n++) {
-                                double y = csnd->m_stft[si][n];
-
-                                y = (y-ymin)/(ymax-ymin);
-
-                                y = std::min(std::max(y, 0.0), 1.0);
-
-                                if(reversed)
-                                    y = 1.0-y;
-
-                                m_imgSTFT.setPixel(QPoint(si,dftlen/2-n), cmap(y));
-                            }
-                        }
-                    }
-
-                    m_scene->update();
-                    gMW->ui->lblSpectrogramInfoTxt->setText(QString("DFT size=%1").arg(dftlen));
-                }
-
-                m_stftcomputethread->m_mutex_computing.unlock();
-            }
+            m_imgSTFTParams = reqImgSTFTParams; // Eventually, it will be this one.
+                                        // If canceled, stftFinished(canceled=true) will deal with it.
+            m_stftcomputethread->compute(reqImgSTFTParams);
         }
     }
 
-//    cout << "QGVSpectrogram::~updateSTFTPlot" << endl;
+//    COUTD << "QGVSpectrogram::~updateSTFTPlot" << endl;
 }
 
 void QGVSpectrogram::updateSceneRect() {
@@ -389,10 +360,10 @@ void QGVSpectrogram::updateSceneRect() {
 }
 
 void QGVSpectrogram::allSoundsChanged(){
-//    cout << "QGVSpectrogram::allSoundsChanged" << endl;
+//    COUTD << "QGVSpectrogram::allSoundsChanged" << endl;
     if(gMW->ftsnds.size()>0)
         updateSTFTPlot();
-//    cout << "QGVSpectrogram::~allSoundsChanged" << endl;
+//    COUTD << "QGVSpectrogram::~allSoundsChanged" << endl;
 }
 
 void QGVSpectrogram::viewSet(QRectF viewrect, bool forwardsync) {
@@ -973,25 +944,6 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
     double fs = gMW->getFs();
 
     // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
-
-    // Draw the f0 curve
-        // TODO
-    // Draw the harmonic grid curve
-        // TODO
-//    if(!gMW->ftfzeros.empty()) {
-
-//        for(size_t fi=0; fi<gMW->ftfzeros.size(); fi++){
-//            if(!gMW->ftfzeros[fi]->m_actionShow->isChecked())
-//                continue;
-
-//            QPen outlinePen(gMW->ftfzeros[fi]->color);
-//            outlinePen.setWidth(0);
-//            painter->setPen(outlinePen);
-//            painter->setBrush(QBrush(gMW->ftfzeros[fi]->color));
-
-            // TODO
-//        }
-//    }
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 

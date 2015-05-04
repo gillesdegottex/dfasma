@@ -83,16 +83,17 @@ public:
     QTime m_dft_lastupdate; // Use a simple time checking system for updating the least DFTs
                             // (Could use a Parameters system (like for the STFT), but this would be
                             //  a bit heavy since we don't need to avoid absolutely all re-computations)
-
     qreal m_dft_min;
     qreal m_dft_max;
 
     // Spectrogram
     std::deque<std::vector<WAVTYPE> > m_stft;
     std::deque<double> m_stftts;
-    STFTComputeThread::Parameters m_stftparams;
+    STFTComputeThread::STFTParameters m_stftparams;
+//    QTime m_stft_lastupdate; // Use a simple time checking system for updating the least DFTs
     qreal m_stft_min;
     qreal m_stft_max;
+//    QTime m_stftimg_lastupdate; // Use a simple time checking system for updating the least DFTs
 
     // QIODevice
     qint64 readData(char *data, qint64 maxlen);

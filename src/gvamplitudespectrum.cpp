@@ -229,7 +229,7 @@ void QGVAmplitudeSpectrum::updateAmplitudeExtent(){
             maxsqnr = std::max(maxsqnr, 20*std::log10(std::pow(2.0f,gMW->ftsnds[si]->format().sampleSize())));
 
         gMW->ui->sldAmplitudeSpectrumMin->setMaximum(0);
-        gMW->ui->sldAmplitudeSpectrumMin->setMinimum(-2*maxsqnr); // 2 gives a margin
+        gMW->ui->sldAmplitudeSpectrumMin->setMinimum(-3*maxsqnr); // 2 gives a margin
 
         updateSceneRect();
     }
@@ -366,6 +366,7 @@ void QGVAmplitudeSpectrum::computeDFTs(){
         gMW->ui->pgbFFTResize->hide();
         gMW->ui->lblSpectrumInfoTxt->setText(QString("DFT size=%1").arg(dftlen));
 
+        bool didany = false;
         for(unsigned int fi=0; fi<gMW->ftsnds.size(); fi++){
             if(!gMW->ftsnds[fi]->isVisible())
                 continue;
@@ -374,6 +375,8 @@ void QGVAmplitudeSpectrum::computeDFTs(){
             if(!(gMW->ftsnds[fi]->m_dft_lastupdate.isNull()
                  || gMW->ftsnds[fi]->m_dft_lastupdate < m_last_parameters_change))
                 continue;
+
+            didany = true;
 
 //            COUTD << gMW->ftsnds[fi]->fileFullPath.toLatin1().constData() << endl;
 
@@ -433,9 +436,11 @@ void QGVAmplitudeSpectrum::computeDFTs(){
 
         m_fftresizethread->m_mutex_resizing.unlock();
 
-        m_scene->update();
-        if(gMW->m_gvPhaseSpectrum)
-            gMW->m_gvPhaseSpectrum->m_scene->update();
+        if(didany){
+            m_scene->update();
+            if(gMW->m_gvPhaseSpectrum)
+                gMW->m_gvPhaseSpectrum->m_scene->update();
+        }
     }
 
 //    COUTD << "~QGVAmplitudeSpectrum::computeDFTs" << endl;

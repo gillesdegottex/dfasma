@@ -531,14 +531,8 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
     }
     else {
         gMW->m_gvAmplitudeSpectrum->m_filterresponse.resize(0);
-        gMW->m_gvAmplitudeSpectrum->m_scene->invalidate();
-        bool dofrefresh = wavtoplay != &wav;
         wavtoplay = &wav;
-        if (dofrefresh) {
-            gMW->m_gvWaveform->m_scene->invalidate();
-            gMW->m_gvAmplitudeSpectrum->computeDFTs();
-            gMW->m_gvAmplitudeSpectrum->m_scene->invalidate();
-        }
+        gMW->m_gvAmplitudeSpectrum->computeDFTs();
     }
 
     QIODevice::open(QIODevice::ReadOnly);
@@ -654,13 +648,13 @@ FTSound::~FTSound(){
     // Remove it from the STFT waiting queue
     gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingparams.lock();
     if(!gMW->m_gvSpectrogram->m_stftcomputethread->m_params_todo.isEmpty()
-        && gMW->m_gvSpectrogram->m_stftcomputethread->m_params_todo.snd==this){
+        && gMW->m_gvSpectrogram->m_stftcomputethread->m_params_todo.stftparams.snd==this){
         gMW->m_gvSpectrogram->m_stftcomputethread->m_params_todo.clear();
     }
     gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingparams.unlock();
     // Or cancel its STFT computation
     while(gMW->m_gvSpectrogram->m_stftcomputethread->isRunning()
-          && gMW->m_gvSpectrogram->m_stftcomputethread->getCurrentParameters().snd==this){
+          && gMW->m_gvSpectrogram->m_stftcomputethread->getCurrentParameters().stftparams.snd==this){
         gMW->ui->pbSTFTComputingCancel->setChecked(true);
         QThread::msleep(20);
     }

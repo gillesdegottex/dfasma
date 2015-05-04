@@ -68,54 +68,8 @@ public:
     void setMouseCursorPosition(QPointF p, bool forwardsync);
 
     QImage m_imgSTFT;
-    class ImageParameters{
-    public:
-        STFTComputeThread::Parameters stftparams;
-        int amplitudeMin;
-        int amplitudeMax;
-        int colormapindex;
-        bool colormapreversed;
-
-        void clear(){
-            stftparams.clear();
-            amplitudeMin = -1;
-            amplitudeMax = -1;
-            colormapindex = -1;
-            colormapreversed = false;
-        }
-
-        ImageParameters(){
-            clear();
-        }
-        ImageParameters(STFTComputeThread::Parameters reqSTFTparams, int reqamplitudeMin, int reqamplitudeMax, int reqcolormapindex, bool reqcolormapreversed){
-            clear();
-            stftparams = reqSTFTparams;
-            amplitudeMin = reqamplitudeMin;
-            amplitudeMax = reqamplitudeMax;
-            colormapindex = reqcolormapindex;
-            colormapreversed = reqcolormapreversed;
-        }
-
-        bool operator==(const ImageParameters& param){
-            if(stftparams!=param.stftparams)
-                return false;
-            if(amplitudeMin!=param.amplitudeMin)
-                return false;
-            if(amplitudeMax!=param.amplitudeMax)
-                return false;
-            if(colormapindex!=param.colormapindex)
-                return false;
-            if(colormapreversed!=param.colormapreversed)
-                return false;
-
-            return true;
-        }
-        bool operator!=(const ImageParameters& param){
-            return !((*this)==param);
-        }
-
-        inline bool isEmpty(){return stftparams.isEmpty() || amplitudeMin==-1 || amplitudeMax==-1 || colormapindex==-1;}
-    } m_imgSTFTParams;
+    STFTComputeThread::ImageParameters m_imgSTFTParams; // This is the target parameters for the image
+                                                        // During STFT update, it doesn't correspond to m_imgSTFT
 
     QPointF m_selection_pressedp;
     bool m_topismax;
@@ -162,10 +116,10 @@ public slots:
     void updateSceneRect(); // To call when fs has changed and limits in dB
     void updateTextsGeometry();
     void updateDFTSettings();
-    void stftComputing();
-    void stftFinished(bool canceled);
     void updateSTFTPlot(bool force=false);
     void clearSTFTPlot();
+    void stftComputingStateChanged(int state);
+    void stftFinished(bool canceled);
 
     void selectionZoomOn();
     void selectionClear(bool forwardsync=true);
