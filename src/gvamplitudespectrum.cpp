@@ -353,7 +353,7 @@ void QGVAmplitudeSpectrum::updateDFTSettings(){
 }
 
 void QGVAmplitudeSpectrum::computeDFTs(){
-//    COUTD << "QGVAmplitudeSpectrum::computeDFTs " << m_winlen << endl;
+    COUTD << "QGVAmplitudeSpectrum::computeDFTs " << m_winlen << endl;
     if(m_winlen<2) // Don't do the DFT of one sample ...
         return;
 

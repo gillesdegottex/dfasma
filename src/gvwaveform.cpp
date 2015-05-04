@@ -946,9 +946,40 @@ void QGVWaveform::selectionClear(bool forwardsync){
     }
 }
 
-void QGVWaveform::selectionSet(QRectF selection, bool winforceupdate, bool forwardsync){
-    // m_giMouseSelection->setRect(selection);
+void QGVWaveform::fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseSelection, int action) {
+    double fs = gMW->getFs();
 
+    // Clip selection on exact sample times
+    selection.setLeft((int(0.5+selection.left()*fs))/fs);
+    if(selection.width()==0)
+        selection.setRight(selection.left());
+    else
+        selection.setRight((int(0.5+selection.right()*fs))/fs);
+
+    if(selection.left()<0) selection.setLeft(0.0);
+    if(selection.left()>gMW->getMaxLastSampleTime()-1.0/fs) selection.setLeft(gMW->getMaxLastSampleTime()-1.0/fs);
+    if(selection.right()<1.0/fs) selection.setRight(1.0/fs);
+    if(selection.right()>gMW->getMaxLastSampleTime()) selection.setRight(gMW->getMaxLastSampleTime());
+
+    // Adjust parity of the window size according to option
+    int nl = std::max(0, int(0.5+selection.left()*fs));
+    int nr = int(0.5+std::min(gMW->getMaxLastSampleTime(),selection.right())*fs);
+    int winlen = nr-nl+1;
+    if(winlen%2==0 && gMW->m_gvAmplitudeSpectrum->m_dlgSettings->ui->cbAmplitudeSpectrumWindowSizeForcedOdd->isChecked()) {
+        if(action==CAModifSelectionLeft)
+            selection.setLeft(selection.left()+1.0/fs);
+        else if(action==CAModifSelectionRight)
+            selection.setRight(selection.right()-1.0/fs);
+        else {
+            if(mouseSelection.right()>mouseSelection.left())
+                selection.setRight(selection.right()-1.0/fs);
+            else
+                selection.setLeft(selection.left()+1.0/fs);
+        }
+    }
+}
+
+void QGVWaveform::selectionSet(QRectF selection, bool winforceupdate, bool forwardsync){
     double fs = gMW->getFs();
 
     // Order the selection to avoid negative width
@@ -961,40 +992,13 @@ void QGVWaveform::selectionSet(QRectF selection, bool winforceupdate, bool forwa
     size_t prevwinlen = 0;
     if(gMW->m_gvAmplitudeSpectrum)
         prevwinlen = gMW->m_gvAmplitudeSpectrum->m_win.size();
+
     m_selection = selection;
 
-    // Clip selection on exact sample times
-    m_selection.setLeft((int(0.5+m_selection.left()*fs))/fs);
-    if(selection.width()==0)
-        m_selection.setRight(m_selection.left());
-    else
-        m_selection.setRight((int(0.5+m_selection.right()*fs))/fs);
-
-    if(m_selection.left()<0) m_selection.setLeft(0.0);
-    if(m_selection.left()>gMW->getMaxLastSampleTime()-1.0/fs) m_selection.setLeft(gMW->getMaxLastSampleTime()-1.0/fs);
-    if(m_selection.right()<1.0/fs) m_selection.setRight(1.0/fs);
-    if(m_selection.right()>gMW->getMaxLastSampleTime()) m_selection.setRight(gMW->getMaxLastSampleTime());
-
-    // Adjust parity of the window size according to option
-    int nl = std::max(0, int(0.5+m_selection.left()*fs));
-    int nr = int(0.5+std::min(gMW->getMaxLastSampleTime(),m_selection.right())*fs);
-    int winlen = nr-nl+1;
-    if(winlen%2==0 && gMW->m_gvAmplitudeSpectrum->m_dlgSettings->ui->cbAmplitudeSpectrumWindowSizeForcedOdd->isChecked()) {
-        if(m_currentAction==CAModifSelectionLeft)
-            m_selection.setLeft(m_selection.left()+1.0/fs);
-        else if(m_currentAction==CAModifSelectionRight)
-            m_selection.setRight(m_selection.right()-1.0/fs);
-        else {
-            if(m_mouseSelection.right()>m_mouseSelection.left())
-                m_selection.setRight(m_selection.right()-1.0/fs);
-            else
-                m_selection.setLeft(m_selection.left()+1.0/fs);
-        }
-    }
+    fixTimeLimitsToSamples(m_selection, m_mouseSelection, m_currentAction);
 
     // Set the visible selection encompassing the actual selection
     m_giSelection->setRect(m_selection.left()-0.5/fs, -1, m_selection.width()+1.0/fs, 2);
-
     m_giSelection->show();
 
     playCursorSet(m_selection.left(), true); // Put the play cursor
@@ -1032,7 +1036,9 @@ void QGVWaveform::selectionSet(QRectF selection, bool winforceupdate, bool forwa
     gMW->m_gvAmplitudeSpectrum->setWindowRange(m_selection.left(), m_selection.right(), winforceupdate);
 
     // Update the visible window
-    if(gMW->m_gvAmplitudeSpectrum->m_win.size()>0 && (winforceupdate || gMW->m_gvAmplitudeSpectrum->m_win.size() != prevwinlen)) {
+    if(gMW->m_gvAmplitudeSpectrum->m_win.size()>0
+       && (winforceupdate
+           || gMW->m_gvAmplitudeSpectrum->m_win.size() != prevwinlen)) {
 
         qreal winmax = 0.0;
         for(size_t n=0; n<gMW->m_gvAmplitudeSpectrum->m_win.size(); n++)

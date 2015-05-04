@@ -24,6 +24,8 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "ui_wmainwindow.h"
 #include "wdialogsettings.h"
 #include "ui_wdialogsettings.h"
+#include "gvamplitudespectrumwdialogsettings.h"
+#include "ui_gvamplitudespectrumwdialogsettings.h"
 
 #include "gvspectrogramwdialogsettings.h"
 #include "ui_gvspectrogramwdialogsettings.h"
@@ -746,6 +748,7 @@ void QGVSpectrogram::selectionSetTextInForm() {
 }
 
 void QGVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
+    double fs = gMW->getFs();
 
     // Order the selection to avoid negative width and negative height
     if(selection.right()<selection.left()){
@@ -766,7 +769,9 @@ void QGVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
     if(m_selection.top()<m_scene->sceneRect().top()) m_selection.setTop(m_scene->sceneRect().top());
     if(m_selection.bottom()>m_scene->sceneRect().bottom()) m_selection.setBottom(m_scene->sceneRect().bottom());
 
-    m_giShownSelection->setRect(m_selection);
+    QGVWaveform::fixTimeLimitsToSamples(m_selection, m_mouseSelection, m_currentAction);
+
+    m_giShownSelection->setRect(m_selection.left()-0.5/fs, m_selection.top(), m_selection.width()+1.0/fs, m_selection.height());
     m_giShownSelection->show();
 
     updateTextsGeometry();
@@ -779,8 +784,12 @@ void QGVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
     m_aSelectionClear->setEnabled(m_selection.width()>0 || m_selection.height());
 
     if(forwardsync){
-        if(gMW->m_gvWaveform)
-            gMW->m_gvWaveform->selectionSet(QRectF(m_selection.left(), -1.0, m_selection.width(), 2.0), true, false);
+        if(gMW->m_gvWaveform) {
+            if(gMW->m_gvWaveform->m_selection.left()!=m_selection.left()
+               || gMW->m_gvWaveform->m_selection.right()!=m_selection.right()) {
+                gMW->m_gvWaveform->selectionSet(m_selection, true, false);
+            }
+        }
 
         if(gMW->m_gvAmplitudeSpectrum){
             if(m_selection.height()>=gMW->getFs()/2){

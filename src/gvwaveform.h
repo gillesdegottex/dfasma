@@ -109,6 +109,8 @@ public:
 
     void viewSet(QRectF viewrect, bool sync=true);
 
+    static void fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseSelection, int action);
+
 signals:
 
 public slots:
