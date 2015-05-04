@@ -783,24 +783,34 @@ void QGVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
             gMW->m_gvWaveform->selectionSet(QRectF(m_selection.left(), -1.0, m_selection.width(), 2.0), true, false);
 
         if(gMW->m_gvAmplitudeSpectrum){
-            QRectF rect = gMW->m_gvAmplitudeSpectrum->m_mouseSelection;
-            rect.setLeft(gMW->getFs()/2-m_selection.bottom());
-            rect.setRight(gMW->getFs()/2-m_selection.top());
-            if(rect.height()==0){
-                rect.setTop(gMW->m_gvAmplitudeSpectrum->m_scene->sceneRect().top());
-                rect.setBottom(gMW->m_gvAmplitudeSpectrum->m_scene->sceneRect().bottom());
+            if(m_selection.height()>=gMW->getFs()/2){
+                gMW->m_gvAmplitudeSpectrum->selectionClear();
             }
-            gMW->m_gvAmplitudeSpectrum->selectionSet(rect, false);
+            else{
+                QRectF rect = gMW->m_gvAmplitudeSpectrum->m_mouseSelection;
+                rect.setLeft(gMW->getFs()/2-m_selection.bottom());
+                rect.setRight(gMW->getFs()/2-m_selection.top());
+                if(rect.height()==0){
+                    rect.setTop(gMW->m_gvAmplitudeSpectrum->m_scene->sceneRect().top());
+                    rect.setBottom(gMW->m_gvAmplitudeSpectrum->m_scene->sceneRect().bottom());
+                }
+                gMW->m_gvAmplitudeSpectrum->selectionSet(rect, false);
+            }
         }
         if(gMW->m_gvPhaseSpectrum){
-            QRectF rect = gMW->m_gvPhaseSpectrum->m_mouseSelection;
-            rect.setLeft(gMW->getFs()/2-m_selection.bottom());
-            rect.setRight(gMW->getFs()/2-m_selection.top());
-            if(rect.height()==0){
-                rect.setTop(gMW->m_gvPhaseSpectrum->m_scene->sceneRect().top());
-                rect.setBottom(gMW->m_gvPhaseSpectrum->m_scene->sceneRect().bottom());
+            if(m_selection.height()>=gMW->getFs()/2){
+                gMW->m_gvPhaseSpectrum->selectionClear();
             }
-            gMW->m_gvPhaseSpectrum->selectionSet(rect, false);
+            else{
+                QRectF rect = gMW->m_gvPhaseSpectrum->m_mouseSelection;
+                rect.setLeft(gMW->getFs()/2-m_selection.bottom());
+                rect.setRight(gMW->getFs()/2-m_selection.top());
+                if(rect.height()==0){
+                    rect.setTop(gMW->m_gvPhaseSpectrum->m_scene->sceneRect().top());
+                    rect.setBottom(gMW->m_gvPhaseSpectrum->m_scene->sceneRect().bottom());
+                }
+                gMW->m_gvPhaseSpectrum->selectionSet(rect, false);
+            }
         }
     }
 
