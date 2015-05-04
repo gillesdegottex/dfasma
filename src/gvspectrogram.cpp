@@ -850,10 +850,12 @@ void QGVSpectrogram::updateTextsGeometry() {
 void QGVSpectrogram::selectionZoomOn(){
     if(m_selection.width()>0 && m_selection.height()>0){
         QRectF zoomonrect = m_selection;
-        zoomonrect.setTop(zoomonrect.top()-0.1*zoomonrect.height());
-        zoomonrect.setBottom(zoomonrect.bottom()+0.1*zoomonrect.height());
-        zoomonrect.setLeft(zoomonrect.left()-0.1*zoomonrect.width());
-        zoomonrect.setRight(zoomonrect.right()+0.1*zoomonrect.width());
+        if(m_dlgSettings->ui->cbSpectrogramAddMarginsOnSelection->isChecked()) {
+            zoomonrect.setTop(zoomonrect.top()-0.1*zoomonrect.height());
+            zoomonrect.setBottom(zoomonrect.bottom()+0.1*zoomonrect.height());
+            zoomonrect.setLeft(zoomonrect.left()-0.1*zoomonrect.width());
+            zoomonrect.setRight(zoomonrect.right()+0.1*zoomonrect.width());
+        }
         viewSet(zoomonrect);
 
         updateTextsGeometry();

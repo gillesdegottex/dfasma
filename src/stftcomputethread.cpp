@@ -106,7 +106,7 @@ void STFTComputeThread::run() {
 
             qreal gain = m_params_current.stftparams.ampscale;
 
-            std::vector<WAVTYPE>* wav = m_params_current.stftparams.snd->wavtoplay;
+            std::vector<WAVTYPE>* wav = &m_params_current.stftparams.snd->wav;
 
 //        COUTD << "STFTComputeThread::run resize finished" << std::endl;
 
