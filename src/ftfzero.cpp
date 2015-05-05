@@ -32,14 +32,21 @@ using namespace Easdif;
 
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QGraphicsSimpleTextItem>
 #include <qmath.h>
 #include <qendian.h>
 
 #include "wmainwindow.h"
 #include "ui_wdialogsettings.h"
+#include "gvamplitudespectrum.h"
+
+#include "qthelper.h"
 
 void FTFZero::init(){
     m_fileformat = FFNotSpecified;
+    m_aspec_txt = new QGraphicsSimpleTextItem("unset");
+    gMW->m_gvAmplitudeSpectrum->m_scene->addItem(m_aspec_txt);
+    setColor(color);
 }
 
 FTFZero::FTFZero(const QString& _fileName, QObject* parent, FileType::FileContainer container, FileFormat fileformat)
@@ -79,6 +86,8 @@ FTFZero::FTFZero(const FTFZero& ft)
     m_modifiedtime = ft.m_modifiedtime;
 
     gMW->ftfzeros.push_back(this);
+
+    updateTextsGeometry();
 }
 
 FileType* FTFZero::duplicate(){
@@ -212,6 +221,8 @@ void FTFZero::load() {
     else
         throw QString("File format not recognized for loading this f0 file.");
 
+    updateTextsGeometry();
+
     m_lastreadtime = QDateTime::currentDateTime();
     setStatus();
 }
@@ -254,6 +265,39 @@ QString FTFZero::info() const {
     return str;
 }
 
+void FTFZero::updateTextsGeometry(){
+    if(!m_actionShow->isChecked())
+        return;
+
+    QRectF aspec_viewrect = gMW->m_gvAmplitudeSpectrum->mapToScene(gMW->m_gvAmplitudeSpectrum->viewport()->rect()).boundingRect();
+    QTransform aspec_trans = gMW->m_gvAmplitudeSpectrum->transform();
+
+    QTransform mat1;
+    mat1.translate(1.0/aspec_trans.m11(), aspec_viewrect.top()+10/aspec_trans.m22());
+    mat1.scale(1.0/aspec_trans.m11(), 1.0/aspec_trans.m22());
+    m_aspec_txt->setTransform(mat1);
+}
+void FTFZero::setVisible(bool shown){
+    FileType::setVisible(shown);
+
+    if(shown)
+        updateTextsGeometry();
+
+    m_aspec_txt->setVisible(shown);
+}
+
+void FTFZero::setColor(const QColor& _color) {
+    FileType::setColor(_color);
+
+    QPen pen(color);
+    pen.setWidth(0);
+    QBrush brush(color);
+
+    m_aspec_txt->setPen(pen);
+    m_aspec_txt->setBrush(brush);
+}
+
+
 double FTFZero::getLastSampleTime() const {
     if(ts.empty())
         return 0.0;
@@ -262,4 +306,5 @@ double FTFZero::getLastSampleTime() const {
 }
 
 FTFZero::~FTFZero() {
+    delete m_aspec_txt;
 }

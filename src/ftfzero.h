@@ -27,6 +27,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QString>
 #include <QColor>
 #include <QAction>
+class QGraphicsSimpleTextItem;
 
 #include "filetype.h"
 
@@ -49,6 +50,10 @@ public:
     std::deque<double> ts;
     std::deque<double> f0s;
 
+    QGraphicsSimpleTextItem* m_aspec_txt;
+    void updateTextsGeometry();
+    void setColor(const QColor& _color);
+
     virtual QString info() const;
     virtual double getLastSampleTime() const;
 
@@ -56,6 +61,7 @@ public:
 
 public slots:
     void reload();
+    void setVisible(bool shown);
 };
 
 #endif // FTFZERO_H
