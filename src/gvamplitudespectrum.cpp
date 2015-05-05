@@ -981,7 +981,7 @@ void QGVAmplitudeSpectrum::viewUpdateTexts() {
 void QGVAmplitudeSpectrum::selectionZoomOn(){
     if(m_selection.width()>0 && m_selection.height()>0){
         QRectF zoomonrect = m_selection;
-        if(m_dlgSettings->ui->cbAmplitudeSpectrumAddMarginsOnSelection->isChecked()){
+        if(gMW->m_dlgSettings->ui->cbViewsAddMarginsOnSelection->isChecked()) {
             zoomonrect.setTop(zoomonrect.top()-0.1*zoomonrect.height());
             zoomonrect.setBottom(zoomonrect.bottom()+0.1*zoomonrect.height());
             zoomonrect.setLeft(zoomonrect.left()-0.1*zoomonrect.width());
@@ -1123,9 +1123,6 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
     if(m_aAmplitudeSpectrumShowGrid->isChecked())
         draw_grid(painter, rect);
 
-    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-    QTransform trans = transform();
-
     // Draw the f0 and its harmonics
     for(size_t fi=0; fi<gMW->ftfzeros.size(); fi++){
         if(!gMW->ftfzeros[fi]->m_actionShow->isChecked())
@@ -1156,10 +1153,8 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
 
         // Update the f0 text
         // TODO Should be moved to setWindowRange (need to move the cf0 computation there too)
-        for(size_t fi=0; fi<gMW->ftfzeros.size(); fi++){
-            gMW->ftfzeros[fi]->m_aspec_txt->setPos(cf0, 0.0);
-            gMW->ftfzeros[fi]->m_aspec_txt->setText(QString("%1Hz").arg(cf0));
-        }
+        gMW->ftfzeros[fi]->m_aspec_txt->setPos(cf0, 0.0);
+        gMW->ftfzeros[fi]->m_aspec_txt->setText(QString("%1Hz").arg(cf0));
 
         // Draw harmonics up to Nyquist
         c.setAlphaF(0.5);

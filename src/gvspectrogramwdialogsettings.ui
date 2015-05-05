@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>575</width>
-    <height>606</height>
+    <height>578</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -430,16 +430,6 @@
        <widget class="QCheckBox" name="cbSpectrogramColorMapReversed">
         <property name="text">
          <string>Reversed color map</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="cbSpectrogramAddMarginsOnSelection">
-        <property name="text">
-         <string>Add margins around selection when zoom on selection</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
         </property>
        </widget>
       </item>

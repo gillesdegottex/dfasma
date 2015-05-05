@@ -36,7 +36,6 @@ GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(QGVAmplit
     ui->spAmplitudeSpectrumWindowExpDecay->hide();
     gMW->m_settings.add(ui->sbAmplitudeSpectrumOversamplingFactor);
 //    gMW->m_settings.add(ui->cbAmplitudeSpectrumF0ShowHarmonics); // TODO
-    gMW->m_settings.add(ui->cbAmplitudeSpectrumAddMarginsOnSelection);
 
     adjustSize();
 
