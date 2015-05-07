@@ -223,9 +223,9 @@ void QGVAmplitudeSpectrum::updateAmplitudeExtent(){
 
     if(gMW->ftsnds.size()>0){
         // Get the maximum QSNR among all sound files
-        float maxsqnr = -std::numeric_limits<float>::infinity();
+        WAVTYPE maxsqnr = -std::numeric_limits<WAVTYPE>::infinity();
         for(unsigned int si=0; si<gMW->ftsnds.size(); si++)
-            maxsqnr = std::max(maxsqnr, 20*std::log10(std::pow(2.0f,gMW->ftsnds[si]->format().sampleSize())));
+            maxsqnr = std::max(maxsqnr, 20*std::log10(std::pow(WAVTYPE(2.0),gMW->ftsnds[si]->format().sampleSize())));
 
         gMW->ui->sldAmplitudeSpectrumMin->setMaximum(0);
         gMW->ui->sldAmplitudeSpectrumMin->setMinimum(-3*maxsqnr); // 2 gives a margin
@@ -259,10 +259,10 @@ void QGVAmplitudeSpectrum::fftResizing(int prevSize, int newSize){
 }
 
 void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
+//    COUTD << "QGVAmplitudeSpectrum::setWindowRange " << m_windowDurationClipped << endl;
+
     if(tstart==tend)
         return;
-
-//    COUTD << "QGVAmplitudeSpectrum::setWindowRange " << m_windowDurationClipped << endl;
 
     if(m_dlgSettings->ui->cbAmplitudeSpectrumLimitWindowDuration->isChecked() && (tend-tstart)>m_dlgSettings->ui->sbAmplitudeSpectrumWindowDurationLimit->value())
         tend = tstart+m_dlgSettings->ui->sbAmplitudeSpectrumWindowDurationLimit->value();
@@ -331,7 +331,7 @@ void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
 
 //    COUTD << newDFTParams << endl;
 //    COUTD << m_trgDFTParameters << endl;
-    if(newDFTParams==m_trgDFTParameters) // TODO sure it works ?? because if we change a delay, this test might be still true
+    if(newDFTParams==m_trgDFTParameters)
         return;
 
     // From now on we want the new parameters ...
@@ -1027,8 +1027,8 @@ void QGVAmplitudeSpectrum::azoomout(){
 void QGVAmplitudeSpectrum::aunzoom(){
 
     // Compute max and min among all visible files
-    double ymin = std::numeric_limits<WAVTYPE>::infinity();
-    double ymax = -std::numeric_limits<WAVTYPE>::infinity();
+    FFTTYPE ymin = std::numeric_limits<FFTTYPE>::infinity();
+    FFTTYPE ymax = -std::numeric_limits<FFTTYPE>::infinity();
     for(unsigned int fi=0; fi<gMW->ftsnds.size(); fi++){
         if(!gMW->ftsnds[fi]->isVisible())
             continue;
