@@ -112,8 +112,12 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     ui->mainToolBar->setIconSize(QSize(1.5*m_dlgSettings->ui->sbViewsToolBarSizes->value(),1.5*m_dlgSettings->ui->sbViewsToolBarSizes->value()));
 
     QString fftinfostr = "";
-    fftinfostr += "<br/><i>For the Fast Fourier Transform (FFT):</i> "+sigproc::FFTwrapper::getLibraryInfo();
-    fftinfostr += " ("+QString::number(sizeof(FFTTYPE)*8)+"bits; smallest: "+QString::number(20*log10(std::numeric_limits<FFTTYPE>::min()))+"dB)";
+    fftinfostr += "<br/><i>Fast Fourier Transform (FFT):</i> "+sigproc::FFTwrapper::getLibraryInfo();
+    fftinfostr += " ("+QString::number(sizeof(FFTTYPE)*8)+"bits(";
+    if(sizeof(FFTTYPE)==4)  fftinfostr += "single";
+    if(sizeof(FFTTYPE)==8)  fftinfostr += "double";
+    if(sizeof(FFTTYPE)==16)  fftinfostr += "quadruple";
+    fftinfostr += "); smallest: "+QString::number(20*log10(std::numeric_limits<FFTTYPE>::min()))+"dB)";
     fftinfostr += "</p>";
     m_dlgSettings->ui->vlLibraries->addWidget(new QLabel(fftinfostr));
 
