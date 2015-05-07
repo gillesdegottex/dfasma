@@ -761,8 +761,8 @@ void QGVPhaseSpectrum::draw_spectrum(QPainter* painter, std::vector<std::complex
             int ne = int(dftlen*(viewrect.left()+(i+1)*p2s)/fs);
 
             if(ns>=0 && ne<int(ldft.size())) {
-                WAVTYPE ymin = std::numeric_limits<double>::infinity();
-                WAVTYPE ymax = -std::numeric_limits<double>::infinity();
+                WAVTYPE ymin = std::numeric_limits<WAVTYPE>::infinity();
+                WAVTYPE ymax = -std::numeric_limits<WAVTYPE>::infinity();
                 std::complex<WAVTYPE>* ypp = yp+ns;
                 WAVTYPE y;
                 for(int n=ns; n<=ne; n++) {
