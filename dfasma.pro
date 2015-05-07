@@ -19,7 +19,7 @@
 # <http://www.gnu.org/licenses/>.
 
 # Compilation options ----------------------------------------------------------
-# (except for fft_fftreal and audiofilereading_builtin, all the other
+# (except for fft_fftreal and file_audio_builtin, all the other
 #  options request linking with external libraries)
 
 # For the Discrete Fast Fourier Transform
@@ -30,18 +30,20 @@ CONFIG += fft_fftw3
 DEFINES += FFTW3RESIZINGMAXTIMESPENT
 
 # For the audio file support
-# Chose among: audiofilereading_libsndfile, audiofilereading_libsox,
-#              audiofilereading_libav,
-#              audiofilereading_qt, audiofilereading_builtin
-CONFIG += audiofilereading_libsndfile
+# Chose among: file_audio_libsndfile, file_audio_libsox,
+#              file_audio_libav,
+#              file_audio_qt, file_audio_builtin
+CONFIG += file_audio_libsndfile
 
 # Additional file format support
 # SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
-#CONFIG += sdifreading
+CONFIG += file_sdif
 
 ## OS specific options
 #QMAKE_MAC_SDK = macosx10.6
 
+#CONFIG += precision_float
+CONFIG += precision_double
 
 # ------------------------------------------------------------------------------
 # (modify the following at your own risks !) -----------------------------------
@@ -50,14 +52,23 @@ CONFIG += audiofilereading_libsndfile
 # (if fail, fall back on the version present in the README.txt file)
 DEFINES += DFASMAVERSIONGIT=$$system(git describe --tags --always)
 
+# Manage Architecture
 win32:message(Build for Windows)
 unix:message(Build for Linux)
 contains(QMAKE_TARGET.arch, x86):message(Build for 32bits)
 contains(QMAKE_TARGET.arch, x86_64):message(Build for 64bits)
 
+# Manage Precision
+CONFIG(precision_float) {
+    DEFINES += SIGPROC_FLOAT
+    message(Compile with single precision)
+} else {
+    message(Compile with double precision)
+}
+
 # SDIF file library ------------------------------------------------------------
 
-CONFIG(sdifreading) {
+CONFIG(file_sdif) {
     message(Building with SDIF file reader.)
     DEFINES += SUPPORT_SDIF
     QMAKE_CXXFLAGS  += -I/u/anasynth/degottex/.local/include/easdif/
@@ -69,21 +80,21 @@ CONFIG(sdifreading) {
 
 # Audio file reading libraries -------------------------------------------------
 
-CONFIG(audiofilereading_builtin) {
+CONFIG(file_audio_builtin) {
     message(Building with minimal built-in audio file reader.)
-    QMAKE_CXXFLAGS += -DAUDIOFILEREADING_BUILTIN
+    QMAKE_CXXFLAGS += -Dfile_audio_BUILTIN
     HEADERS  += external/wavfile/wavfile.h
     SOURCES  += external/wavfile/wavfile.cpp external/iodsound_load_builtin.cpp
 }
-CONFIG(audiofilereading_qt) {
+CONFIG(file_audio_qt) {
     message(Building with Qt support for audio file reading.)
-    QMAKE_CXXFLAGS += -DAUDIOFILEREADING_QT
+    QMAKE_CXXFLAGS += -Dfile_audio_QT
     HEADERS  += external/iodsound_load_qt.h
     SOURCES  += external/iodsound_load_qt.cpp
 }
-CONFIG(audiofilereading_libsndfile) {
+CONFIG(file_audio_libsndfile) {
     message(Building with libsndfile support for audio file reading.)
-    QMAKE_CXXFLAGS += -DAUDIOFILEREADING_LIBSNDFILE
+    QMAKE_CXXFLAGS += -Dfile_audio_LIBSNDFILE
     SOURCES  += external/iodsound_load_libsndfile.cpp
     win32 {
         contains(QMAKE_TARGET.arch, x86_64) {
@@ -96,17 +107,17 @@ CONFIG(audiofilereading_libsndfile) {
     }
     unix:LIBS += -lsndfile
 }
-CONFIG(audiofilereading_libsox) {
+CONFIG(file_audio_libsox) {
     message(Building with libsox support for audio file reading.)
-    QMAKE_CXXFLAGS += -DAUDIOFILEREADING_LIBSOX
+    QMAKE_CXXFLAGS += -Dfile_audio_LIBSOX
     SOURCES  += external/iodsound_load_libsox.cpp
     win32:INCLUDEPATH += "$$_PRO_FILE_PWD_/../libsox-14.4.0-32b/include/"
     unix:LIBS += -lsox
     win32:LIBS += "$$_PRO_FILE_PWD_/../libsox-14.4.0-32b/lib/libsox.dll.a"
 }
-CONFIG(audiofilereading_libav) {
+CONFIG(file_audio_libav) {
     message(Building with libav support for audio file reading.)
-    QMAKE_CXXFLAGS += -DAUDIOFILEREADING_LIBAV
+    QMAKE_CXXFLAGS += -Dfile_audio_LIBAV
     SOURCES += external/iodsound_load_libav.cpp
     LIBS += -lavformat -lavcodec -lavutil
 }
@@ -125,7 +136,12 @@ CONFIG(fft_fftw3){
             LIBS += "$$_PRO_FILE_PWD_/../fftw-3.3.4-dll32/libfftw3-3.lib"
         }
     }
-    unix:LIBS += -lfftw3
+    CONFIG(precision_double) {
+        unix:LIBS += -lfftw3
+    }
+    CONFIG(precision_float) {
+        unix:LIBS += -lfftw3f
+    }
 }
 CONFIG(fft_builtin_fftreal){
     message(Building with built-in FFTReal.)
