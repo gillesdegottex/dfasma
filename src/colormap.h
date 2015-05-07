@@ -20,6 +20,7 @@ public:
     }
     virtual QString name()=0;
     virtual QRgb map(float y)=0;
+    virtual QRgb mapshort(int y)=0;
     inline QRgb operator ()(float y) {return map(y);}
     static QStringList getAvailableColorMaps() {
         QStringList list;
@@ -47,6 +48,10 @@ public:
 
         return qRgb(color, color, color);
     }
+    virtual QRgb mapshort(int y){
+        y = 65536-y;
+        return qRgb(y/256, y/256, y/256);
+    }
 };
 
 class ColorMapJet : public  ColorMap {
@@ -73,6 +78,29 @@ public:
         else if(blue<0.0) blue=0.0;
 
         return qRgb(int(255*red), int(255*green), int(255*blue));
+    }
+    virtual QRgb mapshort(int y){ // y in [0, 65536]
+        y = 65536-y;
+
+        int red = 0;
+        if(y<16384) red = (4*y+32768);
+        else        red = (-4*y+163840);
+        if(red>65536)  red=65536;
+        else if(red<0) red=0;
+
+        int green = 0;
+        if(y<32768)  green = 4*y-32768;
+        else         green = -4*y+229376;
+        if(green>65536)  green=65536;
+        else if(green<0) green=0;
+
+        int blue = 0;
+        if(y<49152) blue = 4*y-98304;
+        else        blue = -4*y+294912;
+        if(blue>65536)  blue=65536;
+        else if(blue<0) blue=0;
+
+        return qRgb(255*red/65536, 255*green/65536, 255*blue/65536);
     }
 };
 
