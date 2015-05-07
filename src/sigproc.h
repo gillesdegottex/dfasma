@@ -32,17 +32,30 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QString>
 #include <QMutex>
 
+//#define SIGPROC_FLOAT
+
+#ifdef SIGPROC_FLOAT
+#define FFTTYPE float
+#else
 #define FFTTYPE double
+#endif
 
 #ifdef FFT_FFTW3
     #include <fftw3.h>
+    #ifdef SIGPROC_FLOAT
+        #define fftwg_plan fftwf_plan
+        #define fftwg_complex fftwf_complex
+    #else
+        #define fftwg_plan fftw_plan
+        #define fftwg_complex fftw_complex
+    #endif
 #elif FFT_FFTREAL
     #include "../external/FFTReal/FFTReal.h"
 #endif
 
 namespace sigproc {
 
-static const double log2db = 20.0/std::log(10);
+static const FFTTYPE log2db = 20.0/std::log(10);
 
 template<typename Type>
 inline Type lin2db(Type v){return Type(20)*std::log10(std::abs(v));}
@@ -185,8 +198,8 @@ double equalloudnesscurvesISO226(double freq, double Ln=0.0);
 
 
 // Generalized cosin window
-inline std::vector<double> gencoswindow(int N, const std::vector<double>& c) {
-    std::vector<double> win(N, 0.0);
+inline std::vector<FFTTYPE> gencoswindow(int N, const std::vector<FFTTYPE>& c) {
+    std::vector<FFTTYPE> win(N, 0.0);
 
     for(size_t n=0; n<win.size(); n++)
         for (size_t k=0; k<c.size(); k++)
@@ -195,23 +208,23 @@ inline std::vector<double> gencoswindow(int N, const std::vector<double>& c) {
     return win;
 }
 
-inline std::vector<double> hann(int n) {
-    std::vector<double> c;
+inline std::vector<FFTTYPE> hann(int n) {
+    std::vector<FFTTYPE> c;
     c.push_back(0.5);
     c.push_back(-0.5);
     return gencoswindow(n, c);
 }
 
-inline std::vector<double> hamming(int n) {
-    std::vector<double> c;
+inline std::vector<FFTTYPE> hamming(int n) {
+    std::vector<FFTTYPE> c;
     c.push_back(0.54);
     c.push_back(-0.46);
     return gencoswindow(n, c);
 }
 
-inline std::vector<double> blackman(int n) {
-    std::vector<double> c;
-    double alpha = 0.16;
+inline std::vector<FFTTYPE> blackman(int n) {
+    std::vector<FFTTYPE> c;
+    FFTTYPE alpha = 0.16;
     c.push_back((1-alpha)/2);
     c.push_back(-0.5);
     c.push_back(alpha/2);
@@ -224,8 +237,8 @@ inline std::vector<double> blackman(int n) {
 }
 
 // TODO Check coefs
-inline std::vector<double> nutall(int n) {
-    std::vector<double> c;
+inline std::vector<FFTTYPE> nutall(int n) {
+    std::vector<FFTTYPE> c;
     c.push_back(0.355768);
     c.push_back(-0.487396);
     c.push_back(0.144232);
@@ -234,8 +247,8 @@ inline std::vector<double> nutall(int n) {
 }
 
 // TODO Check coefs
-inline std::vector<double> blackmannutall(int n) {
-    std::vector<double> c;
+inline std::vector<FFTTYPE> blackmannutall(int n) {
+    std::vector<FFTTYPE> c;
     c.push_back(0.3635819);
     c.push_back(-0.4891775);
     c.push_back(0.1365995);
@@ -244,8 +257,8 @@ inline std::vector<double> blackmannutall(int n) {
 }
 
 // TODO Check coefs
-inline std::vector<double> blackmanharris(int n) {
-    std::vector<double> c;
+inline std::vector<FFTTYPE> blackmanharris(int n) {
+    std::vector<FFTTYPE> c;
     c.push_back(0.35875);
     c.push_back(-0.48829);
     c.push_back(0.14128);
@@ -253,8 +266,8 @@ inline std::vector<double> blackmanharris(int n) {
     return gencoswindow(n, c);
 }
 
-inline std::vector<double> flattop(int n) {
-    std::vector<double> c;
+inline std::vector<FFTTYPE> flattop(int n) {
+    std::vector<FFTTYPE> c;
     c.push_back(1);
     c.push_back(-1.93);
     c.push_back(1.29);
@@ -263,13 +276,13 @@ inline std::vector<double> flattop(int n) {
     return gencoswindow(n, c);
 }
 
-inline std::vector<double> rectangular(int n) {
-    return std::vector<double>(n, 1.0);
+inline std::vector<FFTTYPE> rectangular(int n) {
+    return std::vector<FFTTYPE>(n, 1.0);
 }
 
 // Generalized normal window
-inline std::vector<double> gennormwindow(int N, double sigma, double p) {
-    std::vector<double> win(N, 0.0);
+inline std::vector<FFTTYPE> gennormwindow(int N, FFTTYPE sigma, FFTTYPE p) {
+    std::vector<FFTTYPE> win(N, 0.0);
 
     for(size_t n=0; n<win.size(); n++)
         win[n] = exp(-std::pow(std::abs((n-(N-1)/2.0)/(sigma*((N-1)/2.0))),p));
@@ -277,11 +290,11 @@ inline std::vector<double> gennormwindow(int N, double sigma, double p) {
     return win;
 }
 
-inline std::vector<double> normwindow(int N, double std) {
+inline std::vector<FFTTYPE> normwindow(int N, FFTTYPE std) {
     return sigproc::gennormwindow(N, std::sqrt(2.0)*std, 2.0);
 }
 
-inline std::vector<double> expwindow(int N, double D=60.0) {
+inline std::vector<FFTTYPE> expwindow(int N, FFTTYPE D=60.0) {
 
     double tau = (N/2.0)/(D/8.69);
 
@@ -310,8 +323,8 @@ template<typename DataType, typename ContainerIn, typename ContainerOut> inline 
     // Deal with begining and end
 
     // The exrapolated segmented will be windowed
-    std::vector<double> win = sigproc::hann(margin*maxorder*2+1);
-    double winmax = win[(int(win.size())-1)/2];
+    std::vector<FFTTYPE> win = sigproc::hann(margin*maxorder*2+1);
+    FFTTYPE winmax = win[(int(win.size())-1)/2];
     for(size_t n=0; n<int(win.size()); n++)
         win[n] /= winmax;
 
@@ -469,9 +482,9 @@ class FFTwrapper
     bool m_forward;
 
 #ifdef FFT_FFTW3
-    fftw_plan m_fftw3_plan;
-    double *m_fftw3_in;
-    fftw_complex *m_fftw3_out;
+    fftwg_plan m_fftw3_plan;
+    FFTTYPE *m_fftw3_in;
+    fftwg_complex *m_fftw3_out;
     static QMutex m_fftw3_planner_access; // To protect the access to the FFT and external variables
 #elif FFT_FFTREAL
     ffft::FFTReal<FFTTYPE> *m_fftreal_fft;
@@ -485,11 +498,22 @@ public:
 
     int size(){return m_size;}
 
+    // Temporary in/out buffers used for convenience.
+    // They can be avoided, using the functions below.
     std::vector<FFTTYPE> in;
     std::vector<std::complex<FFTTYPE> > out;
+#ifdef FFT_FFTW3
+    inline void setInput(int n, FFTTYPE value){m_fftw3_in[n] = value;}
+    inline std::complex<FFTTYPE> getOutput(int n){return make_complex(m_fftw3_out[n]);}
+    inline std::complex<FFTTYPE> getDCOutput(){return make_complex(m_fftw3_out[0]);} // Avoid index checking
+    inline std::complex<FFTTYPE> getMidOutput(int n){return make_complex(m_fftw3_out[n]);} // Avoid index checking
+    inline std::complex<FFTTYPE> getNyquistOutput(){return make_complex(m_fftw3_out[m_size/2]);}// Avoid index checking
+#elif FFT_FFTREAL
+    // TODO
+#endif
 
     void execute(const std::vector<FFTTYPE>& in, std::vector<std::complex<FFTTYPE> >& out);
-    void execute();
+    void execute(bool useinternalcopy=true);
 
     static QString getLibraryInfo();
 

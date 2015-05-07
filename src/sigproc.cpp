@@ -29,8 +29,23 @@ using namespace std;
 
 
 #ifdef FFT_FFTW3
-    #define FFTW_VERSION "3" // Used interface's version
-    QMutex FFTwrapper::m_fftw3_planner_access; // To protect the access to the FFT and external variables
+#define FFTW_VERSION "3" // Used interface's version
+QMutex FFTwrapper::m_fftw3_planner_access; // To protect the access to the FFT and external variables
+#ifdef SIGPROC_FLOAT
+#define fftwg_set_timelimit fftwf_set_timelimit
+#define fftwg_plan_dft_r2c_1d fftwf_plan_dft_r2c_1d
+#define fftwg_plan_dft_c2r_1d fftwf_plan_dft_c2r_1d
+#define fftwg_execute fftwf_execute
+#define fftwg_destroy_plan fftwf_destroy_plan
+#define fftwg_free fftwf_free
+#else
+#define fftwg_set_timelimit fftw_set_timelimit
+#define fftwg_plan_dft_r2c_1d fftw_plan_dft_r2c_1d
+#define fftwg_plan_dft_c2r_1d fftw_plan_dft_c2r_1d
+#define fftwg_execute fftw_execute
+#define fftwg_destroy_plan fftw_destroy_plan
+#define fftwg_free fftw_free
+#endif
 #elif FFT_FFTREAL
     #define FFTREAL_VERSION "2.11" // This is the current built-in version
 #endif
@@ -38,7 +53,7 @@ using namespace std;
 
 QString FFTwrapper::getLibraryInfo(){
     #ifdef FFT_FFTW3
-        return QString("<a href=\"http://www.fftw.org\">FFTW</a> version ")+QString(FFTW_VERSION);
+        return QString("<a href=\"http://www.fftw.org\">FFTW")+QString(FFTW_VERSION)+"</a>";
     #elif FFT_FFTREAL
         return QString("<a href=\"http://ldesoras.free.fr/prod.html#src_audio\">FFTReal</a> version ")+QString(FFTREAL_VERSION);
     #endif
@@ -54,7 +69,7 @@ FFTwrapper::FFTwrapper(bool forward)
         m_fftw3_in = NULL;
         m_fftw3_plan = NULL;
         #ifdef FFTW3RESIZINGMAXTIMESPENT
-        fftw_set_timelimit(1.0); // From FFTW 3.1, though no means exist to check version at compile time ...
+            fftwg_set_timelimit(1.0); // From FFTW 3.1, though no means exist to check version at compile time ...
         #endif
     #elif FFT_FFTREAL
         m_fftreal_out = NULL;
@@ -80,18 +95,16 @@ void FFTwrapper::resize(int n)
         m_fftw3_in = NULL;
         m_fftw3_out = NULL;
 
-//        m_fftw3_in = new fftw_complex[m_size];
-        m_fftw3_in = new double[m_size];
-        m_fftw3_out = new fftw_complex[m_size/2+1];
-
+        m_fftw3_in = new FFTTYPE[m_size];
+        m_fftw3_out = new fftwg_complex[m_size/2+1];
         m_fftw3_planner_access.lock();
         //  | FFTW_PRESERVE_INPUT
         if(m_forward){
-            m_fftw3_plan = fftw_plan_dft_r2c_1d(m_size, m_fftw3_in, m_fftw3_out, FFTW_MEASURE);
+            m_fftw3_plan = fftwg_plan_dft_r2c_1d(m_size, m_fftw3_in, m_fftw3_out, FFTW_MEASURE);
 //            m_fftw3_plan = fftw_plan_dft_1d(m_size, m_fftw3_in, m_fftw3_out, FFTW_FORWARD, FFTW_MEASURE);
         }
         else{
-            m_fftw3_plan = fftw_plan_dft_c2r_1d(m_size, m_fftw3_out, m_fftw3_in, FFTW_MEASURE);
+            m_fftw3_plan = fftwg_plan_dft_c2r_1d(m_size, m_fftw3_out, m_fftw3_in, FFTW_MEASURE);
 //            m_fftw3_plan = fftw_plan_dft_1d(m_size, m_fftw3_in, m_fftw3_out, FFTW_BACKWARD, FFTW_MEASURE);
         }
         m_fftw3_planner_access.unlock();
@@ -108,23 +121,32 @@ void FFTwrapper::resize(int n)
     out.resize((m_size%2==1)?(m_size-1)/2+1:m_size/2+1);
 }
 
-void FFTwrapper::execute() {
-    execute(in, out);
+void FFTwrapper::execute(bool useinternalcopy) {
+    if(useinternalcopy)
+        execute(in, out);
+    else {
+#ifdef FFT_FFTW3
+        m_fftw3_planner_access.lock();
+        fftwg_execute(m_fftw3_plan);
+        m_fftw3_planner_access.unlock();
+#elif FFT_FFTREAL
+        execute(in, out); // TODO
+#endif
+    }
 }
 
-void FFTwrapper::execute(const vector<FFTTYPE>& in, vector<std::complex<FFTTYPE> >& out)
-{
+void FFTwrapper::execute(const vector<FFTTYPE>& in, vector<std::complex<FFTTYPE> >& out) {
     int neededsize = (m_size%2==1)?(m_size-1)/2+1:m_size/2+1;
-    if(int(out.size())!=neededsize)
+    if(int(out.size())!=neededsize){
         out.resize(neededsize);
+    }
 
     #ifdef FFT_FFTW3
-
         for(int i=0; i<m_size; i++)
             m_fftw3_in[i] = in[i];
 
         m_fftw3_planner_access.lock();
-        fftw_execute(m_fftw3_plan);
+        fftwg_execute(m_fftw3_plan);
         m_fftw3_planner_access.unlock();
 
         for(size_t i=0; i<out.size(); i++)
@@ -150,15 +172,15 @@ FFTwrapper::~FFTwrapper()
     #ifdef FFT_FFTW3
         m_fftw3_planner_access.lock();
         if(m_fftw3_plan){
-            fftw_destroy_plan(m_fftw3_plan);
-            fftw_free(m_fftw3_plan);
+            fftwg_destroy_plan(m_fftw3_plan);
+            fftwg_free(m_fftw3_plan);
         }
         if(m_fftw3_in){
-//            fftw_free(m_fftw3_in);
+//            fftwg_free(m_fftw3_in);
             delete[] m_fftw3_in;
         }
         if(m_fftw3_out){
-            fftw_free(m_fftw3_out);
+            fftwg_free(m_fftw3_out);
 //            delete[] m_fftw3_out;
         }
         m_fftw3_planner_access.unlock();
@@ -167,6 +189,7 @@ FFTwrapper::~FFTwrapper()
         if(m_fftreal_out)	delete[] m_fftreal_out;
     #endif
 }
+
 
 void sigproc::hspec2rcc(const std::vector<FFTTYPE>& loghA, FFTwrapper* fft, std::vector<FFTTYPE>& cc){
     int dftlen = (loghA.size()-1)*2;
