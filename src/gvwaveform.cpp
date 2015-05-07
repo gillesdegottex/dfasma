@@ -242,7 +242,7 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
 
 void QGVWaveform::fitViewToSoundsAmplitude(){
     if(gMW->ftsnds.size()>0){
-        qreal maxwavmaxamp = 0.0;
+        WAVTYPE maxwavmaxamp = 0.0;
         for(unsigned int si=0; si<gMW->ftsnds.size(); si++)
             if(gMW->ftsnds[si]->isVisible())
                 maxwavmaxamp = std::max(maxwavmaxamp, gMW->ftsnds[si]->m_ampscale*gMW->ftsnds[si]->m_wavmaxamp);
@@ -422,14 +422,39 @@ void QGVWaveform::resizeEvent(QResizeEvent* event){
 }
 
 void QGVWaveform::scrollContentsBy(int dx, int dy){
-
-    //    std::cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVWaveform::scrollContentsBy [" << dx << "," << dy << "]" << endl;
-
     // Ensure the y ticks labels will be redrawn
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
     m_scene->invalidate(QRectF(viewrect.left(), -1.05, 5*14/transform().m11(), 2.10));
 
     setMouseCursorPosition(-1, false);
+
+    // Shift the waveforms accordingly
+    for(size_t fi=0; fi<gMW->ftsnds.size(); fi++){
+        if(!gMW->ftsnds[fi]->m_actionShow->isChecked())
+            continue;
+
+        if(gMW->ftsnds[fi]->m_wavpx_min.size()>0){
+            int ddx = dx;
+            if(ddx>0){
+                while(ddx>0){
+                    gMW->ftsnds[fi]->m_wavpx_min.pop_back();
+                    gMW->ftsnds[fi]->m_wavpx_max.pop_back();
+                    gMW->ftsnds[fi]->m_wavpx_min.push_front(0.0);
+                    gMW->ftsnds[fi]->m_wavpx_max.push_front(0.0);
+                    ddx--;
+                }
+            }
+            else if(ddx<0){
+                while(ddx<0){
+                    gMW->ftsnds[fi]->m_wavpx_min.pop_front();
+                    gMW->ftsnds[fi]->m_wavpx_max.pop_front();
+                    gMW->ftsnds[fi]->m_wavpx_min.push_back(0.0);
+                    gMW->ftsnds[fi]->m_wavpx_max.push_back(0.0);
+                    ddx++;
+                }
+            }
+        }
+    }
 
     QGraphicsView::scrollContentsBy(dx, dy);
 }
@@ -1037,7 +1062,7 @@ void QGVWaveform::selectionSet(QRectF selection, bool forwardsync){
     if(gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.win.size()>0
        && (int(gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.win.size()) != m_windowParams.winlen)) {
 
-        qreal winmax = 0.0;
+        FFTTYPE winmax = 0.0;
         for(size_t n=0; n<gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.win.size(); n++)
             winmax = std::max(winmax, gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.win[n]);
         winmax = 1.0/winmax;
@@ -1260,37 +1285,54 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
         int winpixdelay = horizontalScrollBar()->value(); // - 1.0/p2n; // The magic value to make everything plot at the same place whatever the scroll
 
         int snddelay = snd->m_delay;
-        int ns = int((pixrect.left()+winpixdelay)*p2n)-snddelay;
-        for(int i=pixrect.left(); i<=pixrect.right(); i++) {
 
-            int ne = int((i+1+winpixdelay)*p2n)-snddelay;
-
-            if(ns>=0 && ne<int(snd->wav.size())) {
-                WAVTYPE ymin = 1.0;
-                WAVTYPE ymax = -1.0;
-                WAVTYPE* ypp = yp+ns;
-                WAVTYPE y;
-                for(int n=ns; n<=ne; n++) {
-                    y = *ypp;
-                    ymin = std::min(ymin, y);
-                    ymax = std::max(ymax, y);
-                    ypp++;
-                }
-                ymin = gain*ymin;
-                if(ymin>1.0)       ymin = 1.0;
-                else if(ymin<-1.0) ymin = -1.0;
-                ymax = gain*ymax;
-                if(ymax>1.0)       ymax = 1.0;
-                else if(ymax<-1.0) ymax = -1.0;
-                ymin *= s2p;
-                ymax *= s2p;
-//                ymin = int(ymin+0.5);
-//                ymax = int(ymax+0.5);
-                painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
-            }
-
-            ns = ne;
+        FTSound::WavParameters reqparams(fullpixrect, viewrect, winpixdelay, snddelay, gain); // Can prepare most of it common to all sound files
+        if(reqparams==snd->m_wavparams){
+//            COUTD << "Use buffer only" << endl;
+            for(int i=pixrect.left(); i<=pixrect.right(); i++)
+                painter->drawLine(QLineF(i, yzero+snd->m_wavpx_min[i], i, yzero+snd->m_wavpx_max[i]));
         }
+        else {
+//            COUTD << "Re compute buffer and draw" << endl;
+            if(int(snd->m_wavpx_min.size())!=reqparams.fullpixrect.width()){
+                snd->m_wavpx_min.resize(reqparams.fullpixrect.width());
+                snd->m_wavpx_max.resize(reqparams.fullpixrect.width());
+            }
+            int ns = int((pixrect.left()+winpixdelay)*p2n)-snddelay;
+            for(int i=pixrect.left(); i<=pixrect.right(); i++) {
+
+                int ne = int((i+1+winpixdelay)*p2n)-snddelay;
+
+                if(ns>=0 && ne<int(snd->wav.size())) {
+                    WAVTYPE ymin = 1.0;
+                    WAVTYPE ymax = -1.0;
+                    WAVTYPE* ypp = yp+ns;
+                    WAVTYPE y;
+                    for(int n=ns; n<=ne; n++) {
+                        y = *ypp;
+                        ymin = std::min(ymin, y);
+                        ymax = std::max(ymax, y);
+                        ypp++;
+                    }
+                    ymin = gain*ymin;
+                    if(ymin>1.0)       ymin = 1.0;
+                    else if(ymin<-1.0) ymin = -1.0;
+                    ymax = gain*ymax;
+                    if(ymax>1.0)       ymax = 1.0;
+                    else if(ymax<-1.0) ymax = -1.0;
+                    ymin *= s2p;
+                    ymax *= s2p;
+                    snd->m_wavpx_min[i] = ymin;
+                    snd->m_wavpx_max[i] = ymax;
+    //                ymin = int(ymin+0.5);
+    //                ymax = int(ymax+0.5);
+                    painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
+                }
+
+                ns = ne; // TODO Shouldn't start 1 sample after ne ?
+            }
+        }
+        snd->m_wavparams = reqparams;
 
         painter->setWorldMatrixEnabled(true); // Go back to scene coordinates
     }

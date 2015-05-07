@@ -5,7 +5,6 @@
 #include <QMutex>
 
 #include "sigproc.h"
-
 class FTSound;
 
 class STFTComputeThread : public QThread
@@ -33,7 +32,7 @@ public:
 
         // STFT related
         FTSound* snd;
-        qreal ampscale; // [linear]
+        FFTTYPE ampscale; // [linear]
         qint64 delay;   // [sample index]
         std::vector<FFTTYPE> win;
         int stepsize;
@@ -73,8 +72,8 @@ public:
         QImage* imgstft;
         int colormap_index;
         bool colormap_reversed;
-        float lower;
-        float upper;
+        FFTTYPE lower;
+        FFTTYPE upper;
 
         void clear(){
             stftparams.clear();
@@ -87,7 +86,7 @@ public:
         ImageParameters(){
             clear();
         }
-        ImageParameters(STFTComputeThread::STFTParameters reqSTFTparams, QImage* reqImgSTFT, int reqcolormap_index, bool reqcolormap_reversed, float reqlower, float requpper){
+        ImageParameters(STFTComputeThread::STFTParameters reqSTFTparams, QImage* reqImgSTFT, int reqcolormap_index, bool reqcolormap_reversed, FFTTYPE reqlower, FFTTYPE requpper){
             clear();
             stftparams = reqSTFTparams;
             imgstft = reqImgSTFT;

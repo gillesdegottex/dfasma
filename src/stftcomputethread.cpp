@@ -8,6 +8,7 @@
 #include "qthelper.h"
 #include "../external/libqxt/qxtspanslider.h"
 #include "colormap.h"
+#include "ftsound.h"
 
 STFTComputeThread::STFTParameters::STFTParameters(FTSound* reqnd, const std::vector<FFTTYPE>& reqwin, int reqstepsize, int reqdftlen, int reqcepliftorder, bool reqcepliftpresdc){
     clear();
@@ -94,6 +95,9 @@ void STFTComputeThread::compute(ImageParameters reqImgSTFTParams) {
 void STFTComputeThread::run() {
 //    COUTD << "STFTComputeThread::run" << std::endl;
 
+    // Prepare some usefull variables
+    std::vector<WAVTYPE>::iterator pstft;
+
     bool canceled = false;
     bool compute = true;
     do{
@@ -113,44 +117,67 @@ void STFTComputeThread::run() {
             m_params_current.stftparams.snd->m_stft.clear();
             m_params_current.stftparams.snd->m_stftts.clear();
 
-            m_params_current.stftparams.snd->m_stft_min = std::numeric_limits<double>::infinity();
-            m_params_current.stftparams.snd->m_stft_max = -std::numeric_limits<double>::infinity();
+            int stepsize = m_params_current.stftparams.stepsize;
+            FFTTYPE stftmin = std::numeric_limits<FFTTYPE>::infinity();
+            FFTTYPE stftmax = -std::numeric_limits<FFTTYPE>::infinity();
+            std::vector<FFTTYPE>::iterator pwin;
 
             int maxsampleindex = int(wav->size())-1 + int(m_params_current.stftparams.snd->m_delay);
+            WAVTYPE value;
+
+//            QTime starttime = QTime::currentTime();
 
             for(int si=0; !gMW->ui->pbSTFTComputingCancel->isChecked(); si++){
-                if(int(si*m_params_current.stftparams.stepsize+m_params_current.stftparams.win.size())-1 > maxsampleindex)
+                if(int(si*stepsize+m_params_current.stftparams.win.size())-1 > maxsampleindex)
                     break;
 
+                // Add a new frame to the STFT
                 m_params_current.stftparams.snd->m_stft.push_back(std::vector<WAVTYPE>(m_params_current.stftparams.dftlen/2+1));
-                m_params_current.stftparams.snd->m_stftts.push_back((si*m_params_current.stftparams.stepsize+(m_params_current.stftparams.win.size()-1)/2.0)/m_params_current.stftparams.snd->fs);
+                m_params_current.stftparams.snd->m_stftts.push_back((si*stepsize+(m_params_current.stftparams.win.size()-1)/2.0)/m_params_current.stftparams.snd->fs);
 
+                // Set the DFT's input
                 int n = 0;
                 int wn = 0;
-                bool hasfilledvalues = false;
-                for(; n<int(m_params_current.stftparams.win.size()); n++){
-                    wn = si*m_params_current.stftparams.stepsize+n - m_params_current.stftparams.snd->m_delay;
+                qint64 snddelay = m_params_current.stftparams.snd->m_delay;
+                bool hasnonzerovalues = false;
+                pwin = m_params_current.stftparams.win.begin();
+                for(; n<int(m_params_current.stftparams.win.size()); n++, pwin++){
+                    wn = si*stepsize+n - snddelay;
                     if(wn>=0 && wn<int(wav->size())) {
-                        WAVTYPE value = gain*(*(wav))[wn];
+                        value = gain*(*(wav))[wn];
 
                         if(value>1.0)       value = 1.0;
                         else if(value<-1.0) value = -1.0;
 
-                        m_fft->in[n] = value*m_params_current.stftparams.win[n];
-                        hasfilledvalues = true;
+                        value = value*(*pwin);
+                        m_fft->setInput(n, value);
+                        if(!hasnonzerovalues && std::abs(value)>0.0)
+                            hasnonzerovalues = true;
                     }
                     else
-                        m_fft->in[n] = 0.0;
+                        m_fft->setInput(n, 0.0);
                 }
 
-                if(hasfilledvalues){
+                if(hasnonzerovalues){
+                    // Zero-pad the DFT's input
                     for(; n<m_params_current.stftparams.dftlen; n++)
-                        m_fft->in[n] = 0.0;
+                        m_fft->setInput(n, 0.0);
 
-                    m_fft->execute(); // Compute the DFT
+                    m_fft->execute(false); // Compute the DFT
 
-                    for(n=0; n<m_params_current.stftparams.dftlen/2+1; n++)
-                        m_params_current.stftparams.snd->m_stft[si][n] = std::log(std::abs(m_fft->out[n]));
+                    // Retrieve DFT's output
+                    pstft = m_params_current.stftparams.snd->m_stft[si].begin();
+                    *pstft = std::log(std::abs(m_fft->getDCOutput()));
+                    pstft++;
+                    for(n=1; n<m_params_current.stftparams.dftlen/2; n++, pstft++)
+                        *pstft = std::log(std::abs(m_fft->getMidOutput(n)));
+                    *pstft = std::log(std::abs(m_fft->getNyquistOutput()));
+
+//                    COUTD << "FLIP: " << m_params_current.stftparams.snd->m_stft[si][0] << " " << m_params_current.stftparams.snd->m_stft[si][m_params_current.stftparams.dftlen/2] << std::endl;
+//                    std::cout << "FLOP: ";
+//                    for(n=0; n<m_params_current.stftparams.dftlen/2+1; n++)
+//                        std::cout << m_params_current.stftparams.snd->m_stft[si][n] << " ";
+//                    std::cout << std::endl;
 
                     if(m_params_current.stftparams.cepliftorder>0){
                         std::vector<FFTTYPE> cc;
@@ -163,18 +190,19 @@ void STFTComputeThread::run() {
                         rcc2hspec(cc, m_fft, m_params_current.stftparams.snd->m_stft[si]);
                     }
 
-                    for(n=0; n<m_params_current.stftparams.dftlen/2+1; n++) {
-                        double y = sigproc::log2db*m_params_current.stftparams.snd->m_stft[si][n];
+                    // Convert to [dB] and compute min and max magnitudes[dB]
+                    pstft = m_params_current.stftparams.snd->m_stft[si].begin();
+                    for(n=0; n<m_params_current.stftparams.dftlen/2+1; n++, pstft++) {
+                        *pstft = sigproc::log2db * (*pstft);
 
-                        m_params_current.stftparams.snd->m_stft[si][n] = y;
-
-                        m_params_current.stftparams.snd->m_stft_min = std::min(m_params_current.stftparams.snd->m_stft_min, y);
-                        m_params_current.stftparams.snd->m_stft_max = std::max(m_params_current.stftparams.snd->m_stft_max, y);
+                        stftmin = std::min(stftmin, *pstft);
+                        stftmax = std::max(stftmax, *pstft);
                     }
                 }
                 else{
-                    for(n=0; n<m_params_current.stftparams.dftlen/2+1; n++)
-                        m_params_current.stftparams.snd->m_stft[si][n] = -std::numeric_limits<double>::infinity();
+                    pstft = m_params_current.stftparams.snd->m_stft[si].begin();
+                    for(n=0; n<m_params_current.stftparams.dftlen/2+1; n++, pstft++)
+                        *pstft = -std::numeric_limits<FFTTYPE>::infinity();
                 }
 
                 emit stftProgressing(int(100*double(si*m_params_current.stftparams.stepsize)/maxsampleindex));
@@ -186,42 +214,71 @@ void STFTComputeThread::run() {
                 m_params_current.stftparams.snd->m_stftparams = m_params_current.stftparams;
                 m_mutex_changingparams.unlock();
             }
+
+            if(qIsInf(stftmin) || qIsInf(stftmax)){
+                stftmax = 0; // Default 0dB
+                stftmin = -1; // Default -1dB
+            }
+            m_params_current.stftparams.snd->m_stft_min = stftmin;
+            m_params_current.stftparams.snd->m_stft_max = stftmax;
+//            COUTD << "stftmin=" << stftmin << " stftmax=" << stftmax << std::endl;
+
+//            std::cout << "Spent: " << starttime.elapsed() << std::endl;
         }
 
+        // Update the STFT image
         if(!gMW->ui->pbSTFTComputingCancel->isChecked()){
             emit stftComputingStateChanged(SCSIMG);
 
-            // Update the STFT image
-//            m_params_current.snd->m_stftimg_lastupdate = QTime::currentTime();
+//            QTime starttime = QTime::currentTime();
+
             *(m_params_current.imgstft) = QImage(int(m_params_current.stftparams.snd->m_stft.size()), int(m_params_current.stftparams.snd->m_stft[0].size()), QImage::Format_RGB32);
+            // QImage* img = m_params_current.imgstft;
+            QRgb* pimgb = (QRgb*)(m_params_current.imgstft->bits());
+            int halfdftlen = m_params_current.stftparams.dftlen/2;
+            int dftsize = int(m_params_current.stftparams.snd->m_stft[0].size());
+            int stftlen = int(m_params_current.stftparams.snd->m_stft.size());
+            bool colormap_reversed = m_params_current.colormap_reversed;
 
             ColorMap& cmap = ColorMap::getAt(m_params_current.colormap_index);
 
-    //                        COUTD << "---" << endl;
-    //                        COUTD << "[" << csnd->m_stft_min << "," << csnd->m_stft_max << "]" << endl;
-    //                        COUTD << "[" << gMW->m_qxtspanslider->lowerValue() << "," << gMW->m_qxtspanslider->upperValue() << "]" << endl;
-            double ymin = m_params_current.stftparams.snd->m_stft_min+(m_params_current.stftparams.snd->m_stft_max-m_params_current.stftparams.snd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0; // Min of color range [dB]
-            double ymax = m_params_current.stftparams.snd->m_stft_min+(m_params_current.stftparams.snd->m_stft_max-m_params_current.stftparams.snd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0; // Max of color range [dB]
-    //                        COUTD << "[" << ymin << "," << ymax << "]" << endl;
-//            COUTD << "size=" << m_params_current.stftparams.snd->m_stft.size() << std::endl;
-            for(int si=0; si<int(m_params_current.stftparams.snd->m_stft.size()) && !gMW->ui->pbSTFTComputingCancel->isChecked(); si++){
-                for(int n=0; n<int(m_params_current.stftparams.snd->m_stft[si].size()); n++) {
-                    double y = m_params_current.stftparams.snd->m_stft[si][n];
+            FFTTYPE ymin = m_params_current.stftparams.snd->m_stft_min+(m_params_current.stftparams.snd->m_stft_max-m_params_current.stftparams.snd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0; // Min of color range [dB]
+            FFTTYPE ymax = m_params_current.stftparams.snd->m_stft_min+(m_params_current.stftparams.snd->m_stft_max-m_params_current.stftparams.snd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0; // Max of color range [dB]
+            FFTTYPE divmaxmmin = 1.0/(ymax-ymin);
+//            QRgb red = qRgb(int(255*1), int(255*0), int(255*0));
+            QRgb c0 = colormap_reversed?cmap(1.0):cmap(0.0);
+            QRgb c1 = colormap_reversed?cmap(0.0):cmap(1.0);
+            FFTTYPE y;
+            QRgb c;
 
-                    y = (y-ymin)/(ymax-ymin);
+//            COUTD << "ymin=" << ymin << " ymax=" << ymax << std::endl;
+            for(int si=0; si<stftlen && !gMW->ui->pbSTFTComputingCancel->isChecked(); si++, pimgb++){
+                pstft = m_params_current.stftparams.snd->m_stft[si].begin();
+                for(int n=0; n<dftsize; n++, pstft++) {
 
-                    y = std::min(std::max(y, 0.0), 1.0);
+                    y = (*pstft-ymin)*divmaxmmin;
 
-                    if(m_params_current.colormap_reversed)
-                        y = 1.0-y;
+                    if(y<=0.0)
+                        c = c0;
+                    else if(y>=1.0)
+                        c = c1;
+                    else {
+                        if(colormap_reversed)
+                            y = 1.0-y;
 
-                    m_params_current.imgstft->setPixel(QPoint(si,m_params_current.stftparams.dftlen/2-n), cmap(y));
+                        c = cmap(y);
+                    }
+
+                    *(pimgb + (halfdftlen-n)*stftlen) = c;
+//                    *(pimgb + n*stftlen + si) = c;
+
+                    // img->setPixel(si, n, c); // Bit slower, TODO or can take adv. of hardware optim ?
                 }
-                emit stftProgressing(int(100*double(si)/m_params_current.stftparams.snd->m_stft.size()));
+                emit stftProgressing((100*si)/stftlen);
             }
 
-            m_params_current.stftparams.snd->m_stft_min = std::max(-2.0*20*std::log10(std::pow(2,m_params_current.stftparams.snd->format().sampleSize())), m_params_current.stftparams.snd->m_stft_min);
-    //        COUTD << "STFTComputeThread::run compute finished" << std::endl;
+            m_params_current.stftparams.snd->m_stft_min = std::max(FFTTYPE(-2.0*20*std::log10(std::pow(2,m_params_current.stftparams.snd->format().sampleSize()))), m_params_current.stftparams.snd->m_stft_min);
+//            COUTD << "Image Spent: " << starttime.elapsed() << std::endl;
         }
 
         canceled = gMW->ui->pbSTFTComputingCancel->isChecked();

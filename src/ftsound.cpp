@@ -53,6 +53,22 @@ double FTSound::fs_common = 0; // Initially, fs is undefined TODO put in wmainwi
 WAVTYPE FTSound::s_play_power = 0;
 std::deque<WAVTYPE> FTSound::s_play_power_values;
 
+
+bool FTSound::WavParameters::operator==(const WavParameters& param) const {
+    if(winpixdelay!=param.winpixdelay)
+        return false;
+    if(delay!=param.delay)
+        return false;
+    if(gain!=param.gain)
+        return false;
+    if(fullpixrect!=param.fullpixrect)
+        return false;
+    if(viewrect!=param.viewrect)
+        return false;
+
+    return true;
+}
+
 FTSound::DFTParameters::DFTParameters(unsigned int _nl, unsigned int _nr, int _winlen, int _wintype, const std::vector<FFTTYPE>& _win, int _dftlen, qreal _ampscale, qint64 _delay){
     clear();
 
@@ -121,8 +137,8 @@ void FTSound::init(){
     m_end = 0;
     m_avoidclickswinpos = 0;
 
-    m_stft_min = std::numeric_limits<double>::infinity();
-    m_stft_max = -std::numeric_limits<double>::infinity();
+    m_stft_min = std::numeric_limits<FFTTYPE>::infinity();
+    m_stft_max = -std::numeric_limits<FFTTYPE>::infinity();
 
     m_actionInvPolarity = new QAction("Inverse polarity", this);
     m_actionInvPolarity->setStatusTip(tr("Inverse the polarity of the sound"));
@@ -201,9 +217,9 @@ void FTSound::load_finalize() {
 }
 
 void FTSound::setVisible(bool shown){
-//    cout << "FTSound::setVisible " << shown << endl;
     FileType::setVisible(shown);
-//    cout << "FTSound::~setVisible" << endl;
+    if(!shown)
+        m_wavparams.clear();
 }
 
 

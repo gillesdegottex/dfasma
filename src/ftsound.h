@@ -31,8 +31,13 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QAction>
 
 #include "filetype.h"
+#include "stftcomputethread.h"
 
+#ifdef SIGPROC_FLOAT
+#define WAVTYPE float
+#else
 #define WAVTYPE double
+#endif
 
 #define BUTTERRESPONSEDFTLEN 2048
 
@@ -75,10 +80,45 @@ public:
     WAVTYPE m_wavmaxamp;
     WAVTYPE m_filteredmaxamp;
 
-    qreal m_ampscale; // [linear]
+    WAVTYPE m_ampscale; // [linear]
     qint64 m_delay;   // [sample index]
 
-    // Spectrum
+    // Waveform
+    class WavParameters{
+    public:
+        QRect fullpixrect;
+        QRectF viewrect;
+        int winpixdelay;
+        qint64 delay;
+        WAVTYPE gain; // snd->m_ampscale*polarity
+
+        void clear(){
+            fullpixrect = QRect();
+            viewrect = QRectF();
+            winpixdelay = 0;
+            delay = 0;
+            gain = 1.0;
+        }
+
+        WavParameters(){clear();}
+        WavParameters(const QRect& _fullpixrect, const QRectF& _viewrect, int _winpixdelay, qint64 _delay, WAVTYPE _gain){
+            fullpixrect = _fullpixrect;
+            viewrect = _viewrect;
+            winpixdelay = _winpixdelay;
+            delay = _delay;
+            gain = _gain;
+        }
+
+        bool operator==(const WavParameters& param) const;
+        bool operator!=(const WavParameters& param) const {return !((*this)==param);}
+
+        inline bool isEmpty() const {return fullpixrect.isNull() || viewrect.isNull();}
+    };
+    std::deque<WAVTYPE> m_wavpx_min;
+    std::deque<WAVTYPE> m_wavpx_max;
+    WavParameters m_wavparams;
+
+    // Spectra
     class DFTParameters{
     public:
         // DFT related
@@ -88,7 +128,7 @@ public:
         int wintype;
         std::vector<FFTTYPE> win; // Could avoid this by using classes of windows parameters
         int dftlen;
-        qreal ampscale; // [linear]
+        WAVTYPE ampscale; // [linear]
         qint64 delay;   // [sample index]
 
         void clear(){
@@ -110,24 +150,22 @@ public:
         DFTParameters& operator=(const DFTParameters &params);
 
         bool operator==(const DFTParameters& param) const;
-        bool operator!=(const DFTParameters& param) const{
-            return !((*this)==param);
-        }
+        bool operator!=(const DFTParameters& param) const{return !((*this)==param);}
 
         inline bool isEmpty() const {return winlen==0 || dftlen==0 || wintype==-1;}
     };
 
-    std::vector<std::complex<WAVTYPE> > m_dft; // Store the _log_ of the DFT
+    std::vector<std::complex<FFTTYPE> > m_dft; // Store the _log_ of the DFT
     DFTParameters m_dftparams;
-    qreal m_dft_min;
-    qreal m_dft_max;
+    FFTTYPE m_dft_min;
+    FFTTYPE m_dft_max;
 
     // Spectrogram
     std::deque<std::vector<WAVTYPE> > m_stft;
-    std::deque<double> m_stftts;
+    std::deque<FFTTYPE> m_stftts;
     STFTComputeThread::STFTParameters m_stftparams;
-    qreal m_stft_min;
-    qreal m_stft_max;
+    FFTTYPE m_stft_min;
+    FFTTYPE m_stft_max;
 
     // QIODevice
     qint64 readData(char *data, qint64 maxlen);
