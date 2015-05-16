@@ -422,35 +422,42 @@ void QGVWaveform::resizeEvent(QResizeEvent* event){
 }
 
 void QGVWaveform::scrollContentsBy(int dx, int dy){
+//    COUTD << "QGVWaveform::scrollContentsBy " << dx << "," << dy << endl;
+
     // Ensure the y ticks labels will be redrawn
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+    // TODO SPEEDUP This one is really a problem because, when scrolling right, it invalidate basically all
+    //      the view (the invalidated rect on the right merge with the invalidated rect below).
     m_scene->invalidate(QRectF(viewrect.left(), -1.05, 5*14/transform().m11(), 2.10));
 
     setMouseCursorPosition(-1, false);
 
-    // Shift the waveforms accordingly
-    for(size_t fi=0; fi<gMW->ftsnds.size(); fi++){
-        if(!gMW->ftsnds[fi]->m_actionShow->isChecked())
-            continue;
+    if(m_currentAction!=CAZooming) {
 
-        if(gMW->ftsnds[fi]->m_wavpx_min.size()>0){
-            int ddx = dx;
-            if(ddx>0){
-                while(ddx>0){
-                    gMW->ftsnds[fi]->m_wavpx_min.pop_back();
-                    gMW->ftsnds[fi]->m_wavpx_max.pop_back();
-                    gMW->ftsnds[fi]->m_wavpx_min.push_front(0.0);
-                    gMW->ftsnds[fi]->m_wavpx_max.push_front(0.0);
-                    ddx--;
+        // Shift the waveforms accordingly
+        for(size_t fi=0; fi<gMW->ftsnds.size(); fi++){
+            if(!gMW->ftsnds[fi]->m_actionShow->isChecked())
+                continue;
+
+            if(gMW->ftsnds[fi]->m_wavpx_min.size()>0){
+                int ddx = dx;
+                if(ddx>0){
+                    while(ddx>0){
+                        gMW->ftsnds[fi]->m_wavpx_min.pop_back();
+                        gMW->ftsnds[fi]->m_wavpx_max.pop_back();
+                        gMW->ftsnds[fi]->m_wavpx_min.push_front(0.0);
+                        gMW->ftsnds[fi]->m_wavpx_max.push_front(0.0);
+                        ddx--;
+                    }
                 }
-            }
-            else if(ddx<0){
-                while(ddx<0){
-                    gMW->ftsnds[fi]->m_wavpx_min.pop_front();
-                    gMW->ftsnds[fi]->m_wavpx_max.pop_front();
-                    gMW->ftsnds[fi]->m_wavpx_min.push_back(0.0);
-                    gMW->ftsnds[fi]->m_wavpx_max.push_back(0.0);
-                    ddx++;
+                else if(ddx<0){
+                    while(ddx<0){
+                        gMW->ftsnds[fi]->m_wavpx_min.pop_front();
+                        gMW->ftsnds[fi]->m_wavpx_max.pop_front();
+                        gMW->ftsnds[fi]->m_wavpx_min.push_back(0.0);
+                        gMW->ftsnds[fi]->m_wavpx_max.push_back(0.0);
+                        ddx++;
+                    }
                 }
             }
         }
@@ -616,7 +623,6 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
         // When scrolling along the waveform
         setMouseCursorPosition(-1, false);
         QGraphicsView::mouseMoveEvent(event);
-        m_scene->invalidate();
     }
     else if(m_currentAction==CAZooming) {
         double dx = -(event->pos()-m_pressed_mouseinviewport).x()/100.0;
@@ -1160,6 +1166,9 @@ void QGVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
 
 //    cout << "QGVWaveform::drawBackground viewport: " << viewport()->rect() << endl;
 
+//    QRect pixrect = mapFromScene(rect).boundingRect();
+//    COUTD << pixrect << endl;
+
 //    static QTimeTracker2 time_tracker;
 //    time_tracker.restart();
 
@@ -1204,7 +1213,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
 
 //    samppixdensity=0.01;
     if(samppixdensity<4) {
-//         cout << "Draw lines between each sample in the updated rect" << endl;
+//         COUTD << "Draw lines between each sample in the updated rect" << endl;
 
         WAVTYPE a = snd->m_ampscale;
         if(snd->m_actionInvPolarity->isChecked())
@@ -1275,6 +1284,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
         painter->setPen(outlinePen);
 
         QRect pixrect = mapFromScene(rect).boundingRect();
+//        COUTD << pixrect << endl;
         QRect fullpixrect = mapFromScene(viewrect).boundingRect();
 
         double s2p = -fullpixrect.height()/viewrect.height(); // Scene to pixel
@@ -1287,18 +1297,23 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
 
         int snddelay = snd->m_delay;
 
-        FTSound::WavParameters reqparams(fullpixrect, viewrect, winpixdelay, snddelay, gain); // Can prepare most of it common to all sound files
+        FTSound::WavParameters reqparams(fullpixrect, viewrect, winpixdelay, snddelay, gain); // Can prepare most of it, common to all sound files
         if(reqparams==snd->m_wavparams){
-//            COUTD << "Use buffer only" << endl;
-            for(int i=pixrect.left(); i<=pixrect.right(); i++)
+//            COUTD << "Using existing buffer " << pixrect << endl;
+            for(int i=pixrect.left(); i<=pixrect.right(); i++){
+//            for(int i=0; i<=snd->m_wavpx_min.size(); i++)
                 painter->drawLine(QLineF(i, yzero+snd->m_wavpx_min[i], i, yzero+snd->m_wavpx_max[i]));
+            }
         }
         else {
-//            COUTD << "Re compute buffer and draw" << endl;
+//            COUTD << "Re compute buffer and draw " << pixrect << endl;
             if(int(snd->m_wavpx_min.size())!=reqparams.fullpixrect.width()){
+//                COUTD << "Resize" << endl;
                 snd->m_wavpx_min.resize(reqparams.fullpixrect.width());
                 snd->m_wavpx_max.resize(reqparams.fullpixrect.width());
+                pixrect = reqparams.fullpixrect;
             }
+//            COUTD << pixrect << endl;
             int ns = int((pixrect.left()+winpixdelay)*p2n)-snddelay;
             for(int i=pixrect.left(); i<=pixrect.right(); i++) {
 
@@ -1328,6 +1343,10 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
     //                ymin = int(ymin+0.5);
     //                ymax = int(ymax+0.5);
                     painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
+                }
+                else {
+                    snd->m_wavpx_min[i] = 0.0;
+                    snd->m_wavpx_max[i] = 0.0;
                 }
 
                 ns = ne; // TODO Shouldn't start 1 sample after ne ?
