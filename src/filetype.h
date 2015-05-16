@@ -35,6 +35,8 @@ protected:
     QDateTime m_modifiedtime;
     QDateTime m_lastreadtime;
 
+    virtual void setDrawIcon(QPixmap& pm);
+
 public:
     enum FType {FTUNSET=0, FTSOUND, FTFZERO, FTLABELS}; // Names corresponding to possible classes
     enum FileContainer {FCUNSET=0, FCANYSOUND, FCASCII, FCSDIF}; // File Containers (not format !)
@@ -65,7 +67,7 @@ public:
     bool isVisible(){return m_actionShow->isChecked();}
     virtual bool isModified() {return false;}
     virtual void setColor(const QColor& _color);
-    void setToDefaultIcon();
+    virtual void updateIcon();
     virtual double getLastSampleTime() const =0;
     virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
     virtual FileType* duplicate();

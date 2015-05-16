@@ -1190,7 +1190,7 @@ void WMainWindow::audioStateChanged(QAudio::State state){
         // Stopped playing
         ui->actionPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
         if(m_playingftsound)
-            m_playingftsound->setToDefaultIcon();
+            m_playingftsound->stopPlay();
     }
 
 //    DEBUGSTRING << "~MainWindow::stateChanged " << state << endl;

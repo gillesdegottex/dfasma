@@ -128,6 +128,7 @@ void FTSound::init(){
     m_channelid = 0;
     m_isclipped = false;
     m_isfiltered = false;
+    m_isplaying = false;
     wavtoplay  = &wav;
     m_filteredmaxamp = 0.0;
     m_ampscale = 1.0;
@@ -222,6 +223,21 @@ void FTSound::setVisible(bool shown){
         m_wavparams.clear();
 }
 
+void FTSound::setDrawIcon(QPixmap& pm){
+    FileType::setDrawIcon(pm);
+    if(isPlaying()){
+        // If playing, draw an arrow in the icon
+        QPainter p(&pm);
+        QPolygon poly(3);
+        poly.setPoint(0, 6,6);
+        poly.setPoint(1, 26,16);
+        poly.setPoint(2, 6,26);
+        p.setBrush(Qt::white);
+        p.setPen(Qt::black);
+        p.drawConvexPolygon(poly);
+    }
+    setIcon(QIcon(pm));
+}
 
 void FTSound::reload() {
 //    COUTD << "FTSound::reload" << endl;
@@ -423,17 +439,10 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
 
     m_outputaudioformat = format;
 
+    m_isplaying = true;
+
     // Draw an arrow in the icon
-    QPixmap pm(32,32);
-    pm.fill(color);
-    QPainter p(&pm);
-    QPolygon poly(3);
-    poly.setPoint(0, 6,6);
-    poly.setPoint(1, 26,16);
-    poly.setPoint(2, 6,26);
-    p.setBrush(QColor(255,255,255));
-    p.drawConvexPolygon(poly);
-    setIcon(QIcon(pm));
+    updateIcon();
 
     s_play_power = 0;
     s_play_power_values.clear();
@@ -590,6 +599,8 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
             gMW->m_gvAmplitudeSpectrum->m_scene->invalidate();
         }
         catch(QString err){
+            m_isplaying = false;
+            updateIcon();
             QMessageBox::warning(NULL, "Problem when filtering the sound to be played", QString("The sound cannot be filtered as given by the selection in the spectrum view.\n\nReason:\n")+err);
 //            wavtoplay = &wav;
             throw QString("Problem when filtering the sound to be played");
@@ -618,6 +629,8 @@ void FTSound::stopPlay()
     m_end = 0;
     m_avoidclickswinpos = 0;
     QIODevice::close();
+    m_isplaying = false;
+    updateIcon();
 }
 
 qint64 FTSound::readData(char *data, qint64 askedlen)
@@ -690,7 +703,7 @@ qint64 FTSound::readData(char *data, qint64 askedlen)
 //    std::cout << "~DSSound::readData writtenbytes=" << writtenbytes << " m_pos=" << m_pos << " m_end=" << m_end << endl;
 
     if(m_pos>=m_end){
-//        std::cout << "STOP!!!" << endl;
+//        COUTD << "No more data to send to the sound device!" << endl;
 //        QIODevice::close(); // TODO do this instead ??
 //        emit readChannelFinished();
         return writtenbytes;

@@ -115,13 +115,6 @@ FileType::FileType(FType _type, const QString& _fileName, QObject * parent)
 {
 //    cout << "FileType::FileType: " << _fileName.toLocal8Bit().constData() << endl;
 
-    setToDefaultIcon();
-
-    // Set properties common to all files
-    QFileInfo fileInfo(fileFullPath);
-    setText(fileInfo.fileName());
-    setToolTip(fileInfo.absoluteFilePath());
-
     m_actionShow = new QAction("Show", parent);
     m_actionShow->setStatusTip("Show this file in the views");
     m_actionShow->setCheckable(true);
@@ -131,6 +124,13 @@ FileType::FileType(FType _type, const QString& _fileName, QObject * parent)
     m_actionDuplicate = new QAction("Duplicate", parent);
     m_actionDuplicate->setStatusTip("Duplicate the file content");
     gMW->connect(m_actionDuplicate, SIGNAL(triggered()), gMW, SLOT(duplicateCurrentFile()));
+
+    updateIcon();
+
+    // Set properties common to all files
+    QFileInfo fileInfo(fileFullPath);
+    setText(fileInfo.fileName());
+    setToolTip(fileInfo.absoluteFilePath());
 
 //    QIODevice::open(QIODevice::ReadOnly);
 }
@@ -179,15 +179,26 @@ bool FileType::checkFileStatus(CHECKFILESTATUSMGT cfsmgt){
     return true;
 }
 
-void FileType::setColor(const QColor& _color) {
-    color = _color;
-    setToDefaultIcon();
+void FileType::setDrawIcon(QPixmap& pm){
+    pm.fill(color);
+    if(!isVisible()){
+        // If Invisible, whiten the left half.
+        QPainter p(&pm);
+        p.setBrush(QColor(255,255,255));
+        p.setPen(QColor(255,255,255));
+        QRect rect(0, 0, 16, 32);
+        p.drawRect(rect);
+    }
 }
 
-void FileType::setToDefaultIcon(){
-    // Clear the File icon
+void FileType::setColor(const QColor& _color) {
+    color = _color;
+    updateIcon();
+}
+
+void FileType::updateIcon(){
     QPixmap pm(32,32);
-    pm.fill(color);
+    setDrawIcon(pm);
     setIcon(QIcon(pm));
 }
 
@@ -224,6 +235,7 @@ void FileType::setVisible(bool shown) {
         // TODO add diagonal gray stripes in the icon
         setForeground(QGuiApplication::palette().brush(QPalette::Disabled, QPalette::WindowText));
     }
+    updateIcon();
     setStatus();
 //    COUTD << "FileType::~setVisible" << endl;
 }
@@ -250,7 +262,7 @@ void FileType::setStatus() {
         // TODO Set plain icon in the square ?
     }
     if(!m_actionShow->isChecked()) {
-        liststr = '('+liststr+')';
+        // liststr = '('+liststr+')';
         tooltipstr = "(hidden)"+tooltipstr;
         // TODO Add diagonal stripes in the icon
     }

@@ -63,6 +63,7 @@ class FTSound : public QIODevice, public FileType
     int m_channelid;  //-2:channels merged; -1:error; 0:no channel; >0:id
     bool m_isclipped;
     bool m_isfiltered;
+    bool m_isplaying;
 
 public:
 
@@ -199,8 +200,11 @@ public:
     virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
     virtual bool isModified();
     virtual void setStatus();
+    virtual void setDrawIcon(QPixmap& pm);
+
 
     double setPlay(const QAudioFormat& format, double tstart=0.0, double tstop=0.0, double fstart=0.0, double fstop=0.0);
+    bool isPlaying() const {return m_isplaying;}
     void stopPlay();
 
     static void setAvoidClicksWindowDuration(double halfduration);
