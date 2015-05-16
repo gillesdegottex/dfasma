@@ -37,8 +37,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "ftfzero.h"
 #include "ftlabels.h"
 #include "../external/audioengine/audioengine.h"
-
-#include "qtextedit.h"
+#include "aboutbox.h"
 
 #include <math.h>
 #include <iostream>
@@ -57,6 +56,7 @@ using namespace std;
 #include <QGLWidget>
 #include <QAudioDeviceInfo>
 #include <QStaticText>
+#include <QTextEdit>
 #include <QIcon>
 #include <QTime>
 #include <QtMultimedia/QSound>
@@ -105,31 +105,12 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     ui->horizontalLayout_6->insertWidget(1, m_qxtSpectrogramSpanSlider);
 
     m_dlgSettings = new WDialogSettings(this);
-    m_dlgSettings->ui->lblLibraryAudioFileReading->setText(FTSound::getAudioFileReadingDescription());
     m_dlgSettings->ui->lblAudioOutputDeviceFormat->hide();
     m_dlgSettings->adjustSize();
 
     ui->mainToolBar->setIconSize(QSize(1.5*m_dlgSettings->ui->sbViewsToolBarSizes->value(),1.5*m_dlgSettings->ui->sbViewsToolBarSizes->value()));
     connect(m_dlgSettings->ui->sbFileListItemSize, SIGNAL(valueChanged(int)), this, SLOT(changeFileListItemsSize()));
     changeFileListItemsSize();
-
-    QString fftinfostr = "";
-    fftinfostr += "<br/><i>Fast Fourier Transform (FFT):</i> "+sigproc::FFTwrapper::getLibraryInfo();
-    fftinfostr += " ("+QString::number(sizeof(FFTTYPE)*8)+"bits(";
-    if(sizeof(FFTTYPE)==4)  fftinfostr += "single";
-    if(sizeof(FFTTYPE)==8)  fftinfostr += "double";
-    if(sizeof(FFTTYPE)==16)  fftinfostr += "quadruple";
-    fftinfostr += "); smallest: "+QString::number(20*log10(std::numeric_limits<FFTTYPE>::min()))+"dB)";
-    fftinfostr += "</p>";
-    m_dlgSettings->ui->vlLibraries->addWidget(new QLabel(fftinfostr));
-
-    QString sdifinfostr = "";
-    #ifdef SUPPORT_SDIF
-        sdifinfostr = "<br/><i>For SDIF file format:</i> <a href=\"http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/\">Easdif</a> version "+QString(EASDIF_VERSION_STRING);
-    #else
-        sdifinfostr = "<br/><i>No support for SDIF file format</i>";
-    #endif
-    m_dlgSettings->ui->vlLibraries->addWidget(new QLabel(sdifinfostr));
 
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(execAbout()));
     connect(ui->actionSelectedFilesReload, SIGNAL(triggered()), this, SLOT(selectedFilesReload()));
@@ -323,71 +304,8 @@ void WMainWindow::newFile(){
 }
 
 void WMainWindow::execAbout(){
-
-    QString dfasmaversiongit = STR(DFASMAVERSIONGIT);
-
-    QString	dfasmaversion;
-    if(dfasmaversiongit.length()>0) {
-        dfasmaversion = QString("Version ") + dfasmaversiongit;
-    }
-    else {
-        QFile readmefile(":/README.txt");
-        readmefile.open(QFile::ReadOnly | QFile::Text);
-        QTextStream readmefilestream(&readmefile);
-        readmefilestream.readLine();
-        readmefilestream.readLine();
-        dfasmaversion = readmefilestream.readLine();
-    }
-    QString txt = QString("\
-    <h1>DFasma</h1>\
-    ")+dfasmaversion;
-
-    txt += " (compiled by "+QString(COMPILER)+" for ";
-    #ifdef Q_PROCESSOR_X86_32
-      txt += "32bits";
-    #endif
-    #ifdef Q_PROCESSOR_X86_64
-      txt += "64bits";
-    #endif
-    txt += " on "+QString(__DATE__)+")";
-
-    txt += "<h4>Purpose</h4>";
-    txt += "<i>DFasma</i> is an open-source software whose main purpose is to compare waveforms in time and spectral domains. "; //  Even though there are a few scaling functionalities, DFasma is basically not an audio editor
-    txt += "Its design is inspired by the <i>Xspect</i> software which was developed at <a href='http://www.ircam.fr'>Ircam</a>.</p>";
-    // <a href='http://recherche.ircam.fr/equipes/analyse-synthese/DOCUMENTATIONS/xspect/xsintro1.2.html'>Xspect software</a>
-
-    txt += "<p>To suggest a new functionality or report a bug, do not hesitate to <a href='https://github.com/gillesdegottex/dfasma/issues'>raise an issue on GitHub.</a></p>";
-
-    txt += "<h4>Legal</h4>\
-            Copyright &copy; 2014 Gilles Degottex <a href='mailto:gilles.degottex@gmail.com'>&lt;gilles.degottex@gmail.com&gt;</a><br/>\
-            <i>DFasma</i> is coded in C++/<a href='http://qt-project.org'>Qt</a> under the <a href='http://www.gnu.org/licenses/gpl.html'>GPL (v3) License</a>.\
-            The source code is hosted on <a href='https://github.com/gillesdegottex/dfasma'>GitHub</a>.";
-
-    txt += "<h4>Disclaimer</h4>\
-            ALL THE FUNCTIONALITIES OF <I>DFASMA</I> AND ITS CODE ARE PROVIDED WITHOUT ANY WARRANTY \
-            (E.G. THERE IS NO WARRANTY OF MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR PURPOSE). \
-            ALSO, THE COPYRIGHT HOLDERS AND CONTRIBUTORS DO NOT TAKE ANY LEGAL RESPONSIBILITY \
-            REGARDING THE IMPLEMENTATIONS OF THE PROCESSING TECHNIQUES OR ALGORITHMS \
-            (E.G. CONSEQUENCES OF BUGS OR ERRONEOUS IMPLEMENTATIONS). \
-            Please see the README.txt file for additional information.";
-
-    txt += "<h4>Credits</h4>\
-            Most open-source softwares are infeasible without indirect contributions provided through libraries. \
-            Thus, thanks to the following geeks: \
-            A. J. Fisher (Butterworth\'s filter design); \
-            Laurent de Soras (FFTReal); \
-            FFTW3\'s team; \
-            Erik de Castro Lopo (libsndfile); \
-            SOX\'s team (libsox); \
-            Ircam\'s team (SDIF format); \
-            Qt\'s team.\
-            ";
-
-    txt += "<p>Any contribution of any sort is very welcome and will be rewarded by your name in this about box, in addition to a pint of your favorite beer during the next signal processing <a href='http://www.obsessedwithsports.com/wp-content/uploads/2013/03/revenge-of-the-nerds-sloan-conference.png'>conference</a>!</p>";
-
-    QMessageBox::about(this, "About this software                                                                                                                   ", txt);
-
-//    QMessageBox::aboutQt(this, "About this software");
+    AboutBox box(this);
+    box.exec();
 }
 
 double WMainWindow::getFs(){
