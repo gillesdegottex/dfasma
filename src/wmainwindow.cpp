@@ -110,6 +110,8 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     m_dlgSettings->adjustSize();
 
     ui->mainToolBar->setIconSize(QSize(1.5*m_dlgSettings->ui->sbViewsToolBarSizes->value(),1.5*m_dlgSettings->ui->sbViewsToolBarSizes->value()));
+    connect(m_dlgSettings->ui->sbFileListItemSize, SIGNAL(valueChanged(int)), this, SLOT(changeFileListItemsSize()));
+    changeFileListItemsSize();
 
     QString fftinfostr = "";
     fftinfostr += "<br/><i>Fast Fourier Transform (FFT):</i> "+sigproc::FFTwrapper::getLibraryInfo();
@@ -274,6 +276,19 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 
     m_loading = false;
 }
+
+void WMainWindow::changeFileListItemsSize() {
+//    COUTD << m_dlgSettings->ui->sbFileListItemSize->value() << endl;
+
+    QFont font = ui->listSndFiles->font();
+    font.setPixelSize(m_dlgSettings->ui->sbFileListItemSize->value());
+    QSize size = ui->listSndFiles->iconSize();
+    size.setHeight(m_dlgSettings->ui->sbFileListItemSize->value()+2);
+    size.setWidth(m_dlgSettings->ui->sbFileListItemSize->value()+2);
+    ui->listSndFiles->setIconSize(size);
+    ui->listSndFiles->setFont(font);
+}
+
 
 void WMainWindow::changeToolBarSizes(int size) {
     gMW->m_gvWaveform->m_toolBar->setIconSize(QSize(size,size));

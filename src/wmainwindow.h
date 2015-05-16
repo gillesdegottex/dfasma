@@ -109,7 +109,7 @@ private slots:
 public slots:
     void updateWindowTitle();
     void fileInfoUpdate();
-    void allSoundsChanged();
+    void allSoundsChanged(); // TODO Should drop this
     void selectAudioOutputDevice(int di);
     void selectAudioOutputDevice(const QString& devicename);
     void colorSelected(const QColor& color);
@@ -117,6 +117,7 @@ public slots:
     void duplicateCurrentFile();
     void setInWaitingForFileState();
     void updateViewsAfterAddFile(bool isfirsts);
+    void changeFileListItemsSize();
 
 public:
     explicit WMainWindow(QStringList files, QWidget* parent=0);

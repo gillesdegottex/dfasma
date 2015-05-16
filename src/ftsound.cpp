@@ -428,9 +428,9 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
     pm.fill(color);
     QPainter p(&pm);
     QPolygon poly(3);
-    poly.setPoint(0, 8,8);
-    poly.setPoint(1, 24,16);
-    poly.setPoint(2, 8,24);
+    poly.setPoint(0, 6,6);
+    poly.setPoint(1, 26,16);
+    poly.setPoint(2, 6,26);
     p.setBrush(QColor(255,255,255));
     p.drawConvexPolygon(poly);
     setIcon(QIcon(pm));

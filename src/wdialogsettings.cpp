@@ -54,6 +54,7 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     gMW->m_settings.add(ui->ckPlaybackAvoidClicksAddWindows);
     gMW->m_settings.add(ui->sbPlaybackAvoidClicksWindowDuration);
     gMW->m_settings.add(ui->sbViewsToolBarSizes);
+    gMW->m_settings.add(ui->sbFileListItemSize);
     gMW->m_settings.add(ui->sbViewsTimeDecimals);
     gMW->m_settings.add(ui->cbViewsShowMusicNoteNames);
     gMW->m_settings.add(ui->cbViewsAddMarginsOnSelection);
