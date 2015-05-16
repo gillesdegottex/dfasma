@@ -255,7 +255,7 @@ void QGVAmplitudeSpectrum::fftResizing(int prevSize, int newSize){
     Q_UNUSED(prevSize);
 
     gMW->ui->pgbFFTResize->show();
-    gMW->ui->lblSpectrumInfoTxt->setText(QString("Resizing DFT to %1").arg(newSize));
+    gMW->ui->lblSpectrumInfoTxt->setText(QString("Optimizing DFT for %1").arg(newSize));
 }
 
 void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
@@ -887,14 +887,14 @@ void QGVAmplitudeSpectrum::selectionSetTextInForm() {
         //      whole seen of the spectrogram, and I don't know how to do this :(
         if(std::abs(left)<1e-10) left=0.0;
 
-        str += QString("[%1,%2]%3 Hz").arg(left).arg(right).arg(right-left);
+        str += QString("[%1,%2]%3Hz").arg(left).arg(right).arg(right-left);
 
         if (gMW->m_gvAmplitudeSpectrum->isVisible() && m_selection.height()>0) {
-            str += QString(" x [%4,%5]%6 dB").arg(-m_selection.bottom()).arg(-m_selection.top()).arg(m_selection.height());
+            str += QString(" x [%4,%5]%6dB").arg(-m_selection.bottom()).arg(-m_selection.top()).arg(m_selection.height());
         }
 //        COUTD << gMW->m_gvPhaseSpectrum->isVisible() << endl;
         if (gMW->m_gvPhaseSpectrum->isVisible() && gMW->m_gvPhaseSpectrum->m_selection.height()>0) {
-            str += QString(" x [%7,%8]%9 rad").arg(-gMW->m_gvPhaseSpectrum->m_selection.bottom()).arg(-gMW->m_gvPhaseSpectrum->m_selection.top()).arg(gMW->m_gvPhaseSpectrum->m_selection.height());
+            str += QString(" x [%7,%8]%9rad").arg(-gMW->m_gvPhaseSpectrum->m_selection.bottom()).arg(-gMW->m_gvPhaseSpectrum->m_selection.top()).arg(gMW->m_gvPhaseSpectrum->m_selection.height());
         }
     }
 
