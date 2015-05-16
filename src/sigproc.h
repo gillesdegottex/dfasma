@@ -512,7 +512,17 @@ public:
     inline std::complex<FFTTYPE> getMidOutput(int n){return make_complex(m_fftw3_out[n]);} // Avoid index checking
     inline std::complex<FFTTYPE> getNyquistOutput(){return make_complex(m_fftw3_out[m_size/2]);}// Avoid index checking
 #elif FFT_FFTREAL
-    // TODO
+    inline void setInput(int n, FFTTYPE value){in[n] = value;}
+    inline std::complex<FFTTYPE> getOutput(int n){
+        if(n==0)
+            return make_complex(m_fftreal_out[0], 0.0);
+        if(n==m_size/2)
+            return make_complex(m_fftreal_out[m_size/2], 0.0);
+        return make_complex(m_fftreal_out[n], -m_fftreal_out[m_size/2+n]);
+    }
+    inline std::complex<FFTTYPE> getDCOutput(){return make_complex(m_fftreal_out[0], 0.0);} // Avoid index checking
+    inline std::complex<FFTTYPE> getMidOutput(int n){return make_complex(m_fftreal_out[n], -m_fftreal_out[m_size/2+n]);} // Avoid index checking
+    inline std::complex<FFTTYPE> getNyquistOutput(){return make_complex(m_fftreal_out[m_size/2],0.0);}// Avoid index checking
 #endif
 
     void execute(const std::vector<FFTTYPE>& in, std::vector<std::complex<FFTTYPE> >& out);

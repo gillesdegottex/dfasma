@@ -134,7 +134,7 @@ void FFTwrapper::execute(bool useinternalcopy) {
         fftwg_execute(m_fftw3_plan);
         m_fftw3_planner_access.unlock();
 #elif FFT_FFTREAL
-        execute(in, out); // TODO
+        m_fftreal_fft->do_fft(m_fftreal_out, &(in[0]));
 #endif
     }
 }
