@@ -208,26 +208,28 @@ inline std::vector<FFTTYPE> gencoswindow(int N, const std::vector<FFTTYPE>& c) {
     return win;
 }
 
+// Coefficients from Wikipedia: http://en.wikipedia.org/wiki/Window_function
 inline std::vector<FFTTYPE> hann(int n) {
-    std::vector<FFTTYPE> c;
-    c.push_back(0.5);
-    c.push_back(-0.5);
+    std::vector<FFTTYPE> c(2);
+    c[0] = 0.5;
+    c[1] = -0.5;
     return gencoswindow(n, c);
 }
 
+// Coefficients from Wikipedia: http://en.wikipedia.org/wiki/Window_function
 inline std::vector<FFTTYPE> hamming(int n) {
-    std::vector<FFTTYPE> c;
-    c.push_back(0.54);
-    c.push_back(-0.46);
+    std::vector<FFTTYPE> c(2);
+    c[0] = 0.54;
+    c[1] = -0.46;
     return gencoswindow(n, c);
 }
 
-inline std::vector<FFTTYPE> blackman(int n) {
-    std::vector<FFTTYPE> c;
-    FFTTYPE alpha = 0.16;
-    c.push_back((1-alpha)/2);
-    c.push_back(-0.5);
-    c.push_back(alpha/2);
+// Coefficients from Wikipedia: http://en.wikipedia.org/wiki/Window_function
+inline std::vector<FFTTYPE> blackman(int n, FFTTYPE alpha=0.16) {
+    std::vector<FFTTYPE> c(3);
+    c[0] = (1-alpha)/2;
+    c[1] = -0.5;
+    c[2] = alpha/2;
     // The following gives slightly difference frequency response
     // based on the Wikipedia's plot
     // c.push_back(7938.0/18608.0);
@@ -236,43 +238,44 @@ inline std::vector<FFTTYPE> blackman(int n) {
     return gencoswindow(n, c);
 }
 
-// TODO Check coefs
+// Coefficients from Wikipedia: http://en.wikipedia.org/wiki/Window_function
 inline std::vector<FFTTYPE> nutall(int n) {
-    std::vector<FFTTYPE> c;
-    c.push_back(0.355768);
-    c.push_back(-0.487396);
-    c.push_back(0.144232);
-    c.push_back(-0.012604);
+    std::vector<FFTTYPE> c(4);
+    c[0] = 0.355768;
+    c[1] = -0.487396;
+    c[2] = 0.144232;
+    c[3] = -0.012604;
     return gencoswindow(n, c);
 }
 
-// TODO Check coefs
+// Coefficients from Wikipedia: http://en.wikipedia.org/wiki/Window_function
 inline std::vector<FFTTYPE> blackmannutall(int n) {
-    std::vector<FFTTYPE> c;
-    c.push_back(0.3635819);
-    c.push_back(-0.4891775);
-    c.push_back(0.1365995);
-    c.push_back(-0.0106411);
+    std::vector<FFTTYPE> c(4);
+    c[0] = 0.3635819;
+    c[1] = -0.4891775;
+    c[2] = 0.1365995;
+    c[3] = -0.0106411;
     return gencoswindow(n, c);
 }
 
-// TODO Check coefs
+// Coefficients from Wikipedia: http://en.wikipedia.org/wiki/Window_function
 inline std::vector<FFTTYPE> blackmanharris(int n) {
-    std::vector<FFTTYPE> c;
-    c.push_back(0.35875);
-    c.push_back(-0.48829);
-    c.push_back(0.14128);
-    c.push_back(-0.01168);
+    std::vector<FFTTYPE> c(4);
+    c[0] = 0.35875;
+    c[1] = -0.48829;
+    c[2] = 0.14128;
+    c[3] = -0.01168;
     return gencoswindow(n, c);
 }
 
+// Coefficients from Wikipedia: http://en.wikipedia.org/wiki/Window_function
 inline std::vector<FFTTYPE> flattop(int n) {
-    std::vector<FFTTYPE> c;
-    c.push_back(1);
-    c.push_back(-1.93);
-    c.push_back(1.29);
-    c.push_back(-0.388);
-    c.push_back(0.028);
+    std::vector<FFTTYPE> c(5);
+    c[0] = 1.0;
+    c[1] = -1.93;
+    c[2] = 1.29;
+    c[3] = -0.388;
+    c[4] = 0.028;
     return gencoswindow(n, c);
 }
 

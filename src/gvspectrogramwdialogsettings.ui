@@ -37,6 +37,9 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="toolTip">
+           <string>Based on Wikipedia's coefficients (2015)</string>
+          </property>
           <property name="text">
            <string>Window type</string>
           </property>
@@ -45,11 +48,11 @@
         <item>
          <widget class="QComboBox" name="cbSpectrogramWindowType">
           <property name="currentIndex">
-           <number>2</number>
+           <number>0</number>
           </property>
           <item>
            <property name="text">
-            <string>Hann</string>
+            <string>Rectangular</string>
            </property>
           </item>
           <item>
@@ -59,12 +62,12 @@
           </item>
           <item>
            <property name="text">
-            <string>Blackman</string>
+            <string>Hann</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>Nutall</string>
+            <string>Blackman</string>
            </property>
           </item>
           <item>
@@ -79,12 +82,12 @@
           </item>
           <item>
            <property name="text">
-            <string>Flat top</string>
+            <string>Nutall</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>Rectangular</string>
+            <string>Flat top</string>
            </property>
           </item>
           <item>

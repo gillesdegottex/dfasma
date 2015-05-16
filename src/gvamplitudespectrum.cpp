@@ -289,23 +289,23 @@ void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
     if(m_trgDFTParameters.isEmpty()
        || m_trgDFTParameters.wintype!=newDFTParams.wintype
        || m_trgDFTParameters.winlen!=newDFTParams.winlen
-       || wintype>7){// TODO 7
+       || wintype>7){
         if(wintype==0)
-            m_win = sigproc::hann(newDFTParams.winlen);
+            m_win = sigproc::rectangular(newDFTParams.winlen);
         else if(wintype==1)
             m_win = sigproc::hamming(newDFTParams.winlen);
         else if(wintype==2)
-            m_win = sigproc::blackman(newDFTParams.winlen);
+            m_win = sigproc::hann(newDFTParams.winlen);
         else if(wintype==3)
-            m_win = sigproc::nutall(newDFTParams.winlen);
+            m_win = sigproc::blackman(newDFTParams.winlen);
         else if(wintype==4)
             m_win = sigproc::blackmannutall(newDFTParams.winlen);
         else if(wintype==5)
             m_win = sigproc::blackmanharris(newDFTParams.winlen);
         else if(wintype==6)
-            m_win = sigproc::flattop(newDFTParams.winlen);
+            m_win = sigproc::nutall(newDFTParams.winlen);
         else if(wintype==7)
-            m_win = sigproc::rectangular(newDFTParams.winlen);
+            m_win = sigproc::flattop(newDFTParams.winlen);
         else if(wintype==8)
             m_win = sigproc::normwindow(newDFTParams.winlen, m_dlgSettings->ui->spAmplitudeSpectrumWindowNormSigma->value());
         else if(wintype==9)
