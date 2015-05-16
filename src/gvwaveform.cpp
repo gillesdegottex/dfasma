@@ -1102,7 +1102,8 @@ void QGVWaveform::updateSelectionText(){
     if(gMW->m_gvWaveform->m_aWaveformShowWindow->isChecked() && gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.win.size()>0)
         gMW->ui->lblSelectionTxt->setText(QString("%1s window centered at %2").arg(gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.win.size()/gMW->getFs(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()).arg(m_selection.left()+((gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.win.size()-1)/2.0)/gMW->getFs(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value())); // duration and center
     else
-        gMW->ui->lblSelectionTxt->setText(QString("%1s selection ").arg(m_selection.width(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()).append(" starting at %1s").arg(m_selection.left(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value())); // duration and start
+        gMW->ui->lblSelectionTxt->setText(QString("[%1,%2]%3s").arg(m_selection.left(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()).arg(m_selection.right(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()).arg(m_selection.width(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value())); // duration and start
+//    gMW->ui->lblSelectionTxt->setText(QString("%1s selection ").arg(m_selection.width(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()).append(" starting at %1s").arg(m_selection.left(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value())); // duration and start
 }
 
 void QGVWaveform::selectionZoomOn(){
