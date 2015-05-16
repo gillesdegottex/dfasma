@@ -179,7 +179,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     m_gvAmplitudeSpectrum = new QGVAmplitudeSpectrum(this);
     ui->lSpectrumAmplitudeGraphicsView->addWidget(m_gvAmplitudeSpectrum);
     m_settings.add(ui->actionShowAmplitudeSpectrum);
-    ui->wSpectrumAmplitude->setVisible(ui->actionShowAmplitudeSpectrum->isChecked());
+    ui->wSpectra->setVisible(ui->actionShowAmplitudeSpectrum->isChecked());
 
     m_gvPhaseSpectrum = new QGVPhaseSpectrum(this);
     ui->lSpectrumPhaseGraphicsView->addWidget(m_gvPhaseSpectrum);
