@@ -190,7 +190,8 @@ SOURCES   += src/main.cpp\
              external/mkfilter/mkfilter.cpp \
              external/audioengine/audioengine.cpp \
              src/colormap.cpp \
-             src/QSettingsAuto.cpp
+             src/QSettingsAuto.cpp \
+             src/aboutbox.cpp
 
 HEADERS   += src/wmainwindow.h \
              external/libqxt/qxtglobal.h \
@@ -215,12 +216,14 @@ HEADERS   += src/wmainwindow.h \
              src/fftresizethread.h \
              external/audioengine/audioengine.h \
              src/colormap.h \
-             src/QSettingsAuto.h
+             src/QSettingsAuto.h \
+             src/aboutbox.h
 
 FORMS     += src/wmainwindow.ui \
              src/wdialogselectchannel.ui \
              src/wdialogsettings.ui \
              src/gvamplitudespectrumwdialogsettings.ui \
-             src/gvspectrogramwdialogsettings.ui
+             src/gvspectrogramwdialogsettings.ui \
+             src/aboutbox.ui
 
 RESOURCES += ressources.qrc
