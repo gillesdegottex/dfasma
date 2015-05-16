@@ -255,6 +255,8 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 
     connect(m_dlgSettings->ui->sbViewsToolBarSizes, SIGNAL(valueChanged(int)), this, SLOT(changeToolBarSizes(int)));
 
+    // This one seems able to open distant files because file paths arrive in gvfs format
+    // in the main.
     QProgressDialog prgdlg("Opening files...", "Abort", 0, files.size(), this);
     prgdlg.setMinimumDuration(1000);
     m_prgdlg = &prgdlg;
@@ -763,6 +765,7 @@ void WMainWindow::dropEvent(QDropEvent *event){
     bool isfirsts = ftsnds.size()==0;
 
     QList<QUrl>	lurl = event->mimeData()->urls();
+//    ofstream log("/home/degottex/dfasma.log");
 //    COUTD << "Contents: " << lurl.size() << " elements" << endl;
 
     QProgressDialog prgdlg("Opening files...", "Abort", 0, lurl.size(), this);
@@ -772,16 +775,20 @@ void WMainWindow::dropEvent(QDropEvent *event){
     for(int lurli=0; lurli<lurl.size() && !prgdlg.wasCanceled(); lurli++){
         prgdlg.setValue(lurli);
         QCoreApplication::processEvents(); // To show the progress
+        // Here the remote file paths are not in an apropriate format for opening.
+//        log << lurl[lurli].toDisplayString().toLatin1().constData() << std::endl;
 //        COUTD << lurl[lurli].toDisplayString().toLatin1().constData() << endl;
 //        COUTD << lurl[lurli].isLocalFile() << endl;
-        if(!lurl[lurli].isLocalFile()){
-            prgdlg.setValue(prgdlg.maximum());// Stop the loading bar
-            QCoreApplication::processEvents(); // To show the progress
-            QMessageBox::warning(this, "Failed to load file ...", "Data from the following file can't be loaded:\n"+lurl[lurli].toDisplayString()+"'\n\nReason:\n"+"It is a remote file.");
-        }
-        else
-            addFile(lurl[lurli].toLocalFile());
+//        if(!lurl[lurli].isLocalFile()){
+//            prgdlg.setValue(prgdlg.maximum());// Stop the loading bar
+//            QCoreApplication::processEvents(); // To show the progress
+//            QMessageBox::warning(this, "Failed to load file ...", "Data from the following file can't be loaded:\n"+lurl[lurli].toDisplayString()+"'\n\nReason:\n"+"It is a remote file.");
+//        }
+//        else
+//        COUTD << lurl[lurli].url(QUrl::None).toLatin1().constData() << endl;
+        addFile(lurl[lurli].url());
     }
+//    log.close();
     prgdlg.setValue(prgdlg.maximum());// Stop the loading bar
     m_prgdlg = NULL;
     updateViewsAfterAddFile(isfirsts);
