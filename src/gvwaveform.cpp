@@ -1366,7 +1366,7 @@ void QGVWaveform::draw_allwaveforms(QPainter* painter, const QRectF& rect){
     for(size_t fi=0; fi<gMW->ftsnds.size(); fi++)
         if(!m_aWaveformShowSelectedWaveformOnTop->isChecked() || gMW->ftsnds[fi]!=currsnd)
             draw_waveform(painter, rect, gMW->ftsnds[fi]);
-    if(m_aWaveformShowSelectedWaveformOnTop->isChecked())
+    if(currsnd && m_aWaveformShowSelectedWaveformOnTop->isChecked())
         draw_waveform(painter, rect, currsnd);
 }
 

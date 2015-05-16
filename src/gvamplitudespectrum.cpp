@@ -1236,7 +1236,7 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
         }
     }
 
-    if(gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop->isChecked()){
+    if(currsnd && gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop->isChecked()){
         if(currsnd->m_actionShow->isChecked()){
             QPen outlinePen(currsnd->color);
             outlinePen.setWidth(0);
