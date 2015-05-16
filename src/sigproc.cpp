@@ -99,12 +99,16 @@ void FFTwrapper::resize(int n)
         m_fftw3_out = new fftwg_complex[m_size/2+1];
         m_fftw3_planner_access.lock();
         //  | FFTW_PRESERVE_INPUT
+        unsigned int flags = FFTW_ESTIMATE;
+        // The following is likely to generate non-deterministic runs !
+        // See: http://www.fftw.org/faq/section3.html#nondeterministic
+        // unsigned int flags = FFTW_MEASURE;
         if(m_forward){
-            m_fftw3_plan = fftwg_plan_dft_r2c_1d(m_size, m_fftw3_in, m_fftw3_out, FFTW_MEASURE);
+            m_fftw3_plan = fftwg_plan_dft_r2c_1d(m_size, m_fftw3_in, m_fftw3_out, flags);
 //            m_fftw3_plan = fftw_plan_dft_1d(m_size, m_fftw3_in, m_fftw3_out, FFTW_FORWARD, FFTW_MEASURE);
         }
         else{
-            m_fftw3_plan = fftwg_plan_dft_c2r_1d(m_size, m_fftw3_out, m_fftw3_in, FFTW_MEASURE);
+            m_fftw3_plan = fftwg_plan_dft_c2r_1d(m_size, m_fftw3_out, m_fftw3_in, flags);
 //            m_fftw3_plan = fftw_plan_dft_1d(m_size, m_fftw3_in, m_fftw3_out, FFTW_BACKWARD, FFTW_MEASURE);
         }
         m_fftw3_planner_access.unlock();

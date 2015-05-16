@@ -262,11 +262,13 @@ void QGVSpectrogram::updateSTFTSettings(){
     else
         throw QString("No window selected");
 
+//    assert(m_win.size()==winlen);
+
     // Normalize the window energy to sum=1
     double winsum = 0.0;
-    for(int n=0; n<winlen; n++)
+    for(size_t n=0; n<m_win.size(); ++n)
         winsum += m_win[n];
-    for(int n=0; n<winlen; n++)
+    for(size_t n=0; n<m_win.size(); ++n)
         m_win[n] /= winsum;
 
     updateSTFTPlot();
