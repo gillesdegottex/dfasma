@@ -432,7 +432,7 @@ void QGVWaveform::scrollContentsBy(int dx, int dy){
 
     setMouseCursorPosition(-1, false);
 
-    if(m_currentAction!=CAZooming) {
+    if(m_currentAction!=CAZooming && gMW->m_gvSpectrogram->m_currentAction!=QGVSpectrogram::CAZooming) {
 
         // Shift the waveforms accordingly
         for(size_t fi=0; fi<gMW->ftsnds.size(); fi++){
