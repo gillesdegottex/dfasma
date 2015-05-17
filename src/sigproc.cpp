@@ -198,20 +198,27 @@ FFTwrapper::~FFTwrapper()
 void sigproc::hspec2rcc(const std::vector<FFTTYPE>& loghA, FFTwrapper* fft, std::vector<FFTTYPE>& cc){
     int dftlen = (loghA.size()-1)*2;
 
-    fft->in[0] = loghA[0];
-    fft->in[dftlen/2] = loghA[dftlen/2];
+    fft->setInput(0, loghA[0]);
+//    fft->in[0] = loghA[0];
     for(int n=1; n<int(loghA.size())-1; ++n){
-        fft->in[n] = loghA[n];
-        fft->in[dftlen/2+n] = loghA[int(loghA.size())-1-n];
+        fft->setInput(n, loghA[n]);
+        fft->setInput(dftlen/2+n, loghA[int(loghA.size())-1-n]);
+//        fft->in[n] = loghA[n];
+//        fft->in[dftlen/2+n] = loghA[int(loghA.size())-1-n];
     }
+    fft->setInput(dftlen/2, loghA[dftlen/2]);
+//    fft->in[dftlen/2] = loghA[dftlen/2];
 
-    fft->execute();
+    fft->execute(false);
 
     cc.resize(dftlen/2+1);
-    cc[0] = fft->out[0].real()/dftlen;
+    cc[0] = fft->getDCOutput().real()/dftlen;
+//    cc[0] = fft->out[0].real()/dftlen;
     for(size_t n=1; n<cc.size(); ++n)
-        cc[n] = 2*fft->out[n].real()/dftlen; // Compensate for the energy loss
-    cc[dftlen/2] = fft->out[dftlen/2].real()/dftlen;
+        cc[n] = 2*fft->getMidOutput(n).real()/dftlen; // Compensate for the energy loss
+//    cc[n] = 2*fft->out[n].real()/dftlen; // Compensate for the energy loss
+    cc[dftlen/2] = fft->getNyquistOutput().real()/dftlen;
+//    cc[dftlen/2] = fft->out[dftlen/2].real()/dftlen;
 
 }
 void sigproc::rcc2hspec(const std::vector<FFTTYPE>& cc, FFTwrapper* fft, std::vector<FFTTYPE>& loghA){
@@ -221,16 +228,22 @@ void sigproc::rcc2hspec(const std::vector<FFTTYPE>& cc, FFTwrapper* fft, std::ve
 
     size_t n=0;
     for(; n<cc.size(); ++n)
-        fft->in[n] = cc[n];
+        fft->setInput(n, cc[n]);
+//        fft->in[n] = cc[n];
     for(; n<size_t(dftlen); ++n)
-        fft->in[n] = 0.0;
+        fft->setInput(n, 0.0);
+//        fft->in[n] = 0.0;
 
-    fft->execute();
+    fft->execute(false);
+//    fft->execute();
 
     loghA.resize(dftlen/2+1);
 
-    for(size_t n=0; n<loghA.size(); ++n)
-        loghA[n] = fft->out[n].real();
+    loghA[0] = fft->getDCOutput().real();
+    for(size_t n=1; n<loghA.size()-1; ++n)
+        loghA[n] = fft->getOutput(n).real();
+    loghA[dftlen/2] = fft->getNyquistOutput().real();
+//        loghA[n] = fft->out[n].real();
 }
 
 
