@@ -42,6 +42,7 @@ GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(QGVAmplit
     connect(ui->cbAmplitudeSpectrumWindowType, SIGNAL(currentIndexChanged(QString)), this, SLOT(CBSpectrumWindowTypeCurrentIndexChanged(QString)));
 
     // Update the DFT view automatically
+    connect(ui->sbAmplitudeSpectrumWindowDurationLimit, SIGNAL(valueChanged(double)), m_ampspec, SLOT(settingsModified()));
     connect(ui->sbAmplitudeSpectrumOversamplingFactor, SIGNAL(valueChanged(int)), m_ampspec, SLOT(settingsModified()));
     connect(ui->cbAmplitudeSpectrumWindowSizeForcedOdd, SIGNAL(toggled(bool)), m_ampspec, SLOT(settingsModified()));
     connect(ui->cbAmplitudeSpectrumWindowType, SIGNAL(currentIndexChanged(int)), m_ampspec, SLOT(settingsModified()));

@@ -47,7 +47,7 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     connect(ui->sbPlaybackButterworthOrder, SIGNAL(valueChanged(int)), this, SLOT(setSBButterworthOrderChangeValue(int)));
     connect(ui->sbPlaybackAvoidClicksWindowDuration, SIGNAL(valueChanged(double)), this, SLOT(setSBAvoidClicksWindowDuration(double)));
     connect(ui->btnSettingsSave, SIGNAL(clicked()), this, SLOT(settingsSave()));
-    connect(ui->btnSettingsClear, SIGNAL(clicked()), this, SLOT(settingsClear()));
+    connect(ui->btnSettingsClear, SIGNAL(clicked()), this, SLOT(settingsClear()));  
 
     gMW->m_settings.add(ui->sbPlaybackButterworthOrder);
     gMW->m_settings.add(ui->cbPlaybackFilteringCompensateEnergy);
@@ -58,6 +58,8 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     gMW->m_settings.add(ui->sbViewsTimeDecimals);
     gMW->m_settings.add(ui->cbViewsShowMusicNoteNames);
     gMW->m_settings.add(ui->cbViewsAddMarginsOnSelection);
+
+    adjustSize();
 }
 
 void WDialogSettings::setSBButterworthOrderChangeValue(int order) {
