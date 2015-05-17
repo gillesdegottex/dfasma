@@ -261,7 +261,6 @@ void QGVPhaseSpectrum::mousePressEvent(QMouseEvent* event){
             if(kshift && !kctrl) {
                 // When moving the spectrum's view
                 m_currentAction = CAMoving;
-                setDragMode(QGraphicsView::ScrollHandDrag);
                 setMouseCursorPosition(QPointF(-1,0), false);
             }
             else if((!kctrl && !kshift) && m_selection.width()>0 && m_selection.height()>0 && abs(selview.left()-event->x())<5 && event->y()>=selview.top() && event->y()<=selview.bottom()) {

@@ -483,7 +483,6 @@ void QGVSpectrogram::mousePressEvent(QMouseEvent* event){
             if(event->modifiers().testFlag(Qt::ShiftModifier)) {
                 // When moving the spectrum's view
                 m_currentAction = CAMoving;
-                setDragMode(QGraphicsView::ScrollHandDrag);
                 setMouseCursorPosition(QPointF(-1,0), false);
             }
             else if(!event->modifiers().testFlag(Qt::ControlModifier) && m_selection.width()>0 && m_selection.height()>0 && abs(selview.left()-event->x())<5 && event->y()>=selview.top() && event->y()<=selview.bottom()) {

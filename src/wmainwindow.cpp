@@ -352,19 +352,51 @@ double WMainWindow::getMaxLastSampleTime(){
 }
 
 void WMainWindow::keyPressEvent(QKeyEvent* event){
-    if(event->key()==Qt::Key_Shift){
+    bool kshift = event->modifiers().testFlag(Qt::ShiftModifier);
+    bool kctrl = event->modifiers().testFlag(Qt::ControlModifier);
+    if(event->key()==Qt::Key_Shift && !kctrl){
         m_gvWaveform->setDragMode(QGraphicsView::ScrollHandDrag);
         m_gvAmplitudeSpectrum->setDragMode(QGraphicsView::ScrollHandDrag);
+        m_gvPhaseSpectrum->setDragMode(QGraphicsView::ScrollHandDrag);
         m_gvSpectrogram->setDragMode(QGraphicsView::ScrollHandDrag);
     }
-    else if(event->key()==Qt::Key_Control){
+    else if(event->key()==Qt::Key_Control && !kshift){
         if(ui->actionSelectionMode->isChecked()){
-            m_gvWaveform->setCursor(Qt::OpenHandCursor);
-            m_gvAmplitudeSpectrum->setCursor(Qt::OpenHandCursor);
-            m_gvSpectrogram->setCursor(Qt::OpenHandCursor);
+            if(m_gvWaveform->m_selection.width()>0){
+                m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
+                m_gvWaveform->setCursor(Qt::OpenHandCursor);
+            }
+            if(m_gvAmplitudeSpectrum->m_selection.width()*m_gvAmplitudeSpectrum->m_selection.height()>0){
+                m_gvAmplitudeSpectrum->setDragMode(QGraphicsView::NoDrag);
+                m_gvAmplitudeSpectrum->setCursor(Qt::OpenHandCursor);
+            }
+            if(m_gvPhaseSpectrum->m_selection.width()*m_gvPhaseSpectrum->m_selection.height()>0){
+                m_gvPhaseSpectrum->setDragMode(QGraphicsView::NoDrag);
+                m_gvPhaseSpectrum->setCursor(Qt::OpenHandCursor);
+            }
+            if(m_gvSpectrogram->m_selection.width()*m_gvSpectrogram->m_selection.height()>0){
+                m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
+                m_gvSpectrogram->setCursor(Qt::OpenHandCursor);
+            }
         }
         else if(ui->actionEditMode->isChecked()){
             m_gvWaveform->setCursor(Qt::SizeHorCursor);
+        }
+    }
+    else if(event->key()==Qt::Key_Control && kshift){
+        if(ui->actionSelectionMode->isChecked()){
+            m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
+            m_gvWaveform->setCursor(Qt::CrossCursor);
+            m_gvAmplitudeSpectrum->setDragMode(QGraphicsView::NoDrag);
+            m_gvAmplitudeSpectrum->setCursor(Qt::CrossCursor);
+            m_gvPhaseSpectrum->setDragMode(QGraphicsView::NoDrag);
+            m_gvPhaseSpectrum->setCursor(Qt::OpenHandCursor); // For the window's pos control
+            m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrogram->setCursor(Qt::CrossCursor);
+        }
+        else if(ui->actionEditMode->isChecked()){
+            m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
+            m_gvWaveform->setCursor(Qt::CrossCursor);
         }
     }
     else{
@@ -380,6 +412,7 @@ void WMainWindow::keyReleaseEvent(QKeyEvent* event){
     if(event->key()==Qt::Key_Shift){
         m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
         m_gvAmplitudeSpectrum->setDragMode(QGraphicsView::NoDrag);
+        m_gvPhaseSpectrum->setDragMode(QGraphicsView::NoDrag);
         m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
         if(ui->actionSelectionMode->isChecked()){
             m_gvWaveform->setCursor(Qt::CrossCursor);
@@ -396,6 +429,8 @@ void WMainWindow::keyReleaseEvent(QKeyEvent* event){
             m_gvWaveform->setCursor(Qt::CrossCursor);
             m_gvAmplitudeSpectrum->setDragMode(QGraphicsView::NoDrag);
             m_gvAmplitudeSpectrum->setCursor(Qt::CrossCursor);
+            m_gvPhaseSpectrum->setDragMode(QGraphicsView::NoDrag);
+            m_gvPhaseSpectrum->setCursor(Qt::CrossCursor);
             m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
             m_gvSpectrogram->setCursor(Qt::CrossCursor);
         }
@@ -423,6 +458,7 @@ void WMainWindow::setSelectionMode(bool checked){
 
         m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
         m_gvAmplitudeSpectrum->setDragMode(QGraphicsView::NoDrag);
+        m_gvPhaseSpectrum->setDragMode(QGraphicsView::NoDrag);
         m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
 
         QPoint cp = QCursor::pos();
@@ -452,9 +488,10 @@ void WMainWindow::setEditMode(bool checked){
         connectModes();
 
         m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
-        m_gvAmplitudeSpectrum->setDragMode(QGraphicsView::NoDrag);
         m_gvWaveform->setCursor(Qt::SizeVerCursor);
+        m_gvAmplitudeSpectrum->setDragMode(QGraphicsView::NoDrag);
         m_gvAmplitudeSpectrum->setCursor(Qt::SizeVerCursor);
+        m_gvPhaseSpectrum->setDragMode(QGraphicsView::NoDrag);
     }
     else
         setSelectionMode(true);

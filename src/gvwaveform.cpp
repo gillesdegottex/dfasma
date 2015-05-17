@@ -513,7 +513,6 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
         if(event->modifiers().testFlag(Qt::ShiftModifier)) {
             // cout << "Scrolling the waveform" << endl;
             m_currentAction = CAMoving;
-            setDragMode(QGraphicsView::ScrollHandDrag);
             setMouseCursorPosition(-1, false);
         }
         else {
