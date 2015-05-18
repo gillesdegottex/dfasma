@@ -86,6 +86,18 @@ QColor GetNextColor(){
     return color;
 }
 
+std::deque<QString> FileType::m_typestrings;
+
+void FileType::init(){
+    // Map FileTypes with corresponding strings
+    if(m_typestrings.empty()){
+        m_typestrings.push_back("All files (*.*)");
+        m_typestrings.push_back("Sound (*.wav *.aiff *.pcm *.snd *.flac *.ogg)");
+        m_typestrings.push_back("F0 (*.bpf *.sdif)");
+        m_typestrings.push_back("Label (*.bpf *.lab *.sdif)");
+    }
+}
+
 FileType::FileContainer FileType::guessContainer(const QString& filepath){
     // TODO Could make a ligther one based on the file extension, instead of opening the file
 
@@ -113,6 +125,7 @@ FileType::FileType(FType _type, const QString& _fileName, QObject * parent)
     , fileFullPath(_fileName)
     , color(GetNextColor())
 {
+    init();
 //    cout << "FileType::FileType: " << _fileName.toLocal8Bit().constData() << endl;
 
     m_actionShow = new QAction("Show", parent);
@@ -283,8 +296,8 @@ bool FileType::hasFileExtension(const QString& filepath, const QString& ext){
 }
 
 // This function TRY TO GUESS if the file is ASCII or not
-// It may say it is ASCII whereas it is a binary file
-// It always succeed if the file is simple ASCII (non-UTF)
+// It may say it is ASCII whereas it is a binary file (false positive)
+// If the file is truely a simple ASCII (non-UTF), the return value is always correct (no false negative)
 bool FileType::isFileASCII(const QString& filename) {
 
     // ASCII chars should be 0< c <=127
@@ -305,6 +318,7 @@ bool FileType::isFileASCII(const QString& filename) {
 
 #ifdef SUPPORT_SDIF
 namespace SDIFAccess {
+    // TODO Clean this
     // global list for all easdif file pointers
     typedef std::list<std::pair<Easdif::SDIFEntity *,Easdif::SDIFEntity::const_iterator> > EASDList;
     EASDList pList;

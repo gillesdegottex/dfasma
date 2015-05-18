@@ -393,10 +393,7 @@ void QGVWaveform::setMouseCursorPosition(double position, bool forwardsync) {
 }
 
 void QGVWaveform::resizeEvent(QResizeEvent* event){
-
 //    COUTD << "QGVWaveform::resizeEvent oldSize: " << event->oldSize().isEmpty() << endl;
-
-//    m_force_redraw = true;
 
     if(event->oldSize().isEmpty() && !event->size().isEmpty()) {
         // The view didn't exist (or was hidden?) and it becomes visible.

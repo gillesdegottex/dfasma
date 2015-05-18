@@ -69,7 +69,9 @@ class WMainWindow : public QMainWindow
     FTSound* m_lastSelectedSound;
     FTSound* m_lastFilteredSound;
 
+    void addFilesRecursive(const QStringList& files, FileType::FType type=FileType::FTUNSET);
     QProgressDialog* m_prgdlg;
+    void stopFileProgressDialog();
 
     void connectModes();
     void disconnectModes();
@@ -134,6 +136,7 @@ public:
     QLabel* m_globalWaitingBarLabel;
     QProgressBar* m_globalWaitingBar;
 
+    void addFiles(const QStringList& files, FileType::FType type=FileType::FTUNSET);
     void addFile(const QString& filepath, FileType::FType type=FileType::FTUNSET);
     std::deque<FTSound*> ftsnds;
     std::deque<FTFZero*> ftfzeros;

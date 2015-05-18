@@ -238,16 +238,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 
     // This one seems able to open distant files because file paths arrive in gvfs format
     // in the main.
-    QProgressDialog prgdlg("Opening files...", "Abort", 0, files.size(), this);
-    prgdlg.setMinimumDuration(1000);
-    m_prgdlg = &prgdlg;
-    for(int f=0; f<files.size() && !prgdlg.wasCanceled(); f++){
-        prgdlg.setValue(f);
-        QCoreApplication::processEvents(); // To show the progress
-        addFile(files[f]);
-    }
-    prgdlg.setValue(prgdlg.maximum());// Stop the loading bar
-    m_prgdlg = NULL;
+    addFiles(files);
     updateViewsAfterAddFile(true);
 
     if(files.size()>0)
@@ -255,10 +246,16 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 
     connect(ui->pbSpectrogramSTFTUpdate, SIGNAL(clicked()), m_gvSpectrogram, SLOT(updateSTFTSettings()));
 
-    connect(ui->actionFileOpen, SIGNAL(triggered()), this, SLOT(openFile()));
+    connect(ui->actionFileOpen, SIGNAL(triggered()), this, SLOT(openFile())); // Alow this only at the end
 
     m_loading = false;
 }
+
+WMainWindow::~WMainWindow() {
+    delete ui;
+}
+
+// Interface ===================================================================
 
 void WMainWindow::changeFileListItemsSize() {
 //    COUTD << m_dlgSettings->ui->sbFileListItemSize->value() << endl;
@@ -272,7 +269,6 @@ void WMainWindow::changeFileListItemsSize() {
     ui->listSndFiles->setFont(font);
 }
 
-
 void WMainWindow::changeToolBarSizes(int size) {
     gMW->m_gvWaveform->m_toolBar->setIconSize(QSize(size,size));
     gMW->m_gvAmplitudeSpectrum->m_toolBar->setIconSize(QSize(size,size));
@@ -280,6 +276,275 @@ void WMainWindow::changeToolBarSizes(int size) {
     ui->mainToolBar->setIconSize(QSize(1.5*size,1.5*size));
     m_pbVolume->setMaximumWidth(m_dlgSettings->ui->sbViewsToolBarSizes->value()/2);
     m_pbVolume->setMaximumHeight(1.5*size);
+}
+
+void WMainWindow::updateWindowTitle() {
+    int count = ui->listSndFiles->count();
+    if(count>0) setWindowTitle("DFasma ("+QString::number(count)+")");
+    else        setWindowTitle("DFasma");
+}
+
+void WMainWindow::execAbout(){
+    AboutBox box(this);
+    box.exec();
+}
+
+// File management =======================================================
+
+void WMainWindow::stopFileProgressDialog() {
+//    COUTD << "WMainWindow::stopFileProgressDialog " << m_prgdlg << endl;
+    if(m_prgdlg) m_prgdlg->setValue(m_prgdlg->maximum());// Stop the loading bar
+}
+
+void WMainWindow::newFile(){
+    QMessageBox::StandardButton btn = QMessageBox::question(this, "Create a new file ...", "Do you want to create a new label file?", QMessageBox::Yes | QMessageBox::No);
+    if(btn==QMessageBox::Yes){
+        ui->listSndFiles->addItem(new FTLabels(this));
+    }
+}
+
+void WMainWindow::openFile() {
+//    COUTD << "WMainWindow::openFile" << endl;
+
+    QString filters;
+    filters += FileType::m_typestrings[FileType::FTUNSET];
+    filters += ";;"+FileType::m_typestrings[FileType::FTSOUND];
+    filters += ";;"+FileType::m_typestrings[FileType::FTFZERO];
+    filters += ";;"+FileType::m_typestrings[FileType::FTLABELS];
+
+    QString selectedFilter;
+    QStringList files = QFileDialog::getOpenFileNames(this, "Open File(s)...", QString(), filters, &selectedFilter, QFileDialog::ReadOnly);
+
+    // Use selectedFilter for pre-selecting the file type.
+    FileType::FType type = FileType::FTUNSET;
+    if(selectedFilter==FileType::m_typestrings[FileType::FTSOUND])
+        type = FileType::FTSOUND;
+    else if(selectedFilter==FileType::m_typestrings[FileType::FTFZERO])
+        type = FileType::FTFZERO;
+    else if(selectedFilter==FileType::m_typestrings[FileType::FTLABELS])
+        type = FileType::FTLABELS;
+
+//    COUTD << selectedFilter.toLatin1().constData() << ": " << type << endl;
+
+    // Cancel button doesn't work the same way with the code below
+//    QFileDialog dlg(this, "Open File(s)...", QString(), filter);
+//    dlg.setFileMode(QFileDialog::DirectoryOnly);
+//    dlg.setOption(QFileDialog::DontUseNativeDialog,true);
+////    dlg.setFileMode(QFileDialog::Directory);
+//    QListView *lv = dlg.findChild<QListView*>("listView");
+//    if(lv)
+//        lv->setSelectionMode(QAbstractItemView::MultiSelection);
+//    QTreeView *t = dlg.findChild<QTreeView*>();
+//    if(t)
+//        t->setSelectionMode(QAbstractItemView::MultiSelection);
+//    dlg.exec();
+//    QStringList l = dlg.selectedFiles();
+
+    if(files.size()>0) {
+        bool isfirsts = ftsnds.size()==0;
+        addFiles(files, type);
+        updateViewsAfterAddFile(isfirsts);
+    }
+}
+
+void WMainWindow::dropEvent(QDropEvent *event){
+//    COUTD << "Contents: " << event->mimeData()->text().toLatin1().data() << endl;
+
+    QList<QUrl>	lurl = event->mimeData()->urls();
+
+    // Need to call with Local file name, otherwise the path contains "file://"
+    // However, remote file paths are not in an apropriate format for opening.
+    QStringList files;
+    for(int lurli=0; lurli<lurl.size(); lurli++)
+        files.append(lurl[lurli].toLocalFile());
+//        files.append(lurl[lurli].url());
+
+    bool isfirsts = ftsnds.size()==0;
+    addFiles(files);
+    updateViewsAfterAddFile(isfirsts);
+}
+void WMainWindow::dragEnterEvent(QDragEnterEvent *event){
+    event->acceptProposedAction();
+}
+
+void WMainWindow::addFilesRecursive(const QStringList& files, FileType::FType type) {
+    for(int fi=0; fi<files.size() && !m_prgdlg->wasCanceled(); fi++) {
+        if(QFileInfo(files[fi]).isDir()) {
+//            COUTD << "Add recursive" << endl;
+            QDir fpd(files[fi]);
+
+            // Recursive call on directories
+            fpd.setFilter(QDir::AllDirs | QDir::NoDotAndDotDot);
+            if(fpd.count()>0){
+                for(int fpdi=0; fpdi<int(fpd.count()) && !m_prgdlg->wasCanceled(); ++fpdi){
+//                    COUTD << "Dir: " << fpd[fpdi].toLatin1().constData() << endl;
+                    addFilesRecursive(QStringList(fpd.filePath(fpd[fpdi])));
+                }
+            }
+
+            // Add the files of the current directory
+            fpd.setFilter(QDir::Files | QDir::NoDotAndDotDot);
+            if(fpd.count()>0){
+                m_prgdlg->setMaximum(fpd.count());
+//                COUTD << "Setmax " << fpd.count() << endl;
+                for(int fpdi=0; fpdi<int(fpd.count()) && !m_prgdlg->wasCanceled(); ++fpdi){
+//                    COUTD << "File: " << fpd[fpdi].toLatin1().constData() << endl;
+                    m_prgdlg->setValue(fpdi);
+                    QCoreApplication::processEvents(); // To show the progress
+                    addFile(fpd.filePath(fpd[fpdi]));
+                }
+            }
+        }
+        else {
+            if(m_prgdlg) m_prgdlg->setValue(fi);
+            QCoreApplication::processEvents(); // To show the progress
+            addFile(files[fi], type);
+        }
+    }
+}
+
+void WMainWindow::addFiles(const QStringList& files, FileType::FType type) {
+//    COUTD << "WMainWindow::addFiles " << files.size() << endl;
+
+    // These progress dialogs HAVE to be built on the stack otherwise ghost dialogs appear.
+    QProgressDialog prgdlg("Opening files...", "Abort", 0, files.size(), this);
+    prgdlg.setMinimumDuration(500);
+    m_prgdlg = &prgdlg;
+
+    addFilesRecursive(files, type);
+
+    stopFileProgressDialog();
+    m_prgdlg = NULL;
+}
+
+void WMainWindow::addFile(const QString& filepath, FileType::FType type) {
+//    cout << "INFO: Add file: " << filepath.toLocal8Bit().constData() << endl;
+
+    if(QFileInfo(filepath).isDir()){
+        throw QString("Shoudn't use WMainWindow::addFile for directories, use WMainWindow::addFiles instead (with an 's')");
+    }
+    else{
+        try{
+            bool isfirsts = ftsnds.size()==0;
+
+            // Attention: There is the type of data stored in DFasma (FILETYPE) (ex. FileType::FTSOUND)
+            //  and the format of the file (ex. FFSOUND)
+
+            // This should be always "guessable"
+            FileType::FileContainer container = FileType::guessContainer(filepath);
+
+            // can be replaced by an autodetect or "forced mode" in the future
+
+            // Then, guess the type of the data in the file, if no specified yet
+            if(type==FileType::FTUNSET){
+            // The format and the DFasma's type have to correspond
+                if(container==FileType::FCANYSOUND)
+                    type = FileType::FTSOUND; // These two have to match
+
+                #ifdef SUPPORT_SDIF
+                if(container==FileType::FCSDIF) {
+                    if(FileType::SDIF_hasFrame(filepath, "1FQ0"))
+                        type = FileType::FTFZERO;
+                    else if (FileType::SDIF_hasFrame(filepath, "1MRK"))
+                        type = FileType::FTLABELS;
+                    else
+                        throw QString("Unsupported SDIF data.");
+                }
+                #endif
+                if(container==FileType::FCASCII) {
+                    // Distinguish between f0, labels and future VUF files (and futur others ...)
+                    // Do a grammar check (But this won't help to diff F0 and VUF files)
+                    ifstream fin(filepath.toLatin1().constData());
+                    if(!fin.is_open())
+                        throw QString("Cannot open this file (even for format detection)");
+                    double t;
+                    string line, text;
+                    // Check the first line only (Assuming it is enough)
+                    if(!std::getline(fin, line))
+                        throw QString("There is not a single line in this file");
+                    // Check: <number> <number>
+                    std::istringstream iss(line);
+                    if((iss >> t >> t) && iss.eof())
+                        type = FileType::FTFZERO;
+                    else // Assume this is a label
+                        type = FileType::FTLABELS;
+                }
+            }
+
+            if(type==FileType::FTUNSET)
+                throw QString("Cannot find any data or audio channel in this file that is handled by this distribution of DFasma.");
+
+            // Finally, load the data knowing the type and the container
+            if(type==FileType::FTSOUND){
+                int nchan = FTSound::getNumberOfChannels(filepath);
+                if(nchan==1){
+                    // If there is only one channel, just load it
+                    ui->listSndFiles->addItem(new FTSound(filepath, this));
+                }
+                else{
+                    // If more than one channel, ask what to do
+                    stopFileProgressDialog();
+                    WDialogSelectChannel dlg(filepath, nchan, this);
+                    if(dlg.exec()) {
+                        if(dlg.ui->rdbImportEachChannel->isChecked()){
+                            for(int ci=1; ci<=nchan; ci++){
+                                ui->listSndFiles->addItem(new FTSound(filepath, this, ci));
+                            }
+                        }
+                        else if(dlg.ui->rdbImportOnlyOneChannel->isChecked()){
+                            ui->listSndFiles->addItem(new FTSound(filepath, this, dlg.ui->sbChannelID->value()));
+                        }
+                        else if(dlg.ui->rdbMergeAllChannels->isChecked()){
+                            ui->listSndFiles->addItem(new FTSound(filepath, this, -2));// -2 is a code for merging the channels
+                        }
+                    }
+                }
+
+                if(ftsnds.size()>0){
+                    // The first sound determines the common sampling frequency for the audio output
+                    if(isfirsts)
+                        initializeSoundSystem(ftsnds[0]->fs);
+
+                    m_gvWaveform->fitViewToSoundsAmplitude();
+                }
+            }
+            else if(type == FileType::FTFZERO)
+                ui->listSndFiles->addItem(new FTFZero(filepath, this, container));
+            else if(type == FileType::FTLABELS)
+                ui->listSndFiles->addItem(new FTLabels(filepath, this, container));
+        }
+        catch (QString err)
+        {
+            stopFileProgressDialog();
+            QMessageBox::warning(this, "Failed to load file ...", "Data from the following file can't be loaded:\n"+filepath+"'\n\nReason:\n"+err);
+        }
+    }
+}
+
+
+// Views =======================================================================
+
+void WMainWindow::updateViewsAfterAddFile(bool isfirsts) {
+    if(ui->listSndFiles->count()==0)
+        setInWaitingForFileState();
+    else {
+        ui->actionSelectedFilesClose->setEnabled(true);
+        ui->actionSelectedFilesReload->setEnabled(true);
+        ui->actionSelectedFilesToggleShown->setEnabled(true);
+        ui->splitterViews->show();
+        updateWindowTitle();
+        m_gvWaveform->updateSceneRect();
+        m_gvSpectrogram->updateSceneRect();
+        m_gvAmplitudeSpectrum->updateAmplitudeExtent();
+        m_gvPhaseSpectrum->updateSceneRect();
+        if(isfirsts){
+            m_gvWaveform->viewSet(m_gvWaveform->m_scene->sceneRect(), false);
+            m_gvSpectrogram->viewSet(m_gvSpectrogram->m_scene->sceneRect(), false);
+            m_gvAmplitudeSpectrum->viewSet(m_gvAmplitudeSpectrum->m_scene->sceneRect(), false);
+            m_gvPhaseSpectrum->viewSet(m_gvPhaseSpectrum->m_scene->sceneRect(), false);
+        }
+        allSoundsChanged();
+    }
 }
 
 void WMainWindow::viewsDisplayedChanged() {
@@ -294,18 +559,6 @@ void WMainWindow::viewsDisplayedChanged() {
         m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     gMW->m_gvAmplitudeSpectrum->selectionSetTextInForm();
-}
-
-void WMainWindow::newFile(){
-    QMessageBox::StandardButton btn = QMessageBox::question(this, "Create a new file ...", "Do you want to create a new label file?", QMessageBox::Yes | QMessageBox::No);
-    if(btn==QMessageBox::Yes){
-        ui->listSndFiles->addItem(new FTLabels(this));
-    }
-}
-
-void WMainWindow::execAbout(){
-    AboutBox box(this);
-    box.exec();
 }
 
 double WMainWindow::getFs(){
@@ -510,180 +763,6 @@ void WMainWindow::setLabelsEditable(bool editable){
     }
 }
 
-WMainWindow::~WMainWindow() {
-    delete ui;
-}
-
-
-// File management =======================================================
-
-void WMainWindow::openFile() {
-
-    bool isfirsts = ftsnds.size()==0;
-
-//      const QString &caption = QString(),
-//      const QString &dir = QString(),
-//      const QString &filter = QString(),
-//      QString *selectedFilter = 0,
-//      Options options = 0);
-
-    QString filter = "All files (*.*)";
-    filter += ";;Sound (*.wav *.aiff *.pcm *.snd *.flac *.ogg)";
-    filter += ";;Label (*.bpf *.lab *.sdif)";
-    filter += ";;F0 (*.bpf *.sdif)";
-    QStringList l = QFileDialog::getOpenFileNames(this, "Open File(s) ...", QString(), filter, 0, QFileDialog::ReadOnly | QFileDialog::DontUseNativeDialog);
-
-    if(l.size()>0){
-        QProgressDialog prgdlg("Opening files...", "Abort", 0, l.size(), this);
-        prgdlg.setMinimumDuration(1000);
-        m_prgdlg = &prgdlg;
-        for(int f=0; f<l.size() && !prgdlg.wasCanceled(); f++){
-            prgdlg.setValue(f);
-            QCoreApplication::processEvents(); // To show the progress
-            addFile(l.at(f));
-        }
-        prgdlg.setValue(prgdlg.maximum());// Stop the loading bar
-        m_prgdlg = NULL;
-        updateViewsAfterAddFile(isfirsts);
-    }
-}
-
-void WMainWindow::addFile(const QString& filepath, FileType::FType type) {
-//    cout << "INFO: Add file: " << filepath.toLocal8Bit().constData() << endl;
-
-    if(QFileInfo(filepath).isDir()){
-        QDir fpd(filepath);
-        fpd.setFilter(QDir::Files | QDir::AllEntries | QDir::NoDotAndDotDot);
-        for(int fpdi=0; fpdi<int(fpd.count()); ++fpdi)
-            addFile(fpd.filePath(fpd[fpdi]));
-    }
-    else{
-        try{
-            bool isfirsts = ftsnds.size()==0;
-
-            // Attention: There is the type of data stored in DFasma (FILETYPE) (ex. FileType::FTSOUND)
-            //  and the format of the file (ex. FFSOUND)
-
-            // This should be always "guessable"
-            FileType::FileContainer container = FileType::guessContainer(filepath);
-
-            // can be replaced by an autodetect or "forced mode" in the future
-
-            // Then, guess the type of the data in the file, if no specified yet
-            if(type==FileType::FTUNSET){
-            // The format and the DFasma's type have to correspond
-                if(container==FileType::FCANYSOUND)
-                    type = FileType::FTSOUND; // These two have to match
-
-                #ifdef SUPPORT_SDIF
-                if(container==FileType::FCSDIF) {
-                    if(FileType::SDIF_hasFrame(filepath, "1FQ0"))
-                        type = FileType::FTFZERO;
-                    else if (FileType::SDIF_hasFrame(filepath, "1MRK"))
-                        type = FileType::FTLABELS;
-                    else
-                        throw QString("Unsupported SDIF data.");
-                }
-                #endif
-                if(container==FileType::FCASCII) {
-                    // Distinguish between f0, labels and future VUF files (and futur others ...)
-                    // Do a grammar check (But this won't help to diff F0 and VUF files)
-                    ifstream fin(filepath.toLatin1().constData());
-                    if(!fin.is_open())
-                        throw QString("Cannot open this file (even for format detection)");
-                    double t;
-                    string line, text;
-                    // Check the first line only (Assuming it is enough)
-                    if(!std::getline(fin, line))
-                        throw QString("There is not a single line in this file");
-                    // Check: <number> <number>
-                    std::istringstream iss(line);
-                    if((iss >> t >> t) && iss.eof())
-                        type = FileType::FTFZERO;
-                    else // Assume this is a label
-                        type = FileType::FTLABELS;
-                }
-            }
-
-            if(type==FileType::FTUNSET)
-                throw QString("Cannot find any data or audio channel in this file that is handled by this distribution of DFasma.");
-
-            // Finally, load the data knowing the type and the container
-            if(type==FileType::FTSOUND){
-                int nchan = FTSound::getNumberOfChannels(filepath);
-                if(nchan==1){
-                    // If there is only one channel, just load it
-                    ui->listSndFiles->addItem(new FTSound(filepath, this));
-                }
-                else{
-                    // If more than one channel, ask what to do
-                    if(m_prgdlg) m_prgdlg->setValue(m_prgdlg->maximum());// Stop the loading bar
-                    WDialogSelectChannel dlg(filepath, nchan, this);
-                    if(dlg.exec()) {
-                        if(dlg.ui->rdbImportEachChannel->isChecked()){
-                            for(int ci=1; ci<=nchan; ci++){
-                                ui->listSndFiles->addItem(new FTSound(filepath, this, ci));
-                            }
-                        }
-                        else if(dlg.ui->rdbImportOnlyOneChannel->isChecked()){
-                            ui->listSndFiles->addItem(new FTSound(filepath, this, dlg.ui->sbChannelID->value()));
-                        }
-                        else if(dlg.ui->rdbMergeAllChannels->isChecked()){
-                            ui->listSndFiles->addItem(new FTSound(filepath, this, -2));// -2 is a code for merging the channels
-                        }
-                    }
-                }
-
-                if(ftsnds.size()>0){
-                    // The first sound determines the common sampling frequency for the audio output
-                    if(isfirsts)
-                        initializeSoundSystem(ftsnds[0]->fs);
-
-                    m_gvWaveform->fitViewToSoundsAmplitude();
-                }
-            }
-            else if(type == FileType::FTFZERO)
-                ui->listSndFiles->addItem(new FTFZero(filepath, this, container));
-            else if(type == FileType::FTLABELS)
-                ui->listSndFiles->addItem(new FTLabels(filepath, this, container));
-        }
-        catch (QString err)
-        {
-            if(m_prgdlg) m_prgdlg->setValue(m_prgdlg->maximum());// Stop the loading bar
-            QMessageBox::warning(this, "Failed to load file ...", "Data from the following file can't be loaded:\n"+filepath+"'\n\nReason:\n"+err);
-        }
-    }
-}
-
-void WMainWindow::updateViewsAfterAddFile(bool isfirsts) {
-    if(ui->listSndFiles->count()==0)
-        setInWaitingForFileState();
-    else {
-        ui->actionSelectedFilesClose->setEnabled(true);
-        ui->actionSelectedFilesReload->setEnabled(true);
-        ui->actionSelectedFilesToggleShown->setEnabled(true);
-        ui->splitterViews->show();
-        updateWindowTitle();
-        m_gvWaveform->updateSceneRect();
-        m_gvSpectrogram->updateSceneRect();
-        m_gvAmplitudeSpectrum->updateAmplitudeExtent();
-        m_gvPhaseSpectrum->updateSceneRect();
-        if(isfirsts){
-            m_gvWaveform->viewSet(m_gvWaveform->m_scene->sceneRect(), false);
-            m_gvSpectrogram->viewSet(m_gvSpectrogram->m_scene->sceneRect(), false);
-            m_gvAmplitudeSpectrum->viewSet(m_gvAmplitudeSpectrum->m_scene->sceneRect(), false);
-            m_gvPhaseSpectrum->viewSet(m_gvPhaseSpectrum->m_scene->sceneRect(), false);
-        }
-        allSoundsChanged();
-    }
-}
-
-void WMainWindow::updateWindowTitle() {
-    int count = ui->listSndFiles->count();
-    if(count>0) setWindowTitle("DFasma ("+QString::number(count)+")");
-    else        setWindowTitle("DFasma");
-}
-
 // Check if a file has been modified on the disc
 // TODO Check if this is a distant file and avoid checking if it is ?
 void WMainWindow::checkFileModifications(){
@@ -712,44 +791,6 @@ void WMainWindow::duplicateCurrentFile(){
             updateWindowTitle();
         }
     }
-}
-
-void WMainWindow::dropEvent(QDropEvent *event){
-//    COUTD << "Contents: " << event->mimeData()->text().toLatin1().data() << endl;
-
-    bool isfirsts = ftsnds.size()==0;
-
-    QList<QUrl>	lurl = event->mimeData()->urls();
-//    ofstream log("/home/degottex/dfasma.log");
-//    COUTD << "Contents: " << lurl.size() << " elements" << endl;
-
-    QProgressDialog prgdlg("Opening files...", "Abort", 0, lurl.size(), this);
-    prgdlg.setAutoClose(true);
-    prgdlg.setMinimumDuration(1000);
-    m_prgdlg = &prgdlg;
-    for(int lurli=0; lurli<lurl.size() && !prgdlg.wasCanceled(); lurli++){
-        prgdlg.setValue(lurli);
-        QCoreApplication::processEvents(); // To show the progress
-        // Here the remote file paths are not in an apropriate format for opening.
-//        log << lurl[lurli].toDisplayString().toLatin1().constData() << std::endl;
-//        COUTD << lurl[lurli].toDisplayString().toLatin1().constData() << endl;
-//        COUTD << lurl[lurli].isLocalFile() << endl;
-//        if(!lurl[lurli].isLocalFile()){
-//            prgdlg.setValue(prgdlg.maximum());// Stop the loading bar
-//            QCoreApplication::processEvents(); // To show the progress
-//            QMessageBox::warning(this, "Failed to load file ...", "Data from the following file can't be loaded:\n"+lurl[lurli].toDisplayString()+"'\n\nReason:\n"+"It is a remote file.");
-//        }
-//        else
-//        COUTD << lurl[lurli].url(QUrl::None).toLatin1().constData() << endl;
-        addFile(lurl[lurli].url());
-    }
-//    log.close();
-    prgdlg.setValue(prgdlg.maximum());// Stop the loading bar
-    m_prgdlg = NULL;
-    updateViewsAfterAddFile(isfirsts);
-}
-void WMainWindow::dragEnterEvent(QDragEnterEvent *event){
-    event->acceptProposedAction();
 }
 
 FTSound* WMainWindow::getCurrentFTSound(bool forceselect) {

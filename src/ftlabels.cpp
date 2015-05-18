@@ -161,6 +161,7 @@ FTLabels::FTLabels(const QString& _fileName, QObject* parent, FileType::FileCont
     : FileType(FTLABELS, _fileName, this)
 {
     Q_UNUSED(parent);
+//    COUTD << "FTLabels::FTLabels " << _fileName.toLatin1().constData() << endl;
 
     if(fileFullPath.isEmpty())
         throw QString("This ctor is for existing files. Use the empty ctor for empty label object.");
@@ -203,6 +204,8 @@ FileType* FTLabels::duplicate(){
 }
 
 void FTLabels::load() {
+//    COUTD << "FTLabels::load " << m_fileformat << endl;
+
     clear(); // First, ensure there is no leftover
 
     if(m_fileformat==FFNotSpecified)

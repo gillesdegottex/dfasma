@@ -21,6 +21,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #ifndef FILETYPE_H
 #define FILETYPE_H
 
+#include <deque>
 #include <QString>
 #include <QColor>
 #include <QAction>
@@ -35,10 +36,12 @@ protected:
     QDateTime m_modifiedtime;
     QDateTime m_lastreadtime;
 
+    void init();
     virtual void setDrawIcon(QPixmap& pm);
 
 public:
     enum FType {FTUNSET=0, FTSOUND, FTFZERO, FTLABELS}; // Names corresponding to possible classes
+    static std::deque<QString> m_typestrings;
     enum FileContainer {FCUNSET=0, FCANYSOUND, FCASCII, FCSDIF}; // File Containers (not format !)
 
     FileType(FType _type, const QString& _fileName, QObject *parent);
