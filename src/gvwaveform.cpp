@@ -56,8 +56,8 @@ using namespace std;
 
 QGVWaveform::QGVWaveform(WMainWindow* parent)
     : QGraphicsView(parent)
-    , m_force_redraw(false)
     , m_ftlabel_current_index(-1)
+    , m_scrolledx(0)
     , m_ampzoom(1.0)
 {
     m_scene = new QGraphicsScene(this);
@@ -436,38 +436,7 @@ void QGVWaveform::scrollContentsBy(int dx, int dy){
 
     setMouseCursorPosition(-1, false);
 
-    if(m_currentAction!=CAZooming && gMW->m_gvSpectrogram->m_currentAction!=QGVSpectrogram::CAZooming) {
-//    if(m_currentAction==CAMoving) {
-//        FLAG
-
-        // Shift the waveforms accordingly
-        for(size_t fi=0; fi<gMW->ftsnds.size(); fi++){
-            if(!gMW->ftsnds[fi]->m_actionShow->isChecked())
-                continue;
-
-            if(gMW->ftsnds[fi]->m_wavpx_min.size()>0){
-                int ddx = dx;
-                if(ddx>0){
-                    while(ddx>0){
-                        gMW->ftsnds[fi]->m_wavpx_min.pop_back();
-                        gMW->ftsnds[fi]->m_wavpx_max.pop_back();
-                        gMW->ftsnds[fi]->m_wavpx_min.push_front(0.0);
-                        gMW->ftsnds[fi]->m_wavpx_max.push_front(0.0);
-                        ddx--;
-                    }
-                }
-                else if(ddx<0){
-                    while(ddx<0){
-                        gMW->ftsnds[fi]->m_wavpx_min.pop_front();
-                        gMW->ftsnds[fi]->m_wavpx_max.pop_front();
-                        gMW->ftsnds[fi]->m_wavpx_min.push_back(0.0);
-                        gMW->ftsnds[fi]->m_wavpx_max.push_back(0.0);
-                        ddx++;
-                    }
-                }
-            }
-        }
-    }
+    m_scrolledx += dx;
 
     QGraphicsView::scrollContentsBy(dx, dy);
 }
@@ -1209,6 +1178,49 @@ void QGVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
 //    std::cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGraphicsView::drawBackground [" << rect.left() << "," << rect.right() << "]x[" << rect.top() << "," << rect.bottom() << "] avg=" << time_tracker.getAveragedElapsed() << "(" << time_tracker.past_elapsed.size() << ") last=" << time_tracker.past_elapsed.back() << endl;
 }
 
+void QGVWaveform::draw_allwaveforms(QPainter* painter, const QRectF& rect){
+//    COUTD << "QGVWaveform::draw_allwaveforms " << rect << endl;
+//    std::cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVWaveform::draw_waveform [" << rect.width() << "]" << endl;
+
+    // First shift the visible waveforms according to the previous scrolling
+    // (This cannot be done in scrollContentsBy because this &^$%#@ function is called when resizing the
+    //  spectrogram, because they are synchronized horizontally (Using: connect(m_gvWaveform->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrogram->horizontalScrollBar(), SLOT(setValue(int))); onnect(m_gvSpectrogram->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvWaveform->horizontalScrollBar(), SLOT(setValue(int)));)).
+    for(size_t fi=0; fi<gMW->ftsnds.size(); fi++){
+        if(!gMW->ftsnds[fi]->m_actionShow->isChecked())
+            continue;
+
+        if(gMW->ftsnds[fi]->m_wavpx_min.size()>0){
+            int ddx = m_scrolledx;
+            if(ddx>0){
+                while(ddx>0){
+                    gMW->ftsnds[fi]->m_wavpx_min.pop_back();
+                    gMW->ftsnds[fi]->m_wavpx_max.pop_back();
+                    gMW->ftsnds[fi]->m_wavpx_min.push_front(0.0);
+                    gMW->ftsnds[fi]->m_wavpx_max.push_front(0.0);
+                    ddx--;
+                }
+            }
+            else if(ddx<0){
+                while(ddx<0){
+                    gMW->ftsnds[fi]->m_wavpx_min.pop_front();
+                    gMW->ftsnds[fi]->m_wavpx_max.pop_front();
+                    gMW->ftsnds[fi]->m_wavpx_min.push_back(0.0);
+                    gMW->ftsnds[fi]->m_wavpx_max.push_back(0.0);
+                    ddx++;
+                }
+            }
+        }
+    }
+    m_scrolledx = 0;
+
+    FTSound* currsnd = gMW->getCurrentFTSound(true);
+    for(size_t fi=0; fi<gMW->ftsnds.size(); fi++)
+        if(!m_aWaveformShowSelectedWaveformOnTop->isChecked() || gMW->ftsnds[fi]!=currsnd)
+            draw_waveform(painter, rect, gMW->ftsnds[fi]);
+    if(currsnd && m_aWaveformShowSelectedWaveformOnTop->isChecked())
+        draw_waveform(painter, rect, currsnd);
+}
+
 void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* snd){
     if(!snd->m_actionShow->isChecked())
         return;
@@ -1305,8 +1317,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
         int snddelay = snd->m_delay;
 
         FTSound::WavParameters reqparams(fullpixrect, viewrect, winpixdelay, snd->wavtoplay, snddelay, gain);
-//        COUTD << m_force_redraw << endl;
-        if(false && snd->wavtoplay==&(snd->wav) && reqparams==snd->m_wavparams){
+        if(snd->wavtoplay==&(snd->wav) && reqparams==snd->m_wavparams){
 //            COUTD << "Using existing buffer " << pixrect << endl;
             for(int i=pixrect.left(); i<=pixrect.right(); i++){
 //            for(int i=0; i<=snd->m_wavpx_min.size(); i++)
@@ -1364,20 +1375,6 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
 
         painter->setWorldMatrixEnabled(true); // Go back to scene coordinates
     }
-}
-
-void QGVWaveform::draw_allwaveforms(QPainter* painter, const QRectF& rect){
-//    COUTD << "QGVWaveform::draw_allwaveforms " << rect << endl;
-//    std::cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVWaveform::draw_waveform [" << rect.width() << "]" << endl;
-
-    FTSound* currsnd = gMW->getCurrentFTSound(true);
-    for(size_t fi=0; fi<gMW->ftsnds.size(); fi++)
-        if(!m_aWaveformShowSelectedWaveformOnTop->isChecked() || gMW->ftsnds[fi]!=currsnd)
-            draw_waveform(painter, rect, gMW->ftsnds[fi]);
-    if(currsnd && m_aWaveformShowSelectedWaveformOnTop->isChecked())
-        draw_waveform(painter, rect, currsnd);
-
-//    m_force_redraw = false;
 }
 
 void QGVWaveform::draw_grid(QPainter* painter, const QRectF& rect){

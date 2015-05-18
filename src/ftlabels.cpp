@@ -524,7 +524,9 @@ void FTLabels::save() {
                 throw QString("SDIF: Cannot save the data in the specified file (permission denied?)");
 
             size_t generalHeaderw = SdifFWriteGeneralHeader(filew);
+            Q_UNUSED(generalHeaderw)
             size_t asciiChunksw = SdifFWriteAllASCIIChunks(filew);
+            Q_UNUSED(asciiChunksw)
 
             for(size_t li=0; li<starts.size(); li++) {
                 // cout << labels[li].toLatin1().constData() << ": " << starts[li] << ":" << ends[li] << endl;

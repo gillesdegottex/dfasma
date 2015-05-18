@@ -37,14 +37,14 @@ class QGVWaveform : public QGraphicsView
     Q_OBJECT
 
     qreal m_tmpdelay;
+    FTSound::DFTParameters m_windowParams;
+
     int m_ftlabel_current_index;
 
     QGraphicsLineItem* m_giMouseCursorLine;
     QGraphicsSimpleTextItem* m_giMouseCursorTxt;
 
-    FTSound::DFTParameters m_windowParams;
-
-    bool m_force_redraw;
+    int m_scrolledx;
 
 public:
 
