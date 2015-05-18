@@ -90,6 +90,8 @@ public:
         QRect fullpixrect;
         QRectF viewrect;
         int winpixdelay;
+
+        std::vector<WAVTYPE>* wav; // The used wav to compute the DFT on.
         qint64 delay;
         WAVTYPE gain; // snd->m_ampscale*polarity
 
@@ -97,15 +99,17 @@ public:
             fullpixrect = QRect();
             viewrect = QRectF();
             winpixdelay = 0;
+            wav = NULL;
             delay = 0;
             gain = 1.0;
         }
 
         WavParameters(){clear();}
-        WavParameters(const QRect& _fullpixrect, const QRectF& _viewrect, int _winpixdelay, qint64 _delay, WAVTYPE _gain){
+        WavParameters(const QRect& _fullpixrect, const QRectF& _viewrect, int _winpixdelay, std::vector<WAVTYPE>* _wav, qint64 _delay, WAVTYPE _gain){
             fullpixrect = _fullpixrect;
             viewrect = _viewrect;
             winpixdelay = _winpixdelay;
+            wav = _wav;
             delay = _delay;
             gain = _gain;
         }
@@ -129,6 +133,9 @@ public:
         int wintype;
         std::vector<FFTTYPE> win; // Could avoid this by using classes of windows parameters
         int dftlen;
+
+        // Sound specific parameters
+        std::vector<WAVTYPE>* wav; // The used wav to compute the DFT on.
         WAVTYPE ampscale; // [linear]
         qint64 delay;   // [sample index]
 
@@ -139,6 +146,7 @@ public:
             wintype = -1;
             win.clear();
             dftlen = 0;
+            wav = NULL;
             ampscale = 1.0;
             delay = 0;
         }
@@ -146,7 +154,7 @@ public:
         DFTParameters(){
             clear();
         }
-        DFTParameters(unsigned int _nl, unsigned int _nr, int _winlen, int _wintype, const std::vector<FFTTYPE>& _win=std::vector<FFTTYPE>(), int _dftlen=0, qreal _ampscale=1.0, qint64 _delay=0);
+        DFTParameters(unsigned int _nl, unsigned int _nr, int _winlen, int _wintype, const std::vector<FFTTYPE>& _win=std::vector<FFTTYPE>(), int _dftlen=0, std::vector<FFTTYPE>* _wav=NULL, qreal _ampscale=1.0, qint64 _delay=0);
 
         DFTParameters& operator=(const DFTParameters &params);
 

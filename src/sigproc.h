@@ -529,6 +529,7 @@ public:
     void execute(bool useinternalcopy=true);
 
     static QString getLibraryInfo();
+    static void setTimeLimitForPlanPreparation(float t); // t[s]
 
     ~FFTwrapper();
 };

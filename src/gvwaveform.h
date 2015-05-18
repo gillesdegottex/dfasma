@@ -44,6 +44,8 @@ class QGVWaveform : public QGraphicsView
 
     FTSound::DFTParameters m_windowParams;
 
+    bool m_force_redraw;
+
 public:
 
     QToolBar* m_toolBar;

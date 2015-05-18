@@ -329,7 +329,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QDoubleSpinBox" name="sbAmplitudeSpectrumFFTW3ResizingMaxTimeSpent">
+         <widget class="QDoubleSpinBox" name="sbAmplitudeSpectrumFFTW3MaxTimeForPlanPreparation">
           <property name="enabled">
            <bool>false</bool>
           </property>

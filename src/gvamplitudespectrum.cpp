@@ -92,6 +92,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     connect(m_aAmplitudeSpectrumShowWindow, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
 
     m_fft = new sigproc::FFTwrapper();
+    sigproc::FFTwrapper::setTimeLimitForPlanPreparation(m_dlgSettings->ui->sbAmplitudeSpectrumFFTW3MaxTimeForPlanPreparation->value());
     m_fftresizethread = new FFTResizeThread(m_fft, this);
 
     // Cursor
@@ -259,7 +260,7 @@ void QGVAmplitudeSpectrum::fftResizing(int prevSize, int newSize){
 }
 
 void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
-//    COUTD << "QGVAmplitudeSpectrum::setWindowRange " << m_windowDurationClipped << endl;
+//    COUTD << "QGVAmplitudeSpectrum::setWindowRange " << tstart << "," << tend << endl;
 
     if(tstart==tend)
         return;
@@ -343,7 +344,7 @@ void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
 }
 
 void QGVAmplitudeSpectrum::updateDFTs(){
-//    COUTD << "QGVAmplitudeSpectrum::computeDFTs " << m_trgDFTParameters.winlen << endl;
+//    COUTD << "QGVAmplitudeSpectrum::computeDFTs " << endl;
     if(m_trgDFTParameters.win.size()<2) // Avoid the DFT of one sample ...
         return;
 
@@ -365,6 +366,7 @@ void QGVAmplitudeSpectrum::updateDFTs(){
 
             if(!snd->m_dftparams.isEmpty()
                && snd->m_dftparams==m_trgDFTParameters
+               && snd->m_dftparams.wav==snd->wavtoplay
                && snd->m_dftparams.ampscale==snd->m_ampscale
                && snd->m_dftparams.delay==snd->m_delay)
                 continue;
@@ -408,6 +410,7 @@ void QGVAmplitudeSpectrum::updateDFTs(){
                 snd->m_dft_max = std::max(snd->m_dft_max, y);
             }
             snd->m_dftparams = m_trgDFTParameters;
+            snd->m_dftparams.wav = snd->wavtoplay;
             snd->m_dftparams.ampscale = snd->m_ampscale;
             snd->m_dftparams.delay = snd->m_delay;
         }

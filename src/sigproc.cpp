@@ -69,13 +69,23 @@ FFTwrapper::FFTwrapper(bool forward)
         m_fftw3_in = NULL;
         m_fftw3_plan = NULL;
         #ifdef FFTW3RESIZINGMAXTIMESPENT
-            fftwg_set_timelimit(1.0); // From FFTW 3.1, though no means exist to check version at compile time ...
+            fftwg_set_timelimit(1.0); // From FFTW 3.1, no means exist to check version at compile time ...
         #endif
     #elif FFT_FFTREAL
         m_fftreal_out = NULL;
         m_fftreal_fft = NULL;
     #endif
 }
+void FFTwrapper::setTimeLimitForPlanPreparation(float t){
+    #ifdef FFT_FFTW3
+        #ifdef FFTW3RESIZINGMAXTIMESPENT
+            fftwg_set_timelimit(t); // From FFTW 3.1, no means exist to check version at compile time ...
+        #else
+            // Do nothing
+        #endif
+    #endif
+}
+
 FFTwrapper::FFTwrapper(int n)
 {
 	resize(n);

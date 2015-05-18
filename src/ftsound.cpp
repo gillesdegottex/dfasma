@@ -61,6 +61,8 @@ bool FTSound::WavParameters::operator==(const WavParameters& param) const {
         return false;
     if(gain!=param.gain)
         return false;
+    if(wav!=param.wav)
+        return false;
     if(fullpixrect!=param.fullpixrect)
         return false;
     if(viewrect!=param.viewrect)
@@ -69,7 +71,7 @@ bool FTSound::WavParameters::operator==(const WavParameters& param) const {
     return true;
 }
 
-FTSound::DFTParameters::DFTParameters(unsigned int _nl, unsigned int _nr, int _winlen, int _wintype, const std::vector<FFTTYPE>& _win, int _dftlen, qreal _ampscale, qint64 _delay){
+FTSound::DFTParameters::DFTParameters(unsigned int _nl, unsigned int _nr, int _winlen, int _wintype, const std::vector<FFTTYPE>& _win, int _dftlen, std::vector<FFTTYPE>*_wav, qreal _ampscale, qint64 _delay){
     clear();
 
     nl = _nl;
@@ -78,6 +80,8 @@ FTSound::DFTParameters::DFTParameters(unsigned int _nl, unsigned int _nr, int _w
     wintype = _wintype;
     win = _win;
     dftlen = _dftlen;
+
+    wav = _wav;
     ampscale = _ampscale;
     delay = _delay;
 }
@@ -92,6 +96,8 @@ FTSound::DFTParameters& FTSound::DFTParameters::operator=(const DFTParameters &p
     winlen = params.winlen;
     wintype = params.wintype;
     dftlen = params.dftlen;
+
+    wav = params.wav;
     ampscale = params.ampscale;
     delay = params.delay;
 
@@ -100,6 +106,8 @@ FTSound::DFTParameters& FTSound::DFTParameters::operator=(const DFTParameters &p
 
 
 bool FTSound::DFTParameters::operator==(const DFTParameters& param) const {
+    if(wav!=param.wav)
+        return false;
     if(nl!=param.nl)
         return false;
     if(nr!=param.nr)

@@ -56,6 +56,7 @@ using namespace std;
 
 QGVWaveform::QGVWaveform(WMainWindow* parent)
     : QGraphicsView(parent)
+    , m_force_redraw(false)
     , m_ftlabel_current_index(-1)
     , m_ampzoom(1.0)
 {
@@ -393,7 +394,9 @@ void QGVWaveform::setMouseCursorPosition(double position, bool forwardsync) {
 
 void QGVWaveform::resizeEvent(QResizeEvent* event){
 
-    // cout << "QGVWaveform::resizeEvent oldSize: " << event->oldSize().isEmpty() << endl;
+//    COUTD << "QGVWaveform::resizeEvent oldSize: " << event->oldSize().isEmpty() << endl;
+
+//    m_force_redraw = true;
 
     if(event->oldSize().isEmpty() && !event->size().isEmpty()) {
         // The view didn't exist (or was hidden?) and it becomes visible.
@@ -415,6 +418,7 @@ void QGVWaveform::resizeEvent(QResizeEvent* event){
     }
     else if(!event->oldSize().isEmpty() && !event->size().isEmpty())
     {
+//        m_force_redraw = event->oldSize().width()!=event->size().width();
         viewSet(mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect(), false);
     }
 
@@ -426,13 +430,15 @@ void QGVWaveform::scrollContentsBy(int dx, int dy){
 
     // Ensure the y ticks labels will be redrawn
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-    // TODO SPEEDUP This one is really a problem because, when scrolling right, it invalidate basically all
+    // TODO SPEEDUP This one is really a problem because, when scrolling right, it invalidates basically all
     //      the view (the invalidated rect on the right merge with the invalidated rect below).
     m_scene->invalidate(QRectF(viewrect.left(), -1.05, 5*14/transform().m11(), 2.10));
 
     setMouseCursorPosition(-1, false);
 
     if(m_currentAction!=CAZooming && gMW->m_gvSpectrogram->m_currentAction!=QGVSpectrogram::CAZooming) {
+//    if(m_currentAction==CAMoving) {
+//        FLAG
 
         // Shift the waveforms accordingly
         for(size_t fi=0; fi<gMW->ftsnds.size(); fi++){
@@ -1010,6 +1016,8 @@ void QGVWaveform::fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseS
 }
 
 void QGVWaveform::selectionSet(QRectF selection, bool forwardsync){
+//    COUTD << "QGVWaveform::selectionSet" << endl;
+
     double fs = gMW->getFs();
 
     // Order the selection to avoid negative width
@@ -1296,8 +1304,9 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
 
         int snddelay = snd->m_delay;
 
-        FTSound::WavParameters reqparams(fullpixrect, viewrect, winpixdelay, snddelay, gain); // Can prepare most of it, common to all sound files
-        if(reqparams==snd->m_wavparams){
+        FTSound::WavParameters reqparams(fullpixrect, viewrect, winpixdelay, snd->wavtoplay, snddelay, gain);
+//        COUTD << m_force_redraw << endl;
+        if(false && snd->wavtoplay==&(snd->wav) && reqparams==snd->m_wavparams){
 //            COUTD << "Using existing buffer " << pixrect << endl;
             for(int i=pixrect.left(); i<=pixrect.right(); i++){
 //            for(int i=0; i<=snd->m_wavpx_min.size(); i++)
@@ -1358,7 +1367,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
 }
 
 void QGVWaveform::draw_allwaveforms(QPainter* painter, const QRectF& rect){
-
+//    COUTD << "QGVWaveform::draw_allwaveforms " << rect << endl;
 //    std::cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVWaveform::draw_waveform [" << rect.width() << "]" << endl;
 
     FTSound* currsnd = gMW->getCurrentFTSound(true);
@@ -1367,6 +1376,8 @@ void QGVWaveform::draw_allwaveforms(QPainter* painter, const QRectF& rect){
             draw_waveform(painter, rect, gMW->ftsnds[fi]);
     if(currsnd && m_aWaveformShowSelectedWaveformOnTop->isChecked())
         draw_waveform(painter, rect, currsnd);
+
+//    m_force_redraw = false;
 }
 
 void QGVWaveform::draw_grid(QPainter* painter, const QRectF& rect){

@@ -880,6 +880,8 @@ void WMainWindow::allSoundsChanged(){
 //    COUTD << "WMainWindow::allSoundsChanged" << endl;
     m_gvWaveform->m_scene->update(); // Can be also very heavy if updating multiple files
     m_gvAmplitudeSpectrum->updateDFTs(); // Can be also very heavy if updating multiple files
+    m_gvAmplitudeSpectrum->m_scene->update();
+    m_gvPhaseSpectrum->m_scene->update();
     // m_gvSpectrogram->soundsChanged(); // Too heavy to be here, call updateSTFTPlot(force) instead
 //    COUTD << "WMainWindow::~allSoundsChanged" << endl;
 }
@@ -894,6 +896,8 @@ void WMainWindow::selectedFilesToggleShown() {
     m_gvWaveform->m_scene->update();
     m_gvSpectrogram->m_scene->update();
     m_gvAmplitudeSpectrum->updateDFTs();
+    m_gvAmplitudeSpectrum->m_scene->update();
+    m_gvPhaseSpectrum->m_scene->update();
 }
 
 void WMainWindow::selectedFilesClose() {

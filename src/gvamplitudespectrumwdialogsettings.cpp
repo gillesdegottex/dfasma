@@ -19,7 +19,7 @@ GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(QGVAmplit
     ui->lblFFTW3ResizingMaxTimeSpent->hide();
     ui->sbFFTW3ResizingMaxTimeSpent->hide();
     #else
-    gMW->m_settings.add(ui->sbAmplitudeSpectrumFFTW3ResizingMaxTimeSpent);
+    gMW->m_settings.add(ui->sbAmplitudeSpectrumFFTW3MaxTimeForPlanPreparation);
     #endif
     gMW->m_settings.add(ui->cbAmplitudeSpectrumWindowSizeForcedOdd);
     gMW->m_settings.add(ui->cbAmplitudeSpectrumLimitWindowDuration);
@@ -42,6 +42,7 @@ GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(QGVAmplit
     connect(ui->cbAmplitudeSpectrumWindowType, SIGNAL(currentIndexChanged(QString)), this, SLOT(CBSpectrumWindowTypeCurrentIndexChanged(QString)));
 
     // Update the DFT view automatically
+    connect(ui->cbAmplitudeSpectrumLimitWindowDuration, SIGNAL(toggled(bool)), m_ampspec, SLOT(settingsModified()));
     connect(ui->sbAmplitudeSpectrumWindowDurationLimit, SIGNAL(valueChanged(double)), m_ampspec, SLOT(settingsModified()));
     connect(ui->sbAmplitudeSpectrumOversamplingFactor, SIGNAL(valueChanged(int)), m_ampspec, SLOT(settingsModified()));
     connect(ui->cbAmplitudeSpectrumWindowSizeForcedOdd, SIGNAL(toggled(bool)), m_ampspec, SLOT(settingsModified()));
