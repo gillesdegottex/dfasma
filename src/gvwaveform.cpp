@@ -479,7 +479,7 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
     // std::cout << "QGVWaveform::mousePressEvent" << endl;
 
     QPointF p = mapToScene(event->pos());
-    QRect selview = mapFromScene(m_selection).boundingRect();
+    QRect selview = mapFromScene(m_giSelection->boundingRect()).boundingRect();
 
     if(event->buttons()&Qt::LeftButton){
         if(event->modifiers().testFlag(Qt::ShiftModifier)) {
@@ -504,7 +504,7 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
                     m_selection_pressedx = p.x()-m_selection.right();
                     setCursor(Qt::SplitHCursor);
                 }
-                else if(m_selection.width()>0 && (event->modifiers().testFlag(Qt::ControlModifier) || (p.x()>=m_selection.left() && p.x()<=m_selection.right()))){
+                else if(m_selection.width()>0 && (event->modifiers().testFlag(Qt::ControlModifier) || (event->x()>=selview.left() && event->x()<=selview.right()))){
                     // cout << "Scrolling the selection" << endl;
                     m_currentAction = CAMovingSelection;
                     m_selection_pressedx = p.x();
@@ -704,7 +704,7 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
         }
     }
     else{
-        QRect selview = mapFromScene(m_selection).boundingRect();
+        QRect selview = mapFromScene(m_giSelection->boundingRect()).boundingRect();
 
         if(gMW->ui->actionSelectionMode->isChecked()){
             if(event->modifiers().testFlag(Qt::ShiftModifier)){
@@ -716,7 +716,7 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
                     setCursor(Qt::SplitHCursor);
                 else if(m_selection.width()>0 && abs(selview.right()-event->x())<5)
                     setCursor(Qt::SplitHCursor);
-                else if(p.x()>=m_selection.left() && p.x()<=m_selection.right())
+                else if(event->x()>=selview.left() && event->x()<=selview.right())
                     setCursor(Qt::OpenHandCursor);
                 else
                     setCursor(Qt::CrossCursor);

@@ -478,7 +478,7 @@ void QGVSpectrogram::mousePressEvent(QMouseEvent* event){
 //    std::cout << "QGVWaveform::mousePressEvent" << endl;
 
     QPointF p = mapToScene(event->pos());
-    QRect selview = mapFromScene(m_selection).boundingRect();
+    QRect selview = mapFromScene(m_giShownSelection->boundingRect()).boundingRect();
 
     if(event->buttons()&Qt::LeftButton){
         if(gMW->ui->actionSelectionMode->isChecked()){
@@ -507,7 +507,7 @@ void QGVSpectrogram::mousePressEvent(QMouseEvent* event){
                 m_currentAction = CAModifSelectionBottom;
                 m_selection_pressedp = QPointF(0, p.y()-m_selection.bottom());
             }
-            else if((m_selection.width()>0 && m_selection.height()>0) && (event->modifiers().testFlag(Qt::ControlModifier) || (p.x()>=m_selection.left() && p.x()<=m_selection.right() && p.y()>=m_selection.top() && p.y()<=m_selection.bottom()))){
+            else if((m_selection.width()>0 && m_selection.height()>0) && (event->modifiers().testFlag(Qt::ControlModifier) || (event->x()>=selview.left() && event->x()<=selview.right() && event->y()>=selview.top() && event->y()<=selview.bottom()))){
                 // When scroling the selection
                 m_currentAction = CAMovingSelection;
                 m_topismax = m_mouseSelection.top()<=0.0;
@@ -605,7 +605,7 @@ void QGVSpectrogram::mouseMoveEvent(QMouseEvent* event){
         selectionSet(m_mouseSelection, true);
     }
     else{
-        QRect selview = mapFromScene(m_selection).boundingRect();
+        QRect selview = mapFromScene(m_giShownSelection->boundingRect()).boundingRect();
 
         if(gMW->ui->actionSelectionMode->isChecked()){
             if(event->modifiers().testFlag(Qt::ShiftModifier)){
@@ -629,7 +629,7 @@ void QGVSpectrogram::mouseMoveEvent(QMouseEvent* event){
                         && abs(selview.bottom()-event->y())<5
                         && event->x()>=selview.left() && event->x()<=selview.right()) // If inside the time interv
                     setCursor(Qt::SplitVCursor);
-                else if(p.x()>=m_selection.left() && p.x()<=m_selection.right() && p.y()>=m_selection.top() && p.y()<=m_selection.bottom())
+                else if(event->x()>=selview.left() && event->x()<=selview.right() && event->y()>=selview.top() && event->y()<=selview.bottom())
                     setCursor(Qt::OpenHandCursor);
                 else
                     setCursor(Qt::CrossCursor);
