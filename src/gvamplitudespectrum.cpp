@@ -371,8 +371,6 @@ void QGVAmplitudeSpectrum::updateDFTs(){
                && snd->m_dftparams.delay==snd->m_delay)
                 continue;
 
-            didany = true;
-
             WAVTYPE gain = snd->m_ampscale;
 
             snd->m_dft_min = std::numeric_limits<WAVTYPE>::infinity();
@@ -413,10 +411,12 @@ void QGVAmplitudeSpectrum::updateDFTs(){
             snd->m_dftparams.wav = snd->wavtoplay;
             snd->m_dftparams.ampscale = snd->m_ampscale;
             snd->m_dftparams.delay = snd->m_delay;
+
+            didany = true;
         }
 
         // Compute the window's DFT
-        if (true) { // TODO #271 Avoid it if now shown
+        if (m_aAmplitudeSpectrumShowWindow->isChecked()) {
             int n = 0;
             for(; n<m_trgDFTParameters.winlen; n++)
                 m_fft->in[n] = m_trgDFTParameters.win[n];
@@ -428,6 +428,8 @@ void QGVAmplitudeSpectrum::updateDFTs(){
             m_windft.resize(dftlen/2+1);
             for(n=0; n<dftlen/2+1; n++)
                 m_windft[n] = std::complex<WAVTYPE>(std::log(std::abs(m_fft->out[n])),std::arg(m_fft->out[n]));
+
+            didany = true;
         }
 
         m_fftresizethread->m_mutex_resizing.unlock();
