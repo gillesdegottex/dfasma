@@ -996,12 +996,14 @@ void WMainWindow::selectedFilesReload() {
     QList<QListWidgetItem*> l = ui->listSndFiles->selectedItems();
 
     bool reloadSelectedSound = false;
+    bool didanysucceed = false;
 
     for(int i=0; i<l.size(); i++){
 
         FileType* ft = (FileType*)l.at(i);
 
-        ft->reload();
+        if(ft->reload())
+            didanysucceed = true;
 
         if(ft==m_lastSelectedSound)
             reloadSelectedSound = true;
@@ -1009,7 +1011,7 @@ void WMainWindow::selectedFilesReload() {
 
     fileInfoUpdate();
 
-    if(reloadSelectedSound){
+    if(didanysucceed && reloadSelectedSound){
         m_gvWaveform->m_scene->update();
         m_gvAmplitudeSpectrum->updateDFTs();
         m_gvSpectrogram->updateSTFTPlot(true); // Force the STFT computation

@@ -247,13 +247,13 @@ void FTSound::setDrawIcon(QPixmap& pm){
     setIcon(QIcon(pm));
 }
 
-void FTSound::reload() {
+bool FTSound::reload() {
 //    COUTD << "FTSound::reload" << endl;
 
     stopPlay();
 
     if(!checkFileStatus(CFSMMESSAGEBOX))
-        return;
+        return false;
 
     // Reset everything ...
     wavtoplay = &wav;
@@ -275,6 +275,7 @@ void FTSound::reload() {
     load_finalize();
 
 //    COUTD << "FTSound::~reload" << endl;
+    return true;
 }
 
 FileType* FTSound::duplicate(){

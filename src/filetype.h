@@ -80,7 +80,7 @@ public:
     virtual void setStatus();
 
     void setFullPath(const QString& fp){fileFullPath = fp;}
-    virtual void reload()=0;
+    virtual bool reload()=0;
 };
 
 #endif // FILETYPE_H

@@ -99,7 +99,7 @@ public:
     ~FTLabels();
 
 public slots:
-    void reload();
+    bool reload();
     void save();
     void saveAs();
     void clear();

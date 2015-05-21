@@ -60,7 +60,7 @@ public:
     ~FTFZero();
 
 public slots:
-    void reload();
+    bool reload();
     void setVisible(bool shown);
 };
 

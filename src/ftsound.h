@@ -222,7 +222,7 @@ public:
     ~FTSound();
 
 public slots:
-    void reload();
+    bool reload();
     void needDFTUpdate();
     void resetFiltering();
     void resetAmpScale();

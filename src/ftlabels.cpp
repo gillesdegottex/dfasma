@@ -416,14 +416,16 @@ void FTLabels::clear() {
     }
 }
 
-void FTLabels::reload() {
+bool FTLabels::reload() {
     // cout << "FTLabels::reload" << endl;
 
     if(!checkFileStatus(CFSMMESSAGEBOX))
-        return;
+        return false;
 
     // Reload the data from the file
     load();
+
+    return true;
 }
 
 void FTLabels::saveAs() {

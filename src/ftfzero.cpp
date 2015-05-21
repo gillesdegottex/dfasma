@@ -227,11 +227,11 @@ void FTFZero::load() {
     setStatus();
 }
 
-void FTFZero::reload() {
+bool FTFZero::reload() {
 //    cout << "FTFZero::reload" << endl;
 
     if(!checkFileStatus(CFSMMESSAGEBOX))
-        return;
+        return false;
 
     // Reset everything ...
     ts.clear();
@@ -239,6 +239,8 @@ void FTFZero::reload() {
 
     // ... and reload the data from the file
     load();
+
+    return true;
 }
 
 QString FTFZero::info() const {
