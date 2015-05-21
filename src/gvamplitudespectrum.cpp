@@ -89,7 +89,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_aAmplitudeSpectrumShowWindow->setCheckable(true);
     m_aAmplitudeSpectrumShowWindow->setIcon(QIcon(":/icons/window.svg"));
     gMW->m_settings.add(m_aAmplitudeSpectrumShowWindow);
-    connect(m_aAmplitudeSpectrumShowWindow, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
+    connect(m_aAmplitudeSpectrumShowWindow, SIGNAL(toggled(bool)), this, SLOT(updateDFTs()));
 
     m_fft = new sigproc::FFTwrapper();
     sigproc::FFTwrapper::setTimeLimitForPlanPreparation(m_dlgSettings->ui->sbAmplitudeSpectrumFFTW3MaxTimeForPlanPreparation->value());
