@@ -209,6 +209,8 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(lowerValueChanged(int)), this, SLOT(updateSTFTPlot()));
     connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(upperValueChanged(int)), this, SLOT(updateSTFTPlot()));
 
+    connect(m_dlgSettings->ui->cbSpectrogramF0ShowHarmonics, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
+
     updateSTFTSettings(); // Prepare a window from loaded settings
 }
 
