@@ -42,7 +42,7 @@ protected:
 public:
     enum FType {FTUNSET=0, FTSOUND, FTFZERO, FTLABELS}; // Names corresponding to possible classes
     static std::deque<QString> m_typestrings;
-    enum FileContainer {FCUNSET=0, FCANYSOUND, FCASCII, FCSDIF}; // File Containers (not format !)
+    enum FileContainer {FCUNSET=0, FCANYSOUND, FCTEXT, FCASCII, FCSDIF}; // File Containers (not format !)
 
     FileType(FType _type, const QString& _fileName, QObject *parent);
 
@@ -57,6 +57,7 @@ public:
 
     static bool hasFileExtension(const QString& filepath, const QString& ext);
     static bool isFileASCII(const QString& filename);
+    static bool isFileTEXT(const QString& filename);
     static FileContainer guessContainer(const QString& filepath);
     #ifdef SUPPORT_SDIF
     // mexAtExit cleanup function

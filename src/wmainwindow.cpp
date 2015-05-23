@@ -451,22 +451,25 @@ void WMainWindow::addFile(const QString& filepath, FileType::FType type) {
                         throw QString("Unsupported SDIF data.");
                 }
                 #endif
-                if(container==FileType::FCASCII) {
+                if(container==FileType::FCTEXT) {
                     // Distinguish between f0, labels and future VUF files (and futur others ...)
                     // Do a grammar check (But this won't help to diff F0 and VUF files)
                     ifstream fin(filepath.toLatin1().constData());
                     if(!fin.is_open())
-                        throw QString("Cannot open this file (even for format detection)");
+                        throw QString("Cannot open this file");
                     double t;
                     string line, text;
                     // Check the first line only (Assuming it is enough)
+                    // TODO May have to skip commented lines depending on the text format
                     if(!std::getline(fin, line))
                         throw QString("There is not a single line in this file");
                     // Check: <number> <number>
                     std::istringstream iss(line);
+                    // Check if first two values are real numbers
+                    // TODO This will NOT work to distinguish F0 or VUF !!
                     if((iss >> t >> t) && iss.eof())
                         type = FileType::FTFZERO;
-                    else // Assume this is a label
+                    else // Otherwise, assume this is a label
                         type = FileType::FTLABELS;
                 }
             }

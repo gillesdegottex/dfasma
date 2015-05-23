@@ -121,23 +121,32 @@ void QSettingsAuto::load(QLineEdit* el)
     endGroup();
 }
 
-void QSettingsAuto::add(QComboBox* el)
+void QSettingsAuto::add(QComboBox* el, bool usetext)
 {
     assert(el->objectName()!="");
     m_elements_combobox.push_back(el);
+    m_elements_combobox_usetext[el] = usetext;
     if(contains(el->objectName()))
         load(el);
 }
 void QSettingsAuto::save(QComboBox* el)
 {
     beginGroup("QSettingsAuto/");
-    setValue(el->objectName(), el->currentIndex());
+    std::map<QComboBox*,bool>::iterator it=m_elements_combobox_usetext.find(el);
+    if(it!=m_elements_combobox_usetext.end() && it->second)
+        setValue(el->objectName(), el->currentText());
+    else
+        setValue(el->objectName(), el->currentIndex());
     endGroup();
 }
 void QSettingsAuto::load(QComboBox* el)
 {
     beginGroup("QSettingsAuto/");
-    el->setCurrentIndex(value(el->objectName(), el->currentIndex()).toInt());
+    std::map<QComboBox*,bool>::iterator it=m_elements_combobox_usetext.find(el);
+    if(it!=m_elements_combobox_usetext.end() && it->second)
+        el->setCurrentText(value(el->objectName(), el->currentText()).toString());
+    else
+        el->setCurrentIndex(value(el->objectName(), el->currentIndex()).toInt());
     endGroup();
 }
 

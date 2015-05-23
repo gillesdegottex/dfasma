@@ -45,9 +45,12 @@ using namespace Easdif;
 #include <QGraphicsObject>
 #include <QGraphicsTextItem>
 #include <QTextCursor>
+#include <QTextStream>
+#include <QTextCodec>
 
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
+#include "ui_wdialogsettings.h"
 #include "gvwaveform.h"
 #include "gvspectrogram.h"
 #include "qthelper.h"
@@ -121,10 +124,11 @@ void FTLabels::init(){
     if(m_formatstrings.empty()){
         m_formatstrings.push_back("Unspecified");
         m_formatstrings.push_back("Auto");
-        m_formatstrings.push_back("Auto ASCII");
-        m_formatstrings.push_back("ASCII Time/Text (*.bpf)");
-        m_formatstrings.push_back("ASCII Segment (*.lab)");
-        m_formatstrings.push_back("ASCII Segment HTK (*.lab)");
+        m_formatstrings.push_back("Auto Text");
+        m_formatstrings.push_back("Text Time/Text (*.*)");
+        m_formatstrings.push_back("Text Segment Float (*.*)");
+        m_formatstrings.push_back("Text Segment Samples (*.*)");
+        m_formatstrings.push_back("Text Segment HTK (*.*)");
         m_formatstrings.push_back("SDIF 1MRK/1LAB (*.sdif)");
     }
 
@@ -151,7 +155,7 @@ FTLabels::FTLabels(QObject *parent)
 
     // TODO Manage a default user format
     setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.bpf");
-    m_fileformat = FFAsciiTimeText;
+    m_fileformat = FFTEXTTimeText;
 
     gMW->ftlabels.push_back(this);
 }
@@ -172,7 +176,7 @@ FTLabels::FTLabels(const QString& _fileName, QObject* parent, FileType::FileCont
     if(container==FileType::FCSDIF)
         m_fileformat = FFSDIF;
     else if(container==FileType::FCASCII)
-        m_fileformat = FFAsciiAutoDetect;
+        m_fileformat = FFTEXTAutoDetect;
 
     checkFileStatus(CFSMEXCEPTION);
     load();
@@ -204,7 +208,7 @@ FileType* FTLabels::duplicate(){
 }
 
 void FTLabels::load() {
-//    COUTD << "FTLabels::load " << m_fileformat << endl;
+//    COUTD << "FTLabels::load " << m_fileformat << " m_fileformat=" << m_fileformat << endl;
 
     clear(); // First, ensure there is no leftover
 
@@ -218,7 +222,7 @@ void FTLabels::load() {
     #endif
 
     // Check for text formats
-    if(m_fileformat==FFAutoDetect || m_fileformat==FFAsciiAutoDetect) {
+    if(m_fileformat==FFAutoDetect || m_fileformat==FFTEXTAutoDetect) {
         // Find the format using language check
 
         ifstream fin(fileFullPath.toLatin1().constData());
@@ -233,59 +237,122 @@ void FTLabels::load() {
         // Check: <number> <text>
         std::istringstream iss(line);
         if((iss >> t >> text) && iss.eof())
-            m_fileformat = FFAsciiTimeText;
+            m_fileformat = FFTEXTTimeText;
         else {
             // Check simple HTK Label: <integer> <integer> <text>
             // No multiple levels or multiple alternatives managed
             // http://www.ee.columbia.edu/ln/LabROSA/doc/HTKBook21/node82.html
             int i;
             std::istringstream iss(line);
-            if((iss >> i >> i >> text) && iss.eof())
-                m_fileformat = FFAsciiSegmentsHTK;
+            if((iss >> i >> i >> text) && iss.eof()){
+                QRegExp rx(".*[0-9]+$"); // If the extension ends with a number...
+                if(rx.indexIn(fileFullPath)!=-1)
+                    m_fileformat = FFTEXTSegmentsSample; // ... it is samples
+                else
+                    m_fileformat = FFTEXTSegmentsHTK;     // ... otherwise it is 100[ns]
+            }
             else {
                 // Check: <number> <number> <text>
                 std::istringstream iss(line);
                 if((iss >> t >> t >> text) && iss.eof())
-                    m_fileformat = FFAsciiSegments;
+                    m_fileformat = FFTEXTSegmentsFloat;
             }
         }
     }
+
+//    COUTD << "Detected format=" << m_fileformat << endl;
 
     if(m_fileformat==FFAutoDetect)
         throw QString("Cannot detect the file format of this label file");
 
     // Load the data given the format found or the one given
-    if(m_fileformat==FFAsciiTimeText){
-        ifstream fin(fileFullPath.toLatin1().constData());
-        if(!fin.is_open())
-            throw QString("FTLabel:FFAsciiTimeText: Cannot open file");
+    if(m_fileformat==FFTEXTTimeText){
+        QFile data(fileFullPath);
+        if(!data.open(QFile::ReadOnly))
+            throw QString("FTLabel: Cannot open file");
 
         double t;
-        string line, text;
-        while(std::getline(fin, line)) {
-            std::istringstream(line) >> t >> text;
-            addLabel(t, text.c_str());
-        }
+        QString line, text;
+        QTextStream stream(&data);
+        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelDefaultTextEncoding->currentText().toLatin1().constData());
+        line = stream.readLine();
+        do {
+            QTextStream(&line) >> t >> text;
+            addLabel(t, text);
+
+            line = stream.readLine();
+        } while (!line.isNull());
     }
-    else if(m_fileformat==FFAsciiSegments){
-        ifstream fin(fileFullPath.toLatin1().constData());
+    else if(m_fileformat==FFTEXTSegmentsFloat){
+        QFile data(fileFullPath);
+        if(!data.open(QFile::ReadOnly))
+            throw QString("FTLabel: Cannot open file");
+
         double startt, endt;
-        string line, text;
-        while(std::getline(fin, line)) {
-            std::istringstream(line) >> startt >> endt >> text;
-            addLabel(startt, text.c_str());
-        }
-        addLabel(endt, "");
+        QString line, text;
+        QTextStream stream(&data);
+        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelDefaultTextEncoding->currentText().toLatin1().constData());
+        line = stream.readLine();
+        do {
+            QTextStream(&line) >> startt >> endt >> text;
+            addLabel(startt, text);
+
+            line = stream.readLine();
+        } while (!line.isNull());
+
+        if(text.size()>0 && (char)(text.toLatin1()[0])!=char(31))
+            addLabel(endt, "");
     }
-    else if(m_fileformat==FFAsciiSegmentsHTK){
-        ifstream fin(fileFullPath.toLatin1().constData());
+    else if(m_fileformat==FFTEXTSegmentsSample){
+        QFile data(fileFullPath);
+        if(!data.open(QFile::ReadOnly))
+            throw QString("FTLabel: Cannot open file");
+
+        double fs = gMW->getFs(); // Use the sampling frequency from the loaded files
         double startt, endt;
-        string line, text;
-        while(std::getline(fin, line)) {
-            std::istringstream(line) >> startt >> endt >> text;
-            addLabel(1e-7*startt, text.c_str());
-        }
-        addLabel(1e-7*endt, "");
+        QString line, text;
+        QTextStream stream(&data);
+        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelDefaultTextEncoding->currentText().toLatin1().constData());
+        line = stream.readLine();
+        do {
+//                COUTD << '"' << line << '"' << endl;
+            QTextStream(&line) >> startt >> endt >> text;
+            startt /= fs;
+            endt /= fs;
+//                COUTD << startt << " " << '"' << text << '"' << endl;
+            addLabel(startt, text);
+
+            line = stream.readLine();
+        } while (!line.isNull());
+
+//            QByteArray ba = text.toLatin1();
+//            for(size_t ci=0; ci<ba.size(); ++ci)
+//                std::cout << int((unsigned char)(ba[ci])) << std::endl;
+
+        if(text.size()>0 && (char)(text.toLatin1()[0])!=char(31))
+            addLabel(endt, "");
+    }
+    else if(m_fileformat==FFTEXTSegmentsHTK){
+        QFile data(fileFullPath);
+        if(!data.open(QFile::ReadOnly))
+            throw QString("FTLabel: Cannot open file");
+
+        double startt, endt;
+        QString line, text;
+        QTextStream stream(&data);
+        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelDefaultTextEncoding->currentText().toLatin1().constData());
+        line = stream.readLine();
+        do {
+            QTextStream(&line) >> startt >> endt >> text;
+            startt *= 1e-7;
+            endt *= 1e-7;
+            addLabel(startt, text);
+
+            line = stream.readLine();
+        } while (!line.isNull());
+
+        if(text.size()>0 && (char)(text.toLatin1()[0])!=char(31))
+            addLabel(endt, "");
     }
     else if(m_fileformat==FFSDIF){
         #ifdef SUPPORT_SDIF
@@ -436,9 +503,10 @@ void FTLabels::saveAs() {
 
     // Build the filter string
     QString filters;
-    filters += m_formatstrings[FFAsciiTimeText];
-    filters += ";;"+m_formatstrings[FFAsciiSegments];
-    filters += ";;"+m_formatstrings[FFAsciiSegmentsHTK];
+    filters += m_formatstrings[FFTEXTTimeText];
+    filters += ";;"+m_formatstrings[FFTEXTSegmentsFloat];
+    filters += ";;"+m_formatstrings[FFTEXTSegmentsSample];
+    filters += ";;"+m_formatstrings[FFTEXTSegmentsHTK];
     #ifdef SUPPORT_SDIF
         filters += ";;"+m_formatstrings[FFSDIF];
     #endif
@@ -449,19 +517,19 @@ void FTLabels::saveAs() {
     if(!fp.isEmpty()){
         try{
             setFullPath(fp);
-            if(selectedFilter==m_formatstrings[FFAsciiTimeText])
-                m_fileformat = FFAsciiTimeText;
-            else if(selectedFilter==m_formatstrings[FFAsciiSegments])
-                m_fileformat = FFAsciiSegments;
-            else if(selectedFilter==m_formatstrings[FFAsciiSegmentsHTK])
-                m_fileformat = FFAsciiSegmentsHTK;
+            if(selectedFilter==m_formatstrings[FFTEXTTimeText])
+                m_fileformat = FFTEXTTimeText;
+            else if(selectedFilter==m_formatstrings[FFTEXTSegmentsFloat])
+                m_fileformat = FFTEXTSegmentsFloat;
+            else if(selectedFilter==m_formatstrings[FFTEXTSegmentsHTK])
+                m_fileformat = FFTEXTSegmentsHTK;
             #ifdef SUPPORT_SDIF
             else if(selectedFilter==m_formatstrings[FFSDIF])
                 m_fileformat = FFSDIF;
             #endif
 
             if(m_fileformat==FFNotSpecified || m_fileformat==FFAutoDetect)
-                m_fileformat = FFAsciiTimeText;
+                m_fileformat = FFTEXTTimeText;
             save();
         }
         catch(QString &e) {
@@ -475,9 +543,9 @@ void FTLabels::save() {
     sort(); // In the file, we want the labels' time in ascending order
 
     if(m_fileformat==FFNotSpecified || m_fileformat==FFAutoDetect)
-        m_fileformat = FFAsciiTimeText;
+        m_fileformat = FFTEXTTimeText;
 
-    if(m_fileformat==FFAsciiTimeText){
+    if(m_fileformat==FFTEXTTimeText){
         ofstream fout(fileFullPath.toLatin1().constData());
         fout.precision(12);
         fout.setf(std::ios::scientific); // floatfield set to fixed
@@ -485,7 +553,7 @@ void FTLabels::save() {
             fout << starts[li] << " " << (waveform_labels[li]->toPlainText().toLatin1().constData()) << endl;
         }
     }
-    else if(m_fileformat==FFAsciiSegments){
+    else if(m_fileformat==FFTEXTSegmentsFloat){
         ofstream fout(fileFullPath.toLatin1().constData());
         for(size_t li=0; li<starts.size(); li++) {
             // If this is the last one AND its text is empty, skip it.
@@ -503,7 +571,7 @@ void FTLabels::save() {
             fout << starts[li] << " " << last << " " << waveform_labels[li]->toPlainText().toLatin1().constData() << endl;
         }
     }
-    else if(m_fileformat==FFAsciiSegmentsHTK){
+    else if(m_fileformat==FFTEXTSegmentsHTK){
         ofstream fout(fileFullPath.toLatin1().constData());
         for(size_t li=0; li<starts.size(); li++) {
             // If this is the last one AND its text is empty, skip it.
@@ -596,12 +664,7 @@ double FTLabels::getLastSampleTime() const {
     if(starts.empty())
         return 0.0;
     else
-        return starts.front();
-
-//    if(ends.empty())
-//        return 0.0;
-//    else
-//        return *((ends.end()-1));
+        return starts.back();
 }
 
 void FTLabels::updateTextsGeometry(){

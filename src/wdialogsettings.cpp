@@ -24,6 +24,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <iostream>
 #include <QSettings>
 #include <QMessageBox>
+#include <QTextCodec>
 
 #include "ftsound.h"
 #include "wmainwindow.h"
@@ -39,6 +40,12 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    // Fill the comboboxes
+    QList<QByteArray> avcodecs = QTextCodec::availableCodecs();
+    qSort(avcodecs);
+    for(int ai=0; ai<avcodecs.size(); ++ai)
+        ui->cbLabelDefaultTextEncoding->addItem(avcodecs[ai]);
+
     setWindowIcon(QIcon(":/icons/settings.svg"));
     setWindowIconText("Settings");
     setWindowTitle("Settings");
@@ -53,6 +60,7 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     gMW->m_settings.add(ui->cbPlaybackFilteringCompensateEnergy);
     gMW->m_settings.add(ui->ckPlaybackAvoidClicksAddWindows);
     gMW->m_settings.add(ui->sbPlaybackAvoidClicksWindowDuration);
+    gMW->m_settings.add(ui->cbLabelDefaultTextEncoding, true);
     gMW->m_settings.add(ui->sbViewsToolBarSizes);
     gMW->m_settings.add(ui->sbFileListItemSize);
     gMW->m_settings.add(ui->sbViewsTimeDecimals);

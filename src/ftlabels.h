@@ -71,7 +71,7 @@ class FTLabels : public QObject, public FileType
     int m_fileformat;
 
 public:
-    enum FileFormat {FFNotSpecified=0, FFAutoDetect, FFAsciiAutoDetect, FFAsciiTimeText, FFAsciiSegments, FFAsciiSegmentsHTK, FFSDIF};
+    enum FileFormat {FFNotSpecified=0, FFAutoDetect, FFTEXTAutoDetect, FFTEXTTimeText, FFTEXTSegmentsFloat, FFTEXTSegmentsSample, FFTEXTSegmentsHTK, FFSDIF};
     static std::deque<QString> m_formatstrings;
 
     FTLabels(QObject *parent);

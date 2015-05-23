@@ -39,7 +39,8 @@ class QSettingsAuto : public QSettings
     std::list<QDoubleSpinBox*> m_elements_doublespinbox;
     std::list<QLineEdit*> m_elements_lineedit;
 	std::list<QComboBox*> m_elements_combobox;
-	std::list<QGroupBox*> m_elements_qgroupbox;
+    std::map<QComboBox*,bool> m_elements_combobox_usetext;
+    std::list<QGroupBox*> m_elements_qgroupbox;
 	std::list<QRadioButton*> m_elements_qradiobutton;
     std::list<QSlider*> m_elements_qslider;
     std::list<QAction*> m_elements_qaction;
@@ -60,9 +61,11 @@ class QSettingsAuto : public QSettings
     void add(QLineEdit* el);
     void save(QLineEdit* el);
     void load(QLineEdit* el);
-    void add(QComboBox* el);
+
+    void add(QComboBox* el, bool usetext=false);
     void save(QComboBox* el);
     void load(QComboBox* el);
+
     void add(QGroupBox* el);
     void save(QGroupBox* el);
     void load(QGroupBox* el);

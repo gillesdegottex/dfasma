@@ -108,8 +108,10 @@ FileType::FileContainer FileType::guessContainer(const QString& filepath){
     else if(FileType::isFileSDIF(filepath))
         return FCSDIF;
     #endif
-    else if(FileType::isFileASCII(filepath))// This detection is not 100% accurate
-        return FCASCII;
+    else if(FileType::isFileTEXT(filepath))// This detection is not 100% accurate
+        return FCTEXT;
+//    else if(FileType::isFileASCII(filepath))// This detection is not 100% accurate
+//        return FCASCII;
     #ifndef SUPPORT_SDIF
     else if(FileType::hasFileExtension(filepath, ".sdif"))
         throw QString("Support of SDIF files not compiled in this distribution of DFasma.");
@@ -296,9 +298,11 @@ bool FileType::hasFileExtension(const QString& filepath, const QString& ext){
 }
 
 // This function TRY TO GUESS if the file is ASCII or not
-// It may say it is ASCII whereas it is a binary file (false positive)
-// If the file is truely a simple ASCII (non-UTF), the return value is always correct (no false negative)
+// It may say it is ASCII whereas it is a non-ASCII text file (e.g. UTF) or a binary file (possible false positive)
+// If the file is truely a simple ASCII (non-UTF), the return value is always correct (no possible false negative)
+// For this reason, is container type has to be the last one to be tested.
 bool FileType::isFileASCII(const QString& filename) {
+//    COUTD << "FileType::isFileASCII " << filename.toLatin1().constData() << endl;
 
     // ASCII chars should be 0< c <=127
 
@@ -308,8 +312,31 @@ bool FileType::isFileASCII(const QString& filename) {
     int n = 0;
     // Assume the first Ko is sufficient for testing ASCII content
     while((c = a.get()) != EOF && n<1000){
-        // COUTD << "'" << c << "'" << endl;
+//         COUTD << "'" << c << "'" << endl;
         if(c==0 || c>127)
+            return false;
+    }
+
+    return true;
+}
+
+// This function TRY TO GUESS if the file is simple  text (ascii or utf or whatever text) or not (e.g. binary)
+// It may say it is text whereas it is a binary file (possible false positive)
+// If the file is truely a simple text file, the return value is always correct (no possible false negative)
+// For this reason, is container type has to be the last one to be tested.
+bool FileType::isFileTEXT(const QString& filename) {
+//    COUTD << "FileType::isFileText " << filename.toLatin1().constData() << endl;
+
+    // ASCII chars should be 0< c <=127
+
+    int c;
+    // COUTD << "EOF='" << EOF << "'" << endl;
+    std::ifstream a(filename.toLatin1().constData());
+    int n = 0;
+    // Assume the first Ko is sufficient for testing ASCII content
+    while((c = a.get()) != EOF && n<1000){
+//         COUTD << "'" << c << "'" << endl;
+        if(c==0)
             return false;
     }
 
