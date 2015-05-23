@@ -1184,28 +1184,31 @@ void QGVWaveform::draw_allwaveforms(QPainter* painter, const QRectF& rect){
     // First shift the visible waveforms according to the previous scrolling
     // (This cannot be done in scrollContentsBy because this &^$%#@ function is called when resizing the
     //  spectrogram, because they are synchronized horizontally (Using: connect(m_gvWaveform->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrogram->horizontalScrollBar(), SLOT(setValue(int))); onnect(m_gvSpectrogram->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvWaveform->horizontalScrollBar(), SLOT(setValue(int)));)).
-    for(size_t fi=0; fi<gMW->ftsnds.size(); fi++){
-        if(!gMW->ftsnds[fi]->m_actionShow->isChecked())
-            continue;
+//    COUTD << m_scrolledx << endl;
+    if(m_currentAction!=CAZooming && gMW->m_gvSpectrogram->m_currentAction!=QGVSpectrogram::CAZooming){
+        for(size_t fi=0; fi<gMW->ftsnds.size(); fi++){
+            if(!gMW->ftsnds[fi]->m_actionShow->isChecked())
+                continue;
 
-        if(gMW->ftsnds[fi]->m_wavpx_min.size()>0){
-            int ddx = m_scrolledx;
-            if(ddx>0){
-                while(ddx>0){
-                    gMW->ftsnds[fi]->m_wavpx_min.pop_back();
-                    gMW->ftsnds[fi]->m_wavpx_max.pop_back();
-                    gMW->ftsnds[fi]->m_wavpx_min.push_front(0.0);
-                    gMW->ftsnds[fi]->m_wavpx_max.push_front(0.0);
-                    ddx--;
+            if(gMW->ftsnds[fi]->m_wavpx_min.size()>0){
+                int ddx = m_scrolledx;
+                if(ddx>0){
+                    while(ddx>0){
+                        gMW->ftsnds[fi]->m_wavpx_min.pop_back();
+                        gMW->ftsnds[fi]->m_wavpx_max.pop_back();
+                        gMW->ftsnds[fi]->m_wavpx_min.push_front(0.0);
+                        gMW->ftsnds[fi]->m_wavpx_max.push_front(0.0);
+                        ddx--;
+                    }
                 }
-            }
-            else if(ddx<0){
-                while(ddx<0){
-                    gMW->ftsnds[fi]->m_wavpx_min.pop_front();
-                    gMW->ftsnds[fi]->m_wavpx_max.pop_front();
-                    gMW->ftsnds[fi]->m_wavpx_min.push_back(0.0);
-                    gMW->ftsnds[fi]->m_wavpx_max.push_back(0.0);
-                    ddx++;
+                else if(ddx<0){
+                    while(ddx<0){
+                        gMW->ftsnds[fi]->m_wavpx_min.pop_front();
+                        gMW->ftsnds[fi]->m_wavpx_max.pop_front();
+                        gMW->ftsnds[fi]->m_wavpx_min.push_back(0.0);
+                        gMW->ftsnds[fi]->m_wavpx_max.push_back(0.0);
+                        ddx++;
+                    }
                 }
             }
         }
@@ -1231,7 +1234,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
 
 //    samppixdensity=0.01;
     if(samppixdensity<4) {
-//         COUTD << "Draw lines between each sample in the updated rect" << endl;
+//        COUTD << "draw_waveform: Draw lines between each sample" << endl;
 
         WAVTYPE a = snd->m_ampscale;
         if(snd->m_actionInvPolarity->isChecked())
@@ -1289,7 +1292,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
         painter->drawLine(QLineF(double(snd->wav.size()-1)/fs, -1.0, double(snd->wav.size()-1)/fs, 1.0));
     }
     else {
-//        cout << "Plot only one line per pixel, in order to reduce computation time" << endl;
+//        COUTD << "draw_waveform: Plot only one line per pixel" << endl;
 
         painter->setWorldMatrixEnabled(false); // Work in pixel coordinates
 
