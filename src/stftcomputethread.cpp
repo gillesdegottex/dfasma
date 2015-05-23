@@ -344,8 +344,6 @@ void STFTComputeThread::run() {
 
         }
         catch(std::bad_alloc err){
-            FLAG
-
             params_running.stftparams.snd->m_stft.clear();
             params_running.stftparams.snd->m_stftts.clear();
 
