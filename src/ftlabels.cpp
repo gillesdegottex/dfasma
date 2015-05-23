@@ -463,6 +463,7 @@ void FTLabels::load() {
 }
 
 void FTLabels::clear() {
+//    COUTD << "FTLabels::clear" << endl;
     if(getNbLabels()>0) {
         starts.clear();
         for(size_t li=0; li<waveform_labels.size(); li++)
@@ -481,6 +482,7 @@ void FTLabels::clear() {
         m_isedited = true;
         setStatus();
     }
+//    COUTD << "FTLabels::~clear" << endl;
 }
 
 bool FTLabels::reload() {

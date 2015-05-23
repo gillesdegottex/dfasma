@@ -43,6 +43,8 @@ extern "C" {
 
 #include <iostream>
 
+#include "qthelper.h"
+
 int main(int argc, char *argv[])
 {
     #ifdef AUDIOFILEREADING_LIBAV
@@ -73,9 +75,10 @@ int main(int argc, char *argv[])
     QStringList filestoload = QApplication::arguments();
     filestoload.removeAt(0);
 
-    WMainWindow w(filestoload);
-    QObject::connect(&a, SIGNAL(focusWindowChanged(QWindow*)), &w, SLOT(checkFileModifications()));
-    w.show();
+//    WMainWindow w(filestoload);
+    WMainWindow* w = new WMainWindow(filestoload);
+    QObject::connect(&a, SIGNAL(focusWindowChanged(QWindow*)), w, SLOT(checkFileModifications()));
+    w->show();
 
     int ret = a.exec();
 
@@ -85,7 +88,9 @@ int main(int argc, char *argv[])
         Easdif::EasdifEnd();
     #endif
 
-    exit(0); // WORKAROUND?: won't quit otherwise on some platform (e.g. bouzouki) TODO
+    delete w; // TODO BUG The crash at the end seems to be systematic when using this
+
+    exit(ret); // WORKAROUND?: won't quit otherwise on some platform (e.g. bouzouki) TODO
 
     return ret;
 }

@@ -252,7 +252,24 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 }
 
 WMainWindow::~WMainWindow() {
-    delete ui;
+//    COUTD << "WMainWindow::~WMainWindow" << endl;
+    m_gvSpectrogram->m_stftcomputethread->cancelComputation(true);
+    m_gvAmplitudeSpectrum->m_fftresizethread->m_mutex_resizing.lock();
+    m_gvAmplitudeSpectrum->m_fftresizethread->m_mutex_resizing.unlock();
+
+    ui->listSndFiles->selectAll();
+    selectedFilesClose();
+
+    if(m_audioengine) delete m_audioengine; // The audio
+
+    // Delete views
+    delete m_gvWaveform;
+    delete m_gvAmplitudeSpectrum;
+    delete m_gvPhaseSpectrum;
+    delete m_gvSpectrogram;
+    delete m_dlgSettings;
+
+    delete ui; // The GUI
 }
 
 // Interface ===================================================================

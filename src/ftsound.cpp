@@ -749,7 +749,7 @@ qint64 FTSound::writeData(const char *data, qint64 askedlen){
 
 FTSound::~FTSound(){
     stopPlay();
-    gMW->m_gvSpectrogram->m_stftcomputethread->cancelComputation(this);
+    if(gMW->m_gvSpectrogram) gMW->m_gvSpectrogram->m_stftcomputethread->cancelComputation(this);
     QIODevice::close();
 }
 
