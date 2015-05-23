@@ -521,6 +521,8 @@ void FTLabels::saveAs() {
                 m_fileformat = FFTEXTTimeText;
             else if(selectedFilter==m_formatstrings[FFTEXTSegmentsFloat])
                 m_fileformat = FFTEXTSegmentsFloat;
+            else if(selectedFilter==m_formatstrings[FFTEXTSegmentsSample])
+                m_fileformat = FFTEXTSegmentsSample;
             else if(selectedFilter==m_formatstrings[FFTEXTSegmentsHTK])
                 m_fileformat = FFTEXTSegmentsHTK;
             #ifdef SUPPORT_SDIF
@@ -546,15 +548,26 @@ void FTLabels::save() {
         m_fileformat = FFTEXTTimeText;
 
     if(m_fileformat==FFTEXTTimeText){
-        ofstream fout(fileFullPath.toLatin1().constData());
-        fout.precision(12);
-        fout.setf(std::ios::scientific); // floatfield set to fixed
-        for(size_t li=0; li<starts.size(); li++) {
-            fout << starts[li] << " " << (waveform_labels[li]->toPlainText().toLatin1().constData()) << endl;
-        }
+        QFile data(fileFullPath);
+        if(!data.open(QFile::WriteOnly))
+            throw QString("FTLabel: Cannot open file");
+
+        QTextStream stream(&data);
+        stream.setRealNumberPrecision(12);
+        stream.setRealNumberNotation(QTextStream::ScientificNotation);
+        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelDefaultTextEncoding->currentText().toLatin1().constData());
+        for(size_t li=0; li<starts.size(); li++)
+            stream << starts[li] << " " << waveform_labels[li]->toPlainText() << endl;
     }
     else if(m_fileformat==FFTEXTSegmentsFloat){
-        ofstream fout(fileFullPath.toLatin1().constData());
+        QFile data(fileFullPath);
+        if(!data.open(QFile::WriteOnly))
+            throw QString("FTLabel: Cannot open file");
+
+        QTextStream stream(&data);
+        stream.setRealNumberPrecision(12);
+        stream.setRealNumberNotation(QTextStream::ScientificNotation);
+        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelDefaultTextEncoding->currentText().toLatin1().constData());
         for(size_t li=0; li<starts.size(); li++) {
             // If this is the last one AND its text is empty, skip it.
             // (thus, manage the read/write of segments files)
@@ -568,11 +581,41 @@ void FTLabels::save() {
                 if(gMW->ftsnds.size()>0)
                     last = gMW->getCurrentFTSound(true)->getLastSampleTime(); // Or last wav's sample time
             }
-            fout << starts[li] << " " << last << " " << waveform_labels[li]->toPlainText().toLatin1().constData() << endl;
+            stream << starts[li] << " " << last << " " << waveform_labels[li]->toPlainText() << endl;
+        }
+    }
+    else if(m_fileformat==FFTEXTSegmentsSample){
+        QFile data(fileFullPath);
+        if(!data.open(QFile::WriteOnly))
+            throw QString("FTLabel: Cannot open file");
+
+        double fs = gMW->getFs();
+
+        QTextStream stream(&data);
+        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelDefaultTextEncoding->currentText().toLatin1().constData());
+        for(size_t li=0; li<starts.size(); li++) {
+            // If this is the last one AND its text is empty, skip it.
+            // (thus, manage the read/write of segments files)
+            if(li==starts.size()-1 && waveform_labels[li]->toPlainText()=="")
+                continue;
+
+            double last = starts[li] + 1.0/gMW->getFs(); // If not end, add a single sample to start
+            if(li<starts.size()-1)
+                last = starts[li+1]; // Otherwise use next start, if not the last label
+            else {
+                if(gMW->ftsnds.size()>0)
+                    last = gMW->getCurrentFTSound(true)->getLastSampleTime(); // Or last wav's sample time
+            }
+            stream << int(fs*starts[li]) << " " << int(fs*last) << " " << waveform_labels[li]->toPlainText() << endl;
         }
     }
     else if(m_fileformat==FFTEXTSegmentsHTK){
-        ofstream fout(fileFullPath.toLatin1().constData());
+        QFile data(fileFullPath);
+        if(!data.open(QFile::WriteOnly))
+            throw QString("FTLabel: Cannot open file");
+
+        QTextStream stream(&data);
+        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelDefaultTextEncoding->currentText().toLatin1().constData());
         for(size_t li=0; li<starts.size(); li++) {
             // If this is the last one AND its text is empty, skip it.
             // (thus, manage the read/write of segments files)
@@ -586,7 +629,7 @@ void FTLabels::save() {
                 if(gMW->ftsnds.size()>0)
                     last = gMW->getCurrentFTSound(true)->getLastSampleTime(); // Or last wav's sample time
             }
-            fout << int(0.5+1e7*starts[li]) << " " << int(0.5+1e7*last) << " " << waveform_labels[li]->toPlainText().toLatin1().constData() << endl;
+            stream << int(0.5+1e7*starts[li]) << " " << int(0.5+1e7*last) << " " << waveform_labels[li]->toPlainText() << endl;
         }
     }
     else if(m_fileformat==FFSDIF){
