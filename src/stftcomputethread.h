@@ -16,7 +16,7 @@ class STFTComputeThread : public QThread
     void run(); //Q_DECL_OVERRIDE
 
 public:
-    enum STFTComputingState {SCSIdle, SCSDFT, SCSIMG, SCSFinished, SCSCanceled};
+    enum STFTComputingState {SCSIdle, SCSDFT, SCSIMG, SCSFinished, SCSCanceled, SCSMemoryFull};
     void cancelComputation(FTSound* snd);
 
 signals:

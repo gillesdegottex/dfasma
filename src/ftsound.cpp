@@ -182,8 +182,15 @@ FTSound::FTSound(const QString& _fileName, QObject *parent, int channelid)
 
     if(!fileFullPath.isEmpty()){
         checkFileStatus(CFSMEXCEPTION);
-        load(channelid);
-        load_finalize();
+        try{
+            load(channelid);
+            load_finalize();
+        }
+        catch(std::bad_alloc err){
+            QMessageBox::critical(NULL, "Memory full!", "There is not enough free memory for computing this STFT");
+
+            throw QString("Memory cannot hold this file!");
+        }
     }
 
     gMW->ftsnds.push_back(this);
@@ -272,8 +279,15 @@ bool FTSound::reload() {
     m_stftparams.clear();
 
     // ... and reload the data from the file
-    load();
-    load_finalize();
+    try{
+        load();
+        load_finalize();
+    }
+    catch(std::bad_alloc err){
+        QMessageBox::critical(NULL, "Memory full!", "There is not enough free memory for computing this STFT");
+
+        throw QString("Memory cannot hold this file!");
+    }
 
 //    COUTD << "FTSound::~reload" << endl;
     return true;

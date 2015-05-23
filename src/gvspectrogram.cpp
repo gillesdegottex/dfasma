@@ -43,6 +43,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <cmath>
 using namespace std;
 
+#include <QMessageBox>
 #include <QWheelEvent>
 #include <QToolBar>
 #include <QAction>
@@ -319,6 +320,10 @@ void QGVSpectrogram::stftComputingStateChanged(int state){
         gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT Canceled"));
         clearSTFTPlot();
         gMW->ui->pbSpectrogramSTFTUpdate->show();
+    }
+    else if(state==STFTComputeThread::SCSMemoryFull){
+        COUTD << "SCSMemoryFull" << endl;
+        QMessageBox::critical(NULL, "Memory full!", "There is not enough free memory for computing this STFT");
     }
 //    COUTD << "QGVSpectrogram::~stftComputingStateChanged" << endl;
 }
