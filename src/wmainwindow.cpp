@@ -973,8 +973,10 @@ void WMainWindow::selectedFilesClose() {
 
     updateWindowTitle();
 
-    if(m_gvWaveform->m_scene->sceneRect().right()>gMW->getMaxDuration()+1.0/gMW->getFs()){
+    if(m_gvWaveform->m_scene->sceneRect().right()>gMW->getMaxDuration()+1.0/gMW->getFs()) {
         m_gvWaveform->updateSceneRect();
+        m_gvSpectrogram->updateSceneRect();
+        m_gvWaveform->setMouseCursorPosition(-1, true);
         m_gvWaveform->viewSet(m_gvWaveform->m_scene->sceneRect(), true);
     }
 

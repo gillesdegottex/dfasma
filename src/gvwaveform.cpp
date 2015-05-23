@@ -261,6 +261,7 @@ void QGVWaveform::fitViewToSoundsAmplitude(){
 
 void QGVWaveform::updateSceneRect() {
     m_scene->setSceneRect(-1.0/gMW->getFs(), -1.05*m_ampzoom, gMW->getMaxDuration()+1.0/gMW->getFs(), 2.1*m_ampzoom);
+//    updateTextsGeometry();
 }
 
 void QGVWaveform::viewSet(QRectF viewrect, bool sync) {
@@ -271,7 +272,6 @@ void QGVWaveform::viewSet(QRectF viewrect, bool sync) {
 //    cout << "QGVWaveform::viewSet: currentviewrect=" << currentviewrect << endl;
 
     if(viewrect!=currentviewrect) {
-
         if(viewrect.top()<m_scene->sceneRect().top())
             viewrect.setTop(m_scene->sceneRect().top()-0.01);
         if(viewrect.bottom()>m_scene->sceneRect().bottom())
@@ -1107,10 +1107,11 @@ void QGVWaveform::updateTextsGeometry(){
     QTransform trans = transform();
     QTransform cursortrans = QTransform::fromScale(1.0/trans.m11(), 1.0);
     m_giPlayCursor->setTransform(cursortrans);
+    m_giMouseCursorTxt->setTransform(cursortrans);
 
     // Tell the labels to update their texts
     for(size_t fi=0; fi<gMW->ftlabels.size(); fi++)
-            gMW->ftlabels[fi]->updateTextsGeometry();
+        gMW->ftlabels[fi]->updateTextsGeometry();
 }
 
 //class QTimeTracker2 : public QTime {
