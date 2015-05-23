@@ -37,6 +37,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <iostream>
 using namespace std;
 
+#include <QtGlobal>
 #include <QToolBar>
 #include <QGraphicsItem>
 #include <QGraphicsRectItem>
@@ -1318,7 +1319,8 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
 //            COUTD << "Using existing buffer " << pixrect << endl;
             for(int i=pixrect.left(); i<=pixrect.right(); i++){
 //            for(int i=0; i<=snd->m_wavpx_min.size(); i++)
-                painter->drawLine(QLineF(i, yzero+snd->m_wavpx_min[i], i, yzero+snd->m_wavpx_max[i]));
+                if(snd->m_wavpx_min[i]<1e10) // TODO Clean this dirty fix
+                    painter->drawLine(QLineF(i, yzero+snd->m_wavpx_min[i], i, yzero+snd->m_wavpx_max[i]));
             }
         }
         else {
@@ -1361,8 +1363,8 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
                     painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
                 }
                 else {
-                    snd->m_wavpx_min[i] = 0.0;
-                    snd->m_wavpx_max[i] = 0.0;
+                    snd->m_wavpx_min[i] = 1e20; // TODO Clean this dirty fix
+                    snd->m_wavpx_max[i] = 1e20; // TODO Clean this dirty fix
                 }
 
                 ns = ne; // TODO Shouldn't start 1 sample after ne ?
