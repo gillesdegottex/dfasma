@@ -16,12 +16,15 @@ class STFTComputeThread : public QThread
     void run(); //Q_DECL_OVERRIDE
 
 public:
-    enum STFTComputingState {SCSIdle, SCSDFT, SCSIMG};
+    enum STFTComputingState {SCSIdle, SCSDFT, SCSIMG, SCSFinished, SCSCanceled};
+    void cancelComputation(FTSound* snd);
 
 signals:
     void stftComputingStateChanged(int state);
     void stftProgressing(int);
-    void stftFinished(bool canceled=false);
+
+public slots:
+    void cancelComputation(bool waittoend=false);
 
 public:
     STFTComputeThread(QObject* parent);
@@ -127,8 +130,9 @@ public:
 
     inline const ImageParameters& getCurrentParameters() const {return m_params_current;}
 
-    ImageParameters m_params_current;   // The params which is in preparation by the thread
     ImageParameters m_params_todo;      // The params which has to be done by the thread
+    ImageParameters m_params_current;   // The params which is in preparation by the thread
+    ImageParameters m_params_last;      // The last params which have been done
 };
 
 #endif // STFTCOMPUTETHREAD_H

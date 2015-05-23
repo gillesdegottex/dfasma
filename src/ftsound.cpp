@@ -251,6 +251,7 @@ bool FTSound::reload() {
 //    COUTD << "FTSound::reload" << endl;
 
     stopPlay();
+    gMW->m_gvSpectrogram->m_stftcomputethread->cancelComputation(this);
 
     if(!checkFileStatus(CFSMMESSAGEBOX))
         return false;
@@ -733,19 +734,8 @@ qint64 FTSound::writeData(const char *data, qint64 askedlen){
 }
 
 FTSound::~FTSound(){
-    // Remove it from the STFT waiting queue
-    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingparams.lock();
-    if(!gMW->m_gvSpectrogram->m_stftcomputethread->m_params_todo.isEmpty()
-        && gMW->m_gvSpectrogram->m_stftcomputethread->m_params_todo.stftparams.snd==this){
-        gMW->m_gvSpectrogram->m_stftcomputethread->m_params_todo.clear();
-    }
-    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingparams.unlock();
-    // Or cancel its STFT computation
-    while(gMW->m_gvSpectrogram->m_stftcomputethread->isRunning()
-          && gMW->m_gvSpectrogram->m_stftcomputethread->getCurrentParameters().stftparams.snd==this){
-        gMW->ui->pbSTFTComputingCancel->setChecked(true);
-        QThread::msleep(20);
-    }
+    stopPlay();
+    gMW->m_gvSpectrogram->m_stftcomputethread->cancelComputation(this);
     QIODevice::close();
 }
 
