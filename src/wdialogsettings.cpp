@@ -45,6 +45,7 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     qSort(avcodecs);
     for(int ai=0; ai<avcodecs.size(); ++ai)
         ui->cbLabelDefaultTextEncoding->addItem(avcodecs[ai]);
+    ui->cbLabelDefaultTextEncoding->setCurrentText("UTF-8");
 
     setWindowIcon(QIcon(":/icons/settings.svg"));
     setWindowIconText("Settings");
