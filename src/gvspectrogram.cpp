@@ -446,14 +446,16 @@ void QGVSpectrogram::scrollContentsBy(int dx, int dy) {
 
     // Invalidate the necessary parts
     // Ensure the y ticks labels will be redrawn
-    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-    QTransform trans = transform();
+//    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+//    QTransform trans = transform();
 
-    QRectF r = QRectF(viewrect.left(), viewrect.top(), 5*14/trans.m11(), viewrect.height());
-    m_scene->invalidate(r);
+//    QRectF r = QRectF(viewrect.left(), viewrect.top(), 5*14/trans.m11(), viewrect.height());
+//    m_scene->invalidate(r);
 
-    r = QRectF(viewrect.left(), viewrect.top()+viewrect.height()-14/trans.m22(), viewrect.width(), 14/trans.m22());
-    m_scene->invalidate(r);
+//    r = QRectF(viewrect.left(), viewrect.top()+viewrect.height()-14/trans.m22(), viewrect.width(), 14/trans.m22());
+//    m_scene->invalidate(r);
+
+    m_scene->update(); // TODO BUGFIX: The pixels shift doesn't seem to correspond to the draw otherwise
 
     updateTextsGeometry();
     setMouseCursorPosition(QPointF(-1,0), false);
@@ -982,21 +984,36 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
     FTSound* csnd = gMW->getCurrentFTSound(true);
     if(csnd && csnd->m_actionShow->isChecked() && csnd->m_stftts.size()>0) {
 
+        double bin2hz = fs*1/csnd->m_stftparams.dftlen;
+
         // Build the piece of STFT which will be drawn in the view
         QRectF srcrect;
         double stftwidth = csnd->m_stftts.back()-csnd->m_stftts.front();
         srcrect.setLeft(0.5+(m_imgSTFT.rect().width()-1)*(viewrect.left()-csnd->m_stftts.front())/stftwidth);
         srcrect.setRight(0.5+(m_imgSTFT.rect().width()-1)*(viewrect.right()-csnd->m_stftts.front())/stftwidth);
-        srcrect.setTop(m_imgSTFT.rect().height()*viewrect.top()/m_scene->sceneRect().height());
-        srcrect.setBottom(m_imgSTFT.rect().height()*viewrect.bottom()/m_scene->sceneRect().height());
+//        COUTD << "viewrect=" << viewrect << endl;
+//        COUTD << "IMG: " << m_imgSTFT.rect() << endl;
+        // This one is vertically super sync,
+        // but the cursor falls always on the top of the line, not in the middle of it.
+        srcrect.setTop((m_imgSTFT.rect().height()-1)*viewrect.top()/m_scene->sceneRect().height());
+        srcrect.setBottom((m_imgSTFT.rect().height()-1)*viewrect.bottom()/m_scene->sceneRect().height());
         QRectF trgrect = viewrect;
+        trgrect.setTop(trgrect.top()-bin2hz/2);
+        trgrect.setBottom(trgrect.bottom()-bin2hz/2);
 
         // This one is the basic time synchronized version,
         // but it creates flickering when zooming
-        //QRectF srcrect = m_imgSTFT.rect();
-        //QRectF trgrect = m_scene->sceneRect();
-        //trgrect.setLeft(csnd->m_stftts.front()-0.5*csnd->m_stftparams.stepsize/csnd->fs);
-        //trgrect.setRight(csnd->m_stftts.back()+0.5*csnd->m_stftparams.stepsize/csnd->fs);
+//        QRectF srcrect = m_imgSTFT.rect();
+//        QRectF trgrect = m_scene->sceneRect();
+//        trgrect.setLeft(csnd->m_stftts.front()-0.5*csnd->m_stftparams.stepsize/csnd->fs);
+//        trgrect.setRight(csnd->m_stftts.back()+0.5*csnd->m_stftparams.stepsize/csnd->fs);
+//        double bin2hz = fs*1/csnd->m_stftparams.dftlen;
+//        trgrect.setTop(-bin2hz/2);// Hard to verify because of the flickering
+//        trgrect.setBottom(fs/2+bin2hz/2);// Hard to verify because of the flickering
+
+//        COUTD << "Scene: " << m_scene->sceneRect() << endl;
+//        COUTD << "SRC: " << srcrect << endl;
+//        COUTD << "TRG: " << trgrect << endl;
 
         painter->drawImage(trgrect, m_imgSTFT, srcrect);
     }

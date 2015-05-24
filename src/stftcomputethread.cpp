@@ -300,7 +300,7 @@ void STFTComputeThread::run() {
 
                 ColorMap& cmap = ColorMap::getAt(params_running.colormap_index);
 
-    //            COUTD << "IMG: stftmin=" << m_params_current.stftparams.snd->m_stft_min << "dB stftmax=" << m_params_current.stftparams.snd->m_stft_max << "dB" << std::endl;
+//                COUTD << "IMG: stftmin=" << m_params_current.stftparams.snd->m_stft_min << "dB stftmax=" << m_params_current.stftparams.snd->m_stft_max << "dB" << std::endl;
 
                 FFTTYPE ymin = params_running.stftparams.snd->m_stft_min+(params_running.stftparams.snd->m_stft_max-params_running.stftparams.snd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0; // Min of color range [dB]
                 FFTTYPE ymax = params_running.stftparams.snd->m_stft_min+(params_running.stftparams.snd->m_stft_max-params_running.stftparams.snd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0; // Max of color range [dB]
@@ -311,22 +311,27 @@ void STFTComputeThread::run() {
                 FFTTYPE y;
                 QRgb c;
 
-    //            COUTD << "ymin=" << ymin << " ymax=" << ymax << std::endl;
+//                COUTD << "ymin=" << ymin << " ymax=" << ymax << " divmaxmmin=" << divmaxmmin << std::endl;
                 for(int si=0; si<stftlen && !gMW->ui->pbSTFTComputingCancel->isChecked(); si++, pimgb++){
                     pstft = params_running.stftparams.snd->m_stft[si].begin();
                     for(int n=0; n<dftsize; n++, pstft++) {
 
-                        y = (*pstft-ymin)*divmaxmmin;
-
-                        if(y<=0.0)
+                        if(qIsInf(*pstft)){
                             c = c0;
-                        else if(y>=1.0)
-                            c = c1;
+                        }
                         else {
-                            if(colormap_reversed)
-                                y = 1.0-y;
+                            y = (*pstft-ymin)*divmaxmmin;
 
-                            c = cmap(y);
+                            if(y<=0.0)
+                                c = c0;
+                            else if(y>=1.0)
+                                c = c1;
+                            else {
+                                if(colormap_reversed)
+                                    y = 1.0-y;
+
+                                c = cmap(y);
+                            }
                         }
 
                         *(pimgb + (halfdftlen-n)*stftlen) = c;
@@ -341,7 +346,6 @@ void STFTComputeThread::run() {
     //            m_params_current.stftparams.snd->m_stft_min = std::max(FFTTYPE(-2.0*20*std::log10(std::pow(2,m_params_current.stftparams.snd->format().sampleSize()))), m_params_current.stftparams.snd->m_stft_min); Why doing this ??
     //            COUTD << "Image Spent: " << starttime.elapsed() << std::endl;
             }
-
         }
         catch(std::bad_alloc err){
             params_running.stftparams.snd->m_stft.clear();
