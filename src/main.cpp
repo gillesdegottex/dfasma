@@ -44,9 +44,19 @@ extern "C" {
 #include <iostream>
 
 #include "qthelper.h"
+#include "filetype.h"
 
 int main(int argc, char *argv[])
 {
+    // Set all static variables
+    // Map FileTypes with corresponding strings
+    if(FileType::m_typestrings.empty()){
+        FileType::m_typestrings.push_back("All files (*.*)");
+        FileType::m_typestrings.push_back("Sound (*.wav *.aiff *.pcm *.snd *.flac *.ogg)");
+        FileType::m_typestrings.push_back("F0 (*.bpf *.sdif)");
+        FileType::m_typestrings.push_back("Label (*.bpf *.lab *.sdif)");
+    }
+
     #ifdef AUDIOFILEREADING_LIBAV
         // This call is necessarily done once in your app to initialize
         // libavformat to register all the muxers, demuxers and protocols.

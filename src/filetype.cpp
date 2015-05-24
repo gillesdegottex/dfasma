@@ -89,13 +89,6 @@ QColor GetNextColor(){
 std::deque<QString> FileType::m_typestrings;
 
 void FileType::init(){
-    // Map FileTypes with corresponding strings
-    if(m_typestrings.empty()){
-        m_typestrings.push_back("All files (*.*)");
-        m_typestrings.push_back("Sound (*.wav *.aiff *.pcm *.snd *.flac *.ogg)");
-        m_typestrings.push_back("F0 (*.bpf *.sdif)");
-        m_typestrings.push_back("Label (*.bpf *.lab *.sdif)");
-    }
 }
 
 FileType::FileContainer FileType::guessContainer(const QString& filepath){
