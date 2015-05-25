@@ -200,7 +200,7 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_aZoomOnSelection = new QAction(tr("&Zoom on selection"), this);
     m_aZoomOnSelection->setStatusTip(tr("Zoom on selection"));
     m_aZoomOnSelection->setEnabled(false);
-    m_aZoomOnSelection->setShortcut(Qt::Key_S);
+    //m_aZoomOnSelection->setShortcut(Qt::Key_S); // This one creates "ambiguous" shortcuts
     QIcon zoomselectionicon(":/icons/zoomselectionx.svg");
     m_aZoomOnSelection->setIcon(zoomselectionicon);
     connect(m_aZoomOnSelection, SIGNAL(triggered()), this, SLOT(selectionZoomOn()));
@@ -910,6 +910,9 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
                 m_currentAction = CANothing;
             }
         }
+    }
+    else if(event->key()==Qt::Key_S){
+        selectionZoomOn();
     }
     else {
         if (gMW->ui->actionEditMode->isChecked()){

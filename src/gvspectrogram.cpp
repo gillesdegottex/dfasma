@@ -154,7 +154,7 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_aZoomOnSelection = new QAction(tr("&Zoom on selection"), this);
     m_aZoomOnSelection->setStatusTip(tr("Zoom on selection"));
     m_aZoomOnSelection->setEnabled(false);
-    m_aZoomOnSelection->setShortcut(Qt::Key_S);
+    //m_aZoomOnSelection->setShortcut(Qt::Key_S); // This one creates "ambiguous" shortcuts
     m_aZoomOnSelection->setIcon(QIcon(":/icons/zoomselectionxy.svg"));
     connect(m_aZoomOnSelection, SIGNAL(triggered()), this, SLOT(selectionZoomOn()));
 
@@ -701,6 +701,9 @@ void QGVSpectrogram::keyPressEvent(QKeyEvent* event){
         selectionClear();
         gMW->m_gvWaveform->selectionClear();
         playCursorSet(0.0, true);
+    }
+    else if(event->key()==Qt::Key_S){
+        selectionZoomOn();
     }
 
     QGraphicsView::keyPressEvent(event);
