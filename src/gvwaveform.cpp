@@ -61,6 +61,10 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     , m_scrolledx(0)
     , m_ampzoom(1.0)
 {
+    setStyleSheet("QGraphicsView { border-style: none; }");
+    setFrameShape(QFrame::NoFrame);
+    setFrameShadow(QFrame::Plain);
+
     m_scene = new QGraphicsScene(this);
     setScene(m_scene);
 

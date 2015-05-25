@@ -10,6 +10,7 @@
 #include <QColor>
 #include <QGraphicsView>
 #include <QTextStream>
+#include <QScrollBar>
 
 #include "ftsound.h"
 
@@ -88,6 +89,20 @@ inline std::ostream& operator<<(std::ostream& stream, const FTSound::DFTParamete
 
     return stream;
 }
+
+// A scrollbar which reset the mouse cursor when hovered
+class QScrollBarHover : public QScrollBar {
+public:
+    QScrollBarHover(Qt::Orientation orientation, QWidget * parent)
+        : QScrollBar(orientation, parent) {
+        setMouseTracking(true);
+    }
+
+    virtual void mouseMoveEvent(QMouseEvent * e) {
+        Q_UNUSED(e)
+        setCursor(Qt::CrossCursor);
+    }
+};
 
 //            COUTD << snd->m_dftparams.nl << " " << snd->m_dftparams.nr << " " << snd->m_dftparams.winlen << " " << snd->m_dftparams.dftlen << " " << snd->m_dftparams.ampscale << " " << snd->m_dftparams.delay << endl;
 

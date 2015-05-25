@@ -47,6 +47,10 @@ QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
     : QGraphicsView(parent)
     , m_scene(NULL)
 {
+    setStyleSheet("QGraphicsView { border-style: none; }");
+    setFrameShape(QFrame::NoFrame);
+    setFrameShadow(QFrame::Plain);
+
     m_scene = new QGraphicsScene(this);
     setScene(m_scene);
 

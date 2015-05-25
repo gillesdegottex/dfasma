@@ -53,6 +53,7 @@ using namespace std;
 #include <QDebug>
 #include <QTime>
 #include <QToolTip>
+#include <QScrollBar>
 #include "../external/libqxt/qxtspanslider.h"
 
 #include "qthelper.h"
@@ -61,6 +62,13 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     : QGraphicsView(parent)
     , m_imgSTFT(1, 1, QImage::Format_RGB32)
 {
+    setStyleSheet("QGraphicsView { border-style: none; }");
+    setFrameShape(QFrame::NoFrame);
+    setFrameShadow(QFrame::Plain);
+
+    setHorizontalScrollBar(new QScrollBarHover(Qt::Horizontal, this));
+    setVerticalScrollBar(new QScrollBarHover(Qt::Vertical, this));
+
     m_scene = new QGraphicsScene(this);
     setScene(m_scene);
 

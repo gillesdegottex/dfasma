@@ -57,6 +57,10 @@ using namespace std;
 QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     : QGraphicsView(parent)
 {
+    setStyleSheet("QGraphicsView { border-style: none; }");
+    setFrameShape(QFrame::NoFrame);
+    setFrameShadow(QFrame::Plain);
+
     m_scene = new QGraphicsScene(this);
     setScene(m_scene);
 
