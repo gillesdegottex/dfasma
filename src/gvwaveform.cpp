@@ -1378,7 +1378,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
                     snd->m_wavpx_max[i] = 1e20; // TODO Clean this dirty fix
                 }
 
-                ns = ne; // TODO Shouldn't start 1 sample after ne ?
+                ns = ne;
             }
         }
         snd->m_wavparams = reqparams;

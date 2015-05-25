@@ -1309,8 +1309,8 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
 
         std::complex<WAVTYPE>* yp = ldft.data();
 
+        int ns = int(dftlen*(viewrect.left()+pixrect.left()*p2s)/fs);
         for(int i=pixrect.left(); i<=pixrect.right(); i++) {
-            int ns = int(dftlen*(viewrect.left()+i*p2s)/fs);
             int ne = int(dftlen*(viewrect.left()+(i+1)*p2s)/fs);
 
             if(ns>=0 && ne<int(ldft.size())) {
@@ -1335,6 +1335,8 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
                 if(ymax>fullpixrect.height()+1-yzero) ymax=fullpixrect.height()+1-yzero;
                 painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
             }
+
+            ns = ne;
         }
 
         painter->setWorldMatrixEnabled(true); // Go back to scene coordinates
