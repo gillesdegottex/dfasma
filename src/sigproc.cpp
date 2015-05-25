@@ -187,7 +187,6 @@ FFTwrapper::~FFTwrapper()
         m_fftw3_planner_access.lock();
         if(m_fftw3_plan){
             fftwg_destroy_plan(m_fftw3_plan);
-            fftwg_free(m_fftw3_plan);
         }
         if(m_fftw3_in){
 //            fftwg_free(m_fftw3_in);

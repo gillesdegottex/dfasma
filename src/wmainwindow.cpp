@@ -264,16 +264,20 @@ WMainWindow::~WMainWindow() {
     ui->listSndFiles->selectAll();
     selectedFilesClose();
 
-    if(m_audioengine) delete m_audioengine; // The audio
+    // The audio player
+    if(m_audioengine){
+        delete m_audioengine;
+        m_audioengine=NULL;
+    }
 
     // Delete views
-    delete m_gvWaveform;
-    delete m_gvAmplitudeSpectrum;
-    delete m_gvPhaseSpectrum;
-    delete m_gvSpectrogram;
-    delete m_dlgSettings;
+    delete m_gvWaveform; m_gvWaveform=NULL;
+    delete m_gvAmplitudeSpectrum; m_gvAmplitudeSpectrum=NULL;
+    delete m_gvPhaseSpectrum; m_gvPhaseSpectrum=NULL;
+    delete m_gvSpectrogram; m_gvSpectrogram=NULL;
+    delete m_dlgSettings; m_dlgSettings=NULL;
 
-    delete ui; // The GUI
+    delete ui; ui=NULL; // The GUI
 }
 
 // Interface ===================================================================
