@@ -230,6 +230,7 @@ void QGVSpectrogram::updateSTFTSettings(){
 //    cout << "QGVSpectrogram::updateSTFTSettings fs=" << gMW->getFs() << endl;
 
     gMW->ui->pbSpectrogramSTFTUpdate->hide();
+    m_dlgSettings->checkImageSize();
 
     int winlen = std::floor(0.5+gMW->getFs()*m_dlgSettings->ui->sbSpectrogramWindowSize->value());
     //    cout << "QGVSpectrogram::updateSTFTSettings winlen=" << winlen << endl;

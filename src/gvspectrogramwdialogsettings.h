@@ -32,6 +32,9 @@ private:
 
 private slots:
     void CBSpectrumWindowTypeCurrentIndexChanged(QString txt);
+
+public slots:
+    void checkImageSize();
 };
 
 #endif // GVSPECTROGRAMWDIALOGSETTINGS_H

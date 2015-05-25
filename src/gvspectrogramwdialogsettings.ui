@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>575</width>
-    <height>578</height>
+    <height>598</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -267,7 +267,7 @@
            <number>5</number>
           </property>
           <property name="minimum">
-           <double>0.000010000000000</double>
+           <double>0.000100000000000</double>
           </property>
           <property name="maximum">
            <double>60.000000000000000</double>
@@ -344,6 +344,21 @@
          </widget>
         </item>
        </layout>
+      </item>
+      <item>
+       <widget class="QLabel" name="lblImgSizeWarning">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>&lt;Warning about Image size&gt;</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QGroupBox" name="gbSpectrogramCepstralLiftering">
@@ -482,5 +497,57 @@
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>sbSpectrogramStepSize</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>GVSpectrogramWDialogSettings</receiver>
+   <slot>checkImageSize()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>505</x>
+     <y>221</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>287</x>
+     <y>300</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sbSpectrogramWindowSize</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>GVSpectrogramWDialogSettings</receiver>
+   <slot>checkImageSize()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>505</x>
+     <y>256</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>287</x>
+     <y>300</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sbSpectrogramOversamplingFactor</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>GVSpectrogramWDialogSettings</receiver>
+   <slot>checkImageSize()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>531</x>
+     <y>291</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>287</x>
+     <y>300</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>checkImageSize()</slot>
+ </slots>
 </ui>

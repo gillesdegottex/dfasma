@@ -33,6 +33,8 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "gvamplitudespectrum.h"
 #include "gvphasespectrum.h"
 #include "gvspectrogram.h"
+#include "gvspectrogramwdialogsettings.h"
+#include "ui_gvspectrogramwdialogsettings.h"
 #include "ftsound.h"
 #include "ftfzero.h"
 #include "ftlabels.h"
@@ -945,6 +947,7 @@ void WMainWindow::allSoundsChanged(){
     m_gvAmplitudeSpectrum->updateDFTs(); // Can be also very heavy if updating multiple files
     m_gvAmplitudeSpectrum->m_scene->update();
     m_gvPhaseSpectrum->m_scene->update();
+    m_gvSpectrogram->m_dlgSettings->checkImageSize();
     // m_gvSpectrogram->soundsChanged(); // Too heavy to be here, call updateSTFTPlot(force) instead
 //    COUTD << "WMainWindow::~allSoundsChanged" << endl;
 }

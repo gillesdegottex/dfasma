@@ -37,9 +37,37 @@ GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(QGVSpectrogram* paren
     gMW->m_settings.add(ui->cbSpectrogramColorMapReversed);
     gMW->m_settings.add(ui->cbSpectrogramF0ShowHarmonics);
 
+    checkImageSize();
     adjustSize();
 
     connect(ui->cbSpectrogramWindowType, SIGNAL(currentIndexChanged(QString)), this, SLOT(CBSpectrumWindowTypeCurrentIndexChanged(QString)));
+}
+
+void GVSpectrogramWDialogSettings::checkImageSize() {
+
+    int maxsampleindex = int(gMW->getMaxWavSize())-1;
+
+    int stepsize = std::floor(0.5+gMW->getFs()*ui->sbSpectrogramStepSize->value());//[samples]
+    int winlen = std::floor(0.5+gMW->getFs()*ui->sbSpectrogramWindowSize->value());
+    if(winlen%2==0 && ui->cbSpectrogramWindowSizeForcedOdd->isChecked())
+        winlen++;
+    int dftlen = pow(2, std::ceil(log2(float(winlen)))+ui->sbSpectrogramOversamplingFactor->value());//[samples]
+
+    int imgheight = dftlen/2+1;
+    int imgwidth = int(1+double(maxsampleindex+1-winlen)/stepsize);
+
+    long int size = double(imgwidth)*imgheight/(1024.0*1024.0);
+    size *= int(sizeof(QImage::Format_RGB32));
+
+    QString text = "<html><head/><body>";
+    text += QString("Image size: %1x%2 = %3Mb").arg(imgwidth).arg(imgheight).arg(size);
+
+    if(imgwidth>32768 || imgheight>32768){
+
+        text += "<br/><font color=\"red\">Image dimensions need to be smaller than 32768.<br/>You can: increase step size, reduce window's size, reduce oversampling factor,<br/>or try it! (flickering expected)</font>";
+    }
+    text += "<br/></body></html>";
+    ui->lblImgSizeWarning->setText(text);
 }
 
 void GVSpectrogramWDialogSettings::CBSpectrumWindowTypeCurrentIndexChanged(QString txt) {
