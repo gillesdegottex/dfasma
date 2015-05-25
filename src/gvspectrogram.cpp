@@ -446,16 +446,17 @@ void QGVSpectrogram::scrollContentsBy(int dx, int dy) {
 
     // Invalidate the necessary parts
     // Ensure the y ticks labels will be redrawn
-//    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-//    QTransform trans = transform();
+    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+    QTransform trans = transform();
 
-//    QRectF r = QRectF(viewrect.left(), viewrect.top(), 5*14/trans.m11(), viewrect.height());
-//    m_scene->invalidate(r);
+    QRectF r = QRectF(viewrect.left(), viewrect.top(), 5*14/trans.m11(), viewrect.height());
+    m_scene->invalidate(r); // TODO Throw away after using qtextimtems
 
-//    r = QRectF(viewrect.left(), viewrect.top()+viewrect.height()-14/trans.m22(), viewrect.width(), 14/trans.m22());
-//    m_scene->invalidate(r);
+    r = QRectF(viewrect.left(), viewrect.top()+viewrect.height()-14/trans.m22(), viewrect.width(), 14/trans.m22());
+    m_scene->invalidate(r); // TODO Throw away after grid is moved to items
 
-    m_scene->update(); // TODO BUGFIX: The pixels shift doesn't seem to correspond to the draw otherwise
+//    m_scene->invalidate();
+//    m_scene->update(); // TODO BUGFIX: Shifting he pixels doesn't seem to correspond to the draw
 
     updateTextsGeometry();
     setMouseCursorPosition(QPointF(-1,0), false);
@@ -1000,6 +1001,8 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
         QRectF trgrect = viewrect;
         trgrect.setTop(trgrect.top()-bin2hz/2);
         trgrect.setBottom(trgrect.bottom()-bin2hz/2);
+        // TODO target rect shouldn't change. the source should.
+        //      otherwise some parts of the target might not be drawn.
 
         // This one is the basic time synchronized version,
         // but it creates flickering when zooming
