@@ -176,20 +176,23 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     m_gvWaveform = new QGVWaveform(this);
     ui->lWaveformGraphicsView->addWidget(m_gvWaveform);
 
+    // Spectra
     m_gvAmplitudeSpectrum = new QGVAmplitudeSpectrum(this);
     ui->lSpectrumAmplitudeGraphicsView->addWidget(m_gvAmplitudeSpectrum);
     m_settings.add(ui->actionShowAmplitudeSpectrum);
-    ui->wSpectra->setVisible(ui->actionShowAmplitudeSpectrum->isChecked());
-
+    ui->wSpectrumAmplitude->setVisible(ui->actionShowAmplitudeSpectrum->isChecked());
     m_gvPhaseSpectrum = new QGVPhaseSpectrum(this);
     ui->lSpectrumPhaseGraphicsView->addWidget(m_gvPhaseSpectrum);
     m_settings.add(ui->actionShowPhaseSpectrum);
     ui->wSpectrumPhase->setVisible(ui->actionShowPhaseSpectrum->isChecked());
+    ui->wSpectra->setVisible(ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked());
 
+    // Spectrogram
     m_gvSpectrogram = new QGVSpectrogram(this);
     ui->lSpectrogramGraphicsView->addWidget(m_gvSpectrogram);
     m_settings.add(ui->actionShowSpectrogram);
     ui->wSpectrogram->setVisible(ui->actionShowSpectrogram->isChecked());
+    connect(ui->pbSpectrogramSTFTUpdate, SIGNAL(clicked()), m_gvSpectrogram, SLOT(updateSTFTSettings()));
 
     ui->splitterMain->setStretchFactor(1, 1);
     ui->splitterViews->setStretchFactor(0, 0);
@@ -214,6 +217,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     connect(ui->actionShowSpectrogram, SIGNAL(toggled(bool)), ui->wSpectrogram, SLOT(setVisible(bool)));
     connect(ui->actionShowAmplitudeSpectrum, SIGNAL(toggled(bool)), this, SLOT(viewsDisplayedChanged()));
     connect(ui->actionShowPhaseSpectrum, SIGNAL(toggled(bool)), this, SLOT(viewsDisplayedChanged()));
+    viewsDisplayedChanged();
 
     // Start in open file mode
     // and show the panels only if a file has been loaded
@@ -243,8 +247,6 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 
     if(files.size()>0)
         m_gvSpectrogram->updateSTFTSettings(); // This will update the window computation AND trigger the STFT computation
-
-    connect(ui->pbSpectrogramSTFTUpdate, SIGNAL(clicked()), m_gvSpectrogram, SLOT(updateSTFTSettings()));
 
     connect(ui->actionFileOpen, SIGNAL(triggered()), this, SLOT(openFile())); // Alow this only at the end
 
