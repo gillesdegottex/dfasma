@@ -989,7 +989,7 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
     FTSound* csnd = gMW->getCurrentFTSound(true);
     if(csnd && csnd->m_actionShow->isChecked() && csnd->m_stftts.size()>0) {
 
-        double bin2hz = fs*1/csnd->m_stftparams.dftlen;
+//        double bin2hz = fs*1/csnd->m_stftparams.dftlen;
 
         // Build the piece of STFT which will be drawn in the view
         QRectF srcrect;
@@ -1003,12 +1003,10 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
         srcrect.setTop((m_imgSTFT.rect().height()-1)*viewrect.top()/m_scene->sceneRect().height());
         srcrect.setBottom((m_imgSTFT.rect().height()-1)*viewrect.bottom()/m_scene->sceneRect().height());
         QRectF trgrect = viewrect;
-        trgrect.setTop(trgrect.top()-bin2hz/2);
-        trgrect.setBottom(trgrect.bottom()-bin2hz/2);
-        // TODO target rect shouldn't change. the source should.
-        //      otherwise some parts of the target might not be drawn.
+        srcrect.setTop(srcrect.top()+0.5);
+        srcrect.setBottom(srcrect.bottom()+0.5);
 
-        // This one is the basic time synchronized version,
+        // This one is the basic synchronized version,
         // but it creates flickering when zooming
 //        QRectF srcrect = m_imgSTFT.rect();
 //        QRectF trgrect = m_scene->sceneRect();
