@@ -772,7 +772,7 @@ void FTLabels::addLabel(double position, const QString& text){
     waveform_lines.back()->setPen(pen);
     gMW->m_gvWaveform->m_scene->addItem(waveform_lines.back());
 
-    spectrogram_lines.push_back(new QGraphicsLineItem(0, 0, 0, gMW->getFs()/2));
+    spectrogram_lines.push_back(new QGraphicsLineItem(0, 0, 0, gMW->getFs()));
     spectrogram_lines.back()->setPos(position, 0);
     spectrogram_lines.back()->setPen(pen);
     gMW->m_gvSpectrogram->m_scene->addItem(spectrogram_lines.back());    

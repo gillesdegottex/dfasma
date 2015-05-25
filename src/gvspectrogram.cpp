@@ -454,12 +454,12 @@ void QGVSpectrogram::scrollContentsBy(int dx, int dy) {
 //    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << " QGVSpectrogram::scrollContentsBy" << endl;
 
     // Invalidate the necessary parts
-    // Ensure the y ticks labels will be redrawn
+    // Ensure the y ticks will be redrawn
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
     QTransform trans = transform();
 
     QRectF r = QRectF(viewrect.left(), viewrect.top(), 5*14/trans.m11(), viewrect.height());
-    m_scene->invalidate(r); // TODO Throw away after using qtextimtems
+    m_scene->invalidate(r); // TODO Throw away after grid is moved to items
 
     r = QRectF(viewrect.left(), viewrect.top()+viewrect.height()-14/trans.m22(), viewrect.width(), 14/trans.m22());
     m_scene->invalidate(r); // TODO Throw away after grid is moved to items
