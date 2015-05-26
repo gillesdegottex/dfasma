@@ -6,7 +6,8 @@
 #include <algorithm>
 #include <numeric>
 
-
+#include <qnumeric.h>
+#include <QApplication>
 #include <QStringList>
 #include <QColor>
 #include "qthelper.h"

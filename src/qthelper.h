@@ -24,7 +24,7 @@
 
 
 // Check if compiling using MSVC (Microsoft compiler)
-#ifndef MSVC_VERSION
+#ifdef MSVC_VERSION
     // The following is necessary for MSVC 2012
 //    inline bool qIsInf(float f){return std::abs(f)>std::numeric_limits<float>::max()/2;}
 //    template<class Type> inline bool qIsInf(Type f){return std::abs(f)>std::numeric_limits<Type>::max()/2;}
