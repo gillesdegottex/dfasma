@@ -20,11 +20,17 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "../src/ftsound.h"
 #include "../external/wavfile/wavfile.h"
-
-//#include <iostream>
+#include "../src/qthelper.h"
 
 QString FTSound::getAudioFileReadingDescription(){
-    return QString("<p>Using a built-in minimal WAV file reader (supports only PCM 16 bit signed LE mono format)</p>");
+    return QString("Built-in minimal WAV file reader");
+}
+QStringList FTSound::getAudioFileReadingSupportedFormats() {
+    QStringList list;
+
+    list.append("PCM 16 bit signed LE mono (.wav)");
+
+    return list;
 }
 
 int FTSound::getNumberOfChannels(const QString &filePath){

@@ -34,6 +34,54 @@ extern "C" {
 
 #include <QFileInfo>
 
+QString FTSound::getAudioFileReadingDescription(){
+
+    QString txt("<a href='http://www.mega-nerd.com/libsndfile'>libsndfile</a>");
+
+    // Add version information
+    char buffer[128];
+    sf_command(NULL, SFC_GET_LIB_VERSION, buffer, sizeof(buffer));
+    txt += " version " + QString(buffer);
+
+    return txt;
+}
+QStringList FTSound::getAudioFileReadingSupportedFormats() {
+    QStringList list;
+
+    char buffer[128];
+    sf_command(NULL, SFC_GET_LIB_VERSION, buffer, sizeof(buffer)); // Seems to be necessary for the SFC_GET_FORMAT_SUBTYPE to work (!?)
+
+    SF_FORMAT_INFO	info;
+    SF_INFO 		sfinfo;
+    int format, major_count, subtype_count, m, s;
+
+    sf_command(NULL, SFC_GET_FORMAT_MAJOR_COUNT, &major_count, sizeof(int));
+    sf_command(NULL, SFC_GET_FORMAT_SUBTYPE_COUNT, &subtype_count, sizeof(int));
+
+    sfinfo.channels = 1;
+    for (m = 0 ; m < major_count ; m++) {
+        info.format = m;
+        sf_command(NULL, SFC_GET_FORMAT_MAJOR, &info, sizeof(info));
+        QString txt = QString(info.name)+"(."+info.extension+"): ";
+
+        list.append(txt);
+
+        format = info.format;
+
+        for (s = 0; s<subtype_count; s++) {
+            info.format = s;
+            sf_command(NULL, SFC_GET_FORMAT_SUBTYPE, &info, sizeof(info));
+
+            format = (format & SF_FORMAT_TYPEMASK) | info.format;
+
+            sfinfo.format = format;
+            if (sf_format_check (&sfinfo))
+                list.append(QString("\t")+info.name);
+        }
+    }
+
+    return list;
+}
 int FTSound::getNumberOfChannels(const QString& filePath){
 
     if(!QFileInfo::exists(filePath))
@@ -51,48 +99,6 @@ int FTSound::getNumberOfChannels(const QString& filePath){
     return sfinfo.channels;
 }
 
-QString FTSound::getAudioFileReadingDescription(){
-
-    QString txt = QString("<p>Using <a href='http://www.mega-nerd.com/libsndfile'>libsndfile</a>");
-
-    // Add version information
-    char buffer[128];
-    sf_command(NULL, SFC_GET_LIB_VERSION, buffer, sizeof(buffer));
-    txt += " - version " + QString(buffer);
-    txt += "</p>";
-
-    txt += "<p><b>Supported formats</b><br/>";
-    SF_FORMAT_INFO	info;
-    SF_INFO 		sfinfo;
-    int format, major_count, subtype_count, m, s;
-
-    sf_command(NULL, SFC_GET_FORMAT_MAJOR_COUNT, &major_count, sizeof (int));
-    sf_command(NULL, SFC_GET_FORMAT_SUBTYPE_COUNT, &subtype_count, sizeof (int));
-
-    sfinfo.channels = 1;
-    for (m = 0 ; m < major_count ; m++) {
-        info.format = m;
-        sf_command (NULL, SFC_GET_FORMAT_MAJOR, &info, sizeof (info));
-        txt += QString(info.name)+"(."+info.extension+")<br/>";
-
-        format = info.format;
-
-        for (s = 0; s<subtype_count; s++) {
-            info.format = s;
-            sf_command (NULL, SFC_GET_FORMAT_SUBTYPE, &info, sizeof (info));
-
-            format = (format & SF_FORMAT_TYPEMASK) | info.format;
-
-            sfinfo.format = format;
-            if (sf_format_check (&sfinfo))
-                txt += QString("*")+info.name+"<br/>";
-        }
-    }
-
-    txt += "</p>";
-
-    return txt;
-}
 
 /* This will be the length of the buffer used to hold samples while
 ** we process them.

@@ -29,47 +29,15 @@ using namespace std;
 
 #include "../src/qthelper.h"
 
-QString FTSound::getAudioFileReadingDescription(){
+QString FTSound::getAudioFileReadingDescription() {
+    return QString("Using builtin <a href='http://qt-project.org/doc/qt-5.0/qtmultimedia/audiooverview.html'>Qt audio decoder</a>");
+}
+QStringList FTSound::getAudioFileReadingSupportedFormats() {
+    QStringList list;
 
-    QString txt = QString("<p>Using builtin <a href='http://qt-project.org/doc/qt-5.0/qtmultimedia/audiooverview.html'>Qt audio decoder</a>");
+    list.append("(no idea)");
 
-//    // Add version information
-//    char buffer[128];
-//    sf_command(NULL, SFC_GET_LIB_VERSION, buffer, sizeof(buffer));
-//    txt += " - version " + QString(buffer);
-    txt += "</p>";
-
-//    txt += "<p><b>Supported formats</b><br/>";
-//    SF_FORMAT_INFO	info;
-//    SF_INFO 		sfinfo;
-//    int format, major_count, subtype_count, m, s;
-
-//    sf_command(NULL, SFC_GET_FORMAT_MAJOR_COUNT, &major_count, sizeof (int));
-//    sf_command(NULL, SFC_GET_FORMAT_SUBTYPE_COUNT, &subtype_count, sizeof (int));
-
-//    sfinfo.channels = 1;
-//    for (m = 0 ; m < major_count ; m++) {
-//        info.format = m;
-//        sf_command (NULL, SFC_GET_FORMAT_MAJOR, &info, sizeof (info));
-//        txt += QString(info.name)+"(."+info.extension+")<br/>";
-
-//        format = info.format;
-
-//        for (s = 0; s<subtype_count; s++) {
-//            info.format = s;
-//            sf_command (NULL, SFC_GET_FORMAT_SUBTYPE, &info, sizeof (info));
-
-//            format = (format & SF_FORMAT_TYPEMASK) | info.format;
-
-//            sfinfo.format = format;
-//            if (sf_format_check (&sfinfo))
-//                txt += QString("*")+info.name+"<br/>";
-//        }
-//    }
-
-//    txt += "</p>";
-
-    return txt;
+    return list;
 }
 
 AudioDecoder::AudioDecoder(bool isDelete)
@@ -189,14 +157,17 @@ void AudioDecoder::updateProgress()
 }
 
 int FTSound::getNumberOfChannels(const QString &filePath){
+    COUTD << filePath.toLatin1().constData() << endl;
+
     QAudioDecoder *decoder = new QAudioDecoder();
     decoder->setSourceFilename(filePath);
 
+
     QAudioFormat format = decoder->audioFormat();
 
-    int nchan = format.channelCount();
+    COUTD << format << endl;
 
-//    COUTD  << nchan << endl;
+    int nchan = format.channelCount();
 
     delete decoder;
 
