@@ -56,15 +56,13 @@ void GVSpectrogramWDialogSettings::checkImageSize() {
     int imgheight = dftlen/2+1;
     int imgwidth = int(1+double(maxsampleindex+1-winlen)/stepsize);
 
-    long int size = double(imgwidth)*imgheight/(1024.0*1024.0);
-    size *= int(sizeof(QImage::Format_RGB32));
+    long int size = double(imgwidth)*imgheight*sizeof(QImage::Format_RGB32)/(1024.0*1024.0);
 
     QString text = "<html><head/><body>";
     text += QString("Image size: %1x%2 = %3Mb").arg(imgwidth).arg(imgheight).arg(size);
 
     if(imgwidth>32768 || imgheight>32768){
-
-        text += "<br/><font color=\"red\">Image dimensions need to be smaller than 32768.<br/>You can: increase step size, reduce window's size, reduce oversampling factor,<br/>or try it! (flickering expected)</font>";
+        text += "<br/><font color=\"red\">Image dimensions need to be smaller than 32768.<br/>You can: increase step size, reduce window's size, reduce oversampling factor,<br/>or try it! (visual artefacts expected)</font>";
     }
     text += "<br/></body></html>";
     ui->lblImgSizeWarning->setText(text);

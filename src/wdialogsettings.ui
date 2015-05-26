@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>625</width>
-    <height>414</height>
+    <height>429</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -56,13 +56,6 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout">
             <item>
-             <widget class="QLabel" name="label_2">
-              <property name="text">
-               <string>Audio device:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
              <widget class="QComboBox" name="cbPlaybackAudioOutputDevices">
               <property name="sizePolicy">
                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -90,18 +83,23 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_2">
+        <widget class="QGroupBox" name="ckPlaybackAvoidClicksAddWindows">
+         <property name="toolTip">
+          <string>Add half-windows at the begining and end of the played sounds to avoid clicks</string>
+         </property>
+         <property name="statusTip">
+          <string>Add half-windows at the begining and end of the played sounds to avoid clicks</string>
+         </property>
          <property name="title">
           <string>Avoid clicks during playback</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_5">
-          <item>
-           <widget class="QCheckBox" name="ckPlaybackAvoidClicksAddWindows">
-            <property name="text">
-             <string>Add half-windows at the begining and end of the played sounds to avoid clicks</string>
-            </property>
-           </widget>
-          </item>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_9">
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_3">
             <item>
@@ -153,7 +151,7 @@
        <item>
         <widget class="QGroupBox" name="groupBox_3">
          <property name="title">
-          <string>Filtered playback</string>
+          <string>Filtered playback (Ctrl-Space)</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_6">
           <item>

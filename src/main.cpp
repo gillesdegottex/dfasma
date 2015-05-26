@@ -91,11 +91,7 @@ int main(int argc, char *argv[])
     QObject::connect(&a, SIGNAL(focusWindowChanged(QWindow*)), &w, SLOT(checkFileModifications()));
     w.show();
 
-    FLAG
-
     int ret = a.exec();
-
-    FLAG
 
     #ifdef SUPPORT_SDIF
 //        std::cout << __LINE__ << std::endl;
@@ -103,15 +99,9 @@ int main(int argc, char *argv[])
         Easdif::EasdifEnd();
     #endif
 
-    FLAG
-
 //    delete w; // TODO BUG The crash at the end seems to be systematic when using this
 
-    FLAG
-
 //    exit(ret); // WORKAROUND?: won't quit otherwise on some platform (e.g. bouzouki) TODO
-
-    FLAG
 
     return ret;
 }
