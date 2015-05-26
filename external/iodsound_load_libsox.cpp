@@ -37,6 +37,26 @@ extern "C" {
 
 #define BUFFER_LEN      1024
 
+QString FTSound::getAudioFileReadingDescription(){
+
+    QString txt("<a href='http://sox.sourceforge.net'>libsox</a>");
+
+    // Add version information
+//    sox_version_info_t const * soxinfo = sox_version_info();
+    txt += " version " + QString(sox_version());
+
+    return txt;
+}
+QStringList FTSound::getAudioFileReadingSupportedFormats() {
+
+    QStringList list;
+
+    sox_encodings_info_t const * encinfo = sox_get_encodings_info();
+    for(int fi=1; fi<SOX_ENCODINGS; ++fi) // From sox.h
+        list.append(QString(encinfo[fi].desc));
+
+    return list;
+}
 int FTSound::getNumberOfChannels(const QString& filePath){
 
     if(!QFileInfo::exists(filePath))
@@ -56,26 +76,6 @@ int FTSound::getNumberOfChannels(const QString& filePath){
 
     return nbchannels;
 }
-
-
-QString FTSound::getAudioFileReadingDescription(){
-
-    QString txt = QString("<p>Using <a href='http://sox.sourceforge.net'>libsox</a>");
-
-    // Add version information
-//    sox_version_info_t const * soxinfo = sox_version_info();
-    txt += " - version " + QString(sox_version());
-    txt += "</p>";
-
-//    sox_encodings_info_t const * encinfo = sox_get_encodings_info();
-//    txt += "<p><b>Supported formats</b><br/>";
-//    txt += QString(encinfo->name)+"(."+encinfo->desc+")<br/>";
-
-//    txt += "</p>";
-
-    return txt;
-}
-
 
 void FTSound::load(int channelid){
 
