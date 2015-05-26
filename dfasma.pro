@@ -30,8 +30,8 @@ CONFIG += fft_fftw3
 DEFINES += FFTW3RESIZINGMAXTIMESPENT
 
 # For the audio file support
-# Chose among: file_audio_libsndfile, file_audio_libsox,
-#              file_audio_qt, file_audio_builtin, file_audio_libav
+# Chose among: file_audio_libsndfile, file_audio_libsox, file_audio_builtin
+#              (file_audio_qt, file_audio_libav)
 CONFIG += file_audio_libsndfile
 
 # Additional file format support
