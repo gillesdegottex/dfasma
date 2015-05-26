@@ -22,7 +22,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QApplication>
 #include <QObject>
 
-#ifdef AUDIOFILEREADING_LIBAV
+#ifdef FILE_AUDIO_LIBAV
 extern "C" {
 #include <stdio.h>
 #include <libavformat/avformat.h>
@@ -30,7 +30,7 @@ extern "C" {
 #include <libavutil/avutil.h>
 }
 #endif
-#ifdef AUDIOFILEREADING_LIBSOX
+#ifdef FILE_AUDIO_LIBSOX
 extern "C" {
 #include <sox.h>
 #include <assert.h>
@@ -57,20 +57,18 @@ int main(int argc, char *argv[])
         FileType::m_typestrings.push_back("Label (*.bpf *.lab *.sdif)");
     }
 
-    #ifdef AUDIOFILEREADING_LIBAV
+    #ifdef FILE_AUDIO_LIBAV
         // This call is necessarily done once in your app to initialize
         // libavformat to register all the muxers, demuxers and protocols.
         av_register_all();
         // TODO av_unregister ?
     #endif
-    #ifdef AUDIOFILEREADING_LIBSOX
+    #ifdef FILE_AUDIO_LIBSOX
         assert(sox_init() == SOX_SUCCESS);
-        // TODO sox_quit();
     #endif
 
     #ifdef SUPPORT_SDIF
         Easdif::EasdifInit();
-        // TODO EasdifEnd();
     #endif
 
     QApplication a(argc, argv);
@@ -85,8 +83,6 @@ int main(int argc, char *argv[])
     QStringList filestoload = QApplication::arguments();
     filestoload.removeAt(0);
 
-//    WMainWindow w(filestoload);
-//    WMainWindow* w = new WMainWindow(filestoload);
     WMainWindow w(filestoload);
     QObject::connect(&a, SIGNAL(focusWindowChanged(QWindow*)), &w, SLOT(checkFileModifications()));
     w.show();
@@ -94,12 +90,12 @@ int main(int argc, char *argv[])
     int ret = a.exec();
 
     #ifdef SUPPORT_SDIF
-//        std::cout << __LINE__ << std::endl;
         FileType::cleanupAndEEnd();
         Easdif::EasdifEnd();
     #endif
-
-//    delete w; // TODO BUG The crash at the end seems to be systematic when using this
+    #ifdef FILE_AUDIO_LIBSOX
+        sox_quit();
+    #endif
 
 //    exit(ret); // WORKAROUND?: won't quit otherwise on some platform (e.g. bouzouki) TODO
 
