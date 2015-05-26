@@ -49,6 +49,8 @@ CONFIG += precision_double
 
 # Generate the version number from git
 # (if fail, fall back on the version present in the README.txt file)
+DFASMAVERSIONGITPRO = $$system(git describe --tags --always)
+message(Version from Git: $$DFASMAVERSIONGITPRO)
 DEFINES += DFASMAVERSIONGIT=$$system(git describe --tags --always)
 
 # Manage Architecture
