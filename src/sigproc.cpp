@@ -209,7 +209,7 @@ void sigproc::hspec2rcc(const std::vector<FFTTYPE>& loghA, FFTwrapper* fft, std:
 
     fft->setInput(0, loghA[0]);
 //    fft->in[0] = loghA[0];
-    for(int n=1; n<int(loghA.size())-1; ++n){
+    for(size_t n=1; n<loghA.size()-1; ++n){
         fft->setInput(n, loghA[n]);
         fft->setInput(dftlen/2+n, loghA[int(loghA.size())-1-n]);
 //        fft->in[n] = loghA[n];
@@ -223,7 +223,7 @@ void sigproc::hspec2rcc(const std::vector<FFTTYPE>& loghA, FFTwrapper* fft, std:
     cc.resize(dftlen/2+1);
     cc[0] = fft->getDCOutput().real()/dftlen;
 //    cc[0] = fft->out[0].real()/dftlen;
-    for(int n=1; n<cc.size(); ++n)
+    for(size_t n=1; n<cc.size(); ++n)
         cc[n] = 2*fft->getMidOutput(n).real()/dftlen; // Compensate for the energy loss
 //    cc[n] = 2*fft->out[n].real()/dftlen; // Compensate for the energy loss
     cc[dftlen/2] = fft->getNyquistOutput().real()/dftlen;
@@ -235,7 +235,7 @@ void sigproc::rcc2hspec(const std::vector<FFTTYPE>& cc, FFTwrapper* fft, std::ve
 
     fft->resize(dftlen);
 
-    int n=0;
+    size_t n=0;
     for(; n<cc.size(); ++n)
         fft->setInput(n, cc[n]);
 //        fft->in[n] = cc[n];
@@ -249,7 +249,7 @@ void sigproc::rcc2hspec(const std::vector<FFTTYPE>& cc, FFTwrapper* fft, std::ve
     loghA.resize(dftlen/2+1);
 
     loghA[0] = fft->getDCOutput().real();
-    for(int n=1; n<loghA.size()-1; ++n)
+    for(size_t n=1; n<loghA.size()-1; ++n)
         loghA[n] = fft->getOutput(n).real();
     loghA[dftlen/2] = fft->getNyquistOutput().real();
 //        loghA[n] = fft->out[n].real();
