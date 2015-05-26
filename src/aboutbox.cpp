@@ -27,7 +27,7 @@ AboutBox::AboutBox(QWidget *parent) :
         QTextStream readmefilestream(&readmefile);
         readmefilestream.readLine();
         readmefilestream.readLine();
-        dfasmaversion = readmefilestream.readLine();
+        dfasmaversion = readmefilestream.readLine().simplified();
     }
     QString txt = dfasmaversion;
 
