@@ -40,20 +40,24 @@ QStringList FTSound::getAudioFileReadingSupportedFormats() {
     return list;
 }
 
-AudioDecoder::AudioDecoder(bool isDelete)
-    : m_cout(stdout, QIODevice::WriteOnly)
+AudioDecoder::AudioDecoder()
+    : m_decoder(this)
 {
     // Make sure the data we receive is in correct PCM format.
     // Our wav file writer only supports SignedInt sample type.
     QAudioFormat format;
-    format.setChannelCount(2);
+    format.setChannelCount(1);
     format.setSampleSize(16);
-    format.setSampleRate(48000);
+    format.setSampleRate(44100);
     format.setCodec("audio/pcm");
+//    format.setCodec("audio/x-raw");
     format.setSampleType(QAudioFormat::SignedInt);
+//    format.setSampleType(QAudioFormat::UnSignedInt);
+
     m_decoder.setAudioFormat(format);
 
-    connect(&m_decoder, SIGNAL(bufferReady()), this, SLOT(bufferReady()));
+
+    connect(&m_decoder, SIGNAL(bufferReady()), this, SLOT(readBuffer()));
     connect(&m_decoder, SIGNAL(error(QAudioDecoder::Error)), this, SLOT(error(QAudioDecoder::Error)));
     connect(&m_decoder, SIGNAL(stateChanged(QAudioDecoder::State)), this, SLOT(stateChanged(QAudioDecoder::State)));
     connect(&m_decoder, SIGNAL(finished()), this, SLOT(finished()));
@@ -83,8 +87,10 @@ void AudioDecoder::setTargetFilename(const QString &fileName)
     m_targetFilename = fileName;
 }
 
-void AudioDecoder::bufferReady()
+void AudioDecoder::readBuffer()
 {
+    FLAG
+
     // read a buffer from audio decoder
     QAudioBuffer buffer = m_decoder.read();
     if (!buffer.isValid())
@@ -104,16 +110,16 @@ void AudioDecoder::error(QAudioDecoder::Error error)
     case QAudioDecoder::NoError:
         return;
     case QAudioDecoder::ResourceError:
-        m_cout << "Resource error" << endl;
+        std::cerr << "Resource error" << endl;
         break;
     case QAudioDecoder::FormatError:
-        m_cout << "Format error" << endl;
+        std::cerr << "Format error" << endl;
         break;
     case QAudioDecoder::AccessDeniedError:
-        m_cout << "Access denied error" << endl;
+        std::cerr << "Access denied error" << endl;
         break;
     case QAudioDecoder::ServiceMissingError:
-        m_cout << "Service missing error" << endl;
+        std::cerr << "Service missing error" << endl;
         break;
     }
 
@@ -124,10 +130,10 @@ void AudioDecoder::stateChanged(QAudioDecoder::State newState)
 {
     switch (newState) {
     case QAudioDecoder::DecodingState:
-        m_cout << "Decoding..." << endl;
+        std::cout << "Decoding..." << endl;
         break;
     case QAudioDecoder::StoppedState:
-        m_cout << "Decoding stopped" << endl;
+        std::cout << "Decoding stopped" << endl;
         break;
     }
 }
@@ -137,7 +143,7 @@ void AudioDecoder::finished()
 //    if (!m_fileWriter.close())
 //        m_cout << "Failed to finilize output file" << endl;
 
-    m_cout << "Decoding finished" << endl;
+    std::cout << "Decoding finished" << endl;
 
 //    emit done();
 }
@@ -151,19 +157,29 @@ void AudioDecoder::updateProgress()
         progress = position / (qreal)duration;
 
     if (progress > m_progress + 0.1) {
-        m_cout << "Decoding progress: " << (int)(progress * 100.0) << "%" << endl;
+        std::cout << "Decoding progress: " << (int)(progress * 100.0) << "%" << endl;
         m_progress = progress;
     }
 }
 
+
+
 int FTSound::getNumberOfChannels(const QString &filePath){
     COUTD << filePath.toLatin1().constData() << endl;
 
-    QAudioDecoder *decoder = new QAudioDecoder();
+
+    AudioDecoder *decoder = new AudioDecoder();
     decoder->setSourceFilename(filePath);
 
+//    QAudioFormat format = decoder->audioFormat();
 
-    QAudioFormat format = decoder->audioFormat();
+    QAudioFormat format = decoder->m_decoder.audioFormat();
+
+    COUTD << format << endl;
+
+//    connect(decoder, SIGNAL(bufferReady()), this, SLOT(readBuffer()));
+    decoder->start();
+
 
     COUTD << format << endl;
 
@@ -190,11 +206,11 @@ void FTSound::load(int channelid){
 //    desiredFormat.setSampleRate(48000);
 //    desiredFormat.setSampleSize(16);
 
-    QAudioDecoder *decoder = new QAudioDecoder(this);
+    AudioDecoder *decoder = new AudioDecoder();
 //    decoder->setAudioFormat(desiredFormat);
     decoder->setSourceFilename(fileFullPath);
 
-    QAudioFormat format = decoder->audioFormat();
+    QAudioFormat format = decoder->m_decoder.audioFormat();
 
 //    connect(decoder, SIGNAL(bufferReady()), this, SLOT(readBuffer()));
     decoder->start();
@@ -208,4 +224,6 @@ void FTSound::load(int channelid){
 //        for(int n=0; n<readcount; n++)
 //            wav.push_back(data[n]);
 //    };
+
+    delete decoder;
 }

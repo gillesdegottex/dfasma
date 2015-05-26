@@ -27,7 +27,14 @@ class AudioDecoder : public QObject
     Q_OBJECT
 
 public:
-    AudioDecoder(bool isDelete);
+    QAudioDecoder m_decoder;
+
+    QString m_targetFilename;
+
+    qreal m_progress;
+
+//public:
+    AudioDecoder();
     ~AudioDecoder() { }
 
     void setSourceFilename(const QString &fileName);
@@ -37,7 +44,7 @@ public:
     void setTargetFilename(const QString &fileName);
 
 public slots:
-    void bufferReady();
+    void readBuffer();
     void error(QAudioDecoder::Error error);
     void stateChanged(QAudioDecoder::State newState);
     void finished();
@@ -45,11 +52,4 @@ public slots:
 private slots:
     void updateProgress();
 
-private:
-    QAudioDecoder m_decoder;
-    QTextStream m_cout;
-
-    QString m_targetFilename;
-
-    qreal m_progress;
 };
