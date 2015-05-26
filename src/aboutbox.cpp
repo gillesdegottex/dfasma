@@ -68,27 +68,30 @@ AboutBox::AboutBox(QWidget *parent) :
 
 
     // Libraries
-    ui->txtLibraries->setText(FTSound::getAudioFileReadingDescription());
 
     // FFT
     QString fftinfostr = "";
-    fftinfostr += "<br/><i>Fast Fourier Transform (FFT):</i> "+sigproc::FFTwrapper::getLibraryInfo();
+    fftinfostr += "<i>Fast Fourier Transform (FFT):</i> "+sigproc::FFTwrapper::getLibraryInfo();
     fftinfostr += " ("+QString::number(sizeof(FFTTYPE)*8)+"bits(";
     if(sizeof(FFTTYPE)==4)  fftinfostr += "single";
     if(sizeof(FFTTYPE)==8)  fftinfostr += "double";
     if(sizeof(FFTTYPE)==16)  fftinfostr += "quadruple";
     fftinfostr += "); smallest: "+QString::number(20*log10(std::numeric_limits<FFTTYPE>::min()))+"dB)";
-    fftinfostr += "</p>";
     ui->vlLibraries->addWidget(new QLabel(fftinfostr));
 
     // SDIF
     QString sdifinfostr = "";
     #ifdef SUPPORT_SDIF
-        sdifinfostr = "<br/><i>For SDIF file format:</i> <a href=\"http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/\">Easdif</a> version "+QString(EASDIF_VERSION_STRING);
+        sdifinfostr = "<i>For SDIF file format:</i> <a href=\"http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/\">Easdif</a> version "+QString(EASDIF_VERSION_STRING);
     #else
-        sdifinfostr = "<br/><i>No support for SDIF file format</i>";
+        sdifinfostr = "<i>No support for SDIF file format</i>";
     #endif
     ui->vlLibraries->addWidget(new QLabel(sdifinfostr));
+
+    ui->vlLibraries->addWidget(new QLabel("<i>For reading Audio files:</i> "+FTSound::getAudioFileReadingDescription()));
+    QStringList list = FTSound::getAudioFileReadingSupportedFormats();
+    for(QStringList::Iterator it=list.begin(); it!=list.end(); ++it)
+        ui->listSupportedFormats->addItem(*it);
 
     //    QMessageBox::aboutQt(this, "About this software");
 }

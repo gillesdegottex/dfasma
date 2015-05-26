@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>585</width>
-    <height>500</height>
+    <width>638</width>
+    <height>416</height>
    </rect>
   </property>
-  <property name="minimumSize">
-   <size>
-    <width>0</width>
-    <height>500</height>
-   </size>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>About DFasma...</string>
@@ -148,7 +148,7 @@ p, li { white-space: pre-wrap; }
       <attribute name="title">
        <string>Credits</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
+      <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
         <widget class="QTextBrowser" name="textBrowser">
          <property name="frameShape">
@@ -189,44 +189,23 @@ p, li { white-space: pre-wrap; }
       <attribute name="title">
        <string>Libraries</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_4">
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <layout class="QVBoxLayout" name="vlLibraries"/>
+       </item>
        <item>
         <widget class="QLabel" name="label_2">
-         <property name="font">
-          <font>
-           <italic>true</italic>
-          </font>
-         </property>
          <property name="text">
-          <string>For reading audio files :</string>
+          <string>&lt;i&gt;Supported audio file formats:&lt;/i&gt;</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QTextBrowser" name="txtLibraries">
-         <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Plain</enum>
-         </property>
-         <property name="lineWidth">
-          <number>0</number>
-         </property>
-         <property name="textInteractionFlags">
-          <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-         </property>
-         <property name="openExternalLinks">
-          <bool>true</bool>
+        <widget class="QListWidget" name="listSupportedFormats">
+         <property name="sizeAdjustPolicy">
+          <enum>QAbstractScrollArea::AdjustToContents</enum>
          </property>
         </widget>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="vlLibraries">
-         <property name="spacing">
-          <number>0</number>
-         </property>
-        </layout>
        </item>
       </layout>
      </widget>

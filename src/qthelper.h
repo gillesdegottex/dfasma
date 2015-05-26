@@ -84,6 +84,62 @@ inline std::ostream& operator<<(std::ostream& stream, const QTime& t) {
     return stream;
 }
 
+inline QString formatToString(const QAudioFormat &format) {
+    QString result;
+
+    if (QAudioFormat() != format) {
+        if (format.codec() == "audio/pcm") {
+            Q_ASSERT(format.sampleType() == QAudioFormat::SignedInt);
+
+            const QString formatEndian = (format.byteOrder() == QAudioFormat::LittleEndian)
+                ?   QString("LE") : QString("BE");
+
+            QString formatType;
+            switch (format.sampleType()) {
+            case QAudioFormat::SignedInt:
+                formatType = "signed";
+                break;
+            case QAudioFormat::UnSignedInt:
+                formatType = "unsigned";
+                break;
+            case QAudioFormat::Float:
+                formatType = "float";
+                break;
+            case QAudioFormat::Unknown:
+                formatType = "unknown";
+                break;
+            }
+
+            QString formatChannels = QString("%1 channels").arg(format.channelCount());
+            switch (format.channelCount()) {
+            case 1:
+                formatChannels = "mono";
+                break;
+            case 2:
+                formatChannels = "stereo";
+                break;
+            }
+
+            result = QString("%1Hz %2bit %3 %4 %5")
+                .arg(format.sampleRate())
+                .arg(format.sampleSize())
+                .arg(formatType)
+                .arg(formatEndian)
+                .arg(formatChannels);
+        } else {
+            result = format.codec();
+        }
+    }
+
+    return result;
+}
+
+inline std::ostream& operator<<(std::ostream& stream, const QAudioFormat& af) {
+    stream << formatToString(af);
+
+    return stream;
+}
+
 inline std::ostream& operator<<(std::ostream& stream, const FTSound::DFTParameters& params) {
     stream << "samples[" << params.nl << "," << params.nr << "] winlen=" << params.winlen << " wintype=" << params.wintype << " win.size()=" << params.win.size() << " dftlen=" << params.dftlen << " ampscale=" << params.ampscale << " delay=" << params.delay;
 

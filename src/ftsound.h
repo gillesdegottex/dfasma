@@ -217,6 +217,7 @@ public:
 
     static void setAvoidClicksWindowDuration(double halfduration);
     static QString getAudioFileReadingDescription();
+    static QStringList getAudioFileReadingSupportedFormats();
     static int getNumberOfChannels(const QString& filePath);
 
     ~FTSound();
