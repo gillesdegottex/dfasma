@@ -20,7 +20,7 @@
 
 # Compilation options ----------------------------------------------------------
 # (except for fft_fftreal and file_audio_builtin, all the other
-#  options request linking with external libraries)
+#  options need to link with external libraries)
 
 # For the Discrete Fast Fourier Transform
 # Chose among: fft_fftw3, fft_builtin_fftreal
@@ -31,13 +31,12 @@ DEFINES += FFTW3RESIZINGMAXTIMESPENT
 
 # For the audio file support
 # Chose among: file_audio_libsndfile, file_audio_libsox,
-#              file_audio_libav,
-#              file_audio_qt, file_audio_builtin
+#              file_audio_qt, file_audio_builtin, file_audio_libav
 CONFIG += file_audio_libsndfile
 
 # Additional file format support
 # SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
-CONFIG += file_sdif
+#CONFIG += file_sdif
 
 ## OS specific options
 #QMAKE_MAC_SDK = macosx10.6
@@ -95,15 +94,15 @@ CONFIG(file_audio_qt) {
 CONFIG(file_audio_libsndfile) {
     message(Audio file reader: libsndfile)
     QMAKE_CXXFLAGS += -Dfile_audio_LIBSNDFILE
-    SOURCES  += external/iodsound_load_libsndfile.cpp
+    SOURCES += external/iodsound_load_libsndfile.cpp
     win32 {
         contains(QMAKE_TARGET.arch, x86_64) {
-            INCLUDEPATH += "$$_PRO_FILE_PWD_/../libsndfile-1.0.25-w64/include/"
-            LIBS += "$$_PRO_FILE_PWD_/../libsndfile-1.0.25-w64/lib/libsndfile-1.lib"
+            FILE_AUDIO_LIBDIR = "$$_PRO_FILE_PWD_/../lib/libsndfile-1.0.25-w64"
         } else {
-            INCLUDEPATH += "$$_PRO_FILE_PWD_/../libsndfile-1.0.25-w32/include/"
-            LIBS += "$$_PRO_FILE_PWD_/../libsndfile-1.0.25-w32/lib/libsndfile-1.lib"
+            FILE_AUDIO_LIBDIR = "$$_PRO_FILE_PWD_/../lib/libsndfile-1.0.25-w32"
         }
+        INCLUDEPATH += "$$FILE_AUDIO_LIBDIR/include/"
+        LIBS += "$$FILE_AUDIO_LIBDIR/lib/libsndfile-1.lib"
     }
     unix:LIBS += -lsndfile
 }
@@ -122,25 +121,33 @@ CONFIG(file_audio_libav) {
     LIBS += -lavformat -lavcodec -lavutil
 }
 
-# DFT computation libraries ----------------------------------------------------
+# FFT Implementation libraries ----------------------------------------------------
 
 CONFIG(fft_fftw3){
     message(FFT Implementation: FFTW3)
     QMAKE_CXXFLAGS += -DFFT_FFTW3
     win32 {
         contains(QMAKE_TARGET.arch, x86_64) {
-            INCLUDEPATH += "$$_PRO_FILE_PWD_/../fftw-3.3.4-dll64/"
-            LIBS += "$$_PRO_FILE_PWD_/../fftw-3.3.4-dll64/libfftw3-3.lib"
+            FFT_LIBDIR = "$$_PRO_FILE_PWD_/../lib/fftw-3.3.4-dll64"
         } else {
-            INCLUDEPATH += "$$_PRO_FILE_PWD_/../fftw-3.3.4-dll32/"
-            LIBS += "$$_PRO_FILE_PWD_/../fftw-3.3.4-dll32/libfftw3-3.lib"
+            FFT_LIBDIR = "$$_PRO_FILE_PWD_/../lib/fftw-3.3.4-dll32"
+        }
+        INCLUDEPATH += "$$FFT_LIBDIR"
+        LIBS += -L$$FFT_LIBDIR/
+        CONFIG(precision_double) {
+            LIBS += -lfftw3-3
+        }
+        CONFIG(precision_float) {
+            LIBS += -lfftw3f-3
         }
     }
-    CONFIG(precision_double) {
-        unix:LIBS += -lfftw3
-    }
-    CONFIG(precision_float) {
-        unix:LIBS += -lfftw3f
+    unix {
+        CONFIG(precision_double) {
+            LIBS += -lfftw3
+        }
+        CONFIG(precision_float) {
+            LIBS += -lfftw3f
+        }
     }
 }
 CONFIG(fft_builtin_fftreal){
