@@ -24,13 +24,8 @@
 
 
 // Check if compiling using MSVC (Microsoft compiler)
-#ifdef MSVC_VERSION
+#ifdef _MSC_VER
     // The following is necessary for MSVC 2012
-//    inline bool qIsInf(float f){return std::abs(f)>std::numeric_limits<float>::max()/2;}
-//    template<class Type> inline bool qIsInf(Type f){return std::abs(f)>std::numeric_limits<Type>::max()/2;}
-    template<class Type> inline bool qIsInf(Type f){return !_finite(f);}
-    template<class Type> inline bool qIsNaN(Type f){return _isnan(f);}
-//    template<class Type> inline bool qIsNaN(Type f){return f!=f;}
     template<class Type> inline Type log2(Type v) {return std::log(v)/std::log(2.); }
 #endif
 
