@@ -10,6 +10,8 @@
 #include "colormap.h"
 #include "ftsound.h"
 
+#include <QtGlobal>
+
 STFTComputeThread::STFTParameters::STFTParameters(FTSound* reqnd, const std::vector<FFTTYPE>& reqwin, int reqstepsize, int reqdftlen, int reqcepliftorder, bool reqcepliftpresdc){
     clear();
 
@@ -123,7 +125,7 @@ void STFTComputeThread::run() {
                 int stepsize = params_running.stftparams.stepsize;
                 int dftlen = params_running.stftparams.dftlen;
                 std::vector<FFTTYPE>& win = params_running.stftparams.win;
-                int winlen = win.size();
+                int winlen = int(win.size());
                 int fs = params_running.stftparams.snd->fs;
                 FFTTYPE stftmin = std::numeric_limits<FFTTYPE>::infinity();
                 FFTTYPE stftmax = -std::numeric_limits<FFTTYPE>::infinity();
@@ -229,7 +231,7 @@ void STFTComputeThread::run() {
                         for(n=0; n<dftlen/2+1; n++) {
                             FFTTYPE value = sigproc::log2db*stft[si][n];
 
-                            if(std::isnan(value))
+                            if(qIsNaN(value))
                                 value = -std::numeric_limits<FFTTYPE>::infinity();
 
     //                        if(value<-300)
