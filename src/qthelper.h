@@ -37,11 +37,11 @@
 #endif
 
 
-#define COUTD std::cout << QThread::currentThreadId() << " " << QDateTime::fromMSecsSinceEpoch(QDateTime::currentMSecsSinceEpoch()).toString("hh:mm:ss.zzz             ").toLocal8Bit().constData() << " " << __FILE__ << ":" << __LINE__ << " "
+//#define COUTD std::cout << QThread::currentThreadId() << " " << QDateTime::fromMSecsSinceEpoch(QDateTime::currentMSecsSinceEpoch()).toString("hh:mm:ss.zzz             ").toLocal8Bit().constData() << " " << __FILE__ << ":" << __LINE__ << " "
 
-//#define COUTD QTextStream(stdout) << QThread::currentThreadId() << " " << QDateTime::fromMSecsSinceEpoch(QDateTime::currentMSecsSinceEpoch()).toString("hh:mm:ss.zzz             ").toLocal8Bit().constData() << " " << __FILE__ << ":" << __LINE__ << " "
+#define COUTD QTextStream(stdout) << QThread::currentThreadId() << " " << QDateTime::fromMSecsSinceEpoch(QDateTime::currentMSecsSinceEpoch()).toString("hh:mm:ss.zzz             ").toLocal8Bit().constData() << " " << __FILE__ << ":" << __LINE__ << " "
 
-#define FLAG COUTD << std::endl;
+#define FLAG COUTD << endl;
 
 // Remove hard coded margin (Bug 11945)
 // See: https://bugreports.qt-project.org/browse/QTBUG-11945
@@ -83,50 +83,49 @@ inline std::ostream& operator<<(std::ostream& stream, const QTime& t) {
 }
 
 inline QString formatToString(const QAudioFormat &format) {
+
     QString result;
 
     if (QAudioFormat() != format) {
-        if (format.codec() == "audio/pcm") {
-            Q_ASSERT(format.sampleType() == QAudioFormat::SignedInt);
 
-            const QString formatEndian = (format.byteOrder() == QAudioFormat::LittleEndian)
-                ?   QString("LE") : QString("BE");
+        const QString formatEndian = (format.byteOrder() == QAudioFormat::LittleEndian)
+            ?   QString("LE") : QString("BE");
 
-            QString formatType;
-            switch (format.sampleType()) {
-            case QAudioFormat::SignedInt:
-                formatType = "signed";
-                break;
-            case QAudioFormat::UnSignedInt:
-                formatType = "unsigned";
-                break;
-            case QAudioFormat::Float:
-                formatType = "float";
-                break;
-            case QAudioFormat::Unknown:
-                formatType = "unknown";
-                break;
-            }
-
-            QString formatChannels = QString("%1 channels").arg(format.channelCount());
-            switch (format.channelCount()) {
-            case 1:
-                formatChannels = "mono";
-                break;
-            case 2:
-                formatChannels = "stereo";
-                break;
-            }
-
-            result = QString("%1Hz %2bit %3 %4 %5")
-                .arg(format.sampleRate())
-                .arg(format.sampleSize())
-                .arg(formatType)
-                .arg(formatEndian)
-                .arg(formatChannels);
-        } else {
-            result = format.codec();
+        QString formatType;
+        switch (format.sampleType()) {
+        case QAudioFormat::SignedInt:
+            formatType = "signed";
+            break;
+        case QAudioFormat::UnSignedInt:
+            formatType = "unsigned";
+            break;
+        case QAudioFormat::Float:
+            formatType = "float";
+            break;
+        case QAudioFormat::Unknown:
+            formatType = "unknown";
+            break;
         }
+
+        QString formatChannels = QString("%1 channels").arg(format.channelCount());
+        switch (format.channelCount()) {
+        case 1:
+            formatChannels = "mono";
+            break;
+        case 2:
+            formatChannels = "stereo";
+            break;
+        }
+
+        result = format.codec()+" "+QString("%1Hz %2bit %3 %4 %5")
+            .arg(format.sampleRate())
+            .arg(format.sampleSize())
+            .arg(formatType)
+            .arg(formatEndian)
+            .arg(formatChannels);
+    }
+    else {
+        result = "empty format";
     }
 
     return result;
@@ -134,7 +133,10 @@ inline QString formatToString(const QAudioFormat &format) {
 
 inline std::ostream& operator<<(std::ostream& stream, const QAudioFormat& af) {
     stream << formatToString(af);
-
+    return stream;
+}
+inline QTextStream& operator<<(QTextStream& stream, const QAudioFormat& af) {
+    stream << formatToString(af);
     return stream;
 }
 
