@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
         sox_quit();
     #endif
 
-//    exit(ret); // WORKAROUND?: won't quit otherwise on some platform (e.g. bouzouki) TODO
+    exit(ret); // WORKAROUND?: won't quit otherwise on some platform (e.g. bouzouki) TODO
 
     return ret;
 }
