@@ -318,7 +318,8 @@ void QGVSpectrogram::stftComputingStateChanged(int state){
         gMW->ui->pgbSpectrogramSTFTCompute->hide();
         m_imgSTFTParams = m_stftcomputethread->m_params_last;
 //        COUTD << m_imgSTFTParams.stftparams.dftlen << endl;
-        gMW->ui->lblSpectrogramInfoTxt->setText(QString("DFT size=%1").arg(m_imgSTFTParams.stftparams.dftlen));
+        gMW->ui->lblSpectrogramInfoTxt->setText(" ");
+//        gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT: size %1, %2s step").arg(m_imgSTFTParams.stftparams.dftlen).arg(m_imgSTFTParams.stftparams.stepsize/gMW->getFs()));
         m_scene->update();
     }
     else if(state==STFTComputeThread::SCSCanceled){
@@ -352,26 +353,29 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
 
     // Fix limits between min and max sliders
     FTSound* csnd = gMW->getCurrentFTSound(true);
-    if(csnd && csnd->m_actionShow->isChecked()) {
-//        cout << "QGVSpectrogram::updateSTFTPlot " << csnd->fileFullPath.toLatin1().constData() << endl;
+    if(csnd){
+        if(csnd->m_actionShow->isChecked()) {
+    //        cout << "QGVSpectrogram::updateSTFTPlot " << csnd->fileFullPath.toLatin1().constData() << endl;
 
-        if(force)
-            m_imgSTFTParams.clear();
+            if(force)
+                m_imgSTFTParams.clear();
 
-        int stepsize = std::floor(0.5+gMW->getFs()*m_dlgSettings->ui->sbSpectrogramStepSize->value());//[samples]
-        int dftlen = pow(2, std::ceil(log2(float(m_win.size())))+m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());//[samples]
-        int cepliftorder = -1;//[samples]
-        if(gMW->m_gvSpectrogram->m_dlgSettings->ui->gbSpectrogramCepstralLiftering->isChecked())
-            cepliftorder = gMW->m_gvSpectrogram->m_dlgSettings->ui->sbSpectrogramCepstralLifteringOrder->value();
-        bool cepliftpresdc = gMW->m_gvSpectrogram->m_dlgSettings->ui->cbSpectrogramCepstralLifteringPreserveDC->isChecked();
+            int stepsize = std::floor(0.5+gMW->getFs()*m_dlgSettings->ui->sbSpectrogramStepSize->value());//[samples]
+            int dftlen = pow(2, std::ceil(log2(float(m_win.size())))+m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());//[samples]
+            int cepliftorder = -1;//[samples]
+            if(gMW->m_gvSpectrogram->m_dlgSettings->ui->gbSpectrogramCepstralLiftering->isChecked())
+                cepliftorder = gMW->m_gvSpectrogram->m_dlgSettings->ui->sbSpectrogramCepstralLifteringOrder->value();
+            bool cepliftpresdc = gMW->m_gvSpectrogram->m_dlgSettings->ui->cbSpectrogramCepstralLifteringPreserveDC->isChecked();
 
-        STFTComputeThread::STFTParameters reqSTFTParams(csnd, m_win, stepsize, dftlen, cepliftorder, cepliftpresdc);
-        STFTComputeThread::ImageParameters reqImgSTFTParams(reqSTFTParams, &m_imgSTFT, m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex(), m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked(), gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0, gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0);
+            STFTComputeThread::STFTParameters reqSTFTParams(csnd, m_win, stepsize, dftlen, cepliftorder, cepliftpresdc);
+            STFTComputeThread::ImageParameters reqImgSTFTParams(reqSTFTParams, &m_imgSTFT, m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex(), m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked(), gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0, gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0);
 
-        if(m_imgSTFTParams.isEmpty() || reqImgSTFTParams!=m_imgSTFTParams) {
-            gMW->ui->pbSpectrogramSTFTUpdate->hide();
-            m_stftcomputethread->compute(reqImgSTFTParams);
+            if(m_imgSTFTParams.isEmpty() || reqImgSTFTParams!=m_imgSTFTParams) {
+                gMW->ui->pbSpectrogramSTFTUpdate->hide();
+                m_stftcomputethread->compute(reqImgSTFTParams);
+            }
         }
+        m_scene->update();
     }
 
 //    COUTD << "QGVSpectrogram::~updateSTFTPlot" << endl;
