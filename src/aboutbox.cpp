@@ -17,7 +17,7 @@ AboutBox::AboutBox(QWidget *parent) :
 
     QString dfasmaversiongit(STR(DFASMAVERSIONGIT));
 
-    QTextStream(stdout) << "'" << dfasmaversiongit << "'" << endl;
+//    QTextStream(stdout) << "'" << dfasmaversiongit << "'" << endl;
 
     QString	dfasmaversion;
     if(dfasmaversiongit.length()>0) {
