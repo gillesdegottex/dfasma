@@ -90,9 +90,20 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_aSpectrogramShowGrid->setObjectName("m_aSpectrogramShowGrid"); // For auto settings
     m_aSpectrogramShowGrid->setStatusTip(tr("Show &grid"));
     m_aSpectrogramShowGrid->setCheckable(true);
+    m_aSpectrogramShowGrid->setChecked(false);
     m_aSpectrogramShowGrid->setIcon(QIcon(":/icons/grid.svg"));
     gMW->m_settings.add(m_aSpectrogramShowGrid);
-    connect(m_aSpectrogramShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
+    connect(m_aSpectrogramShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
+
+    m_aSpectrogramShowHarmonics = new QAction(tr("Show &Harmonics"), this);
+    m_aSpectrogramShowHarmonics->setObjectName("m_aSpectrogramShowHarmonics"); // For auto settings
+    m_aSpectrogramShowHarmonics->setStatusTip(tr("Show the harmonics of the fundamental frequency curves"));
+    m_aSpectrogramShowHarmonics->setCheckable(true);
+    m_aSpectrogramShowHarmonics->setChecked(false);
+//    m_aSpectrogramShowHarmonics->setIcon(QIcon(":/icons/grid.svg"));
+    gMW->m_settings.add(m_aSpectrogramShowHarmonics);
+    connect(m_aSpectrogramShowHarmonics, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
+
 
     m_stftcomputethread = new STFTComputeThread(this);
 
@@ -202,6 +213,7 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
 
     // Build the context menu
     m_contextmenu.addAction(m_aSpectrogramShowGrid);
+    m_contextmenu.addAction(m_aSpectrogramShowHarmonics);
     m_contextmenu.addSeparator();
     m_contextmenu.addAction(m_aShowProperties);
     connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
@@ -215,8 +227,6 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(spanChanged(int,int)), SLOT(amplitudeExtentSlidersChanged()));
     connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(lowerValueChanged(int)), this, SLOT(updateSTFTPlot()));
     connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(upperValueChanged(int)), this, SLOT(updateSTFTPlot()));
-
-    connect(m_dlgSettings->ui->cbSpectrogramF0ShowHarmonics, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
 
     updateSTFTSettings(); // Prepare a window from loaded settings
 }
@@ -1055,7 +1065,7 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
             if(gMW->ftfzeros[fi]->f0s.back()>0.0)
                 f0min = std::min(f0min, gMW->ftfzeros[fi]->f0s.back());
 
-            if(m_dlgSettings->ui->cbSpectrogramF0ShowHarmonics->isChecked()){
+            if(m_aSpectrogramShowHarmonics->isChecked()){
                 // Draw harmonics up to Nyquist
                 c.setAlphaF(0.5);
                 outlinePen.setColor(c);

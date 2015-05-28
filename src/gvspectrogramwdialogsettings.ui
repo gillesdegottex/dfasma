@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>575</width>
-    <height>598</height>
+    <height>653</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -412,21 +412,6 @@
        </layout>
       </item>
       <item>
-       <widget class="QLabel" name="lblImgSizeWarning">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>8</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>&lt;Warning about Image size&gt;</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QGroupBox" name="gbSpectrogramCepstralLiftering">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
@@ -500,6 +485,21 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
+       <widget class="QLabel" name="lblImgSizeWarning">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>&lt;Warning about Image size&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
          <widget class="QLabel" name="label">
@@ -517,13 +517,6 @@
        <widget class="QCheckBox" name="cbSpectrogramColorMapReversed">
         <property name="text">
          <string>Reversed color map</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="cbSpectrogramF0ShowHarmonics">
-        <property name="text">
-         <string>Show the harmonics of the fundamental frequency curves</string>
         </property>
        </widget>
       </item>
