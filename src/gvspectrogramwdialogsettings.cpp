@@ -53,6 +53,10 @@ void GVSpectrogramWDialogSettings::checkImageSize() {
         winlen++;
     int dftlen = pow(2, std::ceil(log2(float(winlen)))+ui->sbSpectrogramOversamplingFactor->value());//[samples]
 
+    ui->lblActualWindowLength->setText(QString("%2s(%1)").arg(winlen).arg(double(winlen)/gMW->getFs()));
+    ui->lblDFTSize->setText(QString("DFT size=%1").arg(dftlen));
+    ui->lblActualStepSize->setText(QString("%2s(%1)").arg(stepsize).arg(double(stepsize)/gMW->getFs()));
+
     int imgheight = dftlen/2+1;
     int imgwidth = int(1+double(maxsampleindex+1-winlen)/stepsize);
 
@@ -62,7 +66,7 @@ void GVSpectrogramWDialogSettings::checkImageSize() {
     text += QString("Image size: %1x%2 = %3Mb").arg(imgwidth).arg(imgheight).arg(size);
 
     if(imgwidth>32768 || imgheight>32768){
-        text += "<br/><font color=\"red\">Image dimensions need to be smaller than 32768.<br/>You can: increase step size, reduce window's size, reduce oversampling factor,<br/>or try it! (visual artefacts expected)</font>";
+        text += "<br/><font color=\"red\">Image dimensions need to be smaller than 32768.<br/>You can: increase step size, reduce window length, reduce oversampling factor,<br/>or try it! (visual artefacts expected)</font>";
     }
     text += "<br/></body></html>";
     ui->lblImgSizeWarning->setText(text);

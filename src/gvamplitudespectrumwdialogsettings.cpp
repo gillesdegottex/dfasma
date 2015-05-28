@@ -11,14 +11,15 @@ GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(QGVAmplit
     , ui(new Ui::GVAmplitudeSpectrumWDialogSettings)
 {
     ui->setupUi(this);
+    ui->lblAmplitudeSpectrumFFTW3MaxTimeForPlanPreparation->hide();
+    ui->sbAmplitudeSpectrumFFTW3MaxTimeForPlanPreparation->hide();
 
     m_ampspec = parent;
 
     // Load the settings
-    #ifndef FFTW3RESIZINGMAXTIMESPENT
-    ui->lblFFTW3ResizingMaxTimeSpent->hide();
-    ui->sbFFTW3ResizingMaxTimeSpent->hide();
-    #else
+    #ifdef FFTW3RESIZINGMAXTIMESPENT
+    ui->lblAmplitudeSpectrumFFTW3MaxTimeForPlanPreparation->show();
+    ui->sbAmplitudeSpectrumFFTW3MaxTimeForPlanPreparation->show();
     gMW->m_settings.add(ui->sbAmplitudeSpectrumFFTW3MaxTimeForPlanPreparation);
     #endif
     gMW->m_settings.add(ui->cbAmplitudeSpectrumWindowSizeForcedOdd);

@@ -31,7 +31,19 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Window size</string>
+           <string>Window length</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lblActualWindowLength">
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>&lt;actual window length&gt;</string>
           </property>
          </widget>
         </item>
@@ -62,7 +74,7 @@
       <item>
        <widget class="QCheckBox" name="cbSpectrogramWindowSizeForcedOdd">
         <property name="text">
-         <string>Force odd window size</string>
+         <string>Force odd window length</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -292,13 +304,37 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DFT size = &lt;span style=&quot; font-size:14pt;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot; font-size:14pt; vertical-align:super;&quot;&gt;⌈log2(winlen)⌉+X&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="statusTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DFT size = &lt;span style=&quot; font-size:14pt;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot; font-size:14pt; vertical-align:super;&quot;&gt;⌈log2(winlen)⌉+X&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Oversampling factor &lt;span style=&quot; font-size:8pt;&quot;&gt;[ dftlen=2^(ceil(log2(winlen))+X) ]&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>Oversampling factor</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="lblDFTSize">
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>&lt;DFT size&gt;</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QSpinBox" name="sbSpectrogramOversamplingFactor">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DFT size = &lt;span style=&quot; font-size:14pt;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot; font-size:14pt; vertical-align:super;&quot;&gt;⌈log2(winlen)⌉+X&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="statusTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DFT size = &lt;span style=&quot; font-size:14pt;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot; font-size:14pt; vertical-align:super;&quot;&gt;⌈log2(winlen)⌉+X&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="value">
            <number>0</number>
           </property>
@@ -316,13 +352,43 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="toolTip">
+           <string>The actual step size might be slightly different since it is always an integer number of samples.</string>
+          </property>
+          <property name="statusTip">
+           <string>The actual step size might be slightly different since it is always an integer number of samples.</string>
+          </property>
           <property name="text">
            <string>Step size</string>
           </property>
          </widget>
         </item>
         <item>
+         <widget class="QLabel" name="lblActualStepSize">
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>The actual step size might be slightly different since it is always an integer number of samples.</string>
+          </property>
+          <property name="statusTip">
+           <string>The actual step size might be slightly different since it is always an integer number of samples.</string>
+          </property>
+          <property name="text">
+           <string>&lt;actual step size&gt;</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QDoubleSpinBox" name="sbSpectrogramStepSize">
+          <property name="toolTip">
+           <string>The actual step size might be slightly different since it is always an integer number of samples.</string>
+          </property>
+          <property name="statusTip">
+           <string>The actual step size might be slightly different since it is always an integer number of samples.</string>
+          </property>
           <property name="suffix">
            <string>s</string>
           </property>

@@ -35,7 +35,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Limit window's duration</string>
+           <string>Limit window's length</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -69,7 +69,7 @@
       <item>
        <widget class="QCheckBox" name="cbAmplitudeSpectrumWindowSizeForcedOdd">
         <property name="text">
-         <string>Force odd window size</string>
+         <string>Force odd window length</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -299,13 +299,25 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DFT size = &lt;span style=&quot; font-size:14pt;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot; font-size:14pt; vertical-align:super;&quot;&gt;⌈log2(winlen)⌉+X&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="statusTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DFT size = &lt;span style=&quot; font-size:14pt;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot; font-size:14pt; vertical-align:super;&quot;&gt;⌈log2(winlen)⌉+X&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Oversampling factor &lt;span style=&quot; font-size:8pt;&quot;&gt;[ dftlen=2^(ceil(log2(winlen))+X) ]&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Oversampling factor&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QSpinBox" name="sbAmplitudeSpectrumOversamplingFactor">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DFT size = &lt;span style=&quot; font-size:14pt;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot; font-size:14pt; vertical-align:super;&quot;&gt;⌈log2(winlen)⌉+X&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="statusTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DFT size = &lt;span style=&quot; font-size:14pt;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot; font-size:14pt; vertical-align:super;&quot;&gt;⌈log2(winlen)⌉+X&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="value">
            <number>1</number>
           </property>
@@ -314,9 +326,9 @@
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <layout class="QHBoxLayout" name="lAmplitudeSpectrumFFTW3MaxTimeForPlanPreparation">
         <item>
-         <widget class="QLabel" name="lblFFTW3ResizingMaxTimeSpent">
+         <widget class="QLabel" name="lblAmplitudeSpectrumFFTW3MaxTimeForPlanPreparation">
           <property name="enabled">
            <bool>false</bool>
           </property>
