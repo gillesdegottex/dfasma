@@ -135,12 +135,11 @@ CONFIG(fft_fftw3){
             FFT_LIBDIR = "$$_PRO_FILE_PWD_/../lib/fftw-3.3.4-dll32"
         }
         INCLUDEPATH += "$$FFT_LIBDIR"
-        LIBS += -L$$FFT_LIBDIR/
         CONFIG(precision_double) {
-            LIBS += -lfftw3-3
+            LIBS += $$FFT_LIBDIR/libfftw3-3.lib
         }
         CONFIG(precision_float) {
-            LIBS += -lfftw3f-3
+            LIBS += $$FFT_LIBDIR/libfftw3f-3.lib
         }
     }
     unix {

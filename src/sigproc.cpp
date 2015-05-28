@@ -81,6 +81,7 @@ void FFTwrapper::setTimeLimitForPlanPreparation(float t){
         #ifdef FFTW3RESIZINGMAXTIMESPENT
             fftwg_set_timelimit(t); // From FFTW 3.1, no means exist to check version at compile time ...
         #else
+            Q_UNUSED(t)
             // Do nothing
         #endif
     #endif
