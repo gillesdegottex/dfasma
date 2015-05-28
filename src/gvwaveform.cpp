@@ -375,7 +375,7 @@ void QGVWaveform::setMouseCursorPosition(double position, bool forwardsync) {
 
         m_giMouseCursorLine->setPos(position, 0.0);
 
-        QString txt = QString("%1s").arg(position);
+        QString txt = QString("%1s").arg(position, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value());
         m_giMouseCursorTxt->setText(txt);
 
         QTransform trans = transform();
