@@ -330,6 +330,8 @@ void QGVSpectrogram::stftComputingStateChanged(int state){
         gMW->ui->lblSpectrogramInfoTxt->setText(" ");
 //        gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT: size %1, %2s step").arg(m_imgSTFTParams.stftparams.dftlen).arg(m_imgSTFTParams.stftparams.stepsize/gMW->getFs()));
         m_scene->update();
+        if(gMW->m_gvWaveform->m_aWaveformShowSTFTWindowCenters->isChecked())
+            gMW->m_gvWaveform->update();
     }
     else if(state==STFTComputeThread::SCSCanceled){
 //        COUTD << "SCSCanceled" << endl;
@@ -385,6 +387,8 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
             }
         }
         m_scene->update();
+        if(gMW->m_gvWaveform->m_aWaveformShowSTFTWindowCenters->isChecked())
+            gMW->m_gvWaveform->update();
     }
 
 //    COUTD << "QGVSpectrogram::~updateSTFTPlot" << endl;
