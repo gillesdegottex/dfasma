@@ -156,7 +156,7 @@ public:
 
     virtual void mouseMoveEvent(QMouseEvent * e) {
         Q_UNUSED(e)
-        setCursor(Qt::CrossCursor);
+        setCursor(Qt::ArrowCursor);
     }
 };
 

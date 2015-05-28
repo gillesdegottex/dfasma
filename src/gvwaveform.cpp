@@ -64,6 +64,8 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     setStyleSheet("QGraphicsView { border-style: none; }");
     setFrameShape(QFrame::NoFrame);
     setFrameShadow(QFrame::Plain);
+    setHorizontalScrollBar(new QScrollBarHover(Qt::Horizontal, this));
+    setVerticalScrollBar(new QScrollBarHover(Qt::Vertical, this));
 
     m_scene = new QGraphicsScene(this);
     setScene(m_scene);

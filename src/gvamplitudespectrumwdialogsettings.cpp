@@ -11,6 +11,7 @@ GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(QGVAmplit
     , ui(new Ui::GVAmplitudeSpectrumWDialogSettings)
 {
     ui->setupUi(this);
+
     ui->lblAmplitudeSpectrumFFTW3MaxTimeForPlanPreparation->hide();
     ui->sbAmplitudeSpectrumFFTW3MaxTimeForPlanPreparation->hide();
 
