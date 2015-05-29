@@ -10,7 +10,6 @@
 namespace mkfilter {
 
 #include <iostream>
-#include <QtMath>
 #include <QString>
 
 typedef unsigned int uint;
