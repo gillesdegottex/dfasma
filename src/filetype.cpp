@@ -168,7 +168,8 @@ QString FileType::info() const {
 }
 
 bool FileType::checkFileStatus(CHECKFILESTATUSMGT cfsmgt){
-    if(!QFileInfo::exists(fileFullPath)){
+    QFileInfo fileInfo(fileFullPath);
+    if(!fileInfo.exists()){
         if(cfsmgt==CFSMEXCEPTION)
             throw QString("The file: ")+fileFullPath+" doesn't seem to exist.";
         else if(cfsmgt==CFSMMESSAGEBOX)
