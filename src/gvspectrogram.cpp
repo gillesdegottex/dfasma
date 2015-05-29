@@ -496,21 +496,26 @@ void QGVSpectrogram::wheelEvent(QWheelEvent* event) {
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
-//    cout << "QGVWaveform::wheelEvent: " << viewrect << endl;
+//    cout << "QGVSpectrogram::wheelEvent: " << viewrect << endl;
 
     if(event->modifiers().testFlag(Qt::ShiftModifier)){
         QScrollBar* sb = horizontalScrollBar();
         sb->setValue(sb->value()-numDegrees);
     }
     else if((numDegrees>0 && viewrect.width()>10.0/gMW->getFs()) || numDegrees<0) {
-        QTransform trans = transform();
-        qreal h11 = trans.m11();
-        qreal h22 = trans.m22();
-        h11 += 0.01*h11*numDegrees;
-        h22 += 0.01*h22*numDegrees;
-        setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-        setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
-        viewSet();
+        double gx = double(mapToScene(event->pos()).x()-viewrect.left())/viewrect.width();
+        double gy = double(mapToScene(event->pos()).y()-viewrect.top())/viewrect.height();
+        QRectF newrect = mapToScene(viewport()->rect()).boundingRect();
+        newrect.setLeft(newrect.left()+gx*0.01*viewrect.width()*numDegrees);
+        newrect.setRight(newrect.right()-(1-gx)*0.01*viewrect.width()*numDegrees);
+        newrect.setTop(newrect.top()+gy*0.01*viewrect.height()*numDegrees);
+        newrect.setBottom(newrect.bottom()-(1-gy)*0.01*viewrect.height()*numDegrees);
+        if(newrect.width()<10.0/gMW->getFs()){
+           newrect.setLeft(newrect.center().x()-5.0/gMW->getFs());
+           newrect.setRight(newrect.center().x()+5.0/gMW->getFs());
+        }
+
+        viewSet(newrect);
     }
 
     QPointF p = mapToScene(event->pos());
