@@ -328,7 +328,7 @@ template<typename DataType, typename ContainerIn, typename ContainerOut> inline 
     // The exrapolated segmented will be windowed
     std::vector<FFTTYPE> win = sigproc::hann(margin*maxorder*2+1);
     FFTTYPE winmax = win[(int(win.size())-1)/2];
-    for(size_t n=0; n<int(win.size()); n++)
+    for(size_t n=0; n<win.size(); ++n)
         win[n] /= winmax;
 
     // Before nstart
