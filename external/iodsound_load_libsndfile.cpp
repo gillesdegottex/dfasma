@@ -84,7 +84,9 @@ QStringList FTSound::getAudioFileReadingSupportedFormats() {
 }
 int FTSound::getNumberOfChannels(const QString& filePath){
 
-    if(!QFileInfo::exists(filePath))
+    QFileInfo fileInfo(filePath); // To be compatible with Qt5.0.2
+
+    if(!fileInfo.exists())
         throw QString("The file: ")+filePath+" doesn't seem to exist.";
 
     SNDFILE* in;
