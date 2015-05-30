@@ -6,7 +6,7 @@ compiler:
 
 os:
   - linux
-#  - osx
+  - osx
 
 # whitelist
 branches:
