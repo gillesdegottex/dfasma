@@ -2,6 +2,12 @@ os: unstable
 install:
   - set QTDIR=C:\Qt\Qt5.3.2\5.3\mingw482_32
   - set PATH=%PATH%;%QTDIR%\bin;C:\MinGW\bin
+  - appveyor DownloadFile ftp://ftp.fftw.org/pub/fftw/fftw-3.3.4-dll32.zip
+  - echo %CD%
+  - ps: 7z e fftw-3.3.4-dll32.zip -y
+  - ps: cd fftw-3.3.4-dll32
+  - echo %CD%
+  - ps: lib /MACHINE:X86 /def:libfftw3-3.def
 build_script:
-  - qmake "CONFIG+=minimal" dfasma.pro
+  - qmake "CONFIG+=fft_fftw3 file_audio_builtin" dfasma.pro
   - mingw32-make
