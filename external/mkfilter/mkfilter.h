@@ -3,13 +3,9 @@
    A.J. Fisher, University of York   <fisher@minster.york.ac.uk>
    September 1992 */
 
-// Note that the code below should NOT be turned into float or any smaller precision
+// Note that the code below should NOT be turned into float or any smaller precision than double
 
-#include <math.h>
 #include <vector>
-#include <deque>
-#include <algorithm>
-#include <iostream>
 #include <QString>
 
 namespace mkfilter {

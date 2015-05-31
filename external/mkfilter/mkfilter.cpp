@@ -5,12 +5,19 @@
 
 #include "mkfilter.h"
 
+#define _USE_MATH_DEFINES
+//#include <cmath>
+#include <math.h>
+#include <deque>
+#include <algorithm>
+#include <iostream>
+
+#include <QString>
+
 //using namespace mkfilter;
 
 namespace mkfilter {
 
-#include <iostream>
-#include <QString>
 
 typedef unsigned int uint;
 #undef	PI
@@ -308,7 +315,7 @@ void compute_s() // compute S-plane poles for prototype LP filter
     if (options & opt_ch)
       { // modify for Chebyshev (p. 136 DeFatta et al.) (Type I)
     if (chebrip >= 0.0)
-        throw QString("mkfilter: Chebyshev ripple is ")+QString::number(chebrip)+QString(" dB; must be < 0.0");
+        throw QString("MKFILTER: Chebyshev ripple is ")+QString::number(chebrip)+QString(" dB; must be < 0.0");
     double rip = pow(10.0, -chebrip / 10.0);
     double eps = sqrt(rip - 1.0);
     double y = asinh(1.0 / eps) / (double) order;
