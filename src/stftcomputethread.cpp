@@ -79,6 +79,7 @@ void STFTComputeThread::compute(ImageParameters reqImgSTFTParams) {
         gMW->ui->pbSpectrogramSTFTUpdate->hide();
 
         m_params_current = reqImgSTFTParams;
+        m_computing = true;
         start(); // Start computing
     }
     else {
@@ -102,7 +103,6 @@ void STFTComputeThread::run() {
     std::vector<WAVTYPE>::iterator pstft;
 
     bool canceled = false;
-    bool compute = true;
     do{
         m_mutex_changingparams.lock();
         ImageParameters params_running = m_params_current;
@@ -289,10 +289,12 @@ void STFTComputeThread::run() {
 
     //            QTime starttime = QTime::currentTime();
 
+                m_mutex_imageallocation.lock();
                 *(params_running.imgstft) = QImage(int(params_running.stftparams.snd->m_stft.size()), int(params_running.stftparams.snd->m_stft[0].size()), QImage::Format_RGB32);
+                m_mutex_imageallocation.unlock();
                 if(params_running.imgstft->isNull())
                     throw std::bad_alloc();
-                params_running.imgstft->fill(Qt::black);
+//                params_running.imgstft->fill(Qt::black);
                 // QImage* img = m_params_current.imgstft;
                 QRgb* pimgb = (QRgb*)(params_running.imgstft->bits());
                 int halfdftlen = params_running.stftparams.dftlen/2;
@@ -385,12 +387,12 @@ void STFTComputeThread::run() {
             m_params_last = m_params_current;
             m_params_current.clear();
             m_mutex_changingparams.unlock();
-            compute = false;
+            m_computing = false;
         }
 
 //        COUTD << "STFTComputeThread::run while ..." << std::endl;
     }
-    while(compute);
+    while(m_computing);
 
 //    COUTD << "STFTComputeThread::run m_mutex_computing.unlock " << std::endl;
     m_mutex_computing.unlock();

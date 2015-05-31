@@ -13,11 +13,15 @@ class STFTComputeThread : public QThread
 
     sigproc::FFTwrapper* m_fft;   // The FFT transformer
 
+    bool m_computing;
+
     void run(); //Q_DECL_OVERRIDE
 
 public:
     enum STFTComputingState {SCSIdle, SCSDFT, SCSIMG, SCSFinished, SCSCanceled, SCSMemoryFull};
     void cancelComputation(FTSound* snd);
+
+    inline bool isComputing() const {return m_computing;}
 
 signals:
     void stftComputingStateChanged(int state);
@@ -127,6 +131,7 @@ public:
 
     mutable QMutex m_mutex_computing;      // To protect the access to the FFT and external variables
     mutable QMutex m_mutex_changingparams; // To protect the access to the parameters above
+    mutable QMutex m_mutex_imageallocation; // To protect the access to the image when allocating
 
     inline const ImageParameters& getCurrentParameters() const {return m_params_current;}
 

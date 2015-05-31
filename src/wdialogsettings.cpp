@@ -25,13 +25,13 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QSettings>
 #include <QMessageBox>
 #include <QTextCodec>
+#include "../external/libqxt/qxtspanslider.h"
 
 #include "ftsound.h"
 #include "wmainwindow.h"
 #include "gvwaveform.h"
 #include "gvamplitudespectrum.h"
 #include "gvphasespectrum.h"
-#include "gvspectrogram.h"
 #include "gvspectrogramwdialogsettings.h"
 
 WDialogSettings::WDialogSettings(QWidget *parent) :
@@ -95,7 +95,8 @@ void WDialogSettings::settingsSave() {
     gMW->m_settings.setValue("cbPlaybackAudioOutputDevices", ui->cbPlaybackAudioOutputDevices->currentText());
 
     // Save the particular settings of different widgets
-    gMW->m_gvSpectrogram->settingsSave();
+    gMW->m_settings.setValue("m_qxtSpectrogramSpanSlider_lower", gMW->m_qxtSpectrogramSpanSlider->lowerValue());
+    gMW->m_settings.setValue("m_qxtSpectrogramSpanSlider_upper", gMW->m_qxtSpectrogramSpanSlider->upperValue());
 }
 void WDialogSettings::settingsClear() {
     gMW->m_settings.clearAll();

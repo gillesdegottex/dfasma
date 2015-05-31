@@ -28,6 +28,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QMutex>
 #include <QThread>
 #include <QMenu>
+class QTime;
 
 #include "wmainwindow.h"
 
@@ -45,6 +46,8 @@ class QGVSpectrogram : public QGraphicsView
 
     QPen m_gridFontPen;
     QFont m_gridFont;
+
+    QTime m_progresswidgets_lastup;
 
     QGraphicsPathItem* m_giPlayCursor;
 
@@ -109,7 +112,6 @@ public:
 signals:
 
 public slots:
-    void settingsSave();
     void allSoundsChanged();
     void playCursorSet(double t, bool forwardsync);
 
@@ -120,6 +122,7 @@ public slots:
     void updateSTFTPlot(bool force=false);
     void clearSTFTPlot();
     void stftComputingStateChanged(int state);
+    void showProgressWidgets();
 
     void selectionZoomOn();
     void selectionClear(bool forwardsync=true);

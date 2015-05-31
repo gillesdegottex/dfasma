@@ -231,11 +231,6 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     updateSTFTSettings(); // Prepare a window from loaded settings
 }
 
-void QGVSpectrogram::settingsSave(){
-    gMW->m_settings.setValue("m_qxtSpectrogramSpanSlider_lower", gMW->m_qxtSpectrogramSpanSlider->lowerValue());
-    gMW->m_settings.setValue("m_qxtSpectrogramSpanSlider_upper", gMW->m_qxtSpectrogramSpanSlider->upperValue());
-}
-
 void QGVSpectrogram::amplitudeExtentSlidersChanged(){
     if(!gMW->isLoading())
         QToolTip::showText(QCursor::pos(), QString("[%1,%2]\%").arg(gMW->m_qxtSpectrogramSpanSlider->lowerValue()).arg(gMW->m_qxtSpectrogramSpanSlider->upperValue()), this);
@@ -311,6 +306,9 @@ void QGVSpectrogram::stftComputingStateChanged(int state){
         gMW->ui->pbSTFTComputingCancel->show();
         gMW->ui->pbSpectrogramSTFTUpdate->hide();
         gMW->ui->lblSpectrogramInfoTxt->setText(QString("Computing STFT"));
+        gMW->ui->wSpectrogramProgressWidgets->hide();
+        m_progresswidgets_lastup = QTime::currentTime();
+        QTimer::singleShot(250, this, SLOT(showProgressWidgets()));
     }
     else if(state==STFTComputeThread::SCSIMG){
 //        COUTD << "SCSIMG" << endl;
@@ -319,15 +317,19 @@ void QGVSpectrogram::stftComputingStateChanged(int state){
         gMW->ui->pbSTFTComputingCancel->show();
         gMW->ui->pbSpectrogramSTFTUpdate->hide();
         gMW->ui->lblSpectrogramInfoTxt->setText(QString("Updating Image"));
+        gMW->ui->wSpectrogramProgressWidgets->hide();
+        m_progresswidgets_lastup = QTime::currentTime();
+        QTimer::singleShot(250, this, SLOT(showProgressWidgets()));
     }
     else if(state==STFTComputeThread::SCSFinished){
 //        COUTD << "SCSFinished" << endl;
         gMW->ui->pbSTFTComputingCancel->setChecked(false);
         gMW->ui->pbSTFTComputingCancel->hide();
         gMW->ui->pgbSpectrogramSTFTCompute->hide();
+        gMW->ui->wSpectrogramProgressWidgets->hide();
         m_imgSTFTParams = m_stftcomputethread->m_params_last;
 //        COUTD << m_imgSTFTParams.stftparams.dftlen << endl;
-        gMW->ui->lblSpectrogramInfoTxt->setText(" ");
+//        gMW->ui->lblSpectrogramInfoTxt->setText(" ");
 //        gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT: size %1, %2s step").arg(m_imgSTFTParams.stftparams.dftlen).arg(m_imgSTFTParams.stftparams.stepsize/gMW->getFs()));
         m_scene->update();
         if(gMW->m_gvWaveform->m_aWaveformShowSTFTWindowCenters->isChecked())
@@ -341,12 +343,19 @@ void QGVSpectrogram::stftComputingStateChanged(int state){
         gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT Canceled"));
         clearSTFTPlot();
         gMW->ui->pbSpectrogramSTFTUpdate->show();
+        gMW->ui->wSpectrogramProgressWidgets->show();
     }
     else if(state==STFTComputeThread::SCSMemoryFull){
-        COUTD << "SCSMemoryFull" << endl;
+//        COUTD << "SCSMemoryFull" << endl;
         QMessageBox::critical(NULL, "Memory full!", "There is not enough free memory for computing this STFT");
     }
 //    COUTD << "QGVSpectrogram::~stftComputingStateChanged" << endl;
+}
+
+void QGVSpectrogram::showProgressWidgets() {
+//    COUTD << "QGVSpectrogram::showProgressWidgets " << QTime::currentTime().msecsSinceStartOfDay() << " " << m_progresswidgets_lastup.msecsSinceStartOfDay() << " " << QTime::currentTime().msecsSinceStartOfDay()-m_progresswidgets_lastup.msecsSinceStartOfDay() << endl;
+    if(QTime::currentTime().msecsSinceStartOfDay()-m_progresswidgets_lastup.msecsSinceStartOfDay()>=250 && m_stftcomputethread->isComputing())
+        gMW->ui->wSpectrogramProgressWidgets->show();
 }
 
 void QGVSpectrogram::clearSTFTPlot(){
@@ -1057,7 +1066,11 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 //        COUTD << "SRC: " << srcrect << endl;
 //        COUTD << "TRG: " << trgrect << endl;
 
-        painter->drawImage(trgrect, m_imgSTFT, srcrect);
+//        if(!m_stftcomputethread->isComputing())
+        if(!m_imgSTFT.isNull() && m_stftcomputethread->m_mutex_imageallocation.tryLock()) {
+            painter->drawImage(trgrect, m_imgSTFT, srcrect);
+            m_stftcomputethread->m_mutex_imageallocation.unlock();
+        }
     }
 
     // Draw the grid above the spectrogram
