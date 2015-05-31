@@ -515,7 +515,7 @@ public:
     inline std::complex<FFTTYPE> getOutput(size_t n){
         if(n==0)
             return make_complex(m_fftreal_out[0], 0.0);
-        if(n==m_size/2)
+        if(int(n)==m_size/2)
             return make_complex(m_fftreal_out[m_size/2], 0.0);
         return make_complex(m_fftreal_out[n], -m_fftreal_out[m_size/2+n]);
     }
