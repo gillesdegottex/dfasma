@@ -354,7 +354,7 @@ void QGVSpectrogram::stftComputingStateChanged(int state){
 
 void QGVSpectrogram::showProgressWidgets() {
 //    COUTD << "QGVSpectrogram::showProgressWidgets " << QTime::currentTime().msecsSinceStartOfDay() << " " << m_progresswidgets_lastup.msecsSinceStartOfDay() << " " << QTime::currentTime().msecsSinceStartOfDay()-m_progresswidgets_lastup.msecsSinceStartOfDay() << endl;
-    if(QTime::currentTime().msecsSinceStartOfDay()-m_progresswidgets_lastup.msecsSinceStartOfDay()>=250 && m_stftcomputethread->isComputing())
+    if(m_progresswidgets_lastup.msecsTo(QTime::currentTime())>=250 && m_stftcomputethread->isComputing())
         gMW->ui->wSpectrogramProgressWidgets->show();
 }
 
