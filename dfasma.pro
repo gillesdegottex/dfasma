@@ -47,13 +47,6 @@ CONFIG += precision_double
 # ------------------------------------------------------------------------------
 # (modify the following at your own risks !) -----------------------------------
 
-
-CONFIG(minimal) {
-    message(Forcing minimal standalone build settings)
-    CONFIG -= fft_fftw3 file_audio_libsndfile
-    CONFIG += fft_builtin_fftreal file_audio_builtin precision_double
-}
-
 # message($$CONFIG)
 
 # Generate the version number from git
@@ -65,6 +58,7 @@ DEFINES += DFASMAVERSIONGIT=$$system(git describe --tags --always)
 # Manage Architecture
 win32:message(For Windows)
 unix:message(For Linux)
+message($$QMAKE_TARGET.arch)
 contains(QMAKE_TARGET.arch, x86):message(For 32bits)
 contains(QMAKE_TARGET.arch, x86_64):message(For 64bits)
 
@@ -90,19 +84,19 @@ CONFIG(file_sdif) {
 
 # Audio file reading libraries -------------------------------------------------
 
-CONFIG(file_audio_builtin) {
+CONFIG(file_audio_builtin, file_audio_libsndfile|file_audio_libsox|file_audio_builtin|file_audio_qt|file_audio_libav) {
     message(Audio file reader: standalone minimal built-in)
     QMAKE_CXXFLAGS += -Dfile_audio_BUILTIN
     HEADERS  += external/wavfile/wavfile.h
     SOURCES  += external/wavfile/wavfile.cpp external/iodsound_load_builtin.cpp
 }
-CONFIG(file_audio_qt) {
+CONFIG(file_audio_qt, file_audio_libsndfile|file_audio_libsox|file_audio_builtin|file_audio_qt|file_audio_libav) {
     message(Audio file reader: standalone built-in Qt)
     QMAKE_CXXFLAGS += -Dfile_audio_QT
     HEADERS  += external/iodsound_load_qt.h
     SOURCES  += external/iodsound_load_qt.cpp
 }
-CONFIG(file_audio_libsndfile) {
+CONFIG(file_audio_libsndfile, file_audio_libsndfile|file_audio_libsox|file_audio_builtin|file_audio_qt|file_audio_libav) {
     message(Audio file reader: libsndfile)
     QMAKE_CXXFLAGS += -Dfile_audio_LIBSNDFILE
     SOURCES += external/iodsound_load_libsndfile.cpp
@@ -117,7 +111,7 @@ CONFIG(file_audio_libsndfile) {
     }
     unix:LIBS += -lsndfile
 }
-CONFIG(file_audio_libsox) {
+CONFIG(file_audio_libsox, file_audio_libsndfile|file_audio_libsox|file_audio_builtin|file_audio_qt|file_audio_libav) {
     message(Audio file reader: libsox)
     QMAKE_CXXFLAGS += -Dfile_audio_LIBSOX
     SOURCES  += external/iodsound_load_libsox.cpp
@@ -125,7 +119,7 @@ CONFIG(file_audio_libsox) {
     unix:LIBS += -lsox
     win32:LIBS += "$$_PRO_FILE_PWD_/../libsox-14.4.0-32b/lib/libsox.dll.a"
 }
-CONFIG(file_audio_libav) {
+CONFIG(file_audio_libav, file_audio_libsndfile|file_audio_libsox|file_audio_builtin|file_audio_qt|file_audio_libav) {
     message(Audio file reader: libav)
     QMAKE_CXXFLAGS += -Dfile_audio_LIBAV
     SOURCES += external/iodsound_load_libav.cpp
@@ -134,14 +128,16 @@ CONFIG(file_audio_libav) {
 
 # FFT Implementation libraries ----------------------------------------------------
 
-CONFIG(fft_fftw3){
+CONFIG(fft_fftw3, fft_fftw3|fft_builtin_fftreal){
     message(FFT Implementation: FFTW3)
     QMAKE_CXXFLAGS += -DFFT_FFTW3
     win32 {
-        contains(QMAKE_TARGET.arch, x86_64) {
-            FFT_LIBDIR = "$$_PRO_FILE_PWD_/../lib/fftw-3.3.4-dll64"
-        } else {
-            FFT_LIBDIR = "$$_PRO_FILE_PWD_/../lib/fftw-3.3.4-dll32"
+        isEmpty(FFT_LIBDIR) {
+            contains(QMAKE_TARGET.arch, x86_64) {
+                FFT_LIBDIR = "$$_PRO_FILE_PWD_/../lib/fftw-3.3.4-dll64"
+            } else {
+                FFT_LIBDIR = "$$_PRO_FILE_PWD_/../lib/fftw-3.3.4-dll32"
+            }
         }
         INCLUDEPATH += "$$FFT_LIBDIR"
         CONFIG(precision_double) {
@@ -160,7 +156,7 @@ CONFIG(fft_fftw3){
         }
     }
 }
-CONFIG(fft_builtin_fftreal){
+CONFIG(fft_builtin_fftreal, fft_fftw3|fft_builtin_fftreal){
     message(FFT Implementation: standalone built-in FFTReal)
     QMAKE_CXXFLAGS += -DFFT_FFTREAL
     HEADERS +=  external/FFTReal/FFTReal.h \
