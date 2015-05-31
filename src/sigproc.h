@@ -28,7 +28,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <complex>
 #include <iostream>
 
-#include <QtMath>
+#include <qmath.h>
 #include <QString>
 #include <QMutex>
 
