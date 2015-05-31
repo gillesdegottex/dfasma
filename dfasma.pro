@@ -130,6 +130,7 @@ CONFIG(file_audio_libav, file_audio_libsndfile|file_audio_libsox|file_audio_buil
 
 CONFIG(fft_fftw3, fft_fftw3|fft_builtin_fftreal){
     message(FFT Implementation: FFTW3)
+    message($$FFT_LIBDIR)
     QMAKE_CXXFLAGS += -DFFT_FFTW3
     win32 {
         isEmpty(FFT_LIBDIR) {
