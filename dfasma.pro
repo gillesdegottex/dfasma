@@ -27,7 +27,7 @@
 CONFIG += fft_fftw3
 # For FFTW3: Allow to limit the time spent in the resize of the FFT
 #(available only from FFTW3's version 3.1)
-DEFINES += FFTW3RESIZINGMAXTIMESPENT
+#DEFINES += FFTW3RESIZINGMAXTIMESPENT
 
 # For the audio file support
 # Chose among: file_audio_libsndfile, file_audio_libsox, file_audio_builtin
@@ -36,7 +36,7 @@ CONFIG += file_audio_libsndfile
 
 # Additional file format support
 # SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
-#CONFIG += file_sdif
+# CONFIG += file_sdif
 
 ## OS specific options
 #QMAKE_MAC_SDK = macosx10.6
@@ -46,6 +46,15 @@ CONFIG += precision_double
 
 # ------------------------------------------------------------------------------
 # (modify the following at your own risks !) -----------------------------------
+
+
+CONFIG(minimal) {
+    message(Forcing minimal standalone build settings)
+    CONFIG -= fft_fftw3 file_audio_libsndfile
+    CONFIG += fft_builtin_fftreal file_audio_builtin precision_double
+}
+
+# message($$CONFIG)
 
 # Generate the version number from git
 # (if fail, fall back on the version present in the README.txt file)
