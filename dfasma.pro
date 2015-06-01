@@ -32,7 +32,7 @@ CONFIG += fft_fftw3
 # For the audio file support
 # Chose among: file_audio_libsndfile, file_audio_libsox, file_audio_builtin
 #              (file_audio_qt, file_audio_libav)
-CONFIG += file_audio_libsndfile
+CONFIG += file_audio_builtin
 
 # Additional file format support
 # SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
@@ -47,7 +47,7 @@ CONFIG += precision_double
 # ------------------------------------------------------------------------------
 # (modify the following at your own risks !) -----------------------------------
 
-# message($$CONFIG)
+message($$CONFIG)
 
 # Generate the version number from git
 # (if fail, fall back on the version present in the README.txt file)
