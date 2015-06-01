@@ -3,9 +3,7 @@ install:
   - set QTDIR=C:\Qt\Qt5.3.2\5.3\mingw482_32
   - set PATH=%PATH%;%QTDIR%\bin;C:\MinGW\bin
   - ps: New-Item -ItemType directory -Name lib
-  - echo %CD%
   - ps: cd lib
-  - echo %CD%
   - ps: New-Item -ItemType directory -Name fftw-3.3.4-dll32
   - ps: cd fftw-3.3.4-dll32
   - echo %CD%
@@ -13,6 +11,12 @@ install:
   - ps: 7z e fftw-3.3.4-dll32.zip -y
 #  - ps: lib /MACHINE:X86 /def:libfftw3-3.def # Needed only for MSVC (lib is still unrecognized command)
   - ps: cd ..
+#  - ps: New-Item -ItemType directory -Name libsndfile-1.0.25-w32
+#  - ps: cd libsndfile-1.0.25-w32
+  - echo %CD%
+  - appveyor DownloadFile http://gillesdegottex.eu/libsndfile-1.0.25-w32.zip
+  - ps: 7z e libsndfile-1.0.25-w32.zip -y
+#  - ps: lib /MACHINE:X86 /def:libfftw3-3.def # Needed only for MSVC (lib is still unrecognized command)
   - ps: cd ..
 build_script:
   - qmake "CONFIG+=fft_fftw3 file_audio_builtin" "FFT_LIBDIR=C:\projects\dfasma\lib\fftw-3.3.4-dll32" dfasma.pro
