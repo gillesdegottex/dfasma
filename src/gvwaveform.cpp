@@ -178,8 +178,8 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     playCursorSet(0.0, false);
     m_scene->addItem(m_giPlayCursor);
 
-    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    showScrollBars(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow->isChecked());
+    connect(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow, SIGNAL(toggled(bool)), this, SLOT(showScrollBars(bool)));
     setResizeAnchor(QGraphicsView::AnchorViewCenter);
     setMouseTracking(true);
 
@@ -246,6 +246,18 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     gMW->ui->lWaveformToolBar->addWidget(m_toolBar);
 
     setMouseCursorPosition(-1, false);
+}
+
+void QGVWaveform::showScrollBars(bool show) {
+    if(show) {
+        setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+        verticalScrollBar()->setEnabled(false);
+        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    }
+    else {
+        setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    }
 }
 
 void QGVWaveform::fitViewToSoundsAmplitude(){

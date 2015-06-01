@@ -583,7 +583,7 @@ void WMainWindow::viewsDisplayedChanged() {
 
     if(ui->actionShowPhaseSpectrum->isChecked())
         m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    else
+    else if(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow->isChecked())
         m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     gMW->m_gvAmplitudeSpectrum->selectionSetTextInForm();

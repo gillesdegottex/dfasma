@@ -28,6 +28,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "ftsound.h"
 #include "ftfzero.h"
 #include "sigproc.h"
+#include "ui_wdialogsettings.h"
 
 #include <iostream>
 #include <algorithm>
@@ -105,8 +106,8 @@ QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
     m_giShownSelection->setOpacity(0.5);
     gMW->ui->lblSpectrumSelectionTxt->setText("No selection");
 
-    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    showScrollBars(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow->isChecked());
+    connect(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow, SIGNAL(toggled(bool)), this, SLOT(showScrollBars(bool)));
     setResizeAnchor(QGraphicsView::AnchorViewCenter);
     setMouseTracking(true);
 
@@ -124,13 +125,15 @@ QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
     connect(gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop, SIGNAL(triggered()), m_scene, SLOT(update()));
 }
 
-// Remove hard coded margin (Bug 11945)
-// See: https://bugreports.qt-project.org/browse/QTBUG-11945
-QRectF QGVPhaseSpectrum::removeHiddenMargin(const QRectF& sceneRect){
-    const int bugMargin = 2;
-    const double mx = sceneRect.width()/viewport()->size().width()*bugMargin;
-    const double my = sceneRect.height()/viewport()->size().height()*bugMargin;
-    return sceneRect.adjusted(mx, my, -mx, -my);
+void QGVPhaseSpectrum::showScrollBars(bool show) {
+    if(show) {
+        setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    }
+    else {
+        setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    }
 }
 
 void QGVPhaseSpectrum::updateSceneRect() {
@@ -155,7 +158,7 @@ void QGVPhaseSpectrum::viewSet(QRectF viewrect, bool sync) {
         if(viewrect.right()>m_scene->sceneRect().right())
             viewrect.setRight(m_scene->sceneRect().right());
 
-        fitInView(removeHiddenMargin(viewrect));
+        fitInView(removeHiddenMargin(this, viewrect));
 
         if(sync){
             if(gMW->m_gvAmplitudeSpectrum && gMW->ui->actionShowAmplitudeSpectrum->isChecked()) {

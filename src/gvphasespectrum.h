@@ -41,8 +41,6 @@ class QGVPhaseSpectrum : public QGraphicsView
 {
     Q_OBJECT
 
-    QRectF removeHiddenMargin(const QRectF& sceneRect);
-
 public:
     explicit QGVPhaseSpectrum(WMainWindow* parent);
 
@@ -93,6 +91,8 @@ public:
 signals:
     
 public slots:
+    void showScrollBars(bool show);
+
     void updateSceneRect();
 
     void azoomin();

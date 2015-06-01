@@ -180,8 +180,8 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
 
     gMW->ui->lblSpectrumSelectionTxt->setText("No selection");
 
-    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    showScrollBars(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow->isChecked());
+    connect(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow, SIGNAL(toggled(bool)), this, SLOT(showScrollBars(bool)));
     setResizeAnchor(QGraphicsView::AnchorViewCenter);
     setMouseTracking(true);
 
@@ -217,6 +217,18 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(settingsModified()));
 
     connect(gMW->ui->sldAmplitudeSpectrumMin, SIGNAL(valueChanged(int)), this, SLOT(amplitudeMinChanged()));
+}
+
+void QGVAmplitudeSpectrum::showScrollBars(bool show) {
+    if(show) {
+        setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+        if(!gMW->ui->actionShowPhaseSpectrum->isChecked())
+            setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    }
+    else {
+        setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    }
 }
 
 void QGVAmplitudeSpectrum::settingsModified(){

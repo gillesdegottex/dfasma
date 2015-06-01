@@ -185,8 +185,8 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
 
     gMW->ui->lblSpectrogramSelectionTxt->setText("No selection");
 
-    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    showScrollBars(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow->isChecked());
+    connect(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow, SIGNAL(toggled(bool)), this, SLOT(showScrollBars(bool)));
     setResizeAnchor(QGraphicsView::AnchorViewCenter);
     setMouseTracking(true);
 
@@ -229,6 +229,17 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(upperValueChanged(int)), this, SLOT(updateSTFTPlot()));
 
     updateSTFTSettings(); // Prepare a window from loaded settings
+}
+
+void QGVSpectrogram::showScrollBars(bool show) {
+    if(show) {
+        setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    }
+    else {
+        setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    }
 }
 
 void QGVSpectrogram::amplitudeExtentSlidersChanged(){

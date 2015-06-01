@@ -112,6 +112,8 @@ public:
 signals:
 
 public slots:
+    void showScrollBars(bool show);
+
     void allSoundsChanged();
     void playCursorSet(double t, bool forwardsync);
 

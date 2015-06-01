@@ -119,6 +119,8 @@ public:
 signals:
 
 public slots:
+    void showScrollBars(bool show);
+
     void updateSceneRect();
     void updateTextsGeometry();
     void updateSelectionText();
@@ -130,9 +132,7 @@ public slots:
     void selectionSet(QRectF selection, bool forwardsync=true);
     void selectionClear(bool forwardsync=true);
     void selectionZoomOn();
-
     void setMouseCursorPosition(double position, bool forwardsync);
-
     void playCursorSet(double t, bool forwardsync=true);
 
 };

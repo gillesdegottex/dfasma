@@ -67,24 +67,9 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     gMW->m_settings.add(ui->sbViewsTimeDecimals);
     gMW->m_settings.add(ui->cbViewsShowMusicNoteNames);
     gMW->m_settings.add(ui->cbViewsAddMarginsOnSelection);
+    gMW->m_settings.add(ui->cbViewsScrollBarsShow);
 
     adjustSize();
-}
-
-void WDialogSettings::setSBButterworthOrderChangeValue(int order) {
-    if(order%2==1)
-        ui->sbPlaybackButterworthOrder->setValue(order+1);
-}
-
-void WDialogSettings::setCKAvoidClicksAddWindows(bool add) {
-    FTSound::sm_playwin_use = add;
-    FTSound::setAvoidClicksWindowDuration(ui->sbPlaybackAvoidClicksWindowDuration->value());
-    ui->sbPlaybackAvoidClicksWindowDuration->setEnabled(add);
-    ui->lblAvoidClicksWindowDurationLabel->setEnabled(add);
-}
-
-void WDialogSettings::setSBAvoidClicksWindowDuration(double halfduration) {
-    FTSound::setAvoidClicksWindowDuration(halfduration);
 }
 
 void WDialogSettings::settingsSave() {
@@ -101,6 +86,23 @@ void WDialogSettings::settingsSave() {
 void WDialogSettings::settingsClear() {
     gMW->m_settings.clearAll();
     QMessageBox::information(this, "Reset factory settings", "<p>The settings have been reset to their original values.</p><p>Please restart DFasma</p>");
+}
+
+
+void WDialogSettings::setSBButterworthOrderChangeValue(int order) {
+    if(order%2==1)
+        ui->sbPlaybackButterworthOrder->setValue(order+1);
+}
+
+void WDialogSettings::setCKAvoidClicksAddWindows(bool add) {
+    FTSound::sm_playwin_use = add;
+    FTSound::setAvoidClicksWindowDuration(ui->sbPlaybackAvoidClicksWindowDuration->value());
+    ui->sbPlaybackAvoidClicksWindowDuration->setEnabled(add);
+    ui->lblAvoidClicksWindowDurationLabel->setEnabled(add);
+}
+
+void WDialogSettings::setSBAvoidClicksWindowDuration(double halfduration) {
+    FTSound::setAvoidClicksWindowDuration(halfduration);
 }
 
 WDialogSettings::~WDialogSettings() {
