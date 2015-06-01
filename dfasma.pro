@@ -108,9 +108,9 @@ CONFIG(file_audio_libsndfile, file_audio_libsndfile|file_audio_libsox|file_audio
                 FILE_AUDIO_LIBDIR = "$$_PRO_FILE_PWD_/../lib/libsndfile-1.0.25-w32"
             }
         }
-        INCLUDEPATH += "$$FILE_AUDIO_LIBDIR/include"
+        INCLUDEPATH += $$FILE_AUDIO_LIBDIR/include
         # LIBS += "$$FILE_AUDIO_LIBDIR/lib/libsndfile-1.lib"
-        LIBS += "-L$$FILE_AUDIO_LIBDIR/lib -lsndfile-1"
+        LIBS += -L$$FILE_AUDIO_LIBDIR/lib -lsndfile-1
     }
     unix:LIBS += -lsndfile
 }
@@ -143,8 +143,8 @@ CONFIG(fft_fftw3, fft_fftw3|fft_builtin_fftreal){
                 FFT_LIBDIR = "$$_PRO_FILE_PWD_/../lib/fftw-3.3.4-dll32"
             }
         }
-        INCLUDEPATH += "$$FFT_LIBDIR"
-        LIBS += "-L$$FFT_LIBDIR"
+        INCLUDEPATH += $$FFT_LIBDIR
+        LIBS += -L$$FFT_LIBDIR
         CONFIG(precision_double) {
             # LIBS += $$FFT_LIBDIR/libfftw3-3.lib
             # LIBS += $$FFT_LIBDIR/libfftw3-3.def
