@@ -108,6 +108,7 @@ CONFIG(file_audio_libsndfile, file_audio_libsndfile|file_audio_libsox|file_audio
                 FILE_AUDIO_LIBDIR = "$$_PRO_FILE_PWD_/../lib/libsndfile-1.0.25-w32"
             }
         }
+        message(FILE_AUDIO_LIBDIR=$$FILE_AUDIO_LIBDIR)
         INCLUDEPATH += $$FILE_AUDIO_LIBDIR/include
         # LIBS += "$$FILE_AUDIO_LIBDIR/lib/libsndfile-1.lib"
         LIBS += -L$$FILE_AUDIO_LIBDIR/lib -L$$FILE_AUDIO_LIBDIR/bin -lsndfile-1
@@ -133,7 +134,6 @@ CONFIG(file_audio_libav, file_audio_libsndfile|file_audio_libsox|file_audio_buil
 
 CONFIG(fft_fftw3, fft_fftw3|fft_builtin_fftreal){
     message(FFT Implementation: FFTW3)
-    message($$FFT_LIBDIR)
     QMAKE_CXXFLAGS += -DFFT_FFTW3
     win32 {
         isEmpty(FFT_LIBDIR) {
@@ -143,6 +143,7 @@ CONFIG(fft_fftw3, fft_fftw3|fft_builtin_fftreal){
                 FFT_LIBDIR = "$$_PRO_FILE_PWD_/../lib/fftw-3.3.4-dll32"
             }
         }
+        message(FFT_LIBDIR=$$FFT_LIBDIR)
         INCLUDEPATH += $$FFT_LIBDIR
         LIBS += -L$$FFT_LIBDIR
         CONFIG(precision_double) {
