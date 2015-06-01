@@ -141,13 +141,16 @@ CONFIG(fft_fftw3, fft_fftw3|fft_builtin_fftreal){
             }
         }
         INCLUDEPATH += "$$FFT_LIBDIR"
+        LIBS += "-L$$FFT_LIBDIR"
         CONFIG(precision_double) {
             # LIBS += $$FFT_LIBDIR/libfftw3-3.lib
-            LIBS += $$FFT_LIBDIR/libfftw3-3.def
+            # LIBS += $$FFT_LIBDIR/libfftw3-3.def
+            LIBS += -lfftw3-3
         }
         CONFIG(precision_float) {
             # LIBS += $$FFT_LIBDIR/libfftw3f-3.lib
-            LIBS += $$FFT_LIBDIR/libfftw3f-3.def
+            # LIBS += $$FFT_LIBDIR/libfftw3f-3.def
+            LIBS += -lfftw3f-3
         }
     }
     unix {
