@@ -108,7 +108,7 @@ CONFIG(file_audio_libsndfile, file_audio_libsndfile|file_audio_libsox|file_audio
                 FILE_AUDIO_LIBDIR = "$$_PRO_FILE_PWD_/../lib/libsndfile-1.0.25-w32"
             }
         }
-        INCLUDEPATH += "$$FILE_AUDIO_LIBDIR/include/"
+        INCLUDEPATH += "$$FILE_AUDIO_LIBDIR/include"
         # LIBS += "$$FILE_AUDIO_LIBDIR/lib/libsndfile-1.lib"
         LIBS += "-L$$FILE_AUDIO_LIBDIR/lib -lsndfile-1"
     }
