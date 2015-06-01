@@ -110,7 +110,7 @@ CONFIG(file_audio_libsndfile, file_audio_libsndfile|file_audio_libsox|file_audio
         }
         INCLUDEPATH += $$FILE_AUDIO_LIBDIR/include
         # LIBS += "$$FILE_AUDIO_LIBDIR/lib/libsndfile-1.lib"
-        LIBS += -L$$FILE_AUDIO_LIBDIR/lib -lsndfile-1
+        LIBS += -L$$FILE_AUDIO_LIBDIR/lib -L$$FILE_AUDIO_LIBDIR/bin -lsndfile-1
     }
     unix:LIBS += -lsndfile
 }
