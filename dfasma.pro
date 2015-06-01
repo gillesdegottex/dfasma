@@ -32,7 +32,7 @@ CONFIG += fft_fftw3
 # For the audio file support
 # Chose among: file_audio_libsndfile, file_audio_libsox, file_audio_builtin
 #              (file_audio_qt, file_audio_libav)
-CONFIG += file_audio_builtin
+CONFIG += file_audio_libsndfile
 
 # Additional file format support
 # SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
@@ -41,7 +41,7 @@ CONFIG += file_audio_builtin
 ## OS specific options
 #QMAKE_MAC_SDK = macosx10.6
 
-#CONFIG += precision_float
+# Precision: precision_double, precision_float
 CONFIG += precision_double
 
 # ------------------------------------------------------------------------------
@@ -63,7 +63,7 @@ contains(QMAKE_TARGET.arch, x86):message(For 32bits)
 contains(QMAKE_TARGET.arch, x86_64):message(For 64bits)
 
 # Manage Precision
-CONFIG(precision_float) {
+CONFIG(precision_float, precision_double|precision_float) {
     DEFINES += SIGPROC_FLOAT
     message(With single precision)
 } else {
@@ -101,13 +101,16 @@ CONFIG(file_audio_libsndfile, file_audio_libsndfile|file_audio_libsox|file_audio
     QMAKE_CXXFLAGS += -Dfile_audio_LIBSNDFILE
     SOURCES += external/iodsound_load_libsndfile.cpp
     win32 {
-        contains(QMAKE_TARGET.arch, x86_64) {
-            FILE_AUDIO_LIBDIR = "$$_PRO_FILE_PWD_/../lib/libsndfile-1.0.25-w64"
-        } else {
-            FILE_AUDIO_LIBDIR = "$$_PRO_FILE_PWD_/../lib/libsndfile-1.0.25-w32"
+        isEmpty(FILE_AUDIO_LIBDIR) {
+            contains(QMAKE_TARGET.arch, x86_64) {
+                FILE_AUDIO_LIBDIR = "$$_PRO_FILE_PWD_/../lib/libsndfile-1.0.25-w64"
+            } else {
+                FILE_AUDIO_LIBDIR = "$$_PRO_FILE_PWD_/../lib/libsndfile-1.0.25-w32"
+            }
         }
         INCLUDEPATH += "$$FILE_AUDIO_LIBDIR/include/"
-        LIBS += "$$FILE_AUDIO_LIBDIR/lib/libsndfile-1.lib"
+        # LIBS += "$$FILE_AUDIO_LIBDIR/lib/libsndfile-1.lib"
+        LIBS += "-L$$FILE_AUDIO_LIBDIR/lib -lsndfile-1"
     }
     unix:LIBS += -lsndfile
 }
