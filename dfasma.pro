@@ -58,7 +58,6 @@ DEFINES += DFASMAVERSIONGIT=$$system(git describe --tags --always)
 # Manage Architecture
 win32:message(For Windows)
 unix:message(For Linux)
-message($$QT_ARCH)
 contains(QT_ARCH, x86):message(For 32bits)
 contains(QT_ARCH, x86_64):message(For 64bits)
 
