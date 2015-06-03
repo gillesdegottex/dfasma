@@ -47,7 +47,7 @@ CONFIG += precision_double
 # ------------------------------------------------------------------------------
 # (modify the following at your own risks !) -----------------------------------
 
-message($$CONFIG)
+message(CONFIG=$$CONFIG)
 
 # Generate the version number from git
 # (if fail, fall back on the version present in the README.txt file)
@@ -58,9 +58,9 @@ DEFINES += DFASMAVERSIONGIT=$$system(git describe --tags --always)
 # Manage Architecture
 win32:message(For Windows)
 unix:message(For Linux)
-message($$QMAKE_TARGET.arch)
-contains(QMAKE_TARGET.arch, x86):message(For 32bits)
-contains(QMAKE_TARGET.arch, x86_64):message(For 64bits)
+message($$QT_ARCH)
+contains(QT_ARCH, x86):message(For 32bits)
+contains(QT_ARCH, x86_64):message(For 64bits)
 
 # Manage Precision
 CONFIG(precision_float, precision_double|precision_float) {
