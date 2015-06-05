@@ -91,6 +91,7 @@ private slots:
     void selectedFilesClose();
     void selectedFilesReload();
     void selectedFilesToggleShown();
+    void selectedFilesDuplicate();
     void play();
     void enablePlay();
     void localEnergyChanged(double);
@@ -116,7 +117,6 @@ public slots:
     void selectAudioOutputDevice(const QString& devicename);
     void colorSelected(const QColor& color);
     void checkFileModifications();
-    void duplicateCurrentFile();
     void setInWaitingForFileState();
     void updateViewsAfterAddFile(bool isfirsts);
     void changeFileListItemsSize();

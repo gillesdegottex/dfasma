@@ -858,6 +858,17 @@
     <string>Ctrl+N</string>
    </property>
   </action>
+  <action name="actionSelectedFilesDuplicate">
+   <property name="text">
+    <string>Duplicate selected files</string>
+   </property>
+   <property name="toolTip">
+    <string>Duplicate the selected files</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+D</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>

@@ -118,6 +118,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     connect(ui->actionSelectedFilesReload, SIGNAL(triggered()), this, SLOT(selectedFilesReload()));
     connect(ui->actionSelectedFilesToggleShown, SIGNAL(triggered()), this, SLOT(selectedFilesToggleShown()));
     connect(ui->actionSelectedFilesClose, SIGNAL(triggered()), this, SLOT(selectedFilesClose()));
+    connect(ui->actionSelectedFilesDuplicate, SIGNAL(triggered()), this, SLOT(selectedFilesDuplicate()));
 
     m_globalWaitingBarLabel = new QLabel(ui->statusBar);
     m_globalWaitingBarLabel->setAlignment(Qt::AlignRight);
@@ -155,6 +156,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     connect(ui->listSndFiles, SIGNAL(itemSelectionChanged()), this, SLOT(fileSelectionChanged()));
     addAction(ui->actionSelectedFilesToggleShown);
     addAction(ui->actionSelectedFilesReload);
+    addAction(ui->actionSelectedFilesDuplicate);
     addAction(ui->actionPlayFiltered);
 
     // Audio engine for playing the selections
@@ -805,21 +807,6 @@ void WMainWindow::checkFileModifications(){
     gMW->fileInfoUpdate();
 }
 
-void WMainWindow::duplicateCurrentFile(){
-    FileType* currenItem = (FileType*)(ui->listSndFiles->currentItem());
-    if(currenItem){
-        FileType* ft = currenItem->duplicate();
-        if(ft){
-            ui->listSndFiles->addItem(ft);
-            m_gvWaveform->updateSceneRect();
-            allSoundsChanged();
-            ui->actionSelectedFilesClose->setEnabled(true);
-            ui->actionSelectedFilesReload->setEnabled(true);
-            ui->splitterViews->show();
-            updateWindowTitle();
-        }
-    }
-}
 
 FTSound* WMainWindow::getCurrentFTSound(bool forceselect) {
 
@@ -1029,7 +1016,7 @@ void WMainWindow::selectedFilesReload() {
     bool reloadSelectedSound = false;
     bool didanysucceed = false;
 
-    for(int i=0; i<l.size(); i++){
+    for(int i=0; i<l.size(); i++) {
 
         FileType* ft = (FileType*)l.at(i);
 
@@ -1042,13 +1029,32 @@ void WMainWindow::selectedFilesReload() {
 
     fileInfoUpdate();
 
-    if(didanysucceed && reloadSelectedSound){
+    if(didanysucceed && reloadSelectedSound) {
         m_gvWaveform->m_scene->update();
         m_gvAmplitudeSpectrum->updateDFTs();
         m_gvSpectrogram->updateSTFTPlot(true); // Force the STFT computation
     }
 
 //    COUTD << "WMainWindow::~selectedFileReload" << endl;
+}
+
+void WMainWindow::selectedFilesDuplicate() {
+    QList<QListWidgetItem*> l = ui->listSndFiles->selectedItems();
+
+    for(int i=0; i<l.size(); i++) {
+        FileType* currentfile = (FileType*)l.at(i);
+
+        FileType* ft = currentfile->duplicate();
+        if(ft){
+            ui->listSndFiles->addItem(ft);
+            m_gvWaveform->updateSceneRect();
+            allSoundsChanged();
+            ui->actionSelectedFilesClose->setEnabled(true);
+            ui->actionSelectedFilesReload->setEnabled(true);
+            ui->splitterViews->show();
+            updateWindowTitle();
+        }
+    }
 }
 
 // Put the program into a waiting-for-sound-files state

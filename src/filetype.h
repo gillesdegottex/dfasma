@@ -51,7 +51,6 @@ public:
     QColor color;
 
     QAction* m_actionShow;
-    QAction* m_actionDuplicate;
 
     ~FileType();
 

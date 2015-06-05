@@ -129,10 +129,6 @@ FileType::FileType(FType _type, const QString& _fileName, QObject * parent)
     m_actionShow->setChecked(true);
     m_actionShow->setShortcut(gMW->ui->actionSelectedFilesToggleShown->shortcut());
 
-    m_actionDuplicate = new QAction("Duplicate", parent);
-    m_actionDuplicate->setStatusTip("Duplicate the file content");
-    gMW->connect(m_actionDuplicate, SIGNAL(triggered()), gMW, SLOT(duplicateCurrentFile()));
-
     updateIcon();
 
     // Set properties common to all files
@@ -214,7 +210,7 @@ void FileType::updateIcon(){
 void FileType::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
     contextmenu.addAction(m_actionShow);
     contextmenu.addAction(mainwindow->ui->actionSelectedFilesReload);
-    contextmenu.addAction(m_actionDuplicate);
+    contextmenu.addAction(mainwindow->ui->actionSelectedFilesDuplicate);
     QColorDialog* colordialog = new QColorDialog(&contextmenu); // TODO delete this !!!
     QObject::connect(colordialog, SIGNAL(colorSelected(const QColor &)), gMW, SLOT(colorSelected(const QColor &)));
 //    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), gMW, SLOT(colorSelected(const QColor &)));
