@@ -52,6 +52,12 @@ inline QRectF removeHiddenMargin(QGraphicsView* gv, const QRectF& sceneRect){
     return sceneRect.adjusted(mx, my, -mx, -my);
 }
 
+inline QTextStream& operator<<(QTextStream& stream, const QRectF& rectf) {
+    stream << "[" << rectf.left() << "," << rectf.right() << "]x[" << rectf.top() << "," << rectf.bottom() << "]";
+
+    return stream;
+}
+
 inline std::ostream& operator<<(std::ostream& stream, const QRectF& rectf) {
     stream << "[" << rectf.left() << "," << rectf.right() << "]x[" << rectf.top() << "," << rectf.bottom() << "]";
 

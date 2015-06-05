@@ -497,9 +497,7 @@ void QGVPhaseSpectrum::mouseReleaseEvent(QMouseEvent* event){
 }
 
 void QGVPhaseSpectrum::keyPressEvent(QKeyEvent* event){
-    if(event->key()==Qt::Key_Escape)
-        gMW->m_gvAmplitudeSpectrum->selectionClear();
-    //else if(event->key()==Qt::Key_S)
+    //if(event->key()==Qt::Key_S)
     //    selectionZoomOn(); // Doesn't exist for the phase spectrum
 
     QGraphicsView::keyPressEvent(event);

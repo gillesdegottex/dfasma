@@ -915,12 +915,7 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
 
 //    COUTD << "QGVWaveform::keyPressEvent " << endl;
 
-    if(event->key()==Qt::Key_Escape) {
-        selectionClear();
-        gMW->m_gvSpectrogram->selectionClear();
-        playCursorSet(0.0, true);
-    }
-    else if(event->key()==Qt::Key_Delete) {
+    if(event->key()==Qt::Key_Delete) {
         if(m_currentAction==CALabelModifPosition) {
             FTLabels* ftlabel = gMW->getCurrentFTLabels(false);
             if(ftlabel){

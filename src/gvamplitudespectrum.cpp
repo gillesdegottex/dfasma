@@ -846,12 +846,9 @@ void QGVAmplitudeSpectrum::mouseReleaseEvent(QMouseEvent* event) {
 }
 
 void QGVAmplitudeSpectrum::keyPressEvent(QKeyEvent* event){
+//    COUTD << "QGVAmplitudeSpectrum::keyPressEvent " << endl;
 
-//    cout << "QGVAmplitudeSpectrum::keyPressEvent " << endl;
-
-    if(event->key()==Qt::Key_Escape)
-        selectionClear();
-    else if(event->key()==Qt::Key_S)
+    if(event->key()==Qt::Key_S)
         selectionZoomOn();
 
     QGraphicsView::keyPressEvent(event);
@@ -859,7 +856,6 @@ void QGVAmplitudeSpectrum::keyPressEvent(QKeyEvent* event){
 
 void QGVAmplitudeSpectrum::selectionClear(bool forwardsync) {
     Q_UNUSED(forwardsync)
-//    cout << "QGVAmplitudeSpectrum::selectionClear" << endl;
     m_giShownSelection->hide();
     m_giSelectionTxt->hide();
     m_selection = QRectF(0, 0, 0, 0);
@@ -872,14 +868,9 @@ void QGVAmplitudeSpectrum::selectionClear(bool forwardsync) {
     if(gMW->m_gvPhaseSpectrum)
         gMW->m_gvPhaseSpectrum->selectionClear();
 
-    if(gMW->m_gvSpectrogram){
-        if(gMW->m_gvSpectrogram->m_giShownSelection->isVisible()) {
-            QRectF rect = gMW->m_gvSpectrogram->m_mouseSelection;
-            rect.setTop(0.0);
-            rect.setBottom(gMW->getFs()/2);
-            gMW->m_gvSpectrogram->selectionSet(rect, false);
-        }
-    }
+    if(gMW->m_gvSpectrogram)
+        if(gMW->m_gvSpectrogram->m_giShownSelection->isVisible())
+            gMW->m_gvSpectrogram->selectionClear();
 
     selectionSetTextInForm();
 
