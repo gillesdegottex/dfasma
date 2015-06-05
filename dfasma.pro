@@ -25,9 +25,6 @@
 # For the Discrete Fast Fourier Transform
 # Chose among: fft_fftw3, fft_builtin_fftreal
 CONFIG += fft_fftw3
-# For FFTW3: Allow to limit the time spent in the resize of the FFT
-#(available only from FFTW3's version 3.1)
-#DEFINES += FFTW3RESIZINGMAXTIMESPENT
 
 # For the audio file support
 # Chose among: file_audio_libsndfile, file_audio_libsox, file_audio_builtin
@@ -36,7 +33,7 @@ CONFIG += file_audio_libsndfile
 
 # Additional file format support
 # SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
-# CONFIG += file_sdif
+#CONFIG += file_sdif
 
 ## OS specific options
 #QMAKE_MAC_SDK = macosx10.6
@@ -130,6 +127,15 @@ CONFIG(file_audio_libav, file_audio_libsndfile|file_audio_libsox|file_audio_buil
 }
 
 # FFT Implementation libraries ----------------------------------------------------
+# For FFTW3: Allow to limit the time spent in the resize of the FFT
+# (available only from FFTW3's version 3.1)
+# This can be useful when using the flag FFTW_MEASURE for plan construction
+# because the resize can take quite a lot of time in this case.
+# However, this flag is likely to generate non-deterministic runs.
+# This, I prefer to use the flag FFTW_ESTIMATE.
+# Plan construction is atctuall very fast with FFTW_ESTIMATE so that it
+# is not necessary to limit the plan construction time.
+#DEFINES += FFTW3RESIZINGMAXTIMESPENT
 
 CONFIG(fft_fftw3, fft_fftw3|fft_builtin_fftreal){
     message(FFT Implementation: FFTW3)
