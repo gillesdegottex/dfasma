@@ -684,6 +684,9 @@ void WMainWindow::keyPressEvent(QKeyEvent* event){
     }
     else{
         if(event->key()==Qt::Key_Escape){
+            gMW->m_gvWaveform->selectionClear();
+            gMW->m_gvSpectrogram->selectionClear();
+            gMW->m_gvWaveform->playCursorSet(0.0, true);
             FTSound* currentftsound = getCurrentFTSound();
             if(currentftsound && currentftsound->isFiltered())
                 currentftsound->resetFiltering();
