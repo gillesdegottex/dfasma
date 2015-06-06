@@ -319,7 +319,7 @@ void QGVSpectrogram::stftComputingStateChanged(int state){
         gMW->ui->lblSpectrogramInfoTxt->setText(QString("Computing STFT"));
         gMW->ui->wSpectrogramProgressWidgets->hide();
         m_progresswidgets_lastup = QTime::currentTime();
-        QTimer::singleShot(250, this, SLOT(showProgressWidgets()));
+        QTimer::singleShot(125, this, SLOT(showProgressWidgets()));
     }
     else if(state==STFTComputeThread::SCSIMG){
 //        COUTD << "SCSIMG" << endl;
@@ -330,7 +330,7 @@ void QGVSpectrogram::stftComputingStateChanged(int state){
         gMW->ui->lblSpectrogramInfoTxt->setText(QString("Updating Image"));
         gMW->ui->wSpectrogramProgressWidgets->hide();
         m_progresswidgets_lastup = QTime::currentTime();
-        QTimer::singleShot(250, this, SLOT(showProgressWidgets()));
+        QTimer::singleShot(125, this, SLOT(showProgressWidgets()));
     }
     else if(state==STFTComputeThread::SCSFinished){
 //        COUTD << "SCSFinished" << endl;
@@ -365,7 +365,7 @@ void QGVSpectrogram::stftComputingStateChanged(int state){
 
 void QGVSpectrogram::showProgressWidgets() {
 //    COUTD << "QGVSpectrogram::showProgressWidgets " << QTime::currentTime().msecsSinceStartOfDay() << " " << m_progresswidgets_lastup.msecsSinceStartOfDay() << " " << QTime::currentTime().msecsSinceStartOfDay()-m_progresswidgets_lastup.msecsSinceStartOfDay() << endl;
-    if(m_progresswidgets_lastup.msecsTo(QTime::currentTime())>=250 && m_stftcomputethread->isComputing())
+    if(m_progresswidgets_lastup.msecsTo(QTime::currentTime())>=125 && m_stftcomputethread->isComputing())
         gMW->ui->wSpectrogramProgressWidgets->show();
 }
 
@@ -406,9 +406,7 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
                 m_stftcomputethread->compute(reqImgSTFTParams);
             }
         }
-        m_scene->update();
-        if(gMW->m_gvWaveform->m_aWaveformShowSTFTWindowCenters->isChecked())
-            gMW->m_gvWaveform->update();
+        // m_scene->update(); // Should not be called here, otherwise creates intermediate black background
     }
 
 //    COUTD << "QGVSpectrogram::~updateSTFTPlot" << endl;
