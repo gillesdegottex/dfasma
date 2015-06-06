@@ -683,7 +683,7 @@ void WMainWindow::keyPressEvent(QKeyEvent* event){
         }
     }
     else{
-        if(event->key()==Qt::Key_Escape){            
+        if(event->key()==Qt::Key_Escape){
             FTSound* currentftsound = getCurrentFTSound();
             if(currentftsound && currentftsound->isFiltered())
                 currentftsound->resetFiltering();

@@ -849,8 +849,13 @@ void QGVAmplitudeSpectrum::keyPressEvent(QKeyEvent* event){
 //    COUTD << "QGVAmplitudeSpectrum::keyPressEvent " << endl;
 
     if(event->key()==Qt::Key_Escape) {
-        if(!hasSelection())
+        if(!hasSelection()) {
+            if(!gMW->m_gvSpectrogram->hasSelection()
+                && !gMW->m_gvWaveform->hasSelection())
+                gMW->m_gvWaveform->playCursorSet(0.0, true);
+
             gMW->m_gvWaveform->selectionClear();
+        }
         selectionClear();
     }
     if(event->key()==Qt::Key_S)

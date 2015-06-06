@@ -755,8 +755,12 @@ void QGVSpectrogram::keyPressEvent(QKeyEvent* event){
 
 //    cout << "QGVSpectrogram::keyPressEvent " << endl;
 
-    if(event->key()==Qt::Key_Escape)
+    if(event->key()==Qt::Key_Escape) {
+        if(!gMW->m_gvWaveform->hasSelection()
+            && !gMW->m_gvWaveform->hasSelection())
+            gMW->m_gvWaveform->playCursorSet(0.0, true);
         selectionClear(true);
+    }
     if(event->key()==Qt::Key_S)
         selectionZoomOn();
 

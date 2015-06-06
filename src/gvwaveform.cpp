@@ -929,8 +929,13 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
             selectionZoomOn();
     }
     else if(event->key()==Qt::Key_Escape) {
-        if(!hasSelection())
+        if(!hasSelection()) {
+            if(!gMW->m_gvSpectrogram->hasSelection()
+                && !gMW->m_gvAmplitudeSpectrum->hasSelection())
+                playCursorSet(0.0, true);
+
             gMW->m_gvAmplitudeSpectrum->selectionClear();
+        }
         selectionClear(true);
     }
     else {
@@ -967,7 +972,6 @@ void QGVWaveform::selectionClear(bool forwardsync){
     m_aZoomOnSelection->setEnabled(false);
     m_aSelectionClear->setEnabled(false);
     setCursor(Qt::CrossCursor);
-    playCursorSet(0.0, true);
 
     if(forwardsync){
         if(gMW->m_gvSpectrogram){

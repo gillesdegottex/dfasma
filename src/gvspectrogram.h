@@ -86,6 +86,7 @@ public:
     QGraphicsRectItem* m_giShownSelection;
     void selectionSet(QRectF selection, bool forwardsync=true);
     void selectionSetTextInForm();
+    bool hasSelection(){return m_selection.width()>0.0 || m_selection.height()>0.0;}
 
     void scrollContentsBy(int dx, int dy);
     void wheelEvent(QWheelEvent* event);
