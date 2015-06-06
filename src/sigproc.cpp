@@ -186,17 +186,9 @@ FFTwrapper::~FFTwrapper()
 {
     #ifdef FFT_FFTW3
         m_fftw3_planner_access.lock();
-        if(m_fftw3_plan){
-            fftwg_destroy_plan(m_fftw3_plan);
-        }
-        if(m_fftw3_in){
-//            fftwg_free(m_fftw3_in);
-            delete[] m_fftw3_in;
-        }
-        if(m_fftw3_out){
-            fftwg_free(m_fftw3_out);
-//            delete[] m_fftw3_out;
-        }
+        if(m_fftw3_plan) fftwg_destroy_plan(m_fftw3_plan);
+        if(m_fftw3_in)  delete[] m_fftw3_in;
+        if(m_fftw3_out) delete[] m_fftw3_out;
         m_fftw3_planner_access.unlock();
     #elif FFT_FFTREAL
         if(m_fftreal_fft)	delete m_fftreal_fft;
