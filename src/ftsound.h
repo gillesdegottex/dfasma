@@ -95,6 +95,8 @@ public:
         qint64 delay;
         WAVTYPE gain; // snd->m_ampscale*polarity
 
+        QDateTime lastreadtime;
+
         void clear(){
             fullpixrect = QRect();
             viewrect = QRectF();
@@ -105,13 +107,14 @@ public:
         }
 
         WavParameters(){clear();}
-        WavParameters(const QRect& _fullpixrect, const QRectF& _viewrect, int _winpixdelay, std::vector<WAVTYPE>* _wav, qint64 _delay, WAVTYPE _gain){
+        WavParameters(const QRect& _fullpixrect, const QRectF& _viewrect, int _winpixdelay, FTSound* snd){
             fullpixrect = _fullpixrect;
             viewrect = _viewrect;
             winpixdelay = _winpixdelay;
-            wav = _wav;
-            delay = _delay;
-            gain = _gain;
+            wav = snd->wavtoplay;
+            delay = snd->m_delay;
+            gain = snd->m_ampscale*(snd->m_actionInvPolarity->isChecked()?-1:1);
+            lastreadtime = snd->m_lastreadtime;
         }
 
         bool operator==(const WavParameters& param) const;

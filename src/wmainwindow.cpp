@@ -1030,6 +1030,7 @@ void WMainWindow::selectedFilesReload() {
     fileInfoUpdate();
 
     if(didanysucceed && reloadSelectedSound) {
+        FLAG
         m_gvWaveform->m_scene->update();
         m_gvAmplitudeSpectrum->updateDFTs();
         m_gvSpectrogram->updateSTFTPlot(true); // Force the STFT computation

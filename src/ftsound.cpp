@@ -67,6 +67,8 @@ bool FTSound::WavParameters::operator==(const WavParameters& param) const {
         return false;
     if(viewrect!=param.viewrect)
         return false;
+    if(lastreadtime!=param.lastreadtime)
+        return false;
 
     return true;
 }

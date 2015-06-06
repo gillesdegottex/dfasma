@@ -1364,9 +1364,9 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
 
         int snddelay = snd->m_delay;
 
-        FTSound::WavParameters reqparams(fullpixrect, viewrect, winpixdelay, snd->wavtoplay, snddelay, gain);
+        FTSound::WavParameters reqparams(fullpixrect, viewrect, winpixdelay, snd);
         if(snd->wavtoplay==&(snd->wav) && reqparams==snd->m_wavparams){
-//            COUTD << "Using existing buffer " << pixrect << endl;
+            COUTD << "Using existing buffer " << pixrect << endl;
             for(int i=pixrect.left(); i<=pixrect.right(); i++){
 //            for(int i=0; i<=snd->m_wavpx_min.size(); i++)
                 if(snd->m_wavpx_min[i]<1e10) // TODO Clean this dirty fix
