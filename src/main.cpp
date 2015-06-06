@@ -83,9 +83,9 @@ int main(int argc, char *argv[])
     QStringList filestoload = QApplication::arguments();
     filestoload.removeAt(0);
 
-    WMainWindow w(filestoload);
-    QObject::connect(&a, SIGNAL(focusWindowChanged(QWindow*)), &w, SLOT(checkFileModifications()));
-    w.show();
+    WMainWindow* w = new WMainWindow(filestoload);
+    QObject::connect(&a, SIGNAL(focusWindowChanged(QWindow*)), w, SLOT(checkFileModifications()));
+    w->show();
 
     int ret = a.exec();
 
@@ -97,6 +97,9 @@ int main(int argc, char *argv[])
         sox_quit();
     #endif
 
+    delete w;
+
+//    COUTD << ret << endl;
     exit(ret); // WORKAROUND?: won't quit otherwise on some platform (e.g. bouzouki) TODO
 
     return ret;
