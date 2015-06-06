@@ -758,7 +758,7 @@ void QGVPhaseSpectrum::draw_spectrum(QPainter* painter, std::vector<std::complex
         QRect pixrect = mapFromScene(rect).boundingRect();
         QRect fullpixrect = mapFromScene(viewrect).boundingRect();
 
-        double s2p = -fullpixrect.height()/viewrect.height(); // Scene to pixel
+        double s2p = -(fullpixrect.height()-1)/viewrect.height(); // Scene to pixel
         double p2s = viewrect.width()/fullpixrect.width(); // Pixel to scene
         double yzero = mapFromScene(QPointF(0,0)).y();
 
@@ -783,8 +783,8 @@ void QGVPhaseSpectrum::draw_spectrum(QPainter* painter, std::vector<std::complex
                 }
                 ymin *= s2p;
                 ymax *= s2p;
-                ymin = int(ymin+0.5);
-                ymax = int(ymax+0.5);
+//                ymin = int(ymin+1);
+//                ymax = int(ymax+1);
                 painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
             }
         }

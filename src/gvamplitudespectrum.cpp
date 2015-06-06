@@ -868,9 +868,9 @@ void QGVAmplitudeSpectrum::selectionClear(bool forwardsync) {
     if(gMW->m_gvPhaseSpectrum)
         gMW->m_gvPhaseSpectrum->selectionClear();
 
-    if(gMW->m_gvSpectrogram)
-        if(gMW->m_gvSpectrogram->m_giShownSelection->isVisible())
-            gMW->m_gvSpectrogram->selectionClear();
+//    if(gMW->m_gvSpectrogram)
+//        if(gMW->m_gvSpectrogram->m_giShownSelection->isVisible())
+//            gMW->m_gvSpectrogram->selectionClear();
 
     selectionSetTextInForm();
 
@@ -1285,7 +1285,7 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
     double samppixdensity = (dftlen*(viewrect.right()-viewrect.left())/fs)/viewport()->rect().width();
 
     if(samppixdensity<=1.0) {
-//        cout << "Spec: Draw lines between each bin" << endl;
+//        COUTD << "Spec: Draw lines between each bin" << endl;
 
         double prevx = fs*kmin/dftlen;
         std::complex<WAVTYPE>* yp = ldft.data();
@@ -1307,7 +1307,7 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
         QRect pixrect = mapFromScene(rect).boundingRect();
         QRect fullpixrect = mapFromScene(viewrect).boundingRect();
 
-        double s2p = -fullpixrect.height()/viewrect.height(); // Scene to pixel
+        double s2p = -(fullpixrect.height()-1)/viewrect.height(); // Scene to pixel
         double p2s = viewrect.width()/fullpixrect.width(); // Pixel to scene
         double yzero = mapFromScene(QPointF(0,0)).y();
         double yinfmin = -viewrect.bottom()/sigproc::log2db; // Nothing seen below this
@@ -1334,8 +1334,8 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
                 ymax = sigproc::log2db*(ymax);
                 ymin *= s2p;
                 ymax *= s2p;
-                ymin = int(ymin+0.5);
-                ymax = int(ymax+0.5);
+//                ymin = int(ymin+1);
+//                ymax = int(ymax+1);
                 if(ymin>fullpixrect.height()+1-yzero) ymin=fullpixrect.height()+1-yzero;
                 if(ymax>fullpixrect.height()+1-yzero) ymax=fullpixrect.height()+1-yzero;
                 painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));

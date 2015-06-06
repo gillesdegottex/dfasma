@@ -1325,7 +1325,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
 //        COUTD << pixrect << endl;
         QRect fullpixrect = mapFromScene(viewrect).boundingRect();
 
-        double s2p = -fullpixrect.height()/viewrect.height(); // Scene to pixel
+        double s2p = -(fullpixrect.height()-1)/viewrect.height(); // Scene to pixel
         double p2n = fs*double(viewrect.width())/double(fullpixrect.width()-1); // Pixel to scene
         double yzero = fullpixrect.height()/2;
 
@@ -1379,8 +1379,6 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
                     ymax *= s2p;
                     snd->m_wavpx_min[i] = ymin;
                     snd->m_wavpx_max[i] = ymax;
-    //                ymin = int(ymin+0.5);
-    //                ymax = int(ymax+0.5);
                     painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
                 }
                 else {
