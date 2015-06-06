@@ -362,7 +362,7 @@ void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
 }
 
 void QGVAmplitudeSpectrum::updateDFTs(){
-//    COUTD << "QGVAmplitudeSpectrum::computeDFTs " << endl;
+//    COUTD << "QGVAmplitudeSpectrum::updateDFTs " << endl;
     if(m_trgDFTParameters.win.size()<2) // Avoid the DFT of one sample ...
         return;
 
@@ -459,7 +459,7 @@ void QGVAmplitudeSpectrum::updateDFTs(){
         }
     }
 
-//    COUTD << "~QGVAmplitudeSpectrum::computeDFTs" << endl;
+//    COUTD << "~QGVAmplitudeSpectrum::updateDFTs" << endl;
 }
 
 void QGVAmplitudeSpectrum::viewSet(QRectF viewrect, bool sync) {
