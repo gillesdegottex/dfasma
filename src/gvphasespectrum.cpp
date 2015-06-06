@@ -497,8 +497,16 @@ void QGVPhaseSpectrum::mouseReleaseEvent(QMouseEvent* event){
 }
 
 void QGVPhaseSpectrum::keyPressEvent(QKeyEvent* event){
-    if(event->key()==Qt::Key_Escape)
+    if(event->key()==Qt::Key_Escape){
+        if(!gMW->m_gvAmplitudeSpectrum->hasSelection()) {
+            if(!gMW->m_gvSpectrogram->hasSelection()
+                && !gMW->m_gvWaveform->hasSelection())
+                gMW->m_gvWaveform->playCursorSet(0.0, true);
+
+            gMW->m_gvSpectrogram->selectionClear();
+        }
         gMW->m_gvAmplitudeSpectrum->selectionClear();
+    }
     //if(event->key()==Qt::Key_S)
     //    selectionZoomOn(); // Doesn't exist for the phase spectrum
 
@@ -542,16 +550,30 @@ void QGVPhaseSpectrum::selectionSet(QRectF selection, bool forwardsync){
 //    m_giSelectionTxt->show();
     viewUpdateTexts();
 
-    if(gMW->m_gvAmplitudeSpectrum && forwardsync){
-        QRectF rect = gMW->m_gvAmplitudeSpectrum->m_mouseSelection;
-        rect.setLeft(m_mouseSelection.left());
-        rect.setRight(m_mouseSelection.right());
-        if(rect.height()==0) {
-            rect.setTop(gMW->m_gvAmplitudeSpectrum->m_scene->sceneRect().top());
-            rect.setBottom(gMW->m_gvAmplitudeSpectrum->m_scene->sceneRect().bottom());
+    if(forwardsync) {
+        if(gMW->m_gvAmplitudeSpectrum){
+            QRectF rect = gMW->m_gvAmplitudeSpectrum->m_mouseSelection;
+            rect.setLeft(m_mouseSelection.left());
+            rect.setRight(m_mouseSelection.right());
+            if(rect.height()==0) {
+                rect.setTop(gMW->m_gvAmplitudeSpectrum->m_scene->sceneRect().top());
+                rect.setBottom(gMW->m_gvAmplitudeSpectrum->m_scene->sceneRect().bottom());
+            }
+            gMW->m_gvAmplitudeSpectrum->selectionSet(rect, false);
         }
-        gMW->m_gvAmplitudeSpectrum->selectionSet(rect, false);
+
+        if(gMW->m_gvSpectrogram){
+            QRectF rect = gMW->m_gvSpectrogram->m_mouseSelection;
+            rect.setTop(gMW->getFs()/2-m_mouseSelection.right());
+            rect.setBottom(gMW->getFs()/2-m_mouseSelection.left());
+            if(!gMW->m_gvSpectrogram->m_giShownSelection->isVisible()) {
+                rect.setLeft(gMW->m_gvSpectrogram->m_scene->sceneRect().left());
+                rect.setRight(gMW->m_gvSpectrogram->m_scene->sceneRect().right());
+            }
+            gMW->m_gvSpectrogram->selectionSet(rect, false);
+        }
     }
+
 }
 
 void QGVPhaseSpectrum::viewUpdateTexts(){
