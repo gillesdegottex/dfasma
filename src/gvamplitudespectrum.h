@@ -120,7 +120,6 @@ public slots:
     void updateSceneRect(); // To call when fs has changed and limits in dB
     void updateAmplitudeExtent();
     void amplitudeMinChanged();
-//    void updateDFTSettings();
     void settingsModified();
     void updateDFTs();
     void fftResizing(int prevSize, int newSize);
