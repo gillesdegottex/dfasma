@@ -1192,6 +1192,7 @@ void WMainWindow::play()
                     m_gvWaveform->m_initialPlayPosition = tstart;
                     m_playingftsound = currentftsound;
                     m_audioengine->startPlayback(currentftsound, tstart, tstop, fstart, fstop);
+                    fileInfoUpdate();
 
                     if(fstart!=0.0 || fstop!=getFs()) {
                         if(m_gvWaveform->m_giSelection->rect().width()>0)
