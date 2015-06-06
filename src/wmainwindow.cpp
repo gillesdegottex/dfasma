@@ -259,6 +259,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 
 WMainWindow::~WMainWindow() {
 //    COUTD << "WMainWindow::~WMainWindow" << endl;
+
     m_gvSpectrogram->m_stftcomputethread->cancelComputation(true);
     m_gvAmplitudeSpectrum->m_fftresizethread->m_mutex_resizing.lock();
     m_gvAmplitudeSpectrum->m_fftresizethread->m_mutex_resizing.unlock();
@@ -888,6 +889,7 @@ void WMainWindow::fileSelectionChanged() {
             m_gvPhaseSpectrum->m_scene->update();
         }
         m_gvSpectrogram->updateSTFTPlot();
+        m_gvSpectrogram->m_scene->update();
     }
 
     fileInfoUpdate();
