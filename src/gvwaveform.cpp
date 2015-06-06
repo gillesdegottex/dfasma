@@ -928,6 +928,11 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
         if(!FTGraphicsLabelItem::isEditing())
             selectionZoomOn();
     }
+    else if(event->key()==Qt::Key_Escape) {
+        if(!hasSelection())
+            gMW->m_gvAmplitudeSpectrum->selectionClear();
+        selectionClear(true);
+    }
     else {
         if (gMW->ui->actionEditMode->isChecked()){
             FTLabels* ftlabel = gMW->getCurrentFTLabels(false);
@@ -955,14 +960,32 @@ void QGVWaveform::selectionClear(bool forwardsync){
     m_giSelection->hide();
     m_selection = QRectF(0, -1, 0, 2);
     m_giSelection->setRect(m_selection.left(), -1, m_selection.width(), 2);
-    m_aZoomOnSelection->setEnabled(false);
     gMW->ui->lblSelectionTxt->setText("No selection");
-    m_aSelectionClear->setEnabled(false);
     gMW->m_gvAmplitudeSpectrum->m_scene->update();
     gMW->m_gvPhaseSpectrum->m_scene->update();
 
+    m_aZoomOnSelection->setEnabled(false);
+    m_aSelectionClear->setEnabled(false);
+    setCursor(Qt::CrossCursor);
+    playCursorSet(0.0, true);
+
     if(forwardsync){
-        if(gMW->m_gvSpectrogram) gMW->m_gvSpectrogram->selectionClear(false);
+        if(gMW->m_gvSpectrogram){
+            if(gMW->m_gvSpectrogram->m_giShownSelection->isVisible()) {
+                QRectF rect = gMW->m_gvSpectrogram->m_mouseSelection;
+                if(std::abs(rect.top()-gMW->m_gvSpectrogram->m_scene->sceneRect().top())<std::numeric_limits<double>::epsilon()
+                    && std::abs(rect.bottom()-gMW->m_gvSpectrogram->m_scene->sceneRect().bottom())<std::numeric_limits<double>::epsilon()){
+                    gMW->m_gvSpectrogram->selectionClear();
+                }
+                else {
+                    rect.setLeft(gMW->m_gvSpectrogram->m_scene->sceneRect().left());
+                    rect.setRight(gMW->m_gvSpectrogram->m_scene->sceneRect().right());
+                    gMW->m_gvSpectrogram->selectionSet(rect, false);
+                }
+            }
+        }
+
+//        if(gMW->m_gvSpectrogram) gMW->m_gvSpectrogram->selectionClear(false);
     }
 }
 
@@ -1107,8 +1130,14 @@ void QGVWaveform::selectionZoomOn(){
     if(m_selection.width()>0){
 
         QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-        viewrect.setLeft(m_selection.left()-0.1*m_selection.width());
-        viewrect.setRight(m_selection.right()+0.1*m_selection.width());
+        if(gMW->m_dlgSettings->ui->cbViewsAddMarginsOnSelection->isChecked()) {
+            viewrect.setLeft(m_selection.left()-0.1*m_selection.width());
+            viewrect.setRight(m_selection.right()+0.1*m_selection.width());
+        }
+        else {
+            viewrect.setLeft(m_selection.left());
+            viewrect.setRight(m_selection.right());
+        }
         viewSet(viewrect);
 
         m_aZoomIn->setEnabled(true);
@@ -1503,7 +1532,7 @@ void QGVWaveform::playCursorSet(double t, bool forwardsync){
         m_giPlayCursor->setPos(QPointF(t, 0));
     }
 
-    if(gMW->m_gvSpectrogram && forwardsync)
+    if(forwardsync && gMW->m_gvSpectrogram)
         gMW->m_gvSpectrogram->playCursorSet(t, false);
 }
 

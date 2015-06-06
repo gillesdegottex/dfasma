@@ -497,6 +497,8 @@ void QGVPhaseSpectrum::mouseReleaseEvent(QMouseEvent* event){
 }
 
 void QGVPhaseSpectrum::keyPressEvent(QKeyEvent* event){
+    if(event->key()==Qt::Key_Escape)
+        gMW->m_gvAmplitudeSpectrum->selectionClear();
     //if(event->key()==Qt::Key_S)
     //    selectionZoomOn(); // Doesn't exist for the phase spectrum
 
@@ -783,8 +785,8 @@ void QGVPhaseSpectrum::draw_spectrum(QPainter* painter, std::vector<std::complex
                 }
                 ymin *= s2p;
                 ymax *= s2p;
-//                ymin = int(ymin+1);
-//                ymax = int(ymax+1);
+                ymin = int(ymin+0.5);
+                ymax = int(ymax+0.5);
                 painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
             }
         }

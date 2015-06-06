@@ -755,9 +755,10 @@ void QGVSpectrogram::keyPressEvent(QKeyEvent* event){
 
 //    cout << "QGVSpectrogram::keyPressEvent " << endl;
 
-    if(event->key()==Qt::Key_S){
+    if(event->key()==Qt::Key_Escape)
+        selectionClear(true);
+    if(event->key()==Qt::Key_S)
         selectionZoomOn();
-    }
 
     QGraphicsView::keyPressEvent(event);
 }
@@ -776,7 +777,6 @@ void QGVSpectrogram::selectionClear(bool forwardsync) {
     if(forwardsync){
         if(gMW->m_gvWaveform)      gMW->m_gvWaveform->selectionClear(false);
         if(gMW->m_gvAmplitudeSpectrum)      gMW->m_gvAmplitudeSpectrum->selectionClear(false);
-        if(gMW->m_gvPhaseSpectrum) gMW->m_gvPhaseSpectrum->selectionClear(false);
     }
 }
 

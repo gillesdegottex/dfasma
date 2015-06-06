@@ -83,6 +83,7 @@ public:
     QGraphicsSimpleTextItem* m_giSelectionTxt;
     void selectionSet(QRectF selection, bool forwardsync);
     void selectionSetTextInForm();
+    bool hasSelection(){return m_selection.width()>0.0;}
 
     void scrollContentsBy(int dx, int dy);
     void wheelEvent(QWheelEvent* event);

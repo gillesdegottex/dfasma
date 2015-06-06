@@ -848,6 +848,11 @@ void QGVAmplitudeSpectrum::mouseReleaseEvent(QMouseEvent* event) {
 void QGVAmplitudeSpectrum::keyPressEvent(QKeyEvent* event){
 //    COUTD << "QGVAmplitudeSpectrum::keyPressEvent " << endl;
 
+    if(event->key()==Qt::Key_Escape) {
+        if(!hasSelection())
+            gMW->m_gvWaveform->selectionClear();
+        selectionClear();
+    }
     if(event->key()==Qt::Key_S)
         selectionZoomOn();
 
@@ -856,6 +861,7 @@ void QGVAmplitudeSpectrum::keyPressEvent(QKeyEvent* event){
 
 void QGVAmplitudeSpectrum::selectionClear(bool forwardsync) {
     Q_UNUSED(forwardsync)
+
     m_giShownSelection->hide();
     m_giSelectionTxt->hide();
     m_selection = QRectF(0, 0, 0, 0);
@@ -868,9 +874,22 @@ void QGVAmplitudeSpectrum::selectionClear(bool forwardsync) {
     if(gMW->m_gvPhaseSpectrum)
         gMW->m_gvPhaseSpectrum->selectionClear();
 
-//    if(gMW->m_gvSpectrogram)
-//        if(gMW->m_gvSpectrogram->m_giShownSelection->isVisible())
-//            gMW->m_gvSpectrogram->selectionClear();
+    if(forwardsync){
+        if(gMW->m_gvSpectrogram){
+            if(gMW->m_gvSpectrogram->m_giShownSelection->isVisible()) {
+                QRectF rect = gMW->m_gvSpectrogram->m_mouseSelection;
+                if(std::abs(rect.left()-gMW->m_gvSpectrogram->m_scene->sceneRect().left())<std::numeric_limits<double>::epsilon()
+                    && std::abs(rect.right()-gMW->m_gvSpectrogram->m_scene->sceneRect().right())<std::numeric_limits<double>::epsilon()){
+                    gMW->m_gvSpectrogram->selectionClear();
+                }
+                else {
+                    rect.setTop(0.0);
+                    rect.setBottom(gMW->getFs()/2);
+                    gMW->m_gvSpectrogram->selectionSet(rect, false);
+                }
+            }
+        }
+    }
 
     selectionSetTextInForm();
 
@@ -1334,8 +1353,8 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
                 ymax = sigproc::log2db*(ymax);
                 ymin *= s2p;
                 ymax *= s2p;
-//                ymin = int(ymin+1);
-//                ymax = int(ymax+1);
+                ymin = int(ymin+0.5);
+                ymax = int(ymax+0.5);
                 if(ymin>fullpixrect.height()+1-yzero) ymin=fullpixrect.height()+1-yzero;
                 if(ymax>fullpixrect.height()+1-yzero) ymax=fullpixrect.height()+1-yzero;
                 painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
