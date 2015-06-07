@@ -26,6 +26,8 @@ public:
 
     void resize(int newsize); // Entry point
 
+    void cancelComputation(bool waittoend=false);
+
     mutable QMutex m_mutex_resizing;      // To protect the access to the FFT transformer
     mutable QMutex m_mutex_changingsizes; // To protect the access to the size variables above
 };

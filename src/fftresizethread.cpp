@@ -14,6 +14,13 @@ FFTResizeThread::FFTResizeThread(sigproc::FFTwrapper* fft, QObject* parent)
 //    setPriority(QThread::IdlePriority);
 }
 
+void FFTResizeThread::cancelComputation(bool waittoend) {
+    if(waittoend) {
+        m_mutex_resizing.lock();
+        m_mutex_resizing.unlock();
+    }
+}
+
 void FFTResizeThread::resize(int newsize) {
 
     m_mutex_changingsizes.lock();
