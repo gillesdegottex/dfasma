@@ -92,12 +92,13 @@ private slots:
     void selectedFilesReload();
     void selectedFilesToggleShown();
     void selectedFilesDuplicate();
+
     void play();
+    void audioStateChanged(QAudio::State state);
+    void audioOutputFormatChanged(const QAudioFormat& format);
     void enablePlay();
     void localEnergyChanged(double);
 
-    void audioStateChanged(QAudio::State state);
-    void audioOutputFormatChanged(const QAudioFormat& format);
     void showFileContextMenu(const QPoint&);
     void resetAmpScale();
     void resetDelay();
@@ -115,6 +116,7 @@ public slots:
     void allSoundsChanged(); // TODO Should drop this
     void selectAudioOutputDevice(int di);
     void selectAudioOutputDevice(const QString& devicename);
+    void audioEngineError(const QString &heading, const QString &detail);
     void colorSelected(const QColor& color);
     void checkFileModifications();
     void setInWaitingForFileState();

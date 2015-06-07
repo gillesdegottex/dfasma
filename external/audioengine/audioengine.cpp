@@ -74,8 +74,8 @@ AudioEngine::AudioEngine(QObject *parent)
     : QObject(parent)
     , m_fs(0)
     , m_state(QAudio::StoppedState)
-    , m_audioOutput(0)
-    , m_ftsound(0)
+    , m_audioOutput(NULL)
+    , m_ftsound(NULL)
 {
     m_rtinfo_timer.setSingleShot(false);
     m_rtinfo_timer.setInterval(1000*1/12.0);  // Ask for 24 refresh per second
@@ -121,11 +121,13 @@ void AudioEngine::selectAudioOutputDevice(const QString& devicename) {
 
 AudioEngine::~AudioEngine()
 {
-//    cout << "AudioEngine::~AudioEngine" << endl;
-    m_audioOutput->stop();
-//    cout << "AudioEngine::~AudioEngine stopped" << endl;
-    delete m_audioOutput;
-//    cout << "AudioEngine::~~AudioEngine" << endl;
+    cout << "AudioEngine::~AudioEngine" << endl;
+    if(m_audioOutput) {
+            m_audioOutput->stop();
+        cout << "AudioEngine::~AudioEngine stopped" << endl;
+        delete m_audioOutput;
+    }
+    cout << "AudioEngine::~~AudioEngine" << endl;
 }
 
 //-----------------------------------------------------------------------------
@@ -306,7 +308,8 @@ bool AudioEngine::initialize(int fs) {
         }
     }
     else {
-        emit errorMessage(tr("No common output format found"), "");
+//        qDebug() << "AudioEngine::initialize format not supported." << endl;
+        emit errorMessage(tr("Audio output cannot be initialized"), tr("No available audio device or output format not supported."));
     }
 
     // qDebug() << "AudioEngine::initialize" << "format" << m_format;
@@ -331,12 +334,12 @@ bool AudioEngine::selectFormat()
 
     if (!outputSupport){
         // TODO merge with function initialize and throw an exception
-        qDebug() << "AudioEngine::initialize format" << format << "not supported!";
-        qDebug() << "There will be no audio output!";
+        qDebug() << "AudioEngine::initialize format" << format << "not supported! There will be no audio output!";
         format = QAudioFormat();
     }
-
-    setFormat(format);
+    else {
+        setFormat(format);
+    }
 
     return outputSupport;
 }
