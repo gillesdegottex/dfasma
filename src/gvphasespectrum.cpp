@@ -757,7 +757,7 @@ void QGVPhaseSpectrum::draw_spectrum(QPainter* painter, std::vector<std::complex
     double samppixdensity = (dftlen*(viewrect.right()-viewrect.left())/fs)/viewport()->rect().width();
 
     if(samppixdensity<=1.0) {
-//         cout << "Spec: Draw lines between each bin" << endl;
+//         COUTD << "Spec: Draw lines between each bin" << endl;
 
         double prevx = fs*kmin/dftlen;
         double dp = delay*2.0*M_PI*kmin/dftlen;
@@ -775,7 +775,7 @@ void QGVPhaseSpectrum::draw_spectrum(QPainter* painter, std::vector<std::complex
         }
     }
     else {
-//         cout << "Spec: Plot only one line per pixel, in order to reduce computation time" << endl;
+//         COUTD << "Spec: Plot only one line per pixel, in order to reduce computation time" << endl;
 
         painter->setWorldMatrixEnabled(false); // Work in pixel coordinates
 
@@ -807,8 +807,8 @@ void QGVPhaseSpectrum::draw_spectrum(QPainter* painter, std::vector<std::complex
                 }
                 ymin *= s2p;
                 ymax *= s2p;
-                ymin = int(ymin+0.5);
-                ymax = int(ymax+0.5);
+                ymin = int(ymin-1);
+                ymax = int(ymax);
                 painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
             }
         }
