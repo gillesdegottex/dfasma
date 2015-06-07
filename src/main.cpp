@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
 
     delete w;
 
-//    COUTD << ret << endl;
+//    COUTD << ret << std::endl;
     exit(ret); // WORKAROUND?: won't quit otherwise on some platform (e.g. bouzouki) TODO
 
     return ret;
