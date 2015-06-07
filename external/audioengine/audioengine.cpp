@@ -121,13 +121,10 @@ void AudioEngine::selectAudioOutputDevice(const QString& devicename) {
 
 AudioEngine::~AudioEngine()
 {
-    cout << "AudioEngine::~AudioEngine" << endl;
     if(m_audioOutput) {
-            m_audioOutput->stop();
-        cout << "AudioEngine::~AudioEngine stopped" << endl;
+        m_audioOutput->stop();
         delete m_audioOutput;
     }
-    cout << "AudioEngine::~~AudioEngine" << endl;
 }
 
 //-----------------------------------------------------------------------------
