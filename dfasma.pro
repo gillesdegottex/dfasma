@@ -38,9 +38,6 @@ CONFIG += file_audio_libsndfile
 # Precision: precision_double, precision_float
 CONFIG += precision_double
 
-## OS specific options
-#QMAKE_MAC_SDK = macosx10.6
-
 # ------------------------------------------------------------------------------
 # (modify the following at your own risks !) -----------------------------------
 
