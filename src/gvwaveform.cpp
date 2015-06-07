@@ -1410,6 +1410,8 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
                     else if(ymax<-1.0) ymax = -1.0;
                     ymin *= s2p;
                     ymax *= s2p;
+                    ymin = int(ymin-2);
+                    ymax = int(ymax-2);
                     snd->m_wavpx_min[i] = ymin;
                     snd->m_wavpx_max[i] = ymax;
                     painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
