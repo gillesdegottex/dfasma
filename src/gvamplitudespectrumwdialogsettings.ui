@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>575</width>
-    <height>361</height>
+    <height>349</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@
      <property name="title">
       <string>Window</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
+     <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_10">
         <item>
@@ -60,7 +60,7 @@
            <double>0.010000000000000</double>
           </property>
           <property name="value">
-           <double>1.000000000000000</double>
+           <double>0.050000000000000</double>
           </property>
          </widget>
         </item>
@@ -77,89 +77,92 @@
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <property name="spacing">
+         <number>0</number>
+        </property>
         <item>
-         <widget class="QLabel" name="label_2">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="toolTip">
-           <string>Based on Wikipedia's coefficients (2015)</string>
-          </property>
-          <property name="text">
-           <string>Window type</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>Based on Wikipedia's coefficients (2015)</string>
+            </property>
+            <property name="text">
+             <string>Window type</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="cbAmplitudeSpectrumWindowType">
+            <property name="currentIndex">
+             <number>3</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>Rectangular</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Hamming</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Hann</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Blackman</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Blackman-Nutall</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Blackman-Harris</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Nutall</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Flat top</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Gaussian</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Exponential</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Generalized Normal</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
         </item>
-        <item>
-         <widget class="QComboBox" name="cbAmplitudeSpectrumWindowType">
-          <property name="currentIndex">
-           <number>3</number>
-          </property>
-          <item>
-           <property name="text">
-            <string>Rectangular</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Hamming</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Hann</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Blackman</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Blackman-Nutall</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Blackman-Harris</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Nutall</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Flat top</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Gaussian</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Exponential</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Generalized Normal</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_8">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_6">
           <item>
@@ -239,44 +242,44 @@
           </item>
          </layout>
         </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_9">
         <item>
-         <widget class="QLabel" name="lblWindowExpDecay">
-          <property name="toolTip">
-           <string>Targeted decay over half of the window length</string>
-          </property>
-          <property name="text">
-           <string>Decay=</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QDoubleSpinBox" name="spAmplitudeSpectrumWindowExpDecay">
-          <property name="toolTip">
-           <string>Targeted decay over half of the window length</string>
-          </property>
-          <property name="suffix">
-           <string> dB</string>
-          </property>
-          <property name="decimals">
-           <number>2</number>
-          </property>
-          <property name="maximum">
-           <double>1000000.000000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="value">
-           <double>60.000000000000000</double>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_9">
+          <item>
+           <widget class="QLabel" name="lblWindowExpDecay">
+            <property name="toolTip">
+             <string>Targeted decay over half of the window length</string>
+            </property>
+            <property name="text">
+             <string>Decay=</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QDoubleSpinBox" name="spAmplitudeSpectrumWindowExpDecay">
+            <property name="toolTip">
+             <string>Targeted decay over half of the window length</string>
+            </property>
+            <property name="suffix">
+             <string> dB</string>
+            </property>
+            <property name="decimals">
+             <number>2</number>
+            </property>
+            <property name="maximum">
+             <double>1000000.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.100000000000000</double>
+            </property>
+            <property name="value">
+             <double>60.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>
