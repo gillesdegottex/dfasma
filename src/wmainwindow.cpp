@@ -270,9 +270,8 @@ WMainWindow::~WMainWindow() {
     FLAG
 
     m_gvSpectrogram->m_stftcomputethread->cancelComputation(true);
-    m_gvAmplitudeSpectrum->m_fftresizethread->m_mutex_resizing.lock();
-    m_gvAmplitudeSpectrum->m_fftresizethread->m_mutex_resizing.unlock();
-FLAG
+    m_gvAmplitudeSpectrum->m_fftresizethread->cancelComputation(true);
+
     ui->listSndFiles->selectAll();
     selectedFilesClose();
 
