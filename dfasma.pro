@@ -57,9 +57,7 @@ win32:message(For Windows)
 unix:message(For Linux)
 msvc:message(Using MSVC compiler)
 gcc:message(Using GCC compiler)
-message(QT_ARCH=$$QT_ARCH)
-message(QMAKE_TARGET.arch=$$QMAKE_TARGET.arch)
-contains(QT_ARCH, x86):message(For 32bits)
+contains(QT_ARCH, i386):message(For 32bits)
 contains(QT_ARCH, x86_64):message(For 64bits)
 
 # Manage Precision
