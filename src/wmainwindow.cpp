@@ -174,6 +174,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     m_pbVolume->setMaximumHeight(ui->mainToolBar->height());
     m_pbVolume->setMinimum(-50); // Quite arbitrary
     m_pbVolume->setValue(-50);   // Quite arbitrary
+    m_pbVolume->setEnabled(false);
     ui->mainToolBar->insertWidget(ui->actionSettings, m_pbVolume);
     ui->mainToolBar->insertSeparator(ui->actionSettings);
 
@@ -229,6 +230,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 
     m_audioengine = new AudioEngine(this);
     if(m_audioengine) {
+        connect(m_audioengine, SIGNAL(errorMessage(const QString &, const QString &)), this, SLOT(audioEngineError(const QString &, const QString &)));
         connect(m_audioengine, SIGNAL(stateChanged(QAudio::State)), this, SLOT(audioStateChanged(QAudio::State)));
         connect(m_audioengine, SIGNAL(formatChanged(const QAudioFormat&)), this, SLOT(audioOutputFormatChanged(const QAudioFormat&)));
         connect(m_audioengine, SIGNAL(playPositionChanged(double)), m_gvWaveform, SLOT(playCursorSet(double)));
@@ -238,8 +240,14 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
         QList<QAudioDeviceInfo> audioDevices = m_audioengine->availableAudioOutputDevices();
         for(int di=0; di<audioDevices.size(); di++)
             m_dlgSettings->ui->cbPlaybackAudioOutputDevices->addItem(audioDevices[di].deviceName());
+        if(m_dlgSettings->ui->cbPlaybackAudioOutputDevices->count()==0){
+            m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText("No audio device available.");
+            m_dlgSettings->ui->lblAudioOutputDeviceFormat->show();
+//            m_dlgSettings->ui->cbPlaybackAudioOutputDevices->hide();
+        }
         selectAudioOutputDevice(m_settings.value("cbPlaybackAudioOutputDevices", "default").toString());
         connect(m_dlgSettings->ui->cbPlaybackAudioOutputDevices, SIGNAL(currentIndexChanged(int)), this, SLOT(selectAudioOutputDevice(int)));
+        m_dlgSettings->adjustSize();
     }
 
     connect(m_dlgSettings->ui->sbViewsToolBarSizes, SIGNAL(valueChanged(int)), this, SLOT(changeToolBarSizes(int)));
@@ -259,28 +267,40 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 
 WMainWindow::~WMainWindow() {
 //    COUTD << "WMainWindow::~WMainWindow" << endl;
+    FLAG
 
     m_gvSpectrogram->m_stftcomputethread->cancelComputation(true);
     m_gvAmplitudeSpectrum->m_fftresizethread->m_mutex_resizing.lock();
     m_gvAmplitudeSpectrum->m_fftresizethread->m_mutex_resizing.unlock();
-
+FLAG
     ui->listSndFiles->selectAll();
     selectedFilesClose();
 
+    FLAG
     // The audio player
     if(m_audioengine){
+        FLAG
         delete m_audioengine;
+        FLAG
         m_audioengine=NULL;
+        FLAG
     }
 
+    FLAG
     // Delete views
     delete m_gvWaveform; m_gvWaveform=NULL;
+    FLAG
     delete m_gvAmplitudeSpectrum; m_gvAmplitudeSpectrum=NULL;
+    FLAG
     delete m_gvPhaseSpectrum; m_gvPhaseSpectrum=NULL;
+    FLAG
     delete m_gvSpectrogram; m_gvSpectrogram=NULL;
+    FLAG
     delete m_dlgSettings; m_dlgSettings=NULL;
+    FLAG
 
     delete ui; ui=NULL; // The GUI
+    FLAG
 }
 
 // Interface ===================================================================
@@ -573,6 +593,7 @@ void WMainWindow::updateViewsAfterAddFile(bool isfirsts) {
             m_gvSpectrogram->viewSet(m_gvSpectrogram->m_scene->sceneRect(), false);
             m_gvAmplitudeSpectrum->viewSet(m_gvAmplitudeSpectrum->m_scene->sceneRect(), false);
             m_gvPhaseSpectrum->viewSet(m_gvPhaseSpectrum->m_scene->sceneRect(), false);
+            ui->actionFileNew->setEnabled(true);
         }
         allSoundsChanged();
     }
@@ -1073,6 +1094,7 @@ void WMainWindow::setInWaitingForFileState(){
     ui->actionSelectedFilesReload->setEnabled(false);
     ui->actionSelectedFilesToggleShown->setEnabled(false);
     ui->actionPlay->setEnabled(false);
+    m_pbVolume->setEnabled(false);
     ui->actionFileNew->setEnabled(false);
 }
 
@@ -1081,9 +1103,10 @@ void WMainWindow::setInWaitingForFileState(){
 void WMainWindow::initializeSoundSystem(double fs) {
 
     m_audioengine->initialize(fs);
-
-    ui->actionPlay->setEnabled(true);
-    ui->actionFileNew->setEnabled(true);
+    if(m_audioengine->isInitialized()) {
+        ui->actionPlay->setEnabled(true);
+        m_pbVolume->setEnabled(true);
+    }
 }
 
 void WMainWindow::selectAudioOutputDevice(int di) {
@@ -1141,8 +1164,20 @@ void WMainWindow::audioOutputFormatChanged(const QAudioFormat &format) {
 
         m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText(str);
         m_dlgSettings->ui->lblAudioOutputDeviceFormat->show();
+        ui->actionPlay->setEnabled(true);
+        m_pbVolume->setEnabled(true);
     }
 //    cout << "WMainWindow::~audioOutputFormatChanged" << endl;
+}
+
+void WMainWindow::audioEngineError(const QString &heading, const QString &detail) {
+    Q_UNUSED(heading)
+    Q_UNUSED(detail)
+    if(!m_audioengine->isInitialized()) {
+        m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText(heading+": "+detail);
+        ui->actionPlay->setEnabled(false);
+        m_pbVolume->setEnabled(false);
+    }
 }
 
 void WMainWindow::play()
