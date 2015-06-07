@@ -35,11 +35,11 @@ CONFIG += file_audio_libsndfile
 # SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
 #CONFIG += file_sdif
 
-## OS specific options
-#QMAKE_MAC_SDK = macosx10.6
-
 # Precision: precision_double, precision_float
 CONFIG += precision_double
+
+## OS specific options
+#QMAKE_MAC_SDK = macosx10.6
 
 # ------------------------------------------------------------------------------
 # (modify the following at your own risks !) -----------------------------------
