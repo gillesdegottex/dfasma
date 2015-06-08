@@ -199,7 +199,7 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_aUnZoom->setStatusTip(tr("Un-Zoom"));
     QIcon unzoomicon(":/icons/unzoomx.svg");
     m_aUnZoom->setIcon(unzoomicon);
-    m_aUnZoom->setEnabled(false);
+//    m_aUnZoom->setEnabled(false);
     connect(m_aUnZoom, SIGNAL(triggered()), this, SLOT(aunzoom()));
     m_aZoomOnSelection = new QAction(tr("&Zoom on selection"), this);
     m_aZoomOnSelection->setStatusTip(tr("Zoom on selection"));
@@ -342,7 +342,7 @@ void QGVWaveform::azoomin(){
 
     m_aZoomIn->setEnabled(true);
     m_aZoomOut->setEnabled(true);
-    m_aUnZoom->setEnabled(true);
+//    m_aUnZoom->setEnabled(true);
     m_aZoomOnSelection->setEnabled(m_selection.width()>0);
 }
 
@@ -356,7 +356,7 @@ void QGVWaveform::azoomout(){
     setMouseCursorPosition(-1, false);
 
     m_aZoomOut->setEnabled(true);
-    m_aUnZoom->setEnabled(true);
+//    m_aUnZoom->setEnabled(true);
     m_aZoomIn->setEnabled(true);
     m_aZoomOnSelection->setEnabled(m_selection.width()>0);
 }
@@ -372,7 +372,7 @@ void QGVWaveform::aunzoom(){
 
     m_aZoomIn->setEnabled(true);
     m_aZoomOut->setEnabled(false);
-    m_aUnZoom->setEnabled(false);
+//    m_aUnZoom->setEnabled(false);
     m_aZoomOnSelection->setEnabled(m_selection.width()>0);
 }
 
@@ -487,7 +487,7 @@ void QGVWaveform::wheelEvent(QWheelEvent* event){
         m_aZoomOnSelection->setEnabled(m_selection.width()>0);
         m_aZoomOut->setEnabled(true);
         m_aZoomIn->setEnabled(true);
-        m_aUnZoom->setEnabled(true);
+//        m_aUnZoom->setEnabled(true);
     }
 
 //    std::cout << "~QGVWaveform::wheelEvent" << endl;
@@ -628,7 +628,7 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
         QPointF p = mapToScene(event->pos());
         setMouseCursorPosition(p.x(), true);
 
-        m_aUnZoom->setEnabled(true);
+//        m_aUnZoom->setEnabled(true);
         m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
     }
     else if(m_currentAction==CAModifSelectionLeft){
@@ -1145,7 +1145,7 @@ void QGVWaveform::selectionZoomOn(){
 
         m_aZoomIn->setEnabled(true);
         m_aZoomOut->setEnabled(true);
-        m_aUnZoom->setEnabled(true);
+//        m_aUnZoom->setEnabled(true);
         m_aZoomOnSelection->setEnabled(false);
 
         setMouseCursorPosition(-1, false);
