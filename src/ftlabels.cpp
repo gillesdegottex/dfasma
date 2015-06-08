@@ -141,7 +141,10 @@ FTLabels::FTLabels(QObject *parent)
 
     init();
 
-    setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.lab");
+    if(gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText==FFSDIF)
+        setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.sdif");
+    else
+        setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.lab");
     m_fileformat = FFNotSpecified;
 
     gMW->ftlabels.push_back(this);
