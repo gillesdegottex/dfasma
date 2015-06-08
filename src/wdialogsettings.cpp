@@ -89,20 +89,32 @@ void WDialogSettings::settingsSave() {
 
     QString strMain;
     QList<int> sizeslist = gMW->ui->splitterMain->sizes();
-    for(QList<int>::iterator it=sizeslist.begin(); it!=sizeslist.end(); it++)
+    for(QList<int>::iterator it=sizeslist.begin(); it!=sizeslist.end(); it++){
+        if(*it==0)
+            strMain += "100 ";
+        else
             strMain += QString::number(*it) + " ";
+    }
     gMW->m_settings.setValue("splitterMain", strMain);
 
     QString strViews;
     sizeslist = gMW->ui->splitterViews->sizes();
-    for(QList<int>::iterator it=sizeslist.begin(); it!=sizeslist.end(); it++)
+    for(QList<int>::iterator it=sizeslist.begin(); it!=sizeslist.end(); it++) {
+        if(*it==0)
+            strViews += "100 ";
+        else
             strViews += QString::number(*it) + " ";
+    }
     gMW->m_settings.setValue("splitterViews", strViews);
 
     QString strSpectra;
     sizeslist = gMW->ui->splitterSpectra->sizes();
-    for(QList<int>::iterator it=sizeslist.begin(); it!=sizeslist.end(); it++)
+    for(QList<int>::iterator it=sizeslist.begin(); it!=sizeslist.end(); it++) {
+        if(*it==0)
+            strSpectra += "100 ";
+        else
             strSpectra += QString::number(*it) + " ";
+    }
     gMW->m_settings.setValue("splitterSpectra", strSpectra);
 }
 void WDialogSettings::settingsClear() {
