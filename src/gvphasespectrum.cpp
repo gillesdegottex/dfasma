@@ -618,6 +618,8 @@ void QGVPhaseSpectrum::azoomout(){
 
 void QGVPhaseSpectrum::setMouseCursorPosition(QPointF p, bool forwardsync) {
 
+    QFontMetrics qfm(gMW->m_dlgSettings->ui->lblGridFontSample->font());
+
     QLineF line;
     line.setP1(QPointF(p.x(), m_giCursorVert->line().y1()));
     line.setP2(QPointF(p.x(), m_giCursorVert->line().y2()));
@@ -641,7 +643,7 @@ void QGVPhaseSpectrum::setMouseCursorPosition(QPointF p, bool forwardsync) {
         m_giCursorHoriz->setLine(viewrect.right()-50/trans.m11(), m_giCursorHoriz->line().y1(), gMW->getFs()/2.0, m_giCursorHoriz->line().y1());
 
         m_giCursorVert->show();
-        m_giCursorVert->setLine(m_giCursorVert->line().x1(), viewrect.top(), m_giCursorVert->line().x1(), viewrect.top()+18/trans.m22());
+        m_giCursorVert->setLine(m_giCursorVert->line().x1(), viewrect.top(), m_giCursorVert->line().x1(), viewrect.top()+(qfm.height())/trans.m22());
 
         m_giCursorPositionXTxt->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
         m_giCursorPositionYTxt->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
