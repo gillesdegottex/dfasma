@@ -121,12 +121,10 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     QFont font("Helvetica", 10);
     m_giMouseCursorTxtTime = new QGraphicsSimpleTextItem();
     m_giMouseCursorTxtTime->setBrush(cursorcolor);
-    m_giMouseCursorTxtTime->setFont(font);
     m_giMouseCursorTxtTime->hide();
     m_scene->addItem(m_giMouseCursorTxtTime);
     m_giMouseCursorTxtFreq = new QGraphicsSimpleTextItem();
     m_giMouseCursorTxtFreq->setBrush(cursorcolor);
-    m_giMouseCursorTxtFreq->setFont(font);
     m_giMouseCursorTxtFreq->hide();
     m_scene->addItem(m_giMouseCursorTxtFreq);
 
@@ -995,12 +993,14 @@ void QGVSpectrogram::setMouseCursorPosition(QPointF p, bool forwardsync) {
         m_giMouseCursorTxtTime->setText(QString("%1s").arg(p.x(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()));
         m_giMouseCursorTxtTime->setPos(x, viewrect.top()-3/trans.m22());
         m_giMouseCursorTxtTime->setTransform(txttrans);
+        m_giMouseCursorTxtTime->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
         m_giMouseCursorTxtTime->show();
 
         m_giMouseCursorTxtFreq->setText(QString("%1Hz").arg(0.5*gMW->getFs()-p.y()));
         br = m_giMouseCursorTxtFreq->boundingRect();
         m_giMouseCursorTxtFreq->setPos(viewrect.right()-br.width()/trans.m11(), p.y()-br.height()/trans.m22());
         m_giMouseCursorTxtFreq->setTransform(txttrans);
+        m_giMouseCursorTxtFreq->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
         m_giMouseCursorTxtFreq->show();
 
         if(forwardsync){

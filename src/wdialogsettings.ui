@@ -292,7 +292,7 @@
          <item>
           <widget class="QPushButton" name="pbGridFontChange">
            <property name="text">
-            <string>Change font of the grids</string>
+            <string>Change grids and cursors font</string>
            </property>
           </widget>
          </item>
@@ -304,7 +304,7 @@
             </font>
            </property>
            <property name="text">
-            <string>1.26s, 1000Hz, 24dB, -1.24rad</string>
+            <string>E.g. 1.26s, 1000Hz, 24dB, -1.24rad</string>
            </property>
           </widget>
          </item>

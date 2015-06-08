@@ -395,6 +395,7 @@ void QGVWaveform::setMouseCursorPosition(double position, bool forwardsync) {
         QTransform txttrans;
         txttrans.scale(1.0/trans.m11(),1.0/trans.m22());
         m_giMouseCursorTxt->setTransform(txttrans);
+        m_giMouseCursorTxt->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
         QRectF br = m_giMouseCursorTxt->boundingRect();
 //        QRectF viewrect = mapToScene(QRect(QPoint(0,0), QSize(viewport()->rect().width(), viewport()->rect().height()))).boundingRect();
         position = min(position, double(viewrect.right()-br.width()/trans.m11()));
