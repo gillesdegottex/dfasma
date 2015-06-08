@@ -1097,6 +1097,8 @@ void QGVAmplitudeSpectrum::aunzoom(){
 
 void QGVAmplitudeSpectrum::setMouseCursorPosition(QPointF p, bool forwardsync) {
 
+    QFontMetrics qfm(gMW->m_dlgSettings->ui->lblGridFontSample->font());
+
     QLineF line;
     line.setP1(QPointF(p.x(), m_giCursorVert->line().y1()));
     line.setP2(QPointF(p.x(), m_giCursorVert->line().y2()));
@@ -1120,7 +1122,7 @@ void QGVAmplitudeSpectrum::setMouseCursorPosition(QPointF p, bool forwardsync) {
         m_giCursorHoriz->show();
         m_giCursorHoriz->setLine(viewrect.right()-50/trans.m11(), m_giCursorHoriz->line().y1(), gMW->getFs()/2.0, m_giCursorHoriz->line().y1());
         m_giCursorVert->show();
-        m_giCursorVert->setLine(m_giCursorVert->line().x1(), viewrect.top(), m_giCursorVert->line().x1(), viewrect.top()+14/trans.m22());
+        m_giCursorVert->setLine(m_giCursorVert->line().x1(), viewrect.top(), m_giCursorVert->line().x1(), viewrect.top()+(qfm.height())/trans.m22());
         m_giCursorPositionXTxt->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
         m_giCursorPositionYTxt->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
         m_giCursorPositionXTxt->show();
@@ -1136,7 +1138,7 @@ void QGVAmplitudeSpectrum::setMouseCursorPosition(QPointF p, bool forwardsync) {
         if(gMW->m_dlgSettings->ui->cbViewsShowMusicNoteNames->isChecked())
             freqstr += "("+sigproc::h2n(sigproc::f2h(m_giCursorVert->line().x1()))+")";
         m_giCursorPositionXTxt->setText(freqstr);
-        m_giCursorPositionXTxt->setPos(x, viewrect.top()-4/trans.m22());
+        m_giCursorPositionXTxt->setPos(x, viewrect.top()-2/trans.m22());
 
         m_giCursorPositionYTxt->setText(QString("%1dB").arg(-m_giCursorHoriz->line().y1()));
         br = m_giCursorPositionYTxt->boundingRect();
