@@ -65,12 +65,14 @@ public:
     std::vector<std::complex<FFTTYPE> > m_windft; // Window spectrum
     std::vector<FFTTYPE> m_filterresponse;
 
+    // Cursor
     QGraphicsLineItem* m_giCursorHoriz;
     QGraphicsLineItem* m_giCursorVert;
     QGraphicsSimpleTextItem* m_giCursorPositionXTxt;
     QGraphicsSimpleTextItem* m_giCursorPositionYTxt;
     void setMouseCursorPosition(QPointF p, bool forwardsync);
 
+    // Selection
     QPointF m_selection_pressedp;
     QPointF m_pressed_mouseinviewport;
     QRectF m_pressed_viewrect;
@@ -83,6 +85,10 @@ public:
     void selectionSet(QRectF selection, bool forwardsync);
     void selectionSetTextInForm();
     bool hasSelection(){return m_selection.width()>0.0;}
+
+    // Min and max limits of the color range
+    QGraphicsLineItem* m_giSpectrogramMax;
+    QGraphicsLineItem* m_giSpectrogramMin;
 
     void scrollContentsBy(int dx, int dy);
     void wheelEvent(QWheelEvent* event);

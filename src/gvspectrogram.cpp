@@ -221,7 +221,8 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
 
     connect(m_dlgSettings->ui->buttonBox->button(QDialogButtonBox::Apply), SIGNAL(clicked()), this, SLOT(updateSTFTSettings()));
 
-    connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(sliderPressed()), SLOT(amplitudeExtentSlidersChanged()));
+    connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(sliderPressed()), this, SLOT(amplitudeExtentSlidersChanged()));
+    connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(sliderReleased()), this, SLOT(amplitudeExtentSlidersChangesEnded()));
     connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(spanChanged(int,int)), SLOT(amplitudeExtentSlidersChanged()));
     connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(lowerValueChanged(int)), this, SLOT(updateSTFTPlot()));
     connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(upperValueChanged(int)), this, SLOT(updateSTFTPlot()));
@@ -241,11 +242,28 @@ void QGVSpectrogram::showScrollBars(bool show) {
 }
 
 void QGVSpectrogram::amplitudeExtentSlidersChanged(){
-    if(!gMW->isLoading())
+    if(!gMW->isLoading()) {
         QToolTip::showText(QCursor::pos(), QString("[%1,%2]\% of amplitude range").arg(gMW->m_qxtSpectrogramSpanSlider->lowerValue()).arg(gMW->m_qxtSpectrogramSpanSlider->upperValue()), this);
+
+        FTSound* csnd = gMW->getCurrentFTSound(true);
+        if(csnd) {
+            FFTTYPE ymin = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0; // Min of color range [dB]
+            FFTTYPE ymax = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0; // Max of color range [dB]
+
+            gMW->m_gvAmplitudeSpectrum->m_giSpectrogramMin->setPos(0, -ymin);
+            gMW->m_gvAmplitudeSpectrum->m_giSpectrogramMin->show();
+            gMW->m_gvAmplitudeSpectrum->m_giSpectrogramMax->setPos(0, -ymax);
+            gMW->m_gvAmplitudeSpectrum->m_giSpectrogramMax->show();
+        }
+    }
 
     updateSTFTPlot();
 }
+void QGVSpectrogram::amplitudeExtentSlidersChangesEnded() {
+    gMW->m_gvAmplitudeSpectrum->m_giSpectrogramMin->hide();
+    gMW->m_gvAmplitudeSpectrum->m_giSpectrogramMax->hide();
+}
+
 
 void QGVSpectrogram::updateSTFTSettings(){
 //    cout << "QGVSpectrogram::updateSTFTSettings fs=" << gMW->getFs() << endl;
@@ -714,7 +732,9 @@ void QGVSpectrogram::mouseMoveEvent(QMouseEvent* event){
 }
 
 void QGVSpectrogram::mouseReleaseEvent(QMouseEvent* event) {
-//    std::cout << "QGVWaveform::mouseReleaseEvent " << selection.width() << endl;
+    COUTD << "QGVSpectrogram::mouseReleaseEvent" << endl;
+//    gMW->m_gvAmplitudeSpectrum->m_giSpectrogramMin->show();
+//    gMW->m_gvAmplitudeSpectrum->m_giSpectrogramMax->show();
 
     QPointF p = mapToScene(event->pos());
 

@@ -118,6 +118,7 @@ public slots:
     void playCursorSet(double t, bool forwardsync);
 
     void amplitudeExtentSlidersChanged();
+    void amplitudeExtentSlidersChangesEnded();
     void updateSceneRect(); // To call when fs has changed and limits in dB
     void updateTextsGeometry();
     void updateSTFTSettings();

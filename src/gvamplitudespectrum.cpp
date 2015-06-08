@@ -140,6 +140,18 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_giShownSelection->setOpacity(0.5);
     gMW->ui->lblSpectrumSelectionTxt->setText("No selection");
 
+    // Min and max limits of the color range
+    cursorPen = QPen(QColor(255, 0, 0));
+    cursorPen.setWidth(0);
+    m_giSpectrogramMax = new QGraphicsLineItem(0, 0, gMW->getFs()/2.0, 0);
+    m_giSpectrogramMax->setPen(cursorPen);
+    m_giSpectrogramMax->hide();
+    m_scene->addItem(m_giSpectrogramMax);
+    m_giSpectrogramMin = new QGraphicsLineItem(0, 0, gMW->getFs()/2.0, 0);
+    m_giSpectrogramMin->setPen(cursorPen);
+    m_giSpectrogramMin->hide();
+    m_scene->addItem(m_giSpectrogramMin);
+
     // Build actions
     m_aZoomIn = new QAction(tr("Zoom In"), this);;
     m_aZoomIn->setStatusTip(tr("Zoom In"));
@@ -593,7 +605,7 @@ void QGVAmplitudeSpectrum::wheelEvent(QWheelEvent* event) {
         m_aZoomOnSelection->setEnabled(!m_selection.isEmpty());
         m_aZoomOut->setEnabled(true);
         m_aZoomIn->setEnabled(true);
-        m_aUnZoom->setEnabled(true);
+//        m_aUnZoom->setEnabled(true);
     }
 }
 
