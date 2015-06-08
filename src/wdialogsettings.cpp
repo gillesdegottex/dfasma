@@ -30,6 +30,7 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "ftsound.h"
 #include "wmainwindow.h"
+#include "ui_wmainwindow.h"
 #include "gvwaveform.h"
 #include "gvamplitudespectrum.h"
 #include "gvphasespectrum.h"
@@ -75,6 +76,7 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
 }
 
 void WDialogSettings::settingsSave() {
+
     // Save all the automatic settings
     gMW->m_settings.saveAll();
 
@@ -84,6 +86,24 @@ void WDialogSettings::settingsSave() {
     // Save the particular settings of different widgets
     gMW->m_settings.setValue("m_qxtSpectrogramSpanSlider_lower", gMW->m_qxtSpectrogramSpanSlider->lowerValue());
     gMW->m_settings.setValue("m_qxtSpectrogramSpanSlider_upper", gMW->m_qxtSpectrogramSpanSlider->upperValue());
+
+    QString strMain;
+    QList<int> sizeslist = gMW->ui->splitterMain->sizes();
+    for(QList<int>::iterator it=sizeslist.begin(); it!=sizeslist.end(); it++)
+            strMain += QString::number(*it) + " ";
+    gMW->m_settings.setValue("splitterMain", strMain);
+
+    QString strViews;
+    sizeslist = gMW->ui->splitterViews->sizes();
+    for(QList<int>::iterator it=sizeslist.begin(); it!=sizeslist.end(); it++)
+            strViews += QString::number(*it) + " ";
+    gMW->m_settings.setValue("splitterViews", strViews);
+
+    QString strSpectra;
+    sizeslist = gMW->ui->splitterSpectra->sizes();
+    for(QList<int>::iterator it=sizeslist.begin(); it!=sizeslist.end(); it++)
+            strSpectra += QString::number(*it) + " ";
+    gMW->m_settings.setValue("splitterSpectra", strSpectra);
 }
 void WDialogSettings::settingsClear() {
     gMW->m_settings.clearAll();

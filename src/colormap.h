@@ -80,7 +80,7 @@ public:
 
         return qRgb(int(255*red), int(255*green), int(255*blue));
     }
-    virtual QRgb mapshort(int y){ // y in [0, 65536]
+    virtual QRgb mapshort(int y){ // y in [0, 65536[
         y = 65536-y;
 
         int red = 0;

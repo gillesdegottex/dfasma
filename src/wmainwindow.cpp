@@ -199,20 +199,11 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     ui->wSpectrogram->setVisible(ui->actionShowSpectrogram->isChecked());
     connect(ui->pbSpectrogramSTFTUpdate, SIGNAL(clicked()), m_gvSpectrogram, SLOT(updateSTFTSettings()));
 
-    ui->splitterMain->setStretchFactor(1, 1);
-    ui->splitterViews->setStretchFactor(0, 0);
-    ui->splitterViews->setStretchFactor(1, 1);
-    ui->splitterViews->setStretchFactor(2, 1);
-    ui->splitterSpectra->setStretchFactor(0, 2);
-    ui->splitterSpectra->setStretchFactor(1, 1);
-
     // Link axis' views
     connect(m_gvAmplitudeSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvPhaseSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
     connect(m_gvPhaseSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvAmplitudeSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
     connect(m_gvWaveform->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrogram->horizontalScrollBar(), SLOT(setValue(int)));
     connect(m_gvSpectrogram->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvWaveform->horizontalScrollBar(), SLOT(setValue(int)));
-
-    // TODO Link spectra with spectrogram ?
 
     // Set visible views
     connect(ui->actionShowAmplitudeSpectrum, SIGNAL(toggled(bool)), ui->wSpectrumAmplitude, SLOT(setVisible(bool)));
@@ -222,7 +213,50 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     connect(ui->actionShowSpectrogram, SIGNAL(toggled(bool)), ui->wSpectrogram, SLOT(setVisible(bool)));
     connect(ui->actionShowAmplitudeSpectrum, SIGNAL(toggled(bool)), this, SLOT(viewsDisplayedChanged()));
     connect(ui->actionShowPhaseSpectrum, SIGNAL(toggled(bool)), this, SLOT(viewsDisplayedChanged()));
+    connect(m_dlgSettings->ui->sbViewsToolBarSizes, SIGNAL(valueChanged(int)), this, SLOT(changeToolBarSizes(int)));
     viewsDisplayedChanged();
+
+    // Load saved sizes of the views
+    int onesize;
+    QTextStream strMain(m_settings.value("splitterMain").toByteArray());
+    QList<int> sizesMain;
+    while(!strMain.atEnd()) {
+        strMain >> onesize;
+        sizesMain.append(onesize);
+    }
+    if(sizesMain.count()==0) {
+        sizesMain.append(100);
+        sizesMain.append(600);
+    }
+    ui->splitterMain->setSizes(sizesMain);
+
+    QTextStream strViews(m_settings.value("splitterViews").toByteArray());
+    QList<int> sizesViews;
+    while(!strViews.atEnd()) {
+        strViews >> onesize;
+        sizesViews.append(onesize);
+    }
+    if(sizesViews.count()==0) {
+        sizesViews.append(100);
+        sizesViews.append(100);
+        sizesViews.append(100);
+    }
+    ui->splitterViews->setSizes(sizesViews);
+
+    QTextStream strSpectra(m_settings.value("splitterSpectra").toByteArray());
+    QList<int> sizesSpectra;
+    while(!strSpectra.atEnd()) {
+        strSpectra >> onesize;
+        sizesSpectra.append(onesize);
+    }
+//    for(QList<int>::iterator it=sizeslist.begin(); it!=sizeslist.end(); it++)
+//        std::cout << *it << " ";
+//    std::cout << std::endl;
+    if(sizesSpectra.count()==0) {
+        sizesSpectra.append(100);
+        sizesSpectra.append(100);
+    }
+    ui->splitterSpectra->setSizes(sizesSpectra);
 
     // Start in open file mode
     // and show the panels only if a file has been loaded
@@ -249,8 +283,6 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
         connect(m_dlgSettings->ui->cbPlaybackAudioOutputDevices, SIGNAL(currentIndexChanged(int)), this, SLOT(selectAudioOutputDevice(int)));
         m_dlgSettings->adjustSize();
     }
-
-    connect(m_dlgSettings->ui->sbViewsToolBarSizes, SIGNAL(valueChanged(int)), this, SLOT(changeToolBarSizes(int)));
 
     // This one seems able to open distant files because file paths arrive in gvfs format
     // in the main.
