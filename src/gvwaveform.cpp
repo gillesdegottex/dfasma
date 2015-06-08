@@ -923,9 +923,8 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
             }
         }
     }
-    else if(event->key()==Qt::Key_S){
-        if(!FTGraphicsLabelItem::isEditing())
-            selectionZoomOn();
+    else if(!gMW->ui->actionEditMode->isChecked() && event->key()==Qt::Key_S){
+        selectionZoomOn();
     }
     else if(event->key()==Qt::Key_Escape) {
         if(!hasSelection()) {
