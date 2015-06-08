@@ -151,8 +151,8 @@ void WDialogSettings::setSBAvoidClicksWindowDuration(double halfduration) {
 
 void WDialogSettings::changeFont() {
     QFontDialog dlg(ui->lblGridFontSample->font(), this);
-    dlg.exec();
-    ui->lblGridFontSample->setFont(dlg.selectedFont());
+    if(dlg.exec()==QDialog::Accepted)
+        ui->lblGridFontSample->setFont(dlg.selectedFont());
 }
 
 WDialogSettings::~WDialogSettings() {
