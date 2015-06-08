@@ -43,7 +43,6 @@ class QGVAmplitudeSpectrum : public QGraphicsView
     Q_OBJECT
 
     QPen m_gridFontPen;
-    QFont m_gridFont;
 
     QTime m_last_parameters_change;
 

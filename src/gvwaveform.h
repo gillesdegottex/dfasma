@@ -101,7 +101,6 @@ public:
 //    void cursorUpdate(float x);
     QPen m_gridPen;
     QPen m_gridFontPen;
-    QFont m_gridFont;
     void draw_grid(QPainter* painter, const QRectF& rect);
     void draw_allwaveforms(QPainter* painter, const QRectF& rect);
     void draw_waveform(QPainter* painter, const QRectF& rect, FTSound *snd);

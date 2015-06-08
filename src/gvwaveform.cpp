@@ -75,8 +75,6 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_gridPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
     m_gridFontPen.setColor(QColor(128,128,128));
     m_gridFontPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-    m_gridFont.setPixelSize(12);
-    m_gridFont.setFamily("Helvetica");
     m_aWaveformShowGrid = new QAction(tr("Show &grid"), this);
     m_aWaveformShowGrid->setObjectName("m_aWaveformShowGrid");
     m_aWaveformShowGrid->setStatusTip(tr("Show &grid"));
@@ -1438,7 +1436,9 @@ void QGVWaveform::draw_grid(QPainter* painter, const QRectF& rect){
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
-    painter->setFont(m_gridFont);
+    painter->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
+    QFontMetrics qfm(gMW->m_dlgSettings->ui->lblGridFontSample->font());
+
     QTransform trans = transform();
 
     // Horizontal lines
@@ -1520,7 +1520,7 @@ void QGVWaveform::draw_grid(QPainter* painter, const QRectF& rect){
     painter->setPen(m_gridFontPen);
     for(double l=int(rect.left()/lstep)*lstep; l<=rect.right(); l+=lstep){
         painter->save();
-        painter->translate(QPointF(l, viewrect.bottom()-14/trans.m22()));
+        painter->translate(QPointF(l, viewrect.bottom()-(qfm.height()-1)/trans.m22()));
         painter->scale(1.0/trans.m11(), 1.0/trans.m22());
         painter->drawStaticText(QPointF(0, 0), QStaticText(QString("%1s").arg(l)));
         painter->restore();

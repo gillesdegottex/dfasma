@@ -81,10 +81,9 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_aShowProperties->setStatusTip(tr("Open the properties configuration panel of the Spectrogram view"));
     m_aShowProperties->setIcon(QIcon(":/icons/settings.svg"));
 
-    m_gridFontPen.setColor(QColor(0,0,0));
+//    m_gridFontPen.setColor(QColor(0,0,0));
+    m_gridFontPen.setColor(QColor(255,255,255));
     m_gridFontPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-    m_gridFont.setPointSize(8);
-    m_gridFont.setFamily("Helvetica");
 
     m_aSpectrogramShowGrid = new QAction(tr("Show &grid"), this);
     m_aSpectrogramShowGrid->setObjectName("m_aSpectrogramShowGrid"); // For auto settings
@@ -109,7 +108,8 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
 
     // Cursor
     m_giMouseCursorLineTime = new QGraphicsLineItem(0, 0, 1, 1);
-    QPen cursorPen(QColor(64, 64, 64));
+    QColor cursorcolor(255, 255, 255); //QColor(64, 64, 64)
+    QPen cursorPen(cursorcolor);
     cursorPen.setWidth(0);
     m_giMouseCursorLineTime->setPen(cursorPen);
     m_giMouseCursorLineTime->hide();
@@ -120,12 +120,12 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_scene->addItem(m_giMouseCursorLineFreq);
     QFont font("Helvetica", 10);
     m_giMouseCursorTxtTime = new QGraphicsSimpleTextItem();
-    m_giMouseCursorTxtTime->setBrush(QColor(64, 64, 64));
+    m_giMouseCursorTxtTime->setBrush(cursorcolor);
     m_giMouseCursorTxtTime->setFont(font);
     m_giMouseCursorTxtTime->hide();
     m_scene->addItem(m_giMouseCursorTxtTime);
     m_giMouseCursorTxtFreq = new QGraphicsSimpleTextItem();
-    m_giMouseCursorTxtFreq->setBrush(QColor(64, 64, 64));
+    m_giMouseCursorTxtFreq->setBrush(cursorcolor);
     m_giMouseCursorTxtFreq->setFont(font);
     m_giMouseCursorTxtFreq->hide();
     m_scene->addItem(m_giMouseCursorTxtFreq);
@@ -244,7 +244,7 @@ void QGVSpectrogram::showScrollBars(bool show) {
 
 void QGVSpectrogram::amplitudeExtentSlidersChanged(){
     if(!gMW->isLoading())
-        QToolTip::showText(QCursor::pos(), QString("[%1,%2]\%").arg(gMW->m_qxtSpectrogramSpanSlider->lowerValue()).arg(gMW->m_qxtSpectrogramSpanSlider->upperValue()), this);
+        QToolTip::showText(QCursor::pos(), QString("[%1,%2]\% of amplitude range").arg(gMW->m_qxtSpectrogramSpanSlider->lowerValue()).arg(gMW->m_qxtSpectrogramSpanSlider->upperValue()), this);
 
     updateSTFTPlot();
 }
@@ -1123,9 +1123,10 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 
 void QGVSpectrogram::draw_grid(QPainter* painter, const QRectF& rect) {
     // Prepare the pens and fonts
-    QPen gridPen(QColor(0,0,0));
+//    QPen gridPen(QColor(0,0,0));
+    QPen gridPen(QColor(255,255,255));
     gridPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-    painter->setFont(m_gridFont);
+    painter->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
 
     // Horizontal lines
 

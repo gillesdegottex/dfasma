@@ -31,6 +31,7 @@ class QGroupBox;
 class QRadioButton;
 class QAction;
 class QSlider;
+class QLabel;
 
 class QSettingsAuto : public QSettings
 {
@@ -44,6 +45,7 @@ class QSettingsAuto : public QSettings
 	std::list<QRadioButton*> m_elements_qradiobutton;
     std::list<QSlider*> m_elements_qslider;
     std::list<QAction*> m_elements_qaction;
+    std::list<QLabel*> m_elements_qfont;
 
   public:
     QSettingsAuto();
@@ -78,6 +80,11 @@ class QSettingsAuto : public QSettings
     void add(QAction* el);
     void save(QAction* el);
     void load(QAction* el);
+
+
+    void addFont(QLabel* el);
+    void saveFont(QLabel* el);
+    void loadFont(QLabel* el);
 
     bool contains(const QString & key);
 

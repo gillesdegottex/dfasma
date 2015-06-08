@@ -828,9 +828,7 @@ void QGVPhaseSpectrum::draw_grid(QPainter* painter, const QRectF& rect){
     thinGridPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
     QPen gridFontPen(QColor(128,128,128));
     gridFontPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-    QFont font;
-    font.setPixelSize(12);
-    painter->setFont(font);
+    painter->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
 
     // Horizontal lines
 

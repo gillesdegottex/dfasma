@@ -18,7 +18,6 @@
 
 #include <iostream>
 using namespace std;
-#include <qsettings.h>
 #include "QSettingsAuto.h"
 #include <qcheckbox.h>
 #include <qspinbox.h>
@@ -27,6 +26,7 @@ using namespace std;
 #include <qgroupbox.h>
 #include <qradiobutton.h>
 #include <qaction.h>
+#include <qlabel.h>
 
 QSettingsAuto::QSettingsAuto(const QString& domain, const QString& product)
 	: QSettings(QSettings::UserScope, domain, product)
@@ -217,15 +217,6 @@ void QSettingsAuto::add(QAction* el)
     if(contains(el->objectName()))
         load(el);
 }
-bool QSettingsAuto::contains(const QString & key) {
-    bool ret;
-
-    beginGroup("QSettingsAuto/");
-    ret = QSettings::contains(key);
-    endGroup();
-
-    return ret;
-}
 void QSettingsAuto::save(QAction* el)
 {
     beginGroup("QSettingsAuto/");
@@ -237,6 +228,40 @@ void QSettingsAuto::load(QAction* el)
     beginGroup("QSettingsAuto/");
     el->setChecked(value(el->objectName(), el->isChecked()).toBool());
     endGroup();
+}
+
+void QSettingsAuto::addFont(QLabel* el)
+{
+    assert(el->objectName()!="");
+    m_elements_qfont.push_back(el);
+    if(contains(el->objectName()+"_family"))
+        loadFont(el);
+}
+void QSettingsAuto::saveFont(QLabel* el)
+{
+    beginGroup("QSettingsAuto/");
+    setValue(el->objectName()+"_family", (*el).font().family());
+    setValue(el->objectName()+"_pointSize", (*el).font().pointSize());
+    endGroup();
+}
+void QSettingsAuto::loadFont(QLabel* el)
+{
+    QFont f = el->font();
+    beginGroup("QSettingsAuto/");
+    f.setFamily(value(el->objectName()+"_family", f.family()).toString());
+    f.setPointSize(value(el->objectName()+"_pointSize", f.pointSize()).toInt());
+    el->setFont(f);
+    endGroup();
+}
+
+bool QSettingsAuto::contains(const QString & key) {
+    bool ret;
+
+    beginGroup("QSettingsAuto/");
+    ret = QSettings::contains(key);
+    endGroup();
+
+    return ret;
 }
 
 void QSettingsAuto::saveAll()
@@ -268,6 +293,9 @@ void QSettingsAuto::saveAll()
     for(list<QAction*>::iterator it=m_elements_qaction.begin(); it!=m_elements_qaction.end(); it++)
         save(*it);
 
+    for(list<QLabel*>::iterator it=m_elements_qfont.begin(); it!=m_elements_qfont.end(); it++)
+        saveFont(*it);
+
     sync();
 }
 void QSettingsAuto::loadAll()
@@ -298,6 +326,9 @@ void QSettingsAuto::loadAll()
 
     for(list<QAction*>::iterator it=m_elements_qaction.begin(); it!=m_elements_qaction.end(); it++)
         load(*it);
+
+    for(list<QLabel*>::iterator it=m_elements_qfont.begin(); it!=m_elements_qfont.end(); it++)
+        loadFont(*it);
 
     sync();
 }

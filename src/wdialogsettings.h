@@ -40,8 +40,8 @@ public:
 public slots:
     void setCKAvoidClicksAddWindows(bool add);
     void setSBAvoidClicksWindowDuration(double halfduration);
-
     void setSBButterworthOrderChangeValue(int order);
+    void changeFont();
 
     void settingsSave();
     void settingsClear();

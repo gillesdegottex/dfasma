@@ -45,7 +45,6 @@ class QGVSpectrogram : public QGraphicsView
     Q_OBJECT
 
     QPen m_gridFontPen;
-    QFont m_gridFont;
 
     QTime m_progresswidgets_lastup;
 

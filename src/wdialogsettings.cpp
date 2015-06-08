@@ -25,6 +25,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QSettings>
 #include <QMessageBox>
 #include <QTextCodec>
+#include <QFontDialog>
 #include "../external/libqxt/qxtspanslider.h"
 
 #include "ftsound.h"
@@ -68,6 +69,7 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     gMW->m_settings.add(ui->cbViewsShowMusicNoteNames);
     gMW->m_settings.add(ui->cbViewsAddMarginsOnSelection);
     gMW->m_settings.add(ui->cbViewsScrollBarsShow);
+    gMW->m_settings.addFont(ui->lblGridFontSample);
 
     adjustSize();
 }
@@ -103,6 +105,12 @@ void WDialogSettings::setCKAvoidClicksAddWindows(bool add) {
 
 void WDialogSettings::setSBAvoidClicksWindowDuration(double halfduration) {
     FTSound::setAvoidClicksWindowDuration(halfduration);
+}
+
+void WDialogSettings::changeFont() {
+    QFontDialog dlg(ui->lblGridFontSample->font(), this);
+    dlg.exec();
+    ui->lblGridFontSample->setFont(dlg.selectedFont());
 }
 
 WDialogSettings::~WDialogSettings() {

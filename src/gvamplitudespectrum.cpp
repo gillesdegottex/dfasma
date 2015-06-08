@@ -75,8 +75,6 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
 
     m_gridFontPen.setColor(QColor(128,128,128));
     m_gridFontPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-    m_gridFont.setPixelSize(12);
-    m_gridFont.setFamily("Helvetica");
 
     m_aAmplitudeSpectrumShowGrid = new QAction(tr("Show &grid"), this);
     m_aAmplitudeSpectrumShowGrid->setObjectName("m_aAmplitudeSpectrumShowGrid");
@@ -1377,7 +1375,7 @@ void QGVAmplitudeSpectrum::draw_grid(QPainter* painter, const QRectF& rect) {
     // TODO put this in the constructor to limit the allocations in this function
     QPen gridPen(QColor(192,192,192)); //192
     gridPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-    painter->setFont(m_gridFont);
+    painter->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
 
     // Horizontal lines
 

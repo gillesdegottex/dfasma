@@ -288,6 +288,29 @@
         </layout>
        </item>
        <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_10">
+         <item>
+          <widget class="QPushButton" name="pbGridFontChange">
+           <property name="text">
+            <string>Change font of the grids</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="lblGridFontSample">
+           <property name="font">
+            <font>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>1.26s, 1000Hz, 24dB, -1.24rad</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
         <layout class="QHBoxLayout" name="horizontalLayout_8">
          <item>
           <widget class="QSpinBox" name="sbFileListItemSize">
@@ -515,5 +538,24 @@ p, li { white-space: pre-wrap; }
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pbGridFontChange</sender>
+   <signal>clicked()</signal>
+   <receiver>WDialogSettings</receiver>
+   <slot>changeFont()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>554</x>
+     <y>121</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>312</x>
+     <y>214</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
+ <slots>
+  <slot>changeFont()</slot>
+ </slots>
 </ui>
