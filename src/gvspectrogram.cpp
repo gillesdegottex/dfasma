@@ -732,9 +732,7 @@ void QGVSpectrogram::mouseMoveEvent(QMouseEvent* event){
 }
 
 void QGVSpectrogram::mouseReleaseEvent(QMouseEvent* event) {
-    COUTD << "QGVSpectrogram::mouseReleaseEvent" << endl;
-//    gMW->m_gvAmplitudeSpectrum->m_giSpectrogramMin->show();
-//    gMW->m_gvAmplitudeSpectrum->m_giSpectrogramMax->show();
+//    COUTD << "QGVSpectrogram::mouseReleaseEvent" << endl;
 
     QPointF p = mapToScene(event->pos());
 

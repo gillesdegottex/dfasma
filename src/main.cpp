@@ -45,6 +45,7 @@ extern "C" {
 
 #include "qthelper.h"
 #include "filetype.h"
+#include "ftlabels.h"
 
 int main(int argc, char *argv[])
 {
@@ -56,6 +57,18 @@ int main(int argc, char *argv[])
         FileType::m_typestrings.push_back("F0 (*.bpf *.sdif)");
         FileType::m_typestrings.push_back("Label (*.bpf *.lab *.sdif)");
     }
+    // Map FileFormat with corresponding strings
+    if(FTLabels::m_formatstrings.empty()){
+        FTLabels::m_formatstrings.push_back("Unspecified");
+        FTLabels::m_formatstrings.push_back("Auto");
+        FTLabels::m_formatstrings.push_back("Auto Text");
+        FTLabels::m_formatstrings.push_back("Text Time/Text (*.*)");
+        FTLabels::m_formatstrings.push_back("Text Segment Float (*.*)");
+        FTLabels::m_formatstrings.push_back("Text Segment Samples (*.*)");
+        FTLabels::m_formatstrings.push_back("Text Segment HTK (*.*)");
+        FTLabels::m_formatstrings.push_back("SDIF 1MRK/1LAB (*.sdif)");
+    }
+
 
     #ifdef FILE_AUDIO_LIBAV
         // This call is necessarily done once in your app to initialize

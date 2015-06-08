@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>625</width>
-    <height>429</height>
+    <width>599</width>
+    <height>424</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -197,13 +197,26 @@
          </layout>
         </widget>
        </item>
+       <item>
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>18</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tab_3">
       <attribute name="title">
        <string>File Formats</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_8">
+      <layout class="QVBoxLayout" name="verticalLayout_5">
        <item>
         <widget class="QGroupBox" name="groupBox_4">
          <property name="title">
@@ -213,7 +226,7 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_9">
             <item>
-             <widget class="QComboBox" name="cbLabelDefaultTextEncoding">
+             <widget class="QComboBox" name="cbLabelsDefaultTextEncoding">
               <property name="editable">
                <bool>true</bool>
               </property>
@@ -234,6 +247,26 @@
             </item>
            </layout>
           </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_11">
+            <item>
+             <widget class="QComboBox" name="cbLabelsDefaultFormat"/>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_2">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Default format</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
          </layout>
         </widget>
        </item>
@@ -245,7 +278,7 @@
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>213</height>
+           <height>0</height>
           </size>
          </property>
         </spacer>

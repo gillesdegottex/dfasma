@@ -120,18 +120,6 @@ void FTGraphicsLabelItem::paint(QPainter *painter,const QStyleOptionGraphicsItem
 
 
 void FTLabels::init(){
-    // Map FileFormat with corresponding strings
-    if(m_formatstrings.empty()){
-        m_formatstrings.push_back("Unspecified");
-        m_formatstrings.push_back("Auto");
-        m_formatstrings.push_back("Auto Text");
-        m_formatstrings.push_back("Text Time/Text (*.*)");
-        m_formatstrings.push_back("Text Segment Float (*.*)");
-        m_formatstrings.push_back("Text Segment Samples (*.*)");
-        m_formatstrings.push_back("Text Segment HTK (*.*)");
-        m_formatstrings.push_back("SDIF 1MRK/1LAB (*.sdif)");
-    }
-
     m_isedited = false;
 
     connect(m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setVisible(bool)));
@@ -153,9 +141,8 @@ FTLabels::FTLabels(QObject *parent)
 
     init();
 
-    // TODO Manage a default user format
-    setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.bpf");
-    m_fileformat = FFTEXTTimeText;
+    setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.lab");
+    m_fileformat = FFNotSpecified;
 
     gMW->ftlabels.push_back(this);
 }
@@ -274,7 +261,7 @@ void FTLabels::load() {
         double t;
         QString line, text;
         QTextStream stream(&data);
-        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelDefaultTextEncoding->currentText().toLatin1().constData());
+        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelsDefaultTextEncoding->currentText().toLatin1().constData());
         line = stream.readLine();
         do {
             QTextStream(&line) >> t >> text;
@@ -291,7 +278,7 @@ void FTLabels::load() {
         double startt, endt;
         QString line, text;
         QTextStream stream(&data);
-        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelDefaultTextEncoding->currentText().toLatin1().constData());
+        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelsDefaultTextEncoding->currentText().toLatin1().constData());
         line = stream.readLine();
         do {
             QTextStream(&line) >> startt >> endt >> text;
@@ -312,7 +299,7 @@ void FTLabels::load() {
         double startt, endt;
         QString line, text;
         QTextStream stream(&data);
-        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelDefaultTextEncoding->currentText().toLatin1().constData());
+        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelsDefaultTextEncoding->currentText().toLatin1().constData());
         line = stream.readLine();
         do {
 //                COUTD << '"' << line << '"' << endl;
@@ -340,7 +327,7 @@ void FTLabels::load() {
         double startt, endt;
         QString line, text;
         QTextStream stream(&data);
-        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelDefaultTextEncoding->currentText().toLatin1().constData());
+        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelsDefaultTextEncoding->currentText().toLatin1().constData());
         line = stream.readLine();
         do {
             QTextStream(&line) >> startt >> endt >> text;
@@ -512,7 +499,13 @@ void FTLabels::saveAs() {
     #ifdef SUPPORT_SDIF
         filters += ";;"+m_formatstrings[FFSDIF];
     #endif
-    QString selectedFilter = m_formatstrings[m_fileformat];
+    QString selectedFilter;
+    if(m_fileformat==FFNotSpecified) {
+        if(gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText<int(m_formatstrings.size()))
+            selectedFilter = m_formatstrings[gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText];
+    }
+    else
+        selectedFilter = m_formatstrings[m_fileformat];
 
     QString fp = QFileDialog::getSaveFileName(gMW, "Save file as...", fileFullPath, filters, &selectedFilter, QFileDialog::DontUseNativeDialog);
 
@@ -557,7 +550,7 @@ void FTLabels::save() {
         QTextStream stream(&data);
         stream.setRealNumberPrecision(12);
         stream.setRealNumberNotation(QTextStream::ScientificNotation);
-        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelDefaultTextEncoding->currentText().toLatin1().constData());
+        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelsDefaultTextEncoding->currentText().toLatin1().constData());
         for(size_t li=0; li<starts.size(); li++)
             stream << starts[li] << " " << waveform_labels[li]->toPlainText() << endl;
     }
@@ -569,7 +562,7 @@ void FTLabels::save() {
         QTextStream stream(&data);
         stream.setRealNumberPrecision(12);
         stream.setRealNumberNotation(QTextStream::ScientificNotation);
-        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelDefaultTextEncoding->currentText().toLatin1().constData());
+        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelsDefaultTextEncoding->currentText().toLatin1().constData());
         for(size_t li=0; li<starts.size(); li++) {
             // If this is the last one AND its text is empty, skip it.
             // (thus, manage the read/write of segments files)
@@ -594,7 +587,7 @@ void FTLabels::save() {
         double fs = gMW->getFs();
 
         QTextStream stream(&data);
-        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelDefaultTextEncoding->currentText().toLatin1().constData());
+        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelsDefaultTextEncoding->currentText().toLatin1().constData());
         for(size_t li=0; li<starts.size(); li++) {
             // If this is the last one AND its text is empty, skip it.
             // (thus, manage the read/write of segments files)
@@ -617,7 +610,7 @@ void FTLabels::save() {
             throw QString("FTLabel: Cannot open file");
 
         QTextStream stream(&data);
-        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelDefaultTextEncoding->currentText().toLatin1().constData());
+        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelsDefaultTextEncoding->currentText().toLatin1().constData());
         for(size_t li=0; li<starts.size(); li++) {
             // If this is the last one AND its text is empty, skip it.
             // (thus, manage the read/write of segments files)

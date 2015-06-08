@@ -35,6 +35,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "gvamplitudespectrum.h"
 #include "gvphasespectrum.h"
 #include "gvspectrogramwdialogsettings.h"
+#include "ftlabels.h"
 
 WDialogSettings::WDialogSettings(QWidget *parent) :
     QDialog(parent),
@@ -46,8 +47,16 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     QList<QByteArray> avcodecs = QTextCodec::availableCodecs();
     qSort(avcodecs);
     for(int ai=0; ai<avcodecs.size(); ++ai)
-        ui->cbLabelDefaultTextEncoding->addItem(avcodecs[ai]);
-    ui->cbLabelDefaultTextEncoding->setCurrentText("UTF-8");
+        ui->cbLabelsDefaultTextEncoding->addItem(avcodecs[ai]);
+    ui->cbLabelsDefaultTextEncoding->setCurrentText("UTF-8");
+    ui->cbLabelsDefaultFormat->addItem(FTLabels::m_formatstrings[FTLabels::FFTEXTTimeText]);
+    ui->cbLabelsDefaultFormat->addItem(FTLabels::m_formatstrings[FTLabels::FFTEXTSegmentsFloat]);
+    ui->cbLabelsDefaultFormat->addItem(FTLabels::m_formatstrings[FTLabels::FFTEXTSegmentsSample]);
+    ui->cbLabelsDefaultFormat->addItem(FTLabels::m_formatstrings[FTLabels::FFTEXTSegmentsHTK]);
+    #ifdef SUPPORT_SDIF
+        ui->cbLabelsDefaultFormat->addItem(FTLabels::m_formatstrings[FTLabels::FFSDIF]);
+    #endif
+    ui->cbLabelsDefaultFormat->setCurrentText(FTLabels::m_formatstrings[FTLabels::FFTEXTTimeText]);
 
     setWindowIcon(QIcon(":/icons/settings.svg"));
     setWindowIconText("Settings");
@@ -63,7 +72,8 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     gMW->m_settings.add(ui->cbPlaybackFilteringCompensateEnergy);
     gMW->m_settings.add(ui->ckPlaybackAvoidClicksAddWindows);
     gMW->m_settings.add(ui->sbPlaybackAvoidClicksWindowDuration);
-    gMW->m_settings.add(ui->cbLabelDefaultTextEncoding, true);
+    gMW->m_settings.add(ui->cbLabelsDefaultTextEncoding, true);
+    gMW->m_settings.add(ui->cbLabelsDefaultFormat);
     gMW->m_settings.add(ui->sbViewsToolBarSizes);
     gMW->m_settings.add(ui->sbFileListItemSize);
     gMW->m_settings.add(ui->sbViewsTimeDecimals);
