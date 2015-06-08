@@ -1127,6 +1127,7 @@ void QGVSpectrogram::draw_grid(QPainter* painter, const QRectF& rect) {
     QPen gridPen(QColor(255,255,255));
     gridPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
     painter->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
+    QFontMetrics qfm(gMW->m_dlgSettings->ui->lblGridFontSample->font());
 
     // Horizontal lines
 
@@ -1195,7 +1196,7 @@ void QGVSpectrogram::draw_grid(QPainter* painter, const QRectF& rect) {
     painter->setPen(m_gridFontPen);
     for(double l=int(rect.left()/lstep)*lstep; l<=rect.right(); l+=lstep){
         painter->save();
-        painter->translate(QPointF(l, viewrect.bottom()-14/trans.m22()));
+        painter->translate(QPointF(l, viewrect.bottom()-(qfm.height()-2)/trans.m22()));
         painter->scale(1.0/trans.m11(), 1.0/trans.m22());
         painter->drawStaticText(QPointF(0, 0), QStaticText(QString("%1s").arg(l, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value())));
         painter->restore();

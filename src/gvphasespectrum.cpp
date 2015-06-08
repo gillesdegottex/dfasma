@@ -829,6 +829,7 @@ void QGVPhaseSpectrum::draw_grid(QPainter* painter, const QRectF& rect){
     QPen gridFontPen(QColor(128,128,128));
     gridFontPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
     painter->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
+    QFontMetrics qfm(gMW->m_dlgSettings->ui->lblGridFontSample->font());
 
     // Horizontal lines
 
@@ -920,7 +921,7 @@ void QGVPhaseSpectrum::draw_grid(QPainter* painter, const QRectF& rect){
     trans = transform();
     for(double l=int(viewrect.left()/lstep)*lstep; l<=rect.right(); l+=lstep) {
         painter->save();
-        painter->translate(QPointF(l, viewrect.bottom()-14.0/trans.m22()));
+        painter->translate(QPointF(l, viewrect.bottom()-(qfm.height()-2)/trans.m22()));
         painter->scale(1.0/trans.m11(), 1.0/trans.m22());
         painter->drawStaticText(QPointF(0, 0), QStaticText(QString("%1Hz").arg(l)));
         painter->restore();

@@ -1520,7 +1520,7 @@ void QGVWaveform::draw_grid(QPainter* painter, const QRectF& rect){
     painter->setPen(m_gridFontPen);
     for(double l=int(rect.left()/lstep)*lstep; l<=rect.right(); l+=lstep){
         painter->save();
-        painter->translate(QPointF(l, viewrect.bottom()-(qfm.height()-1)/trans.m22()));
+        painter->translate(QPointF(l, viewrect.bottom()-(qfm.height()-2)/trans.m22()));
         painter->scale(1.0/trans.m11(), 1.0/trans.m22());
         painter->drawStaticText(QPointF(0, 0), QStaticText(QString("%1s").arg(l)));
         painter->restore();
