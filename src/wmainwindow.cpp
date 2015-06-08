@@ -364,7 +364,7 @@ void WMainWindow::stopFileProgressDialog() {
 }
 
 void WMainWindow::newFile(){
-    QMessageBox::StandardButton btn = QMessageBox::question(this, "Create a new file ...", "Do you want to create a new label file?", QMessageBox::Yes | QMessageBox::No);
+    QMessageBox::StandardButton btn = QMessageBox::question(this, "Create a new file ...", "Do you want to create an empty label file?", QMessageBox::Yes | QMessageBox::No);
     if(btn==QMessageBox::Yes){
         ui->listSndFiles->addItem(new FTLabels(this));
     }
