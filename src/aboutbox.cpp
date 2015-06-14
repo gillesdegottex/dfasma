@@ -40,7 +40,7 @@ AboutBox::AboutBox(QWidget *parent) :
     #ifdef Q_PROCESSOR_X86_64
       txt += "64bits";
     #endif
-    txt += " on "+QString(__DATE__)+")";
+    txt += ")";
 
     ui->lblVersion->setText(txt);
 
