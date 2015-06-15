@@ -69,7 +69,7 @@ void FTSound::load(){
     cout << 3 << endl;
     // TODO drop it to the standard output
     av_dump_format(container,0,fileName.toLocal8Bit().constData(),false);
-//    std::cerr << flush;
+//    std::cout << flush;
 
     cout << 4 << endl;
     int stream_id=-1;

@@ -110,16 +110,16 @@ void AudioDecoder::error(QAudioDecoder::Error error)
     case QAudioDecoder::NoError:
         return;
     case QAudioDecoder::ResourceError:
-        std::cerr << "Resource error" << endl;
+        std::cout << "Resource error" << endl;
         break;
     case QAudioDecoder::FormatError:
-        std::cerr << "Format error" << endl;
+        std::cout << "Format error" << endl;
         break;
     case QAudioDecoder::AccessDeniedError:
-        std::cerr << "Access denied error" << endl;
+        std::cout << "Access denied error" << endl;
         break;
     case QAudioDecoder::ServiceMissingError:
-        std::cerr << "Service missing error" << endl;
+        std::cout << "Service missing error" << endl;
         break;
     }
 
