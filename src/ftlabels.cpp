@@ -24,7 +24,6 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <numeric>
 #include <algorithm>
 #include <vector>
-#include <fstream>
 using namespace std;
 
 #ifdef SUPPORT_SDIF
@@ -215,26 +214,35 @@ void FTLabels::load() {
     if(m_fileformat==FFAutoDetect || m_fileformat==FFTEXTAutoDetect) {
         // Find the format using language check
 
-        ifstream fin(fileFullPath.toLatin1().constData());
-        if(!fin.is_open())
+        QFile data(fileFullPath);
+        if(!data.open(QFile::ReadOnly))
             throw QString("FTLabel:FFAutoDetect: Cannot open the file.");
+
         double t;
-        string line, text;
-        // Check the first line only (Assuming it is enough)
-        if(!std::getline(fin, line))
+        QString line, text;
+        QTextStream stream(&data);
+        stream.setCodec(gMW->m_dlgSettings->ui->cbLabelsDefaultTextEncoding->currentText().toLatin1().constData());
+        line = stream.readLine();
+
+        // Check the first line only (Assuming it is enough ...)
+        if(line.isNull() || line.isEmpty())
             throw QString("FTLabel:FFAutoDetect: There is not a single line in this file.");
 
+//        COUTD << '"' << line.toLatin1().constData() << '"' << endl;
+
         // Check: <number> <text>
-        std::istringstream iss(line);
-        if((iss >> t >> text) && iss.eof())
+        QTextStream linestr(&line);
+        linestr >> t >> text;
+        if(linestr.atEnd())
             m_fileformat = FFTEXTTimeText;
         else {
             // Check simple HTK Label: <integer> <integer> <text>
             // No multiple levels or multiple alternatives managed
             // http://www.ee.columbia.edu/ln/LabROSA/doc/HTKBook21/node82.html
             int i;
-            std::istringstream iss(line);
-            if((iss >> i >> i >> text) && iss.eof()){
+            QTextStream linestr(&line);
+            linestr >> i >> i >> text;
+            if(linestr.atEnd()){
                 QRegExp rx(".*[0-9]+$"); // If the extension ends with a number...
                 if(rx.indexIn(fileFullPath)!=-1)
                     m_fileformat = FFTEXTSegmentsSample; // ... it is samples
@@ -243,9 +251,11 @@ void FTLabels::load() {
             }
             else {
                 // Check: <number> <number> <text>
-                std::istringstream iss(line);
-                if((iss >> t >> t >> text) && iss.eof())
+                QTextStream linestr(&line);
+                linestr >> t >> t >> text;
+                if(linestr.atEnd()){
                     m_fileformat = FFTEXTSegmentsFloat;
+                }
             }
         }
     }
