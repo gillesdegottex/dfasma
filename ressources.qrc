@@ -17,7 +17,6 @@
         <file>icons/unzoomy.svg</file>
         <file>icons/dfasma.svg</file>
         <file>icons/dfasma.ico</file>
-        <file>icons/autoupdatedft.svg</file>
         <file>icons/amplitudespectrum.svg</file>
         <file>icons/phasespectrum.svg</file>
         <file>icons/spectrogram.svg</file>
@@ -26,5 +25,7 @@
         <file>icons/stftupdate.svg</file>
         <file>icons/edit_selected.svg</file>
         <file>icons/edit_white.svg</file>
+        <file>icons/autoupdate.svg</file>
+        <file>icons/noun_29196_cc.svg</file>
     </qresource>
 </RCC>

@@ -103,6 +103,7 @@ public:
 
     QAction* m_aSpectrogramShowGrid;
     QAction* m_aSpectrogramShowHarmonics;
+    QAction* m_aAutoUpdate;
     QAction* m_aZoomOnSelection;
     QAction* m_aSelectionClear;
     QAction* m_aZoomIn;

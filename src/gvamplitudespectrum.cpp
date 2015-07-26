@@ -100,7 +100,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_aAmplitudeSpectrumShowLoudnessCurve->setStatusTip(tr("Show the loudness curve which is use for the spectrogram weighting."));
     m_aAmplitudeSpectrumShowLoudnessCurve->setCheckable(true);
     m_aAmplitudeSpectrumShowLoudnessCurve->setChecked(false);
-//    m_aAmplitudeSpectrumShowLoudnessCurve->setIcon(QIcon(":/icons/window.svg"));
+    m_aAmplitudeSpectrumShowLoudnessCurve->setIcon(QIcon(":/icons/noun_29196_cc.svg"));
     gMW->m_settings.add(m_aAmplitudeSpectrumShowLoudnessCurve);
     connect(m_aAmplitudeSpectrumShowLoudnessCurve, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
 
@@ -190,11 +190,11 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_aSelectionClear->setEnabled(false);
     connect(m_aSelectionClear, SIGNAL(triggered()), this, SLOT(selectionClear()));
 
-    m_aAutoUpdateDFT = new QAction(tr("Auto-Update the DFT view"), this);;
-    m_aAutoUpdateDFT->setStatusTip(tr("Auto-Update the DFT view when the selection is modified"));
+    m_aAutoUpdateDFT = new QAction(tr("Auto-Update"), this);;
+    m_aAutoUpdateDFT->setStatusTip(tr("Auto-Update the DFT view when the time selection is modified"));
     m_aAutoUpdateDFT->setCheckable(true);
     m_aAutoUpdateDFT->setChecked(true);
-    m_aAutoUpdateDFT->setIcon(QIcon(":/icons/autoupdatedft.svg"));
+    m_aAutoUpdateDFT->setIcon(QIcon(":/icons/autoupdate.svg"));
     connect(m_aAutoUpdateDFT, SIGNAL(toggled(bool)), this, SLOT(settingsModified()));
 
     gMW->ui->lblSpectrumSelectionTxt->setText("No selection");

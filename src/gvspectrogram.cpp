@@ -103,6 +103,13 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     gMW->m_settings.add(m_aSpectrogramShowHarmonics);
     connect(m_aSpectrogramShowHarmonics, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
 
+    m_aAutoUpdate = new QAction(tr("Auto-Update"), this);
+    m_aAutoUpdate->setStatusTip(tr("Auto-Update the DFT view when the time selection is modified"));
+    m_aAutoUpdate->setCheckable(true);
+    m_aAutoUpdate->setChecked(true);
+    m_aAutoUpdate->setIcon(QIcon(":/icons/autoupdate.svg"));
+//    connect(m_aAutoUpdateDFT, SIGNAL(toggled(bool)), this, SLOT(settingsModified()));
+
     m_stftcomputethread = new STFTComputeThread(this);
 
     // Cursor
@@ -211,6 +218,8 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     // Build the context menu
     m_contextmenu.addAction(m_aSpectrogramShowGrid);
     m_contextmenu.addAction(m_aSpectrogramShowHarmonics);
+    m_contextmenu.addSeparator();
+    m_contextmenu.addAction(m_aAutoUpdate);
     m_contextmenu.addSeparator();
     m_contextmenu.addAction(m_aShowProperties);
     connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));

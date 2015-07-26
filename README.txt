@@ -30,9 +30,13 @@ Copyright (c) 2014 Gilles Degottex <gilles.degottex@gmail.com>
 License
     This software is under the GPL (v3) License. See the file LICENSE.txt
     or http://www.gnu.org/licenses/gpl.html
-    All source files of any kind (code source, icons, any ressources), except
+    All source files of any kind (code source and any ressources), except
     the content of the 'external' directory, which are either necessary or
-    optional for compiling this software, are under the same license.
+    optional for compiling this software, are under the same GPL license.
+
+    The icons are under the Creative Commons License
+    http://creativecommons.org/licenses/by/3.0/us/
+    Special acknowledgment to Dimitry Sunseifer for some of the icons.
 
 Disclaimer
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
