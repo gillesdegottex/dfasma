@@ -554,11 +554,14 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
                     }
                     if(m_ca_pressed_index==-1) {
                         if(event->modifiers().testFlag(Qt::ControlModifier)){
-                            m_currentAction = CALabelAllModifPosition;
                             m_selection_pressedx = p.x();
+                            m_currentAction = CALabelAllModifPosition;
                             setCursor(Qt::SizeHorCursor);
                         }
                     }
+
+                    if(m_currentAction==CANothing)
+                        playCursorSet(p.x(), true); // Put the play cursor
                 }
 
                 FTSound* currentftsound = gMW->getCurrentFTSound();
