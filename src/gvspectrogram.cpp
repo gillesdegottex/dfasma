@@ -103,7 +103,6 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     gMW->m_settings.add(m_aSpectrogramShowHarmonics);
     connect(m_aSpectrogramShowHarmonics, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
 
-
     m_stftcomputethread = new STFTComputeThread(this);
 
     // Cursor
@@ -415,7 +414,7 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
             bool cepliftpresdc = gMW->m_gvSpectrogram->m_dlgSettings->ui->cbSpectrogramCepstralLifteringPreserveDC->isChecked();
 
             STFTComputeThread::STFTParameters reqSTFTParams(csnd, m_win, stepsize, dftlen, cepliftorder, cepliftpresdc);
-            STFTComputeThread::ImageParameters reqImgSTFTParams(reqSTFTParams, &m_imgSTFT, m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex(), m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked(), gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0, gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0);
+            STFTComputeThread::ImageParameters reqImgSTFTParams(reqSTFTParams, &m_imgSTFT, m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex(), m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked(), gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0, gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0, m_dlgSettings->ui->cbSpectrogramLoudnessWeighting->isChecked());
 
             if(m_imgSTFTParams.isEmpty() || reqImgSTFTParams!=m_imgSTFTParams) {
                 gMW->ui->pbSpectrogramSTFTUpdate->hide();
@@ -607,6 +606,9 @@ void QGVSpectrogram::mousePressEvent(QMouseEvent* event){
                 m_mouseSelection.setBottomRight(m_selection_pressedp);
                 selectionSet(m_mouseSelection);
             }
+        }
+        if(gMW->ui->actionEditMode->isChecked()){
+            playCursorSet(p.x(), true); // Place the play cursor
         }
     }
     else if(event->buttons()&Qt::RightButton) {

@@ -263,7 +263,7 @@ namespace sigproc{
 // Ln: phone value [Phon]
 double sigproc::equalloudnesscurvesISO226(double freq, double Ln){
 
-    if(freq<20 || freq>20000)
+    if(freq<20 || freq>22000)
         return +100000;
 //        return +std::numeric_limits<double>::infinity();
 
@@ -300,7 +300,7 @@ double sigproc::equalloudnesscurvesISO226(double freq, double Ln){
     double Lp = ((10.0/af)*std::log10(Af)) - Lu + 94;
 
     // Add a slope of 3dB/1kHz above the max freq
-    // This is completely arbitrary because there ISO does not define anything
+    // This is completely arbitrary because the ISO does not define anything
     // above 12500Hz ...
     if(freq>elc_f[28])
         Lp += (3.0/1000)*(freq-elc_f[28]);

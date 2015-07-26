@@ -308,13 +308,25 @@ void STFTComputeThread::run() {
 
                 FFTTYPE ymin = params_running.stftparams.snd->m_stft_min+(params_running.stftparams.snd->m_stft_max-params_running.stftparams.snd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0; // Min of color range [dB]
                 FFTTYPE ymax = params_running.stftparams.snd->m_stft_min+(params_running.stftparams.snd->m_stft_max-params_running.stftparams.snd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0; // Max of color range [dB]
+                bool uselw = params_running.loudnessweighting;
                 FFTTYPE divmaxmmin = 1.0/(ymax-ymin);
     //            QRgb red = qRgb(int(255*1), int(255*0), int(255*0));
                 QRgb c0 = colormap_reversed?cmap(1.0):cmap(0.0);
                 QRgb c1 = colormap_reversed?cmap(0.0):cmap(1.0);
                 FFTTYPE y;
                 QRgb c;
+                FFTTYPE v;
 
+                // Prepare the loudness curve
+                std::vector<WAVTYPE> elc;
+                if(uselw) {
+                    elc = std::vector<WAVTYPE>(params_running.stftparams.dftlen/2+1, 0.0);
+                    for(size_t u=0; u<elc.size(); ++u) {
+                        elc[u] = -sigproc::equalloudnesscurvesISO226(params_running.stftparams.snd->fs*double(u)/params_running.stftparams.dftlen, 0);
+                    }
+                }
+
+//                COUTD << '"' << elc.size() << " " << dftsize << '"' << endl;
 //                COUTD << "ymin=" << ymin << " ymax=" << ymax << " divmaxmmin=" << divmaxmmin << std::endl;
                 for(int si=0; si<stftlen && !gMW->ui->pbSTFTComputingCancel->isChecked(); si++, pimgb++){
                     pstft = params_running.stftparams.snd->m_stft[si].begin();
@@ -324,7 +336,9 @@ void STFTComputeThread::run() {
                             c = c0;
                         }
                         else {
-                            y = (*pstft-ymin)*divmaxmmin;
+                            v = *pstft;
+                            if(uselw) v += elc[n]; // Correct according to the loudness curve
+                            y = (v-ymin)*divmaxmmin;
 
                             if(y<=0.0)
                                 c = c0;

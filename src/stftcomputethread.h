@@ -81,6 +81,7 @@ public:
         bool colormap_reversed;
         FFTTYPE lower;
         FFTTYPE upper;
+        bool loudnessweighting;
 
         void clear(){
             stftparams.clear();
@@ -88,12 +89,13 @@ public:
             colormap_reversed = false;
             lower = -1;
             upper = -1;
+            loudnessweighting = false;
         }
 
         ImageParameters(){
             clear();
         }
-        ImageParameters(STFTComputeThread::STFTParameters reqSTFTparams, QImage* reqImgSTFT, int reqcolormap_index, bool reqcolormap_reversed, FFTTYPE reqlower, FFTTYPE requpper){
+        ImageParameters(STFTComputeThread::STFTParameters reqSTFTparams, QImage* reqImgSTFT, int reqcolormap_index, bool reqcolormap_reversed, FFTTYPE reqlower, FFTTYPE requpper, bool reqloudnessweighting){
             clear();
             stftparams = reqSTFTparams;
             imgstft = reqImgSTFT;
@@ -101,6 +103,7 @@ public:
             colormap_reversed = reqcolormap_reversed;
             lower = reqlower;
             upper = requpper;
+            loudnessweighting = reqloudnessweighting;
         }
 
         bool operator==(const ImageParameters& param){
@@ -115,6 +118,8 @@ public:
             if(lower!=param.lower)
                 return false;
             if(upper!=param.upper)
+                return false;
+            if(loudnessweighting!=param.loudnessweighting)
                 return false;
 
             return true;

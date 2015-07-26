@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>575</width>
-    <height>570</height>
+    <height>598</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -517,6 +517,19 @@
        <widget class="QCheckBox" name="cbSpectrogramColorMapReversed">
         <property name="text">
          <string>Reversed color map</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="cbSpectrogramLoudnessWeighting">
+        <property name="toolTip">
+         <string>Weight the spectrogram according to the loudness curve</string>
+        </property>
+        <property name="statusTip">
+         <string>Weight the spectrogram according to the loudness curve</string>
+        </property>
+        <property name="text">
+         <string>Weighting with loudness curve</string>
         </property>
        </widget>
       </item>

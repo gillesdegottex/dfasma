@@ -108,6 +108,7 @@ public:
 
     QAction* m_aAmplitudeSpectrumShowGrid;
     QAction* m_aAmplitudeSpectrumShowWindow;
+    QAction* m_aAmplitudeSpectrumShowLoudnessCurve;
     QAction* m_aZoomOnSelection;
     QAction* m_aSelectionClear;
     QAction* m_aZoomIn;

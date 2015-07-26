@@ -95,6 +95,15 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     gMW->m_settings.add(m_aAmplitudeSpectrumShowWindow);
     connect(m_aAmplitudeSpectrumShowWindow, SIGNAL(toggled(bool)), this, SLOT(updateDFTs()));
 
+    m_aAmplitudeSpectrumShowLoudnessCurve = new QAction(tr("Show &loudness curve"), this);
+    m_aAmplitudeSpectrumShowLoudnessCurve->setObjectName("m_aAmplitudeSpectrumShowLoudnessCurve");
+    m_aAmplitudeSpectrumShowLoudnessCurve->setStatusTip(tr("Show the loudness curve which is use for the spectrogram weighting."));
+    m_aAmplitudeSpectrumShowLoudnessCurve->setCheckable(true);
+    m_aAmplitudeSpectrumShowLoudnessCurve->setChecked(false);
+//    m_aAmplitudeSpectrumShowLoudnessCurve->setIcon(QIcon(":/icons/window.svg"));
+    gMW->m_settings.add(m_aAmplitudeSpectrumShowLoudnessCurve);
+    connect(m_aAmplitudeSpectrumShowLoudnessCurve, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
+
     m_fft = new sigproc::FFTwrapper();
     sigproc::FFTwrapper::setTimeLimitForPlanPreparation(m_dlgSettings->ui->sbAmplitudeSpectrumFFTW3MaxTimeForPlanPreparation->value());
     m_fftresizethread = new FFTResizeThread(m_fft, this);
@@ -219,6 +228,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_contextmenu.addAction(m_aAmplitudeSpectrumShowGrid);
 //    m_contextmenu.addAction(gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop);
     m_contextmenu.addAction(m_aAmplitudeSpectrumShowWindow);
+    m_contextmenu.addAction(m_aAmplitudeSpectrumShowLoudnessCurve);
     m_contextmenu.addSeparator();
     m_contextmenu.addAction(m_aAutoUpdateDFT);
     m_contextmenu.addSeparator();
@@ -1176,6 +1186,21 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
     if(m_aAmplitudeSpectrumShowGrid->isChecked())
         draw_grid(painter, rect);
 
+    // Draw the used loudness curve
+    if(m_aAmplitudeSpectrumShowLoudnessCurve->isChecked()) {
+        QPen outlinePen(QColor(192, 192, 255));
+        outlinePen.setWidth(0);
+        painter->setPen(outlinePen);
+        painter->setOpacity(1);
+        int dftlen = 4096;
+        std::vector<std::complex<WAVTYPE> > elc(dftlen/2, 0.0);
+        for(size_t u=0; u<elc.size(); ++u){
+            elc[u] = sigproc::equalloudnesscurvesISO226(fs*double(u)/dftlen, 0);
+            elc[u] = -elc[u]/sigproc::log2db;
+        }
+        draw_spectrum(painter, elc, fs, 1.0, rect);
+    }
+
     // Draw the f0 and its harmonics
     for(size_t fi=0; fi<gMW->ftfzeros.size(); fi++){
         if(!gMW->ftfzeros[fi]->m_actionShow->isChecked())
@@ -1246,7 +1271,7 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
     }
 
     // Draw the window's frequency response
-    if (m_aAmplitudeSpectrumShowWindow->isChecked() && m_windft.size()>0) {
+    if(m_aAmplitudeSpectrumShowWindow->isChecked() && m_windft.size()>0) {
         QPen outlinePen(QColor(192, 192, 192));
         outlinePen.setWidth(0);
         painter->setPen(outlinePen);
@@ -1254,24 +1279,6 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
 
         draw_spectrum(painter, m_windft, fs, 1.0, rect);
     }
-
-//    QPen outlinePen(QColor(0, 0, 0));
-//    outlinePen.setWidth(0);
-//    painter->setPen(outlinePen);
-//    painter->setOpacity(1);
-//    int dftlen = 4096;
-//    std::vector<std::complex<WAVTYPE> > elc(dftlen/2, 0.0);
-//    double sum = 0.0;
-//    for(size_t u=0; u<elc.size(); ++u){
-//        elc[u] = sigproc::equalloudnesscurvesISO226(fs*double(u)/dftlen, 50);
-//        elc[u] = std::exp((-elc[u])/sigproc::log2db);
-//        sum += elc[u].real();
-//    }
-//    for(size_t u=0; u<elc.size(); ++u)
-//        elc[u] = std::log(elc[u]/sum);
-
-//    draw_spectrum(painter, elc, fs, 1.0, rect);
-
 
     FTSound* currsnd = gMW->getCurrentFTSound(true);
 

@@ -36,6 +36,7 @@ GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(QGVSpectrogram* paren
     ui->cbSpectrogramColorMaps->setCurrentIndex(1);
     gMW->m_settings.add(ui->cbSpectrogramColorMaps);
     gMW->m_settings.add(ui->cbSpectrogramColorMapReversed);
+    gMW->m_settings.add(ui->cbSpectrogramLoudnessWeighting);
 
     checkImageSize();
     adjustSize();
