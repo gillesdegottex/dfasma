@@ -787,6 +787,11 @@ void WMainWindow::setSelectionMode(bool checked){
         if(ui->actionEditMode->isChecked()) ui->actionEditMode->setChecked(false);
         connectModes();
 
+        // Clear the icons from the edit mode
+        QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
+        for(int i=0; i<list.size(); i++)
+            ((FileType*)list[i])->setEditing(false);
+
         m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
         m_gvAmplitudeSpectrum->setDragMode(QGraphicsView::NoDrag);
         m_gvPhaseSpectrum->setDragMode(QGraphicsView::NoDrag);
@@ -817,6 +822,11 @@ void WMainWindow::setEditMode(bool checked){
         if(ui->actionSelectionMode->isChecked()) ui->actionSelectionMode->setChecked(false);
         if(!ui->actionEditMode->isChecked()) ui->actionEditMode->setChecked(true);
         connectModes();
+
+        // Add the edit icons
+        QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
+        for(int i=0; i<list.size(); i++)
+            ((FileType*)list[i])->setEditing(true);
 
         m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
         m_gvWaveform->setCursor(Qt::SizeVerCursor);
@@ -920,13 +930,20 @@ void WMainWindow::fileSelectionChanged() {
     int nb_snd_in_selection = 0;
     int nb_labels_in_selection = 0;
 
+    for(int i=0; i<m_previous_file_selection.size(); i++)
+        ((FileType*)(m_previous_file_selection[i]))->setEditing(false);
+
     for(int i=0; i<list.size(); i++) {
-        if(((FileType*)list.at(i))->type == FileType::FTSOUND){
+        FileType* ft = ((FileType*)list.at(i));
+        if(ft->type == FileType::FTSOUND){
             nb_snd_in_selection++;
-            m_lastSelectedSound = (FTSound*)list.at(i);
+            m_lastSelectedSound = (FTSound*)ft;
         }
-        if(((FileType*)list.at(i))->type == FileType::FTLABELS)
+
+        if(ft->type == FileType::FTLABELS)
             nb_labels_in_selection++;
+
+        ft->setEditing(ui->actionEditMode->isChecked());
     }
 
     // Update the spectrogram to current selected signal
@@ -943,6 +960,8 @@ void WMainWindow::fileSelectionChanged() {
     ui->actionSelectedFilesSave->setEnabled(nb_labels_in_selection>0);
 
     fileInfoUpdate();
+
+    m_previous_file_selection = list;
 
 //    COUTD << "WMainWindow::~fileSelectionChanged" << endl;
 }

@@ -29,6 +29,7 @@ using namespace std;
 #include <QFileInfo>
 #include <QColorDialog>
 #include <QMessageBox>
+#include <QSvgRenderer>
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "gvamplitudespectrum.h"
@@ -89,6 +90,7 @@ QColor GetNextColor(){
 std::deque<QString> FileType::m_typestrings;
 
 void FileType::init(){
+    m_is_editing = false;
 }
 
 FileType::FileContainer FileType::guessContainer(const QString& filepath){
@@ -194,6 +196,11 @@ void FileType::setDrawIcon(QPixmap& pm){
         QRect rect(0, 0, 16, 32);
         p.drawRect(rect);
     }
+    if(m_is_editing){
+        QSvgRenderer renderer(QString(":/icons/edit_white.svg"));
+        QPainter p(&pm);
+        renderer.render(&p);
+    }
 }
 
 void FileType::setColor(const QColor& _color) {
@@ -205,6 +212,13 @@ void FileType::updateIcon(){
     QPixmap pm(32,32);
     setDrawIcon(pm);
     setIcon(QIcon(pm));
+}
+
+void FileType::setEditing(bool editing){
+    if(m_is_editing!=editing){
+        m_is_editing=editing;
+        updateIcon();
+    }
 }
 
 void FileType::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {

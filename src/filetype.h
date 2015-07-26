@@ -32,6 +32,8 @@ class WMainWindow;
 
 class FileType : public QListWidgetItem
 {
+    bool m_is_editing;
+
 protected:
     QDateTime m_modifiedtime;
     QDateTime m_lastreadtime;
@@ -74,6 +76,7 @@ public:
     virtual double getLastSampleTime() const =0;
     virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
     virtual FileType* duplicate();
+    void setEditing(bool editing);
 
     enum CHECKFILESTATUSMGT {CFSMQUIET, CFSMMESSAGEBOX, CFSMEXCEPTION};
     bool checkFileStatus(CHECKFILESTATUSMGT cfsmgt=CFSMQUIET);

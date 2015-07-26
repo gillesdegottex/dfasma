@@ -253,7 +253,6 @@ void FTSound::setDrawIcon(QPixmap& pm){
         p.setPen(Qt::black);
         p.drawConvexPolygon(poly);
     }
-    setIcon(QIcon(pm));
 }
 
 bool FTSound::reload() {

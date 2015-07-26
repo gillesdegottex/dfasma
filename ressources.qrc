@@ -25,5 +25,6 @@
         <file>icons/cancel.svg</file>
         <file>icons/stftupdate.svg</file>
         <file>icons/edit_selected.svg</file>
+        <file>icons/edit_white.svg</file>
     </qresource>
 </RCC>

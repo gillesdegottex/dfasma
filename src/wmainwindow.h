@@ -66,6 +66,7 @@ class WMainWindow : public QMainWindow
     static WMainWindow* sm_mainwindow;
     bool m_loading;
 
+    QList<QListWidgetItem*> m_previous_file_selection;
     FTSound* m_lastSelectedSound;
     FTSound* m_lastFilteredSound;
 
