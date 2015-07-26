@@ -17,7 +17,7 @@ before_install:
  - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
  - sudo apt-get update -qq
  - sudo apt-get install qtbase5-dev qtdeclarative5-dev libqt5webkit5-dev
- - sudo apt-get install qt5-default qttools5-dev-tools qtmobility-dev qtmultimedia5-dev
+ - sudo apt-get install qt5-default qttools5-dev-tools qtmobility-dev qtmultimedia5-dev libqt5svg5-dev
  - sudo apt-get install libfftw3-dev libsndfile1-dev libpulse-dev
 
 script:
