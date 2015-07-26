@@ -664,6 +664,7 @@
    </attribute>
    <addaction name="actionFileNew"/>
    <addaction name="actionFileOpen"/>
+   <addaction name="actionSelectedFilesSave"/>
    <addaction name="actionSelectedFilesClose"/>
    <addaction name="separator"/>
    <addaction name="actionSelectionMode"/>
@@ -683,7 +684,7 @@
     <string>Close</string>
    </property>
    <property name="toolTip">
-    <string>Close the selected sound file</string>
+    <string>Close the selected files</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
@@ -888,6 +889,17 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+D</string>
+   </property>
+  </action>
+  <action name="actionSelectedFilesSave">
+   <property name="text">
+    <string>Save</string>
+   </property>
+   <property name="toolTip">
+    <string>Save the selected files</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
  </widget>

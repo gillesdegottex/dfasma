@@ -126,6 +126,7 @@ void FTLabels::init(){
     m_fileformat = FFNotSpecified;
     m_actionSave = new QAction("Save", this);
     m_actionSave->setStatusTip(tr("Save the labels times (overwrite the file !)"));
+    m_actionSave->setShortcut(QKeySequence(tr("Ctrl+S")));
     connect(m_actionSave, SIGNAL(triggered()), this, SLOT(save()));
     m_actionSaveAs = new QAction("Save as...", this);
     m_actionSaveAs->setStatusTip(tr("Save the labels times in a given file..."));
@@ -540,6 +541,7 @@ void FTLabels::saveAs() {
 
             if(m_fileformat==FFNotSpecified || m_fileformat==FFAutoDetect)
                 m_fileformat = FFTEXTTimeText;
+
             save();
         }
         catch(QString &e) {
@@ -692,6 +694,7 @@ void FTLabels::save() {
     m_lastreadtime = QDateTime::currentDateTime();
     m_isedited = false;
     setStatus();
+    gMW->statusBar()->showMessage(fileFullPath+" saved.", 10000);
 }
 
 

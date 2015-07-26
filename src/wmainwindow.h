@@ -92,6 +92,7 @@ private slots:
     void selectedFilesReload();
     void selectedFilesToggleShown();
     void selectedFilesDuplicate();
+    void selectedFilesSave();
 
     void play();
     void audioStateChanged(QAudio::State state);

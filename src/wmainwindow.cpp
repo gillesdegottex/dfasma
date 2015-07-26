@@ -119,6 +119,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     connect(ui->actionSelectedFilesToggleShown, SIGNAL(triggered()), this, SLOT(selectedFilesToggleShown()));
     connect(ui->actionSelectedFilesClose, SIGNAL(triggered()), this, SLOT(selectedFilesClose()));
     connect(ui->actionSelectedFilesDuplicate, SIGNAL(triggered()), this, SLOT(selectedFilesDuplicate()));
+    connect(ui->actionSelectedFilesSave, SIGNAL(triggered()), this, SLOT(selectedFilesSave()));
 
     m_globalWaitingBarLabel = new QLabel(ui->statusBar);
     m_globalWaitingBarLabel->setAlignment(Qt::AlignRight);
@@ -150,6 +151,8 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     ui->actionSelectedFilesReload->setIcon(style()->standardIcon(QStyle::SP_BrowserReload));
     ui->actionSelectedFilesReload->setEnabled(false);
     ui->actionSelectedFilesToggleShown->setEnabled(false);
+    ui->actionSelectedFilesSave->setIcon(style()->standardIcon(QStyle::SP_DialogSaveButton));
+    ui->actionSelectedFilesReload->setEnabled(false);
     connect(ui->actionSettings, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
     ui->actionSelectionMode->setChecked(true);
     connectModes();
@@ -157,6 +160,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     addAction(ui->actionSelectedFilesToggleShown);
     addAction(ui->actionSelectedFilesReload);
     addAction(ui->actionSelectedFilesDuplicate);
+    addAction(ui->actionSelectedFilesSave);
     addAction(ui->actionPlayFiltered);
 
     // Audio engine for playing the selections
@@ -601,6 +605,7 @@ void WMainWindow::updateViewsAfterAddFile(bool isfirsts) {
         ui->actionSelectedFilesClose->setEnabled(true);
         ui->actionSelectedFilesReload->setEnabled(true);
         ui->actionSelectedFilesToggleShown->setEnabled(true);
+        ui->actionSelectedFilesSave->setEnabled(false);
         ui->splitterViews->show();
         updateWindowTitle();
         m_gvWaveform->updateSceneRect();
@@ -913,12 +918,15 @@ void WMainWindow::fileSelectionChanged() {
 
     QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
     int nb_snd_in_selection = 0;
+    int nb_labels_in_selection = 0;
 
     for(int i=0; i<list.size(); i++) {
         if(((FileType*)list.at(i))->type == FileType::FTSOUND){
             nb_snd_in_selection++;
             m_lastSelectedSound = (FTSound*)list.at(i);
         }
+        if(((FileType*)list.at(i))->type == FileType::FTLABELS)
+            nb_labels_in_selection++;
     }
 
     // Update the spectrogram to current selected signal
@@ -931,6 +939,8 @@ void WMainWindow::fileSelectionChanged() {
         m_gvSpectrogram->updateSTFTPlot();
         m_gvSpectrogram->m_scene->update();
     }
+
+    ui->actionSelectedFilesSave->setEnabled(nb_labels_in_selection>0);
 
     fileInfoUpdate();
 
@@ -1098,6 +1108,17 @@ void WMainWindow::selectedFilesDuplicate() {
             ui->splitterViews->show();
             updateWindowTitle();
         }
+    }
+}
+
+void WMainWindow::selectedFilesSave() {
+    QList<QListWidgetItem*> l = ui->listSndFiles->selectedItems();
+
+    for(int i=0; i<l.size(); i++) {
+        FileType* currentfile = (FileType*)l.at(i);
+
+        if(currentfile->type==FileType::FTLABELS)
+            ((FTLabels*)currentfile)->save();
     }
 }
 
