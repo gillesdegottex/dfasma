@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     // Set all static variables
     // Map FileTypes with corresponding strings
     if(FileType::m_typestrings.empty()){
-        FileType::m_typestrings.push_back("All files (*.*)");
+        FileType::m_typestrings.push_back("All files (*)");
         FileType::m_typestrings.push_back("Sound (*.wav *.aiff *.pcm *.snd *.flac *.ogg)");
         FileType::m_typestrings.push_back("F0 (*.bpf *.sdif)");
         FileType::m_typestrings.push_back("Label (*.bpf *.lab *.sdif)");
@@ -62,10 +62,10 @@ int main(int argc, char *argv[])
         FTLabels::m_formatstrings.push_back("Unspecified");
         FTLabels::m_formatstrings.push_back("Auto");
         FTLabels::m_formatstrings.push_back("Auto Text");
-        FTLabels::m_formatstrings.push_back("Text Time/Text (*.*)");
-        FTLabels::m_formatstrings.push_back("Text Segment Float (*.*)");
-        FTLabels::m_formatstrings.push_back("Text Segment Samples (*.*)");
-        FTLabels::m_formatstrings.push_back("Text Segment HTK (*.*)");
+        FTLabels::m_formatstrings.push_back("Text Time/Text (*.lab)");
+        FTLabels::m_formatstrings.push_back("Text Segment Float (*.lab)");
+        FTLabels::m_formatstrings.push_back("Text Segment Samples (*.lab)");
+        FTLabels::m_formatstrings.push_back("HTK Label File (*.lab)");
         FTLabels::m_formatstrings.push_back("SDIF 1MRK/1LAB (*.sdif)");
     }
 

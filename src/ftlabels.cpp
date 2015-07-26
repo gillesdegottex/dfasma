@@ -521,6 +521,8 @@ void FTLabels::saveAs() {
     else
         selectedFilter = m_formatstrings[m_fileformat];
 
+//    COUTD << fileFullPath.toLatin1().constData() << endl;
+
     QString fp = QFileDialog::getSaveFileName(gMW, "Save file as...", fileFullPath, filters, &selectedFilter, QFileDialog::DontUseNativeDialog);
 
     if(!fp.isEmpty()){
@@ -551,6 +553,10 @@ void FTLabels::saveAs() {
 }
 
 void FTLabels::save() {
+    if(starts.size()==0){
+        QMessageBox::warning(NULL, "Nothing to save!", "There is no content to save from this file. No file will be saved.");
+        return;
+    }
 
     sort(); // In the file, we want the labels' time in ascending order
 
