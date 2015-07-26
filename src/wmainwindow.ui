@@ -878,7 +878,7 @@
   </action>
   <action name="actionSelectedFilesDuplicate">
    <property name="text">
-    <string>Duplicate selected files</string>
+    <string>Duplicate</string>
    </property>
    <property name="toolTip">
     <string>Duplicate the selected files</string>
