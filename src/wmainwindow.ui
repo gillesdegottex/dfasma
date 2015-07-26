@@ -754,7 +754,10 @@
    </property>
    <property name="icon">
     <iconset resource="../ressources.qrc">
-     <normaloff>:/icons/edit.svg</normaloff>:/icons/edit.svg</iconset>
+     <normaloff>:/icons/edit.svg</normaloff>
+     <normalon>:/icons/edit_selected.svg</normalon>
+     <activeon>:/icons/edit_selected.svg</activeon>
+     <selectedon>:/icons/edit_selected.svg</selectedon>:/icons/edit.svg</iconset>
    </property>
    <property name="text">
     <string>Edit Mode</string>

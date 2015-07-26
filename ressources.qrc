@@ -24,5 +24,6 @@
         <file>README.txt</file>
         <file>icons/cancel.svg</file>
         <file>icons/stftupdate.svg</file>
+        <file>icons/edit_selected.svg</file>
     </qresource>
 </RCC>
