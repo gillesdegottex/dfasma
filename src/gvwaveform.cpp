@@ -552,18 +552,24 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
                             m_currentAction = CALabelModifPosition;
                         }
                     }
+                    if(m_ca_pressed_index==-1) {
+                        if(event->modifiers().testFlag(Qt::ControlModifier)){
+                            m_currentAction = CALabelAllModifPosition;
+                            m_selection_pressedx = p.x();
+                            setCursor(Qt::SizeHorCursor);
+                        }
+                    }
                 }
 
-                if(m_ca_pressed_index==-1) {
+                FTSound* currentftsound = gMW->getCurrentFTSound();
+                if(currentftsound) {
                     if(event->modifiers().testFlag(Qt::ShiftModifier)){
                     }
                     else if(event->modifiers().testFlag(Qt::ControlModifier)){
                         // cout << "Scaling the waveform" << endl;
                         m_currentAction = CAWaveformDelay;
                         m_selection_pressedx = p.x();
-                        FTSound* currentftsound = gMW->getCurrentFTSound();
-                        if(currentftsound)
-                            m_tmpdelay = currentftsound->m_delay/gMW->getFs();
+                        m_tmpdelay = currentftsound->m_delay/gMW->getFs();
                         setCursor(Qt::SizeHorCursor);
                     }
                     else{
@@ -721,7 +727,17 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
             updateTextsGeometry();
         }
     }
-    else{
+    else if(m_currentAction==CALabelAllModifPosition) {
+//        COUTD << "CALabelAllModifPosition" << endl;
+        FTLabels* ftlabel = gMW->getCurrentFTLabels();
+        if(ftlabel) {
+            ftlabel->moveAllLabel(p.x()-m_selection_pressedx);
+            m_selection_pressedx = p.x();
+            m_scene->update();
+            updateTextsGeometry();
+        }
+    }
+    else{ // There is no action
         QRect selview = mapFromScene(m_giSelection->boundingRect()).boundingRect();
 
         if(gMW->ui->actionSelectionMode->isChecked()){

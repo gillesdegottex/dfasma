@@ -797,6 +797,19 @@ void FTLabels::moveLabel(int index, double position){
     m_isedited = true;
     setStatus();
 }
+void FTLabels::moveAllLabel(double delay){
+//    COUTD << "FTLabels::moveAllLabel " << delay << endl;
+    for(size_t u=0; u<starts.size(); ++u){
+        starts[u] += delay;
+        waveform_lines[u]->setPos(waveform_lines[u]->pos().x()+delay, 0);
+        waveform_labels[u]->setPos(waveform_labels[u]->pos().x()+delay, 0);
+        spectrogram_lines[u]->setPos(spectrogram_lines[u]->pos().x()+delay, 0);
+        spectrogram_labels[u]->setPos(spectrogram_labels[u]->pos().x()+delay, 0);
+    }
+    m_isedited = true;
+    setStatus();
+}
+
 
 void FTLabels::changeText(int index, const QString& text){
     waveform_labels[index]->setPlainText(text);
