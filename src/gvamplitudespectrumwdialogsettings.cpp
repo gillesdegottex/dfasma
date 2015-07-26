@@ -36,6 +36,7 @@ GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(QGVAmplit
     ui->spAmplitudeSpectrumWindowNormPower->hide();
     ui->lblWindowExpDecay->hide();
     ui->spAmplitudeSpectrumWindowExpDecay->hide();
+    gMW->m_settings.add(ui->cbAmplitudeSpectrumWindowsNormalisation);
     gMW->m_settings.add(ui->sbAmplitudeSpectrumOversamplingFactor);
 
     adjustSize();
@@ -51,6 +52,7 @@ GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(QGVAmplit
     connect(ui->spAmplitudeSpectrumWindowNormPower, SIGNAL(valueChanged(double)), m_ampspec, SLOT(settingsModified()));
     connect(ui->spAmplitudeSpectrumWindowNormSigma, SIGNAL(valueChanged(double)), m_ampspec, SLOT(settingsModified()));
     connect(ui->spAmplitudeSpectrumWindowExpDecay, SIGNAL(valueChanged(double)), m_ampspec, SLOT(settingsModified()));
+    connect(ui->cbAmplitudeSpectrumWindowsNormalisation, SIGNAL(currentIndexChanged(int)), m_ampspec, SLOT(settingsModified()));
 }
 
 void GVAmplitudeSpectrumWDialogSettings::CBSpectrumWindowTypeCurrentIndexChanged(QString txt) {

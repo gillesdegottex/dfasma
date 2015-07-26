@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>575</width>
-    <height>349</height>
+    <width>465</width>
+    <height>384</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -280,6 +280,37 @@
            </widget>
           </item>
          </layout>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Normalisation</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="cbAmplitudeSpectrumWindowsNormalisation">
+          <item>
+           <property name="text">
+            <string>Sum</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Energy</string>
+           </property>
+          </item>
+         </widget>
         </item>
        </layout>
       </item>

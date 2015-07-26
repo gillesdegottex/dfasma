@@ -73,13 +73,14 @@ bool FTSound::WavParameters::operator==(const WavParameters& param) const {
     return true;
 }
 
-FTSound::DFTParameters::DFTParameters(unsigned int _nl, unsigned int _nr, int _winlen, int _wintype, const std::vector<FFTTYPE>& _win, int _dftlen, std::vector<FFTTYPE>*_wav, qreal _ampscale, qint64 _delay){
+FTSound::DFTParameters::DFTParameters(unsigned int _nl, unsigned int _nr, int _winlen, int _wintype, int _normtype, const std::vector<FFTTYPE>& _win, int _dftlen, std::vector<FFTTYPE>*_wav, qreal _ampscale, qint64 _delay){
     clear();
 
     nl = _nl;
     nr = _nr;
     winlen = _winlen;
     wintype = _wintype;
+    normtype = _normtype;
     win = _win;
     dftlen = _dftlen;
 
@@ -93,10 +94,12 @@ FTSound::DFTParameters& FTSound::DFTParameters::operator=(const DFTParameters &p
     nr = params.nr;
     if(params.wintype>7      // TODO Replace with a Shape Parameters structure
        || !(wintype==params.wintype
-         && winlen==params.winlen))
+            && normtype==params.normtype
+            && winlen==params.winlen))
         win = params.win;
     winlen = params.winlen;
     wintype = params.wintype;
+    normtype = params.normtype;
     dftlen = params.dftlen;
 
     wav = params.wav;
@@ -117,6 +120,8 @@ bool FTSound::DFTParameters::operator==(const DFTParameters& param) const {
     if(winlen!=param.winlen)
         return false;
     if(wintype!=param.wintype)
+        return false;
+    if(normtype!=param.normtype)
         return false;
     if(dftlen!=param.dftlen)
         return false;

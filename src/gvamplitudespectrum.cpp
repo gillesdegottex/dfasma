@@ -252,7 +252,7 @@ void QGVAmplitudeSpectrum::showScrollBars(bool show) {
 }
 
 void QGVAmplitudeSpectrum::settingsModified(){
-//    COUTD << "QGVAmplitudeSpectrum::settingsModified" << endl;
+//    COUTD << "QGVAmplitudeSpectrum::settingsModified " << gMW->m_gvWaveform->m_mouseSelection << endl;
     if(gMW->m_gvWaveform)
         gMW->m_gvWaveform->selectionSet(gMW->m_gvWaveform->m_mouseSelection, true);
 }
@@ -323,12 +323,16 @@ void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
     // The window's shape
     int wintype = m_dlgSettings->ui->cbAmplitudeSpectrumWindowType->currentIndex();
 
-    FTSound::DFTParameters newDFTParams(nl, nr, winlen, wintype);
+    int normtype = m_dlgSettings->ui->cbAmplitudeSpectrumWindowsNormalisation->currentIndex();
+
+    FTSound::DFTParameters newDFTParams(nl, nr, winlen, wintype, normtype);
 
     if(m_trgDFTParameters.isEmpty()
-       || m_trgDFTParameters.wintype!=newDFTParams.wintype
        || m_trgDFTParameters.winlen!=newDFTParams.winlen
+       || m_trgDFTParameters.wintype!=newDFTParams.wintype
+       || m_trgDFTParameters.normtype!=newDFTParams.normtype
        || wintype>7){
+
         if(wintype==0)
             m_win = sigproc::rectangular(newDFTParams.winlen);
         else if(wintype==1)
@@ -354,11 +358,17 @@ void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
         else
             throw QString("No window selected");
 
-        // Normalize the window energy to sum=1
-        // TODO Option for energy normalisation
         double winsum = 0.0;
-        for(int n=0; n<newDFTParams.winlen; n++)
-            winsum += m_win[n];
+        if(normtype==0) {
+            // Normalize the window's sum to 1
+            for(int n=0; n<newDFTParams.winlen; n++)
+                winsum += m_win[n];
+        }
+        else if(normtype==1) {
+            // Normalize the window's energy to 1
+            for(int n=0; n<newDFTParams.winlen; n++)
+                winsum += m_win[n]*m_win[n];
+        }
         for(int n=0; n<newDFTParams.winlen; n++)
             m_win[n] /= winsum;
 
@@ -368,8 +378,6 @@ void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
     // Set the DFT length
     newDFTParams.dftlen = pow(2, std::ceil(log2(float(newDFTParams.winlen)))+m_dlgSettings->ui->sbAmplitudeSpectrumOversamplingFactor->value());
 
-//    COUTD << newDFTParams << endl;
-//    COUTD << m_trgDFTParameters << endl;
     if(newDFTParams==m_trgDFTParameters)
         return;
 

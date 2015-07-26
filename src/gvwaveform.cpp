@@ -891,7 +891,8 @@ void QGVWaveform::selectSegment(double x, bool add){
                 start = std::min(m_selection.left(), start);
                 end = std::max(m_selection.right(), end);
             }
-            selectionSet(QRectF(start, -1.0, end-start, 2.0));
+            m_mouseSelection = QRectF(start, -1.0, end-start, 2.0);
+            selectionSet(m_mouseSelection);
         }
     }
 }
@@ -1044,7 +1045,7 @@ void QGVWaveform::fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseS
 }
 
 void QGVWaveform::selectionSet(QRectF selection, bool forwardsync){
-//    COUTD << "QGVWaveform::selectionSet" << endl;
+//    COUTD << "QGVWaveform::selectionSet " << selection << endl;
 
     double fs = gMW->getFs();
 

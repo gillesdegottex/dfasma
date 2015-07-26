@@ -134,6 +134,7 @@ public:
         unsigned int nr; // [samples]
         int winlen;
         int wintype;
+        int normtype;
         std::vector<FFTTYPE> win; // Could avoid this by using classes of windows parameters
         int dftlen;
 
@@ -147,6 +148,7 @@ public:
             nr = 0;
             winlen = 0;
             wintype = -1;
+            normtype = -1;
             win.clear();
             dftlen = 0;
             wav = NULL;
@@ -157,14 +159,14 @@ public:
         DFTParameters(){
             clear();
         }
-        DFTParameters(unsigned int _nl, unsigned int _nr, int _winlen, int _wintype, const std::vector<FFTTYPE>& _win=std::vector<FFTTYPE>(), int _dftlen=0, std::vector<FFTTYPE>* _wav=NULL, qreal _ampscale=1.0, qint64 _delay=0);
+        DFTParameters(unsigned int _nl, unsigned int _nr, int _winlen, int _wintype, int _normtype, const std::vector<FFTTYPE>& _win=std::vector<FFTTYPE>(), int _dftlen=0, std::vector<FFTTYPE>* _wav=NULL, qreal _ampscale=1.0, qint64 _delay=0);
 
         DFTParameters& operator=(const DFTParameters &params);
 
         bool operator==(const DFTParameters& param) const;
         bool operator!=(const DFTParameters& param) const{return !((*this)==param);}
 
-        inline bool isEmpty() const {return winlen==0 || dftlen==0 || wintype==-1;}
+        inline bool isEmpty() const {return winlen==0 || dftlen==0 || wintype==-1 || normtype==-1;}
     };
 
     std::vector<std::complex<FFTTYPE> > m_dft; // Store the _log_ of the DFT
