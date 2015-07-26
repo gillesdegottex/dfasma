@@ -265,7 +265,7 @@ void QGVSpectrogram::amplitudeExtentSlidersChangesEnded() {
 
 
 void QGVSpectrogram::updateSTFTSettings(){
-//    cout << "QGVSpectrogram::updateSTFTSettings fs=" << gMW->getFs() << endl;
+//    COUTD << "QGVSpectrogram::updateSTFTSettings fs=" << gMW->getFs() << endl;
 
     gMW->ui->pbSpectrogramSTFTUpdate->hide();
     m_dlgSettings->checkImageSize();
