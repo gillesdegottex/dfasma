@@ -106,7 +106,7 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_aAutoUpdate = new QAction(tr("Auto-Update"), this);
     m_aAutoUpdate->setStatusTip(tr("Auto-Update the DFT view when the time selection is modified"));
     m_aAutoUpdate->setCheckable(true);
-    m_aAutoUpdate->setChecked(true);
+    m_aAutoUpdate->setChecked(false);
     m_aAutoUpdate->setIcon(QIcon(":/icons/autoupdate.svg"));
 //    connect(m_aAutoUpdateDFT, SIGNAL(toggled(bool)), this, SLOT(settingsModified()));
 
@@ -234,6 +234,8 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(spanChanged(int,int)), SLOT(amplitudeExtentSlidersChanged()));
     connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(lowerValueChanged(int)), this, SLOT(updateSTFTPlot()));
     connect(gMW->m_qxtSpectrogramSpanSlider, SIGNAL(upperValueChanged(int)), this, SLOT(updateSTFTPlot()));
+
+    connect(m_aAutoUpdate, SIGNAL(toggled(bool)), this, SLOT(autoUpdate(bool)));
 
     updateSTFTSettings(); // Prepare a window from loaded settings
 }
@@ -391,6 +393,11 @@ void QGVSpectrogram::showProgressWidgets() {
 //    COUTD << "QGVSpectrogram::showProgressWidgets " << QTime::currentTime().msecsSinceStartOfDay() << " " << m_progresswidgets_lastup.msecsSinceStartOfDay() << " " << QTime::currentTime().msecsSinceStartOfDay()-m_progresswidgets_lastup.msecsSinceStartOfDay() << endl;
     if(m_progresswidgets_lastup.msecsTo(QTime::currentTime())>=125 && m_stftcomputethread->isComputing())
         gMW->ui->wSpectrogramProgressWidgets->show();
+}
+
+void QGVSpectrogram::autoUpdate(bool autoupdate){
+    if(autoupdate && gMW->ui->pbSpectrogramSTFTUpdate->isVisible())
+        updateSTFTSettings();
 }
 
 void QGVSpectrogram::clearSTFTPlot(){

@@ -689,6 +689,8 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
                 gMW->m_gvAmplitudeSpectrum->updateDFTs();
                 gMW->fileInfoUpdate();
                 gMW->ui->pbSpectrogramSTFTUpdate->show();
+                if(gMW->m_gvSpectrogram->m_aAutoUpdate->isChecked())
+                    gMW->m_gvSpectrogram->updateSTFTSettings();
             }
         }
     }
@@ -713,6 +715,8 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
                 gMW->m_gvAmplitudeSpectrum->updateDFTs();
                 gMW->fileInfoUpdate();
                 gMW->ui->pbSpectrogramSTFTUpdate->show();
+                if(gMW->m_gvSpectrogram->m_aAutoUpdate->isChecked())
+                    gMW->m_gvSpectrogram->updateSTFTSettings();
             }
         }
     }

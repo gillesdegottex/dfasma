@@ -127,6 +127,7 @@ public slots:
     void clearSTFTPlot();
     void stftComputingStateChanged(int state);
     void showProgressWidgets();
+    void autoUpdate(bool autoupdate);
 
     void selectionZoomOn();
     void selectionClear(bool forwardsync=true);
