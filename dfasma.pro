@@ -183,7 +183,7 @@ CONFIG(fft_builtin_fftreal, fft_fftw3|fft_builtin_fftreal){
 
 # Common configurations --------------------------------------------------------
 
-QT += core gui multimedia opengl
+QT += core gui multimedia opengl svg
 QT -= network
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
