@@ -14,7 +14,7 @@
    id="svg3211"
    version="1.1"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="selection_selected.svg">
+   sodipodi:docname="selection.svg">
   <defs
      id="defs3213" />
   <sodipodi:namedview
@@ -53,7 +53,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer">
     <path
-       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1.42098784000000000;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:#0062ff;fill-opacity:1;stroke:#000000;stroke-width:1.42098784;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        d="m 0.82273783,13.994994 0,35.260003 4.46679747,0 0,-15.848246 32.5614127,0 0,0.03126 20.916935,0 0,15.848246 4.466798,0 0,-35.260003 -4.466798,0 0,15.129292 -15.40275,0 0,-0.03126 -38.0755977,0 0,-15.129292 -4.46679747,0 z"
        id="rect3083-5"
        inkscape:connector-curvature="0" />

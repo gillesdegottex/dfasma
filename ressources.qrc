@@ -27,5 +27,8 @@
         <file>icons/edit_white.svg</file>
         <file>icons/autoupdate.svg</file>
         <file>icons/noun_29196_cc.svg</file>
+        <file>icons/edit2.svg</file>
+        <file>icons/edit2_selected.svg</file>
+        <file>icons/selection_selected.svg</file>
     </qresource>
 </RCC>
