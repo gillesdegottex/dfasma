@@ -792,6 +792,8 @@ void FTLabels::addLabel(double position, const QString& text){
     spectrogram_lines.back()->setPen(pen);
     gMW->m_gvSpectrogram->m_scene->addItem(spectrogram_lines.back());    
 
+    sort();
+
     m_isedited = true;
     setStatus();
 }
@@ -802,6 +804,8 @@ void FTLabels::moveLabel(int index, double position){
     waveform_labels[index]->setPos(position, 0);
     spectrogram_lines[index]->setPos(position, 0);
     spectrogram_labels[index]->setPos(position, 0);
+
+    sort();
 
     m_isedited = true;
     setStatus();
