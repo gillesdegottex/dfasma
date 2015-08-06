@@ -499,7 +499,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
     if(m_start<0) m_start=0;
     if(m_start>qint64(wav.size()-1)) m_start=wav.size()-1;
     if(m_end<0) m_end=0;
-    if(m_end>qint64(wav.size()-1)) m_end=wav.size()-1;
+    if(m_end>qint64(wav.size()-1)+m_delay) m_end=wav.size()-1+m_delay;
 
     int delayedstart = m_start-m_delay;
     if(delayedstart<0) delayedstart=0;
