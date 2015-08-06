@@ -677,6 +677,7 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
         if(currentftsound){
             if(!currentftsound->m_actionShow->isChecked()) {
                 QMessageBox::warning(this, "Editing a hidden file", "<p>The selected file is hidden.<br/><br/>For edition, please select only visible files.</p>");
+                gMW->setEditing(NULL);
                 m_currentAction = CANothing;
             }
             else {
@@ -704,6 +705,7 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
             // Check first if the user is not trying to modify a hidden file
             if(!currentftsound->m_actionShow->isChecked()) {
                 QMessageBox::warning(this, "Editing a hidden file", "<p>The selected file is hidden.<br/><br/>For edition, please select only visible files.</p>");
+                gMW->setEditing(NULL);
                 m_currentAction = CANothing;
             }
             else {

@@ -685,6 +685,7 @@ void QGVAmplitudeSpectrum::mousePressEvent(QMouseEvent* event){
                 // When scaling the waveform
                 m_currentAction = CAWaveformScale;
                 m_selection_pressedp = p;
+                gMW->setEditing(gMW->getCurrentFTSound());
                 setCursor(Qt::SizeVerCursor);
             }
         }
@@ -772,6 +773,7 @@ void QGVAmplitudeSpectrum::mouseMoveEvent(QMouseEvent* event){
         if(currentftsound){
             if(!currentftsound->m_actionShow->isChecked()) {
                 QMessageBox::warning(this, "Editing a hidden file", "<p>The selected file is hidden.<br/><br/>For edition, please select only visible files.</p>");
+                gMW->setEditing(NULL);
                 m_currentAction = CANothing;
             }
             else {

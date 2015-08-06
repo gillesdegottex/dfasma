@@ -1285,7 +1285,9 @@ void WMainWindow::play()
                         currentftsound->setFiltered(false);
 
                     if(!currentftsound->m_actionShow->isChecked())
-                        statusBar()->showMessage("WARNING: Playing a hidden waveform!");
+                        statusBar()->showMessage("WARNING: Playing a hidden waveform!", 5000);
+                    else
+                        statusBar()->clearMessage();
 
                     m_gvWaveform->m_initialPlayPosition = tstart;
                     m_playingftsound = currentftsound;
