@@ -348,37 +348,6 @@ bool FileType::isFileTEXT(const QString& filename) {
 }
 
 #ifdef SUPPORT_SDIF
-namespace SDIFAccess {
-    // TODO Clean this
-    // global list for all easdif file pointers
-    typedef std::list<std::pair<Easdif::SDIFEntity *,Easdif::SDIFEntity::const_iterator> > EASDList;
-    EASDList pList;
-
-    // validate file pointer
-    bool CheckList(Easdif::SDIFEntity *p, EASDList::iterator&it) {
-      it = pList.begin();
-      EASDList::iterator ite = pList.end();
-      while(it!=ite){
-        if(p==it->first){
-          return true;
-        }
-        ++it;
-      }
-      return false;
-    }
-};
-
-// mexAtExit cleanup function
-void FileType::cleanupAndEEnd() {
-  SDIFAccess::EASDList::iterator it = SDIFAccess::pList.begin();
-  SDIFAccess::EASDList::iterator ite = SDIFAccess::pList.end();
-  while(it!=ite){
-    delete it->first;
-    it->first = 0;
-    ++it;
-  }
-  SDIFAccess::pList.clear();
-}
 
 bool FileType::isFileSDIF(const QString& filename) {
     try{
@@ -398,34 +367,13 @@ bool FileType::isFileSDIF(const QString& filename) {
 
 bool FileType::SDIF_hasFrame(const QString& filename, const QString& framesignature) {
 
-    // get a free slot in sdif file pointer list
-    Easdif::SDIFEntity *p = 0;
-    SDIFAccess::EASDList::iterator it = SDIFAccess::pList.begin();
-    SDIFAccess::EASDList::iterator ite = SDIFAccess::pList.end();
-    while(it!=ite){
-      if(! it->first->IsOpen()){
-        p = it->first;
-        break;
-      }
-      ++it;
-    }
-    if(it==ite){
-      p = new Easdif::SDIFEntity();
-      if(p){
-        SDIFAccess::pList.push_back(std::pair<Easdif::SDIFEntity*,Easdif::SDIFEntity::const_iterator>(p,Easdif::SDIFEntity::const_iterator()));
-        it = --SDIFAccess::pList.end();
-      }
-      else
-        throw QString("Failed allocating Easdif file");
-    }
-
+    SDIFEntity readentity;
     // open the file
-    if(!it->first->OpenRead(filename.toLocal8Bit().constData()))
+    if(!readentity.OpenRead(filename.toLocal8Bit().constData()))
         return false;
 
     // enable frame dir to be able to work with selections
-    it->first->EnableFrameDir();
-    it->second = it->first->begin();
+    readentity.EnableFrameDir();
 
     bool found = false;
 
@@ -433,16 +381,16 @@ bool FileType::SDIF_hasFrame(const QString& filename, const QString& framesignat
     // Thus, parse the file until the given frame is found
     // create frame directory output
     {
-        Easdif::SDIFEntity::const_iterator it = p->begin();
-        Easdif::SDIFEntity::const_iterator ite = p->end();
+        Easdif::SDIFEntity::const_iterator it = readentity.begin();
+        Easdif::SDIFEntity::const_iterator ite = readentity.end();
         // establish directory
         while(it !=ite)
             ++it;
-        p->Rewind();
-        // const Easdif::Directory & dir= p->GetDirectory();
+        readentity.Rewind();
+        // const Easdif::Directory & dir= readentity.GetDirectory();
         // dir.size()
 
-        it = p->begin();
+        it = readentity.begin();
         for(int ii=0; !found && it!=ite; ++it,++ii) {
             char* sigstr = SdifSignatureToString(it.GetLoc().LocSignature());
             // cout << sigstr << endl;
@@ -450,12 +398,6 @@ bool FileType::SDIF_hasFrame(const QString& filename, const QString& framesignat
                 found = true;
         }
     }
-
-    // Close the file
-    SDIFAccess::EASDList::iterator itl;
-    // validate pointer
-    if(SDIFAccess::CheckList(p,itl) && p->IsOpen())
-        p->Close();
 
     return found;
 }
