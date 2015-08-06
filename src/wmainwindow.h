@@ -111,8 +111,11 @@ private slots:
     void fileSelectionChanged();
     void viewsDisplayedChanged();
     void changeToolBarSizes(int size);
+    void enterScrollHandDragMode();
+    void leaveScrollHandDragMode();
 
 public slots:
+    void focusWindowChanged(QWindow*win);
     void updateWindowTitle();
     void fileInfoUpdate();
     void allSoundsChanged(); // TODO Should drop this

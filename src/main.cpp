@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
     filestoload.removeAt(0);
 
     WMainWindow* w = new WMainWindow(filestoload);
-    QObject::connect(&a, SIGNAL(focusWindowChanged(QWindow*)), w, SLOT(checkFileModifications()));
+    QObject::connect(&a, SIGNAL(focusWindowChanged(QWindow*)), w, SLOT(focusWindowChanged(QWindow*)));
     w->show();
 
     int ret = a.exec();

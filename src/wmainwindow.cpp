@@ -86,9 +86,9 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     , m_gvAmplitudeSpectrum(NULL)
     , m_gvPhaseSpectrum(NULL)
     , m_gvSpectrogram(NULL)
+    , m_last_file_editing(NULL)
     , m_audioengine(NULL)
     , m_playingftsound(NULL)
-    , m_last_file_editing(NULL)
 { 
     gMW = this;
 
@@ -690,10 +690,7 @@ void WMainWindow::keyPressEvent(QKeyEvent* event){
     bool kshift = event->modifiers().testFlag(Qt::ShiftModifier);
     bool kctrl = event->modifiers().testFlag(Qt::ControlModifier);
     if(event->key()==Qt::Key_Shift && !kctrl){
-        m_gvWaveform->setDragMode(QGraphicsView::ScrollHandDrag);
-        m_gvAmplitudeSpectrum->setDragMode(QGraphicsView::ScrollHandDrag);
-        m_gvPhaseSpectrum->setDragMode(QGraphicsView::ScrollHandDrag);
-        m_gvSpectrogram->setDragMode(QGraphicsView::ScrollHandDrag);
+        enterScrollHandDragMode();
     }
     else if(event->key()==Qt::Key_Control && !kshift){
         if(ui->actionSelectionMode->isChecked()){
@@ -747,18 +744,7 @@ void WMainWindow::keyPressEvent(QKeyEvent* event){
 
 void WMainWindow::keyReleaseEvent(QKeyEvent* event){
     if(event->key()==Qt::Key_Shift){
-        m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
-        m_gvAmplitudeSpectrum->setDragMode(QGraphicsView::NoDrag);
-        m_gvPhaseSpectrum->setDragMode(QGraphicsView::NoDrag);
-        m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
-        if(ui->actionSelectionMode->isChecked()){
-            m_gvWaveform->setCursor(Qt::CrossCursor);
-            m_gvAmplitudeSpectrum->setCursor(Qt::CrossCursor);
-            m_gvSpectrogram->setCursor(Qt::CrossCursor);
-        }
-        else if(ui->actionEditMode->isChecked()){
-            m_gvWaveform->setCursor(Qt::SizeVerCursor);
-        }
+        leaveScrollHandDragMode();
     }
     if(event->key()==Qt::Key_Control){
         if(ui->actionSelectionMode->isChecked()){
@@ -859,6 +845,41 @@ void WMainWindow::setLabelsEditable(bool editable){
                 ftlabels[fi]->waveform_labels[li]->setTextInteractionFlags(Qt::NoTextInteraction);
         }
     }
+}
+
+
+void WMainWindow::enterScrollHandDragMode(){
+    m_gvWaveform->setDragMode(QGraphicsView::ScrollHandDrag);
+    m_gvAmplitudeSpectrum->setDragMode(QGraphicsView::ScrollHandDrag);
+    m_gvPhaseSpectrum->setDragMode(QGraphicsView::ScrollHandDrag);
+    m_gvSpectrogram->setDragMode(QGraphicsView::ScrollHandDrag);
+}
+
+void WMainWindow::leaveScrollHandDragMode(){
+    m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
+    m_gvAmplitudeSpectrum->setDragMode(QGraphicsView::NoDrag);
+    m_gvPhaseSpectrum->setDragMode(QGraphicsView::NoDrag);
+    m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
+    if(ui->actionSelectionMode->isChecked()){
+        m_gvWaveform->setCursor(Qt::CrossCursor);
+        m_gvAmplitudeSpectrum->setCursor(Qt::CrossCursor);
+        m_gvSpectrogram->setCursor(Qt::CrossCursor);
+    }
+    else if(ui->actionEditMode->isChecked()){
+        m_gvWaveform->setCursor(Qt::SizeVerCursor);
+    }
+}
+
+void WMainWindow::focusWindowChanged(QWindow* win){
+    Q_UNUSED(win)
+
+    if(QGuiApplication::keyboardModifiers().testFlag(Qt::ShiftModifier)
+        && !QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
+        enterScrollHandDragMode();
+    else
+        leaveScrollHandDragMode();
+
+    checkFileModifications();
 }
 
 // Check if a file has been modified on the disc
