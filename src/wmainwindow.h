@@ -66,7 +66,6 @@ class WMainWindow : public QMainWindow
     static WMainWindow* sm_mainwindow;
     bool m_loading;
 
-    QList<QListWidgetItem*> m_previous_file_selection;
     FTSound* m_lastSelectedSound;
     FTSound* m_lastFilteredSound;
 
@@ -76,6 +75,7 @@ class WMainWindow : public QMainWindow
 
     void connectModes();
     void disconnectModes();
+    FileType* m_last_file_editing;
 
     void initializeSoundSystem(double fs);
     QProgressBar* m_pbVolume;
@@ -124,6 +124,7 @@ public slots:
     void setInWaitingForFileState();
     void updateViewsAfterAddFile(bool isfirsts);
     void changeFileListItemsSize();
+    void setEditing(FileType* ft);
 
 public:
     explicit WMainWindow(QStringList files, QWidget* parent=0);

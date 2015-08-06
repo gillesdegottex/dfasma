@@ -88,6 +88,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     , m_gvSpectrogram(NULL)
     , m_audioengine(NULL)
     , m_playingftsound(NULL)
+    , m_last_file_editing(NULL)
 { 
     gMW = this;
 
@@ -823,11 +824,6 @@ void WMainWindow::setEditMode(bool checked){
         if(!ui->actionEditMode->isChecked()) ui->actionEditMode->setChecked(true);
         connectModes();
 
-        // Add the edit icons
-        QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
-        for(int i=0; i<list.size(); i++)
-            ((FileType*)list[i])->setEditing(true);
-
         m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
         m_gvWaveform->setCursor(Qt::SizeVerCursor);
         m_gvAmplitudeSpectrum->setDragMode(QGraphicsView::NoDrag);
@@ -838,6 +834,15 @@ void WMainWindow::setEditMode(bool checked){
         setSelectionMode(true);
 
     setLabelsEditable(checked);
+}
+
+void WMainWindow::setEditing(FileType *ft){
+    if(ft)
+        ft->setEditing(true);
+    else if(m_last_file_editing)
+        m_last_file_editing->setEditing(false);
+
+    m_last_file_editing = ft;
 }
 
 void WMainWindow::setLabelsEditable(bool editable){
@@ -930,9 +935,6 @@ void WMainWindow::fileSelectionChanged() {
     int nb_snd_in_selection = 0;
     int nb_labels_in_selection = 0;
 
-    for(int i=0; i<m_previous_file_selection.size(); i++)
-        ((FileType*)(m_previous_file_selection[i]))->setEditing(false);
-
     for(int i=0; i<list.size(); i++) {
         FileType* ft = ((FileType*)list.at(i));
         if(ft->type == FileType::FTSOUND){
@@ -942,8 +944,6 @@ void WMainWindow::fileSelectionChanged() {
 
         if(ft->type == FileType::FTLABELS)
             nb_labels_in_selection++;
-
-        ft->setEditing(ui->actionEditMode->isChecked());
     }
 
     // Update the spectrogram to current selected signal
@@ -960,8 +960,6 @@ void WMainWindow::fileSelectionChanged() {
     ui->actionSelectedFilesSave->setEnabled(nb_labels_in_selection>0);
 
     fileInfoUpdate();
-
-    m_previous_file_selection = list;
 
 //    COUTD << "WMainWindow::~fileSelectionChanged" << endl;
 }

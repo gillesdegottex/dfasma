@@ -543,13 +543,14 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
 
                 // Look for a nearby marker to modify
                 m_ca_pressed_index=-1;
-                FTLabels* ftl = gMW->getCurrentFTLabels();
-                if(ftl){
-                    for(int lli=0; m_ca_pressed_index==-1 && lli<int(ftl->starts.size()); lli++) {
-                        QPoint slp = mapFromScene(QPointF(ftl->starts[lli],0));
+                FTLabels* selectedlabels = gMW->getCurrentFTLabels();
+                if(selectedlabels){
+                    for(int lli=0; m_ca_pressed_index==-1 && lli<int(selectedlabels->starts.size()); lli++) {
+                        QPoint slp = mapFromScene(QPointF(selectedlabels->starts[lli],0));
                         if(std::abs(slp.x()-event->x())<5) {
                             m_ca_pressed_index = lli;
                             m_currentAction = CALabelModifPosition;
+                            gMW->setEditing(selectedlabels);
                         }
                     }
                     if(m_ca_pressed_index==-1) {
@@ -557,6 +558,7 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
                             m_selection_pressedx = p.x();
                             m_currentAction = CALabelAllModifPosition;
                             setCursor(Qt::SizeHorCursor);
+                            gMW->setEditing(selectedlabels);
                         }
                     }
 
@@ -564,22 +566,24 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
                         playCursorSet(p.x(), true); // Put the play cursor
                 }
 
-                FTSound* currentftsound = gMW->getCurrentFTSound();
-                if(currentftsound) {
+                FTSound* selectedsound = gMW->getCurrentFTSound();
+                if(selectedsound) {
                     if(event->modifiers().testFlag(Qt::ShiftModifier)){
                     }
                     else if(event->modifiers().testFlag(Qt::ControlModifier)){
                         // cout << "Scaling the waveform" << endl;
                         m_currentAction = CAWaveformDelay;
                         m_selection_pressedx = p.x();
-                        m_tmpdelay = currentftsound->m_delay/gMW->getFs();
+                        m_tmpdelay = selectedsound->m_delay/gMW->getFs();
                         setCursor(Qt::SizeHorCursor);
+                        gMW->setEditing(selectedsound);
                     }
                     else{
                         // cout << "Scaling the waveform" << endl;
                         m_currentAction = CAWaveformScale;
                         m_selection_pressedx = p.y();
                         setCursor(Qt::SizeVerCursor);
+                        gMW->setEditing(selectedsound);
                     }
                 }
             }
@@ -824,6 +828,7 @@ void QGVWaveform::mouseReleaseEvent(QMouseEvent* event){
         }
         else{
         }
+        gMW->setEditing(NULL);
     }
 
     m_currentAction = CANothing;

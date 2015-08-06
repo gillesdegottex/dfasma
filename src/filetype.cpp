@@ -197,7 +197,7 @@ void FileType::setDrawIcon(QPixmap& pm){
         p.drawRect(rect);
     }
     if(m_is_editing){
-        QSvgRenderer renderer(QString(":/icons/edit_white.svg"));
+        QSvgRenderer renderer(QString(":/icons/edit2_white.svg"));
         QPainter p(&pm);
         renderer.render(&p);
     }
