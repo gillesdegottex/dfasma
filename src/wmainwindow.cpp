@@ -365,7 +365,11 @@ void WMainWindow::execAbout(){
 
 void WMainWindow::stopFileProgressDialog() {
 //    COUTD << "WMainWindow::stopFileProgressDialog " << m_prgdlg << endl;
-    if(m_prgdlg) m_prgdlg->setValue(m_prgdlg->maximum());// Stop the loading bar
+    if(m_prgdlg){
+        m_prgdlg->setValue(m_prgdlg->maximum());// Stop the loading bar
+        m_prgdlg->hide();
+    }
+    QCoreApplication::processEvents(); // To show the progress
 }
 
 void WMainWindow::newFile(){
@@ -492,107 +496,108 @@ void WMainWindow::addFiles(const QStringList& files, FileType::FType type) {
 void WMainWindow::addFile(const QString& filepath, FileType::FType type) {
 //    cout << "INFO: Add file: " << filepath.toLocal8Bit().constData() << endl;
 
-    if(QFileInfo(filepath).isDir()){
+    if(QFileInfo(filepath).isDir())
         throw QString("Shoudn't use WMainWindow::addFile for directories, use WMainWindow::addFiles instead (with an 's')");
-    }
-    else{
-        try{
-            bool isfirsts = ftsnds.size()==0;
 
-            // Attention: There is the type of data stored in DFasma (FILETYPE) (ex. FileType::FTSOUND)
-            //  and the format of the file (ex. FFSOUND)
+    try{
+        bool isfirsts = ftsnds.size()==0;
 
-            // This should be always "guessable"
-            FileType::FileContainer container = FileType::guessContainer(filepath);
+        // Attention: There is the type of data stored in DFasma (FILETYPE) (ex. FileType::FTSOUND)
+        //  and the format of the file (ex. FFSOUND)
 
-            // can be replaced by an autodetect or "forced mode" in the future
+        // This should be always "guessable"
+        FileType::FileContainer container = FileType::guessContainer(filepath);
 
-            // Then, guess the type of the data in the file, if no specified yet
-            if(type==FileType::FTUNSET){
-            // The format and the DFasma's type have to correspond
-                if(container==FileType::FCANYSOUND)
-                    type = FileType::FTSOUND; // These two have to match
+        // can be replaced by an autodetect or "forced mode" in the future
 
-                #ifdef SUPPORT_SDIF
-                if(container==FileType::FCSDIF) {
-                    if(FileType::SDIF_hasFrame(filepath, "1FQ0"))
-                        type = FileType::FTFZERO;
-                    else if (FileType::SDIF_hasFrame(filepath, "1MRK"))
-                        type = FileType::FTLABELS;
-                    else
-                        throw QString("Unsupported SDIF data.");
-                }
-                #endif
-                if(container==FileType::FCTEXT) {
-                    // Distinguish between f0, labels and future VUF files (and futur others ...)
-                    // Do a grammar check (But this won't help to diff F0 and VUF files)
-                    ifstream fin(filepath.toLatin1().constData());
-                    if(!fin.is_open())
-                        throw QString("Cannot open this file");
-                    double t;
-                    string line, text;
-                    // Check the first line only (Assuming it is enough)
-                    // TODO May have to skip commented lines depending on the text format
-                    if(!std::getline(fin, line))
-                        throw QString("There is not a single line in this file");
-                    // Check: <number> <number>
-                    std::istringstream iss(line);
-                    // Check if first two values are real numbers
-                    // TODO This will NOT work to distinguish F0 or VUF !!
-                    if((iss >> t >> t) && iss.eof())
-                        type = FileType::FTFZERO;
-                    else // Otherwise, assume this is a label
-                        type = FileType::FTLABELS;
-                }
+        // Then, guess the type of the data in the file, if no specified yet
+        if(type==FileType::FTUNSET){
+        // The format and the DFasma's type have to correspond
+            if(container==FileType::FCANYSOUND)
+                type = FileType::FTSOUND; // These two have to match
+
+            #ifdef SUPPORT_SDIF
+            if(container==FileType::FCSDIF) {
+                if(FileType::SDIF_hasFrame(filepath, "1FQ0"))
+                    type = FileType::FTFZERO;
+                else if (FileType::SDIF_hasFrame(filepath, "1MRK"))
+                    type = FileType::FTLABELS;
+                else
+                    throw QString("Unsupported SDIF data.");
             }
+            #endif
+            if(container==FileType::FCTEXT) {
+                // Distinguish between f0, labels and future VUF files (and futur others ...)
+                // Do a grammar check (But this won't help to diff F0 and VUF files)
+                ifstream fin(filepath.toLatin1().constData());
+                if(!fin.is_open())
+                    throw QString("Cannot open this file");
+                double t;
+                string line, text;
+                // Check the first line only (Assuming it is enough)
+                // TODO May have to skip commented lines depending on the text format
+                if(!std::getline(fin, line))
+                    throw QString("There is not a single line in this file");
+                // Check: <number> <number>
+                std::istringstream iss(line);
+                // Check if first two values are real numbers
+                // TODO This will NOT work to distinguish F0 or VUF !!
+                if((iss >> t >> t) && iss.eof())
+                    type = FileType::FTFZERO;
+                else // Otherwise, assume this is a label
+                    type = FileType::FTLABELS;
+            }
+        }
 
-            if(type==FileType::FTUNSET)
-                throw QString("Cannot find any data or audio channel in this file that is handled by this distribution of DFasma.");
+        if(type==FileType::FTUNSET)
+            throw QString("Cannot find any data or audio channel in this file that is handled by this distribution of DFasma.");
 
-            // Finally, load the data knowing the type and the container
-            if(type==FileType::FTSOUND){
-                int nchan = FTSound::getNumberOfChannels(filepath);
-                if(nchan==1){
-                    // If there is only one channel, just load it
-                    ui->listSndFiles->addItem(new FTSound(filepath, this));
-                }
-                else{
-                    // If more than one channel, ask what to do
-                    stopFileProgressDialog();
-                    WDialogSelectChannel dlg(filepath, nchan, this);
-                    if(dlg.exec()) {
-                        if(dlg.ui->rdbImportEachChannel->isChecked()){
-                            for(int ci=1; ci<=nchan; ci++){
-                                ui->listSndFiles->addItem(new FTSound(filepath, this, ci));
-                            }
-                        }
-                        else if(dlg.ui->rdbImportOnlyOneChannel->isChecked()){
-                            ui->listSndFiles->addItem(new FTSound(filepath, this, dlg.ui->sbChannelID->value()));
-                        }
-                        else if(dlg.ui->rdbMergeAllChannels->isChecked()){
-                            ui->listSndFiles->addItem(new FTSound(filepath, this, -2));// -2 is a code for merging the channels
+        // Finally, load the data knowing the type and the container
+        if(type==FileType::FTSOUND){
+            int nchan = FTSound::getNumberOfChannels(filepath);
+            if(nchan==1){
+                // If there is only one channel, just load it
+                ui->listSndFiles->addItem(new FTSound(filepath, this));
+            }
+            else{
+                // If more than one channel, ask what to do
+                stopFileProgressDialog();
+                WDialogSelectChannel dlg(filepath, nchan, this);
+                if(dlg.exec()) {
+                    if(dlg.ui->rdbImportEachChannel->isChecked()){
+                        for(int ci=1; ci<=nchan; ci++){
+                            ui->listSndFiles->addItem(new FTSound(filepath, this, ci));
                         }
                     }
-                }
-
-                if(ftsnds.size()>0){
-                    // The first sound determines the common sampling frequency for the audio output
-                    if(isfirsts)
-                        initializeSoundSystem(ftsnds[0]->fs);
-
-                    m_gvWaveform->fitViewToSoundsAmplitude();
+                    else if(dlg.ui->rdbImportOnlyOneChannel->isChecked()){
+                        ui->listSndFiles->addItem(new FTSound(filepath, this, dlg.ui->sbChannelID->value()));
+                    }
+                    else if(dlg.ui->rdbMergeAllChannels->isChecked()){
+                        ui->listSndFiles->addItem(new FTSound(filepath, this, -2));// -2 is a code for merging the channels
+                    }
                 }
             }
-            else if(type == FileType::FTFZERO)
-                ui->listSndFiles->addItem(new FTFZero(filepath, this, container));
-            else if(type == FileType::FTLABELS)
-                ui->listSndFiles->addItem(new FTLabels(filepath, this, container));
+
+            if(ftsnds.size()>0){
+                // The first sound determines the common sampling frequency for the audio output
+                if(isfirsts)
+                    initializeSoundSystem(ftsnds[0]->fs);
+
+                m_gvWaveform->fitViewToSoundsAmplitude();
+            }
         }
-        catch (QString err)
-        {
-            stopFileProgressDialog();
-            QMessageBox::warning(this, "Failed to load file ...", "Data from the following file can't be loaded:\n"+filepath+"'\n\nReason:\n"+err);
-        }
+        else if(type == FileType::FTFZERO)
+            ui->listSndFiles->addItem(new FTFZero(filepath, this, container));
+        else if(type == FileType::FTLABELS)
+            ui->listSndFiles->addItem(new FTLabels(filepath, this, container));
+    }
+    catch (QString err)
+    {
+        stopFileProgressDialog();
+        QMessageBox::StandardButton ret=QMessageBox::warning(this, "Failed to load file ...", "Data from the following file can't be loaded:\n"+filepath+"'\n\nReason:\n"+err, QMessageBox::Ok | QMessageBox::Abort, QMessageBox::Ok);
+        if(ret==QMessageBox::Abort)
+            if(m_prgdlg)
+                m_prgdlg->cancel();
     }
 }
 
