@@ -155,6 +155,8 @@ void FTSound::load(int channelid){
     // TODO Fill the codec name based on:
     //      http://www.mega-nerd.com/libsndfile/api.html
 
+//    std::cout << sfinfo.format << endl;
+
     if((sfinfo.format&0x00FF)==SF_FORMAT_PCM_S8) {
         m_fileaudioformat.setSampleType(QAudioFormat::SignedInt);
         m_fileaudioformat.setSampleSize(8);

@@ -263,11 +263,15 @@ void QGVAmplitudeSpectrum::updateAmplitudeExtent(){
     if(gMW->ftsnds.size()>0){
         // Get the maximum QSNR among all sound files
         WAVTYPE maxsqnr = -std::numeric_limits<WAVTYPE>::infinity();
-        for(unsigned int si=0; si<gMW->ftsnds.size(); si++)
-            maxsqnr = std::max(maxsqnr, 20*std::log10(std::pow(WAVTYPE(2.0),gMW->ftsnds[si]->format().sampleSize())));
+        for(unsigned int si=0; si<gMW->ftsnds.size(); si++){
+            if(gMW->ftsnds[si]->format().sampleSize()==-1)
+                maxsqnr = std::max(maxsqnr, 20*std::log10(std::pow(WAVTYPE(2.0),8*sizeof(WAVTYPE))));
+            else
+                maxsqnr = std::max(maxsqnr, 20*std::log10(std::pow(WAVTYPE(2.0),gMW->ftsnds[si]->format().sampleSize())));
+        }
 
         gMW->ui->sldAmplitudeSpectrumMin->setMaximum(0);
-        gMW->ui->sldAmplitudeSpectrumMin->setMinimum(-3*maxsqnr); // 2 gives a margin
+        gMW->ui->sldAmplitudeSpectrumMin->setMinimum(-3*maxsqnr); // to give a margin
 
         updateSceneRect();
     }
@@ -276,7 +280,8 @@ void QGVAmplitudeSpectrum::updateAmplitudeExtent(){
 }
 
 void QGVAmplitudeSpectrum::amplitudeMinChanged() {
-//    cout << "QGVAmplitudeSpectrum::amplitudeMinChanged" << endl;
+//    COUTD << "QGVAmplitudeSpectrum::amplitudeMinChanged " << gMW->ui->sldAmplitudeSpectrumMin->value() << endl;
+
     if(!gMW->isLoading())
         QToolTip::showText(QCursor::pos(), QString("%1dB").arg(gMW->ui->sldAmplitudeSpectrumMin->value()), this);
 
@@ -287,6 +292,7 @@ void QGVAmplitudeSpectrum::amplitudeMinChanged() {
 }
 
 void QGVAmplitudeSpectrum::updateSceneRect() {
+//    COUTD << "QGVAmplitudeSpectrum::updateSceneRect " << gMW->getFs() << endl;
     m_scene->setSceneRect(0.0, -10, gMW->getFs()/2, (10-gMW->ui->sldAmplitudeSpectrumMin->value()));
 }
 
