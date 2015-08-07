@@ -103,7 +103,6 @@ int main(int argc, char *argv[])
     int ret = a.exec();
 
     #ifdef SUPPORT_SDIF
-//        FileType::cleanupAndEEnd();
         Easdif::EasdifEnd();
     #endif
     #ifdef FILE_AUDIO_LIBSOX
