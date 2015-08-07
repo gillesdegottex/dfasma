@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "DFasma"
-#define MyAppVersion "1.1.0"
+;#define MyAppVersion "1.1.0"   ; defined by the packaging script
 #define MyAppPublisher "DFasma"
 #define MyAppURL "http://gillesdegottex.github.io/dfasma/"
 #define MyAppExeName "dfasma.exe"
