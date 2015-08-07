@@ -14,16 +14,16 @@
 AppId={{A4B58B57-922A-485F-AC97-5FA7A401A2A1}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
-;AppVerName={#MyAppName} {#MyAppVersion}
+;AppVerName={#MyAppName} {#MyAppVersion}   ; defined by the packaging script
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
-LicenseFile=C:\Users\Norwin\Documents\GitHub\dfasma\LICENSE.txt
+LicenseFile=..\LICENSE.txt
 OutputBaseFilename=DFasma-{#MyAppVersion}-Win32bit
-SetupIconFile=C:\Users\Norwin\Documents\GitHub\dfasma\icons\dfasma.ico
+SetupIconFile=..\icons\dfasma.ico
 Compression=lzma
 SolidCompression=yes
 
@@ -35,8 +35,9 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
 
 [Files]
-Source: "C:\Users\Norwin\Documents\GitHub\build-dfasma-Desktop_Qt_5_2_1_MSVC2012_32bit-Release\release\dfasma.exe*"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Norwin\Documents\GitHub\MSVC2012_32bit\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "DFasma-{#MyAppVersion}-Win32bit\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
+;Source: "C:\Users\Norwin\Documents\GitHub\build-dfasma-Desktop_Qt_5_2_1_MSVC2012_32bit-Release\release\dfasma.exe*"; DestDir: "{app}"; Flags: ignoreversion
+;Source: "C:\Users\Norwin\Documents\GitHub\MSVC2012_32bit\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
