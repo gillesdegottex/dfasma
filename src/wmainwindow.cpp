@@ -29,6 +29,7 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "../external/libqxt/qxtspanslider.h"
 
+#include "fileslistwidget.h"
 #include "gvwaveform.h"
 #include "gvamplitudespectrum.h"
 #include "gvphasespectrum.h"
@@ -107,6 +108,9 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     m_qxtSpectrogramSpanSlider->setHandleMovementMode(QxtSpanSlider::NoOverlapping);
     ui->horizontalLayout_6->insertWidget(1, m_qxtSpectrogramSpanSlider);
 
+    m_fileslist = new FilesListWidget(this);
+    ui->vlFilesList->addWidget(m_fileslist);
+
     m_dlgSettings = new WDialogSettings(this);
     m_dlgSettings->ui->lblAudioOutputDeviceFormat->hide();
     m_dlgSettings->adjustSize();
@@ -137,10 +141,10 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     m_globalWaitingBar->hide();
 
     setAcceptDrops(true);
-    ui->listSndFiles->setAcceptDrops(true);
-    ui->listSndFiles->setSelectionRectVisible(false);
-    ui->listSndFiles->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->listSndFiles, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showFileContextMenu(const QPoint&)));
+    m_fileslist->setAcceptDrops(true);
+    m_fileslist->setSelectionRectVisible(false);
+    m_fileslist->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_fileslist, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showFileContextMenu(const QPoint&)));
 
     ui->actionAbout->setIcon(QIcon(":/icons/about.svg"));
     ui->actionSettings->setIcon(QIcon(":/icons/settings.svg"));
@@ -157,7 +161,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     connect(ui->actionSettings, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
     ui->actionSelectionMode->setChecked(true);
     connectModes();
-    connect(ui->listSndFiles, SIGNAL(itemSelectionChanged()), this, SLOT(fileSelectionChanged()));
+    connect(m_fileslist, SIGNAL(itemSelectionChanged()), this, SLOT(fileSelectionChanged()));
     addAction(ui->actionSelectedFilesToggleShown);
     addAction(ui->actionSelectedFilesReload);
     addAction(ui->actionSelectedFilesDuplicate);
@@ -308,7 +312,7 @@ WMainWindow::~WMainWindow() {
     m_gvSpectrogram->m_stftcomputethread->cancelComputation(true);
     m_gvAmplitudeSpectrum->m_fftresizethread->cancelComputation(true);
 
-    ui->listSndFiles->selectAll();
+    m_fileslist->selectAll();
     selectedFilesClose();
 
     // The audio player
@@ -332,13 +336,13 @@ WMainWindow::~WMainWindow() {
 void WMainWindow::changeFileListItemsSize() {
 //    COUTD << m_dlgSettings->ui->sbFileListItemSize->value() << endl;
 
-    QFont font = ui->listSndFiles->font();
+    QFont font = m_fileslist->font();
     font.setPixelSize(m_dlgSettings->ui->sbFileListItemSize->value());
-    QSize size = ui->listSndFiles->iconSize();
+    QSize size = m_fileslist->iconSize();
     size.setHeight(m_dlgSettings->ui->sbFileListItemSize->value()+2);
     size.setWidth(m_dlgSettings->ui->sbFileListItemSize->value()+2);
-    ui->listSndFiles->setIconSize(size);
-    ui->listSndFiles->setFont(font);
+    m_fileslist->setIconSize(size);
+    m_fileslist->setFont(font);
 }
 
 void WMainWindow::changeToolBarSizes(int size) {
@@ -351,7 +355,7 @@ void WMainWindow::changeToolBarSizes(int size) {
 }
 
 void WMainWindow::updateWindowTitle() {
-    int count = ui->listSndFiles->count();
+    int count = m_fileslist->count();
     if(count>0) setWindowTitle("DFasma ("+QString::number(count)+")");
     else        setWindowTitle("DFasma");
 }
@@ -375,7 +379,7 @@ void WMainWindow::stopFileProgressDialog() {
 void WMainWindow::newFile(){
     QMessageBox::StandardButton btn = QMessageBox::question(this, "Create a new file ...", "Do you want to create an empty label file?", QMessageBox::Yes | QMessageBox::No);
     if(btn==QMessageBox::Yes){
-        ui->listSndFiles->addItem(new FTLabels(this));
+        m_fileslist->addItem(new FTLabels(this));
     }
 }
 
@@ -557,7 +561,7 @@ void WMainWindow::addFile(const QString& filepath, FileType::FType type) {
             int nchan = FTSound::getNumberOfChannels(filepath);
             if(nchan==1){
                 // If there is only one channel, just load it
-                ui->listSndFiles->addItem(new FTSound(filepath, this));
+                m_fileslist->addItem(new FTSound(filepath, this));
             }
             else{
                 // If more than one channel, ask what to do
@@ -566,14 +570,14 @@ void WMainWindow::addFile(const QString& filepath, FileType::FType type) {
                 if(dlg.exec()) {
                     if(dlg.ui->rdbImportEachChannel->isChecked()){
                         for(int ci=1; ci<=nchan; ci++){
-                            ui->listSndFiles->addItem(new FTSound(filepath, this, ci));
+                            m_fileslist->addItem(new FTSound(filepath, this, ci));
                         }
                     }
                     else if(dlg.ui->rdbImportOnlyOneChannel->isChecked()){
-                        ui->listSndFiles->addItem(new FTSound(filepath, this, dlg.ui->sbChannelID->value()));
+                        m_fileslist->addItem(new FTSound(filepath, this, dlg.ui->sbChannelID->value()));
                     }
                     else if(dlg.ui->rdbMergeAllChannels->isChecked()){
-                        ui->listSndFiles->addItem(new FTSound(filepath, this, -2));// -2 is a code for merging the channels
+                        m_fileslist->addItem(new FTSound(filepath, this, -2));// -2 is a code for merging the channels
                     }
                 }
             }
@@ -587,9 +591,9 @@ void WMainWindow::addFile(const QString& filepath, FileType::FType type) {
             }
         }
         else if(type == FileType::FTFZERO)
-            ui->listSndFiles->addItem(new FTFZero(filepath, this, container));
+            m_fileslist->addItem(new FTFZero(filepath, this, container));
         else if(type == FileType::FTLABELS)
-            ui->listSndFiles->addItem(new FTLabels(filepath, this, container));
+            m_fileslist->addItem(new FTLabels(filepath, this, container));
     }
     catch (QString err)
     {
@@ -601,11 +605,10 @@ void WMainWindow::addFile(const QString& filepath, FileType::FType type) {
     }
 }
 
-
 // Views =======================================================================
 
 void WMainWindow::updateViewsAfterAddFile(bool isfirsts) {
-    if(ui->listSndFiles->count()==0)
+    if(m_fileslist->count()==0)
         setInWaitingForFileState();
     else {
         ui->actionSelectedFilesClose->setEnabled(true);
@@ -780,7 +783,7 @@ void WMainWindow::setSelectionMode(bool checked){
         connectModes();
 
         // Clear the icons from the edit mode
-        QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
+        QList<QListWidgetItem*> list = m_fileslist->selectedItems();
         for(int i=0; i<list.size(); i++)
             ((FileType*)list[i])->setEditing(false);
 
@@ -902,7 +905,7 @@ FTSound* WMainWindow::getCurrentFTSound(bool forceselect) {
     if(ftsnds.empty())
         return NULL;
 
-    FileType* currenItem = (FileType*)(ui->listSndFiles->currentItem());
+    FileType* currenItem = m_fileslist->currentFile();
 
     if(currenItem && currenItem->type==FileType::FTSOUND)
         return (FTSound*)currenItem;
@@ -922,7 +925,7 @@ FTLabels* WMainWindow::getCurrentFTLabels(bool forceselect) {
     if(ftlabels.empty())
         return NULL;
 
-    FileType* currenItem = (FileType*)(ui->listSndFiles->currentItem());
+    FileType* currenItem = m_fileslist->currentFile();
 
     if(currenItem && currenItem->type==FileType::FTLABELS)
         return (FTLabels*)currenItem;
@@ -938,9 +941,9 @@ void WMainWindow::showFileContextMenu(const QPoint& pos) {
 
     QMenu contextmenu(this);
 
-    QList<QListWidgetItem*> l = ui->listSndFiles->selectedItems();
+    QList<QListWidgetItem*> l = m_fileslist->selectedItems();
     if(l.size()==1) {
-        FileType* currenItem = (FileType*)(ui->listSndFiles->currentItem());
+        FileType* currenItem = m_fileslist->currentFile();
         currenItem->fillContextMenu(contextmenu, this);
     }
     else {
@@ -957,7 +960,7 @@ void WMainWindow::showFileContextMenu(const QPoint& pos) {
 void WMainWindow::fileSelectionChanged() {
 //    COUTD << "WMainWindow::fileSelectionChanged" << endl;
 
-    QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
+    QList<QListWidgetItem*> list = m_fileslist->selectedItems();
     int nb_snd_in_selection = 0;
     int nb_labels_in_selection = 0;
 
@@ -990,7 +993,7 @@ void WMainWindow::fileSelectionChanged() {
 //    COUTD << "WMainWindow::~fileSelectionChanged" << endl;
 }
 void WMainWindow::fileInfoUpdate() {
-    QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
+    QList<QListWidgetItem*> list = m_fileslist->selectedItems();
 
     // If only one file selected
     // Display Basic information of it
@@ -1004,7 +1007,7 @@ void WMainWindow::fileInfoUpdate() {
 
 // FileType is not an qobject, thus, need to forward the message manually (i.e. without signal system).
 void WMainWindow::colorSelected(const QColor& color) {
-    FileType* currenItem = (FileType*)(ui->listSndFiles->currentItem());
+    FileType* currenItem = (FileType*)(m_fileslist->currentItem());
     if(currenItem)
         currenItem->setColor(color);
 }
@@ -1041,7 +1044,7 @@ void WMainWindow::allSoundsChanged(){
 }
 
 void WMainWindow::selectedFilesToggleShown() {
-    QList<QListWidgetItem*> list = ui->listSndFiles->selectedItems();
+    QList<QListWidgetItem*> list = m_fileslist->selectedItems();
     for(int i=0; i<list.size(); i++){
         ((FileType*)list.at(i))->setVisible(!((FileType*)list.at(i))->m_actionShow->isChecked());
         if(((FileType*)list.at(i))==m_lastSelectedSound)
@@ -1057,8 +1060,8 @@ void WMainWindow::selectedFilesToggleShown() {
 void WMainWindow::selectedFilesClose() {
     m_audioengine->stopPlayback();
 
-    QList<QListWidgetItem*> l = ui->listSndFiles->selectedItems();
-    ui->listSndFiles->clearSelection();
+    QList<QListWidgetItem*> l = m_fileslist->selectedItems();
+    m_fileslist->clearSelection();
 
     bool removeSelectedSound = false;
 
@@ -1097,7 +1100,7 @@ void WMainWindow::selectedFilesClose() {
         m_gvSpectrogram->clearSTFTPlot();
 
     // If there is no more files, put the interface in a waiting-for-file state.
-    if(ui->listSndFiles->count()==0)
+    if(m_fileslist->count()==0)
         setInWaitingForFileState();
     else
         allSoundsChanged();
@@ -1108,7 +1111,7 @@ void WMainWindow::selectedFilesReload() {
 
     m_audioengine->stopPlayback();
 
-    QList<QListWidgetItem*> l = ui->listSndFiles->selectedItems();
+    QList<QListWidgetItem*> l = m_fileslist->selectedItems();
 
     bool reloadSelectedSound = false;
     bool didanysucceed = false;
@@ -1136,14 +1139,14 @@ void WMainWindow::selectedFilesReload() {
 }
 
 void WMainWindow::selectedFilesDuplicate() {
-    QList<QListWidgetItem*> l = ui->listSndFiles->selectedItems();
+    QList<QListWidgetItem*> l = m_fileslist->selectedItems();
 
     for(int i=0; i<l.size(); i++) {
         FileType* currentfile = (FileType*)l.at(i);
 
         FileType* ft = currentfile->duplicate();
         if(ft){
-            ui->listSndFiles->addItem(ft);
+            m_fileslist->addItem(ft);
             m_gvWaveform->updateSceneRect();
             allSoundsChanged();
             ui->actionSelectedFilesClose->setEnabled(true);
@@ -1155,7 +1158,7 @@ void WMainWindow::selectedFilesDuplicate() {
 }
 
 void WMainWindow::selectedFilesSave() {
-    QList<QListWidgetItem*> l = ui->listSndFiles->selectedItems();
+    QList<QListWidgetItem*> l = m_fileslist->selectedItems();
 
     for(int i=0; i<l.size(); i++) {
         FileType* currentfile = (FileType*)l.at(i);
@@ -1168,7 +1171,7 @@ void WMainWindow::selectedFilesSave() {
 // Put the program into a waiting-for-sound-files state
 // (initializeSoundSystem will wake up the necessary functions if a sound file arrived)
 void WMainWindow::setInWaitingForFileState(){
-    if(ui->listSndFiles->count()>0)
+    if(m_fileslist->count()>0)
         return;
 
     ui->splitterViews->hide();

@@ -34,6 +34,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QTimer>
 #include <QSettings>
 
+#include "fileslistwidget.h"
 #include "QSettingsAuto.h"
 #include "wdialogsettings.h"
 #include "filetype.h"
@@ -132,6 +133,8 @@ public slots:
 public:
     explicit WMainWindow(QStringList files, QWidget* parent=0);
     ~WMainWindow();
+
+    FilesListWidget* m_fileslist;
 
     QSettingsAuto m_settings;
     WDialogSettings* m_dlgSettings;

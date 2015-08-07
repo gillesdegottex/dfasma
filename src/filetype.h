@@ -50,6 +50,7 @@ public:
 
     FType type;
     QString fileFullPath;
+    QString visibleName;
     QColor color;
 
     QAction* m_actionShow;

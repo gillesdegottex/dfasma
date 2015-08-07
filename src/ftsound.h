@@ -201,6 +201,7 @@ public:
     QAction* m_actionResetFiltering;
 
     // To keep public
+    // The format is not necessarily reliable since it depends fully on the file-reading library
     QAudioFormat format() const {return m_fileaudioformat;}
     virtual QString info() const;
     void setFiltered(bool filtered);

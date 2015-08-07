@@ -135,8 +135,11 @@ FileType::FileType(FType _type, const QString& _fileName, QObject * parent)
 
     // Set properties common to all files
     QFileInfo fileInfo(fileFullPath);
-    setText(fileInfo.fileName());
+    visibleName = fileInfo.fileName();
+    setText(visibleName);
     setToolTip(fileInfo.absoluteFilePath());
+
+    setFlags(flags()|Qt::ItemIsEditable);
 
 //    QIODevice::open(QIODevice::ReadOnly);
 }
@@ -262,7 +265,7 @@ void FileType::setVisible(bool shown) {
 void FileType::setStatus() {
     QFileInfo fileInfo(fileFullPath);
 
-    QString liststr = fileInfo.fileName();
+    QString liststr = visibleName;
     QString tooltipstr = fileInfo.absoluteFilePath();
 
 //    cout << m_lastreadtime.toString().toLatin1().constData() << ":" << m_modifiedtime.toString().toLatin1().constData() << endl;
