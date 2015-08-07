@@ -61,8 +61,6 @@ public:
     static bool isFileTEXT(const QString& filename);
     static FileContainer guessContainer(const QString& filepath);
     #ifdef SUPPORT_SDIF
-    // mexAtExit cleanup function
-    static void cleanupAndEEnd();
     static bool isFileSDIF(const QString& filename);
     static bool SDIF_hasFrame(const QString& filename, const QString& framesignature);
     #endif
