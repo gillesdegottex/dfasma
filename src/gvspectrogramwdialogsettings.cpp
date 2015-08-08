@@ -115,6 +115,11 @@ void GVSpectrogramWDialogSettings::CBSpectrumWindowTypeCurrentIndexChanged(QStri
 
 void GVSpectrogramWDialogSettings::DFTSizeTypeChanged(int index) {
     if(index==0){
+        int winlen = std::floor(0.5+gFL->getFs()*ui->sbSpectrogramWindowSize->value());
+        if(winlen%2==0 && ui->cbSpectrogramWindowSizeForcedOdd->isChecked())
+            winlen++;
+        int dftlen = pow(2, std::ceil(log2(float(winlen)))+ui->sbSpectrogramOversamplingFactor->value());//[samples]
+        ui->sbSpectrogramDFTSize->setValue(dftlen);
         ui->sbSpectrogramOversamplingFactor->hide();
         ui->sbSpectrogramDFTSize->show();
     }
