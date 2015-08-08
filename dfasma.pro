@@ -216,7 +216,8 @@ SOURCES   += src/main.cpp\
              external/audioengine/audioengine.cpp \
              src/colormap.cpp \
              src/QSettingsAuto.cpp \
-             src/aboutbox.cpp
+             src/aboutbox.cpp \
+             src/fileslistwidget.cpp
 
 HEADERS   += src/wmainwindow.h \
              external/libqxt/qxtglobal.h \
@@ -242,7 +243,8 @@ HEADERS   += src/wmainwindow.h \
              external/audioengine/audioengine.h \
              src/colormap.h \
              src/QSettingsAuto.h \
-             src/aboutbox.h
+             src/aboutbox.h \
+             src/fileslistwidget.h
 
 FORMS     += src/wmainwindow.ui \
              src/wdialogselectchannel.ui \
