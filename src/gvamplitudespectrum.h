@@ -116,6 +116,7 @@ public:
     QAction* m_aUnZoom;
     QAction* m_aShowProperties;
     QAction* m_aAutoUpdateDFT;
+    QAction* m_aFollowPlayCursor;
 
 signals:
     

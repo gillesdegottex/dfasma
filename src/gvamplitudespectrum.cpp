@@ -104,6 +104,13 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     gMW->m_settings.add(m_aAmplitudeSpectrumShowLoudnessCurve);
     connect(m_aAmplitudeSpectrumShowLoudnessCurve, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
 
+    m_aFollowPlayCursor = new QAction(tr("Follow play cursor"), this);;
+    m_aFollowPlayCursor->setObjectName("m_aFollowPlayCursor");
+    m_aFollowPlayCursor->setStatusTip(tr("Update the DFT view according to the play cursor"));
+    m_aFollowPlayCursor->setCheckable(true);
+    m_aFollowPlayCursor->setChecked(false);
+    gMW->m_settings.add(m_aFollowPlayCursor);
+
     m_fft = new sigproc::FFTwrapper();
     sigproc::FFTwrapper::setTimeLimitForPlanPreparation(m_dlgSettings->ui->sbAmplitudeSpectrumFFTW3MaxTimeForPlanPreparation->value());
     m_fftresizethread = new FFTResizeThread(m_fft, this);
@@ -231,6 +238,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_contextmenu.addAction(m_aAmplitudeSpectrumShowLoudnessCurve);
     m_contextmenu.addSeparator();
     m_contextmenu.addAction(m_aAutoUpdateDFT);
+    m_contextmenu.addAction(m_aFollowPlayCursor);
     m_contextmenu.addSeparator();
     m_contextmenu.addAction(m_aShowProperties);
     connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
@@ -389,6 +397,39 @@ void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
 
     // From now on we want the new parameters ...
     m_trgDFTParameters = newDFTParams;
+
+    // Update the visible window in the waveform
+    if(m_trgDFTParameters.win.size()>0) {
+        double fs = gMW->getFs();
+
+        FFTTYPE winmax = 0.0;
+        for(size_t n=0; n<m_trgDFTParameters.win.size(); n++)
+            winmax = std::max(winmax, m_trgDFTParameters.win[n]);
+        winmax = 1.0/winmax;
+
+        QPainterPath path;
+
+        qreal prevx = 0;
+        qreal prevy = m_trgDFTParameters.win[0]*winmax;
+        path.moveTo(QPointF(prevx, -prevy));
+        qreal y;
+        for(size_t n=1; n<m_trgDFTParameters.win.size(); n++) {
+            qreal x = n/fs;
+            y = m_trgDFTParameters.win[n];
+            y *= winmax;
+            path.lineTo(QPointF(x, -y));
+            prevx = x;
+            prevy = y;
+        }
+
+        // Add the vertical line
+        qreal winrelcenter = ((m_trgDFTParameters.win.size()-1)/2.0)/fs;
+        path.moveTo(QPointF(winrelcenter, 2.0));
+        path.lineTo(QPointF(winrelcenter, -1.0));
+
+        gMW->m_gvWaveform->m_giWindow->setPath(path);
+        gMW->m_gvWaveform->m_giWindow->setPos(tstart, 0.0);
+    }
 
     // ... so let's see which DFTs we have to update.
     if(m_aAutoUpdateDFT->isChecked())

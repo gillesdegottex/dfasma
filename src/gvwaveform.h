@@ -37,7 +37,6 @@ class QGVWaveform : public QGraphicsView
     Q_OBJECT
 
     qreal m_tmpdelay;
-    FTSound::DFTParameters m_windowParams;
 
     int m_ftlabel_current_index;
 
