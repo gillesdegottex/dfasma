@@ -76,6 +76,7 @@ public:
     QAction* m_aWaveformShowGrid;
     QAction* m_aWaveformShowWindow;
     QAction* m_aWaveformShowSTFTWindowCenters;
+    QAction* m_aWaveformStickToSTFTWindows;
     QAction* m_aZoomOnSelection;
     QAction* m_aSelectionClear;
     QAction* m_aZoomIn;
@@ -113,7 +114,7 @@ public:
 
     void viewSet(QRectF viewrect, bool sync=true);
 
-    static void fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseSelection, int action);
+    void fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseSelection, int action);
 
 signals:
 

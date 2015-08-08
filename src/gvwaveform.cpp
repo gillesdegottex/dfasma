@@ -161,6 +161,14 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     connect(m_aWaveformShowSTFTWindowCenters, SIGNAL(toggled(bool)), m_scene, SLOT(invalidate()));
     m_contextmenu.addAction(m_aWaveformShowSTFTWindowCenters);
 
+    m_aWaveformStickToSTFTWindows = new QAction(tr("Stick to STFT windows postion"), this);
+    m_aWaveformStickToSTFTWindows->setObjectName("m_aWaveformStickToSTFTWindows");
+    m_aWaveformStickToSTFTWindows->setStatusTip(tr("Set the window length and position according to the STFT's analysis instants"));
+    m_aWaveformStickToSTFTWindows->setCheckable(true);
+    m_aWaveformStickToSTFTWindows->setChecked(false);
+    gMW->m_settings.add(m_aWaveformStickToSTFTWindows);
+    m_contextmenu.addAction(m_aWaveformStickToSTFTWindows);
+
     // Play Cursor
     m_giPlayCursor = new QGraphicsPathItem();
     QPen playCursorPen(QColor(255, 0, 0));
@@ -1037,9 +1045,19 @@ void QGVWaveform::fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseS
     if(selection.right()<1.0/fs) selection.setRight(1.0/fs);
     if(selection.right()>gMW->getMaxLastSampleTime()) selection.setRight(gMW->getMaxLastSampleTime());
 
+    double twinend = selection.right();
+    if(gMW->m_gvAmplitudeSpectrum->m_dlgSettings->ui->cbAmplitudeSpectrumLimitWindowDuration->isChecked()
+       && (twinend-selection.left())>gMW->m_gvAmplitudeSpectrum->m_dlgSettings->ui->sbAmplitudeSpectrumWindowDurationLimit->value())
+        twinend = selection.left()+gMW->m_gvAmplitudeSpectrum->m_dlgSettings->ui->sbAmplitudeSpectrumWindowDurationLimit->value();
+
+//    if(m_aWaveformStickToSTFTWindows->isChecked()){
+//        selection.setLeft();
+//        selection.setRight(selection.left()+);
+//    }
+
     // Adjust parity of the window size according to option
     int nl = std::max(0, int(0.5+selection.left()*fs));
-    int nr = int(0.5+std::min(gMW->getMaxLastSampleTime(),selection.right())*fs);
+    int nr = int(0.5+std::min(gMW->getMaxLastSampleTime(),twinend)*fs);
     int winlen = nr-nl+1;
     if(winlen%2==0 && gMW->m_gvAmplitudeSpectrum->m_dlgSettings->ui->cbAmplitudeSpectrumWindowSizeForcedOdd->isChecked()) {
         if(action==CAModifSelectionLeft)
@@ -1051,6 +1069,24 @@ void QGVWaveform::fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseS
                 selection.setRight(selection.right()-1.0/fs);
             else
                 selection.setLeft(selection.left()+1.0/fs);
+        }
+    }
+
+    // Set window's center to STFT's analysis instants
+    if(m_aWaveformStickToSTFTWindows->isChecked()){
+        FTSound* cursnd = gMW->getCurrentFTSound(true);
+        if(cursnd){
+//            double wincenter = selection.left() + (winlen-1)/2.0/gMW->getFs();
+//            int si = int((wincenter*gMW->getFs()-1 - (cursnd->m_stftparams.win.size()-1)/2.0) / cursnd->m_stftparams.stepsize + 0.5);
+//            si = std::min(std::max(0, si), int(cursnd->m_stftts.size())-1);
+//            double dt = (si*cursnd->m_stftparams.stepsize + (cursnd->m_stftparams.win.size()-1)/2.0)/gMW->getFs()  -  wincenter;
+//            selection.setLeft(selection.left()+dt);
+//            selection.setRight(selection.right()+dt);
+
+            int si = int((selection.center().x()*gMW->getFs()-1 - (cursnd->m_stftparams.win.size()-1)/2.0) / cursnd->m_stftparams.stepsize + 0.5);
+            si = std::min(std::max(0, si), int(cursnd->m_stftts.size())-1);
+            selection.setLeft((si*cursnd->m_stftparams.stepsize)/gMW->getFs());
+            selection.setRight((si*cursnd->m_stftparams.stepsize + cursnd->m_stftparams.win.size()-1)/gMW->getFs());
         }
     }
 }
@@ -1233,16 +1269,23 @@ void QGVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
 
     // Plot STFT's window centers
     if(m_aWaveformShowSTFTWindowCenters->isChecked()){
-        FTSound* currentftsound = gMW->getCurrentFTSound(true);
-        if(currentftsound && currentftsound->m_actionShow->isChecked()){
+        FTSound* cursnd = gMW->getCurrentFTSound(true);
+        if(cursnd && cursnd->m_actionShow->isChecked()){
             QPen outlinePen(QColor(192, 192, 192)); // currentftsound->color
             outlinePen.setStyle(Qt::DashLine);
             outlinePen.setWidth(0);
             painter->setPen(outlinePen);
 //            painter->setBrush(QBrush(gMW->ftlabels[fi]->color));
 
-            for(size_t wci=0; wci<currentftsound->m_stftts.size(); wci++){
-                painter->drawLine(QLineF(currentftsound->m_stftts[wci], -1.0, currentftsound->m_stftts[wci], 1.0));
+            for(size_t wci=0; wci<cursnd->m_stftts.size(); wci++){
+                painter->drawLine(QLineF(cursnd->m_stftts[wci], -1.0, cursnd->m_stftts[wci], 1.0));
+
+////                int si = int((center.x()*gMW->getFs()-1 - (winlen-1)/2.0) / cursnd->m_stftparams.stepsize + 0.5);
+////                COUTD << "si=" << si << " center=" << center.x() << "=>" << (si*cursnd->m_stftparams.stepsize + (winlen-1)/2.0)/gMW->getFs() << endl;
+////                COUTD << cursnd->m_stftparams.stepsize << endl;
+//                double t = (wci*cursnd->m_stftparams.stepsize + (winlen-1)/2.0)/gMW->getFs();
+////                COUTD << dt << endl;
+//                painter->drawLine(QLineF(t, -1.0, t, 1.0));
             }
         }
     }

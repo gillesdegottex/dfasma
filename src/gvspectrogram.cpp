@@ -874,7 +874,7 @@ void QGVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
     if(m_selection.top()<m_scene->sceneRect().top()) m_selection.setTop(m_scene->sceneRect().top());
     if(m_selection.bottom()>m_scene->sceneRect().bottom()) m_selection.setBottom(m_scene->sceneRect().bottom());
 
-    QGVWaveform::fixTimeLimitsToSamples(m_selection, m_mouseSelection, m_currentAction);
+    gMW->m_gvWaveform->fixTimeLimitsToSamples(m_selection, m_mouseSelection, m_currentAction);
 
     m_giShownSelection->setRect(m_selection.left()-0.5/fs, m_selection.top(), m_selection.width()+1.0/fs, m_selection.height());
     m_giShownSelection->show();
