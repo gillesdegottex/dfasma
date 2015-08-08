@@ -224,13 +224,13 @@ void FileType::setEditing(bool editing){
     }
 }
 
-void FileType::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
+void FileType::fillContextMenu(QMenu& contextmenu) {
     contextmenu.addAction(m_actionShow);
-    contextmenu.addAction(mainwindow->ui->actionSelectedFilesReload);
-    contextmenu.addAction(mainwindow->ui->actionSelectedFilesDuplicate);
+    contextmenu.addAction(gMW->ui->actionSelectedFilesReload);
+    contextmenu.addAction(gMW->ui->actionSelectedFilesDuplicate);
     QColorDialog* colordialog = new QColorDialog(&contextmenu); // TODO delete this !!!
-    QObject::connect(colordialog, SIGNAL(colorSelected(const QColor &)), gMW, SLOT(colorSelected(const QColor &)));
-//    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), gMW, SLOT(colorSelected(const QColor &)));
+    QObject::connect(colordialog, SIGNAL(colorSelected(const QColor &)), gFL, SLOT(colorSelected(const QColor &)));
+//    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), gFL, SLOT(colorSelected(const QColor &)));
 //    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), gMW->m_gvSpectrum, SLOT(allSoundsChanged()));
 
     // Add the available Matlab colors to the custom colors
@@ -239,7 +239,7 @@ void FileType::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
         QColorDialog::setCustomColor(ci, (*it));
 
     contextmenu.addAction("Color...", colordialog, SLOT(exec()));
-    contextmenu.addAction(mainwindow->ui->actionSelectedFilesClose);
+    contextmenu.addAction(gMW->ui->actionSelectedFilesClose);
     contextmenu.addSeparator();
 }
 

@@ -73,7 +73,7 @@ public:
     virtual void setColor(const QColor& _color);
     virtual void updateIcon();
     virtual double getLastSampleTime() const =0;
-    virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
+    virtual void fillContextMenu(QMenu& contextmenu);
     virtual FileType* duplicate();
     void setEditing(bool editing);
 

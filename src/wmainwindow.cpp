@@ -78,16 +78,14 @@ WMainWindow* gMW = NULL;
 
 WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     : QMainWindow(parent)
-    , m_lastSelectedSound(NULL)
+    , m_last_file_editing(NULL)
     , m_lastFilteredSound(NULL)
-    , m_prgdlg(NULL)
     , m_dlgSettings(NULL)
     , ui(new Ui::WMainWindow)
     , m_gvWaveform(NULL)
     , m_gvAmplitudeSpectrum(NULL)
     , m_gvPhaseSpectrum(NULL)
     , m_gvSpectrogram(NULL)
-    , m_last_file_editing(NULL)
     , m_audioengine(NULL)
     , m_playingftsound(NULL)
 { 
@@ -116,15 +114,15 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     m_dlgSettings->adjustSize();
 
     ui->mainToolBar->setIconSize(QSize(1.5*m_dlgSettings->ui->sbViewsToolBarSizes->value(),1.5*m_dlgSettings->ui->sbViewsToolBarSizes->value()));
-    connect(m_dlgSettings->ui->sbFileListItemSize, SIGNAL(valueChanged(int)), this, SLOT(changeFileListItemsSize()));
-    changeFileListItemsSize();
+    connect(m_dlgSettings->ui->sbFileListItemSize, SIGNAL(valueChanged(int)), gFL, SLOT(changeFileListItemsSize()));
+    m_fileslist->changeFileListItemsSize();
 
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(execAbout()));
-    connect(ui->actionSelectedFilesReload, SIGNAL(triggered()), this, SLOT(selectedFilesReload()));
-    connect(ui->actionSelectedFilesToggleShown, SIGNAL(triggered()), this, SLOT(selectedFilesToggleShown()));
-    connect(ui->actionSelectedFilesClose, SIGNAL(triggered()), this, SLOT(selectedFilesClose()));
-    connect(ui->actionSelectedFilesDuplicate, SIGNAL(triggered()), this, SLOT(selectedFilesDuplicate()));
-    connect(ui->actionSelectedFilesSave, SIGNAL(triggered()), this, SLOT(selectedFilesSave()));
+    connect(ui->actionSelectedFilesReload, SIGNAL(triggered()), gFL, SLOT(selectedFilesReload()));
+    connect(ui->actionSelectedFilesToggleShown, SIGNAL(triggered()), gFL, SLOT(selectedFilesToggleShown()));
+    connect(ui->actionSelectedFilesClose, SIGNAL(triggered()), gFL, SLOT(selectedFilesClose()));
+    connect(ui->actionSelectedFilesDuplicate, SIGNAL(triggered()), gFL, SLOT(selectedFilesDuplicate()));
+    connect(ui->actionSelectedFilesSave, SIGNAL(triggered()), gFL, SLOT(selectedFilesSave()));
 
     m_globalWaitingBarLabel = new QLabel(ui->statusBar);
     m_globalWaitingBarLabel->setAlignment(Qt::AlignRight);
@@ -144,7 +142,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     m_fileslist->setAcceptDrops(true);
     m_fileslist->setSelectionRectVisible(false);
     m_fileslist->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(m_fileslist, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showFileContextMenu(const QPoint&)));
+    connect(m_fileslist, SIGNAL(customContextMenuRequested(const QPoint&)), gFL, SLOT(showFileContextMenu(const QPoint&)));
 
     ui->actionAbout->setIcon(QIcon(":/icons/about.svg"));
     ui->actionSettings->setIcon(QIcon(":/icons/settings.svg"));
@@ -161,7 +159,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     connect(ui->actionSettings, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
     ui->actionSelectionMode->setChecked(true);
     connectModes();
-    connect(m_fileslist, SIGNAL(itemSelectionChanged()), this, SLOT(fileSelectionChanged()));
+    connect(m_fileslist, SIGNAL(itemSelectionChanged()), gFL, SLOT(fileSelectionChanged()));
     addAction(ui->actionSelectedFilesToggleShown);
     addAction(ui->actionSelectedFilesReload);
     addAction(ui->actionSelectedFilesDuplicate);
@@ -295,7 +293,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 
     // This one seems able to open distant files because file paths arrive in gvfs format
     // in the main.
-    addFiles(files);
+    m_fileslist->addFiles(files);
     updateViewsAfterAddFile(true);
 
     if(files.size()>0)
@@ -313,7 +311,7 @@ WMainWindow::~WMainWindow() {
     m_gvAmplitudeSpectrum->m_fftresizethread->cancelComputation(true);
 
     m_fileslist->selectAll();
-    selectedFilesClose();
+    m_fileslist->selectedFilesClose();
 
     // The audio player
     if(m_audioengine){
@@ -332,18 +330,6 @@ WMainWindow::~WMainWindow() {
 }
 
 // Interface ===================================================================
-
-void WMainWindow::changeFileListItemsSize() {
-//    COUTD << m_dlgSettings->ui->sbFileListItemSize->value() << endl;
-
-    QFont font = m_fileslist->font();
-    font.setPixelSize(m_dlgSettings->ui->sbFileListItemSize->value());
-    QSize size = m_fileslist->iconSize();
-    size.setHeight(m_dlgSettings->ui->sbFileListItemSize->value()+2);
-    size.setWidth(m_dlgSettings->ui->sbFileListItemSize->value()+2);
-    m_fileslist->setIconSize(size);
-    m_fileslist->setFont(font);
-}
 
 void WMainWindow::changeToolBarSizes(int size) {
     gMW->m_gvWaveform->m_toolBar->setIconSize(QSize(size,size));
@@ -366,15 +352,6 @@ void WMainWindow::execAbout(){
 }
 
 // File management =======================================================
-
-void WMainWindow::stopFileProgressDialog() {
-//    COUTD << "WMainWindow::stopFileProgressDialog " << m_prgdlg << endl;
-    if(m_prgdlg){
-        m_prgdlg->setValue(m_prgdlg->maximum());// Stop the loading bar
-        m_prgdlg->hide();
-    }
-    QCoreApplication::processEvents(); // To show the progress
-}
 
 void WMainWindow::newFile(){
     QMessageBox::StandardButton btn = QMessageBox::question(this, "Create a new file ...", "Do you want to create an empty label file?", QMessageBox::Yes | QMessageBox::No);
@@ -421,8 +398,8 @@ void WMainWindow::openFile() {
 //    QStringList l = dlg.selectedFiles();
 
     if(files.size()>0) {
-        bool isfirsts = ftsnds.size()==0;
-        addFiles(files, type);
+        bool isfirsts = m_fileslist->ftsnds.size()==0;
+        m_fileslist->addFiles(files, type);
         updateViewsAfterAddFile(isfirsts);
     }
 }
@@ -439,170 +416,12 @@ void WMainWindow::dropEvent(QDropEvent *event){
         files.append(lurl[lurli].toLocalFile());
 //        files.append(lurl[lurli].url());
 
-    bool isfirsts = ftsnds.size()==0;
-    addFiles(files);
+    bool isfirsts = m_fileslist->ftsnds.size()==0;
+    m_fileslist->addFiles(files);
     updateViewsAfterAddFile(isfirsts);
 }
 void WMainWindow::dragEnterEvent(QDragEnterEvent *event){
     event->acceptProposedAction();
-}
-
-void WMainWindow::addFilesRecursive(const QStringList& files, FileType::FType type) {
-    for(int fi=0; fi<files.size() && !m_prgdlg->wasCanceled(); fi++) {
-        if(QFileInfo(files[fi]).isDir()) {
-//            COUTD << "Add recursive" << endl;
-            QDir fpd(files[fi]);
-
-            // Recursive call on directories
-            fpd.setFilter(QDir::AllDirs | QDir::NoDotAndDotDot);
-            if(fpd.count()>0){
-                for(int fpdi=0; fpdi<int(fpd.count()) && !m_prgdlg->wasCanceled(); ++fpdi){
-//                    COUTD << "Dir: " << fpd[fpdi].toLatin1().constData() << endl;
-                    addFilesRecursive(QStringList(fpd.filePath(fpd[fpdi])));
-                }
-            }
-
-            // Add the files of the current directory
-            fpd.setFilter(QDir::Files | QDir::NoDotAndDotDot);
-            if(fpd.count()>0){
-                m_prgdlg->setMaximum(fpd.count());
-//                COUTD << "Setmax " << fpd.count() << endl;
-                for(int fpdi=0; fpdi<int(fpd.count()) && !m_prgdlg->wasCanceled(); ++fpdi){
-//                    COUTD << "File: " << fpd[fpdi].toLatin1().constData() << endl;
-                    m_prgdlg->setValue(fpdi);
-                    QCoreApplication::processEvents(); // To show the progress
-                    addFile(fpd.filePath(fpd[fpdi]));
-                }
-            }
-        }
-        else {
-            if(m_prgdlg) m_prgdlg->setValue(fi);
-            QCoreApplication::processEvents(); // To show the progress
-            addFile(files[fi], type);
-        }
-    }
-}
-
-void WMainWindow::addFiles(const QStringList& files, FileType::FType type) {
-//    COUTD << "WMainWindow::addFiles " << files.size() << endl;
-
-    // These progress dialogs HAVE to be built on the stack otherwise ghost dialogs appear.
-    QProgressDialog prgdlg("Opening files...", "Abort", 0, files.size(), this);
-    prgdlg.setMinimumDuration(500);
-    m_prgdlg = &prgdlg;
-
-    addFilesRecursive(files, type);
-
-    stopFileProgressDialog();
-    m_prgdlg = NULL;
-}
-
-void WMainWindow::addFile(const QString& filepath, FileType::FType type) {
-//    cout << "INFO: Add file: " << filepath.toLocal8Bit().constData() << endl;
-
-    if(QFileInfo(filepath).isDir())
-        throw QString("Shoudn't use WMainWindow::addFile for directories, use WMainWindow::addFiles instead (with an 's')");
-
-    try{
-        bool isfirsts = ftsnds.size()==0;
-
-        // Attention: There is the type of data stored in DFasma (FILETYPE) (ex. FileType::FTSOUND)
-        //  and the format of the file (ex. FFSOUND)
-
-        // This should be always "guessable"
-        FileType::FileContainer container = FileType::guessContainer(filepath);
-
-        // can be replaced by an autodetect or "forced mode" in the future
-
-        // Then, guess the type of the data in the file, if no specified yet
-        if(type==FileType::FTUNSET){
-        // The format and the DFasma's type have to correspond
-            if(container==FileType::FCANYSOUND)
-                type = FileType::FTSOUND; // These two have to match
-
-            #ifdef SUPPORT_SDIF
-            if(container==FileType::FCSDIF) {
-                if(FileType::SDIF_hasFrame(filepath, "1FQ0"))
-                    type = FileType::FTFZERO;
-                else if (FileType::SDIF_hasFrame(filepath, "1MRK"))
-                    type = FileType::FTLABELS;
-                else
-                    throw QString("Unsupported SDIF data.");
-            }
-            #endif
-            if(container==FileType::FCTEXT) {
-                // Distinguish between f0, labels and future VUF files (and futur others ...)
-                // Do a grammar check (But this won't help to diff F0 and VUF files)
-                ifstream fin(filepath.toLatin1().constData());
-                if(!fin.is_open())
-                    throw QString("Cannot open this file");
-                double t;
-                string line, text;
-                // Check the first line only (Assuming it is enough)
-                // TODO May have to skip commented lines depending on the text format
-                if(!std::getline(fin, line))
-                    throw QString("There is not a single line in this file");
-                // Check: <number> <number>
-                std::istringstream iss(line);
-                // Check if first two values are real numbers
-                // TODO This will NOT work to distinguish F0 or VUF !!
-                if((iss >> t >> t) && iss.eof())
-                    type = FileType::FTFZERO;
-                else // Otherwise, assume this is a label
-                    type = FileType::FTLABELS;
-            }
-        }
-
-        if(type==FileType::FTUNSET)
-            throw QString("Cannot find any data or audio channel in this file that is handled by this distribution of DFasma.");
-
-        // Finally, load the data knowing the type and the container
-        if(type==FileType::FTSOUND){
-            int nchan = FTSound::getNumberOfChannels(filepath);
-            if(nchan==1){
-                // If there is only one channel, just load it
-                m_fileslist->addItem(new FTSound(filepath, this));
-            }
-            else{
-                // If more than one channel, ask what to do
-                stopFileProgressDialog();
-                WDialogSelectChannel dlg(filepath, nchan, this);
-                if(dlg.exec()) {
-                    if(dlg.ui->rdbImportEachChannel->isChecked()){
-                        for(int ci=1; ci<=nchan; ci++){
-                            m_fileslist->addItem(new FTSound(filepath, this, ci));
-                        }
-                    }
-                    else if(dlg.ui->rdbImportOnlyOneChannel->isChecked()){
-                        m_fileslist->addItem(new FTSound(filepath, this, dlg.ui->sbChannelID->value()));
-                    }
-                    else if(dlg.ui->rdbMergeAllChannels->isChecked()){
-                        m_fileslist->addItem(new FTSound(filepath, this, -2));// -2 is a code for merging the channels
-                    }
-                }
-            }
-
-            if(ftsnds.size()>0){
-                // The first sound determines the common sampling frequency for the audio output
-                if(isfirsts)
-                    initializeSoundSystem(ftsnds[0]->fs);
-
-                m_gvWaveform->fitViewToSoundsAmplitude();
-            }
-        }
-        else if(type == FileType::FTFZERO)
-            m_fileslist->addItem(new FTFZero(filepath, this, container));
-        else if(type == FileType::FTLABELS)
-            m_fileslist->addItem(new FTLabels(filepath, this, container));
-    }
-    catch (QString err)
-    {
-        stopFileProgressDialog();
-        QMessageBox::StandardButton ret=QMessageBox::warning(this, "Failed to load file ...", "Data from the following file can't be loaded:\n"+filepath+"'\n\nReason:\n"+err, QMessageBox::Ok | QMessageBox::Abort, QMessageBox::Ok);
-        if(ret==QMessageBox::Abort)
-            if(m_prgdlg)
-                m_prgdlg->cancel();
-    }
 }
 
 // Views =======================================================================
@@ -644,49 +463,6 @@ void WMainWindow::viewsDisplayedChanged() {
         m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     gMW->m_gvAmplitudeSpectrum->selectionSetTextInForm();
-}
-
-double WMainWindow::getFs(){
-    if(ftsnds.size()>0)
-        return ftsnds[0]->fs;
-    else
-        return 44100.0;   // Fake a ghost sound using 44.1kHz sampling rate
-}
-unsigned int WMainWindow::getMaxWavSize(){
-
-    if(ftsnds.empty())
-        return 44100;      // Fake a one second ghost sound of 44.1kHz sampling rate
-
-    unsigned int s = 0;
-
-    for(unsigned int fi=0; fi<ftsnds.size(); fi++)
-        s = max(s, (unsigned int)(ftsnds[fi]->wav.size()));
-
-    return s;
-}
-double WMainWindow::getMaxDuration(){
-
-    double dur = getMaxWavSize()/getFs();
-
-    for(unsigned int fi=0; fi<ftfzeros.size(); fi++)
-        dur = std::max(dur, ftfzeros[fi]->getLastSampleTime());
-
-    for(unsigned int fi=0; fi<ftlabels.size(); fi++)
-        dur = std::max(dur, ftlabels[fi]->getLastSampleTime());
-
-    return dur;
-}
-double WMainWindow::getMaxLastSampleTime(){
-
-    double lst = getMaxDuration()-1.0/getFs();
-
-    for(unsigned int fi=0; fi<ftfzeros.size(); fi++)
-        lst = std::max(lst, ftfzeros[fi]->getLastSampleTime());
-
-    for(unsigned int fi=0; fi<ftlabels.size(); fi++)
-        lst = std::max(lst, ftlabels[fi]->getLastSampleTime());
-
-    return lst;
 }
 
 void WMainWindow::keyPressEvent(QKeyEvent* event){
@@ -736,10 +512,10 @@ void WMainWindow::keyPressEvent(QKeyEvent* event){
     }
     else{
         if(event->key()==Qt::Key_Escape){
-            FTSound* currentftsound = getCurrentFTSound();
+            FTSound* currentftsound = m_fileslist->getCurrentFTSound();
             if(currentftsound && currentftsound->isFiltered()) {
                 currentftsound->resetFiltering();
-                gMW->fileInfoUpdate();
+                gFL->fileInfoUpdate();
             }
         }
     }
@@ -840,16 +616,15 @@ void WMainWindow::setEditing(FileType *ft){
 }
 
 void WMainWindow::setLabelsEditable(bool editable){
-    for(size_t fi=0; fi<ftlabels.size(); fi++){
-        for(size_t li=0; li<ftlabels[fi]->waveform_labels.size(); li++){
+    for(size_t fi=0; fi<m_fileslist->ftlabels.size(); fi++){
+        for(size_t li=0; li<m_fileslist->ftlabels[fi]->waveform_labels.size(); li++){
             if(editable)
-                ftlabels[fi]->waveform_labels[li]->setTextInteractionFlags(Qt::TextEditorInteraction);
+                m_fileslist->ftlabels[fi]->waveform_labels[li]->setTextInteractionFlags(Qt::TextEditorInteraction);
             else
-                ftlabels[fi]->waveform_labels[li]->setTextInteractionFlags(Qt::NoTextInteraction);
+                m_fileslist->ftlabels[fi]->waveform_labels[li]->setTextInteractionFlags(Qt::NoTextInteraction);
         }
     }
 }
-
 
 void WMainWindow::enterScrollHandDragMode(){
     m_gvWaveform->setDragMode(QGraphicsView::ScrollHandDrag);
@@ -882,155 +657,9 @@ void WMainWindow::focusWindowChanged(QWindow* win){
     else
         leaveScrollHandDragMode();
 
-    checkFileModifications();
+    m_fileslist->checkFileModifications();
 }
 
-// Check if a file has been modified on the disc
-// TODO Check if this is a distant file and avoid checking if it is ?
-void WMainWindow::checkFileModifications(){
-//    cout << "GET FOCUS " << QDateTime::currentMSecsSinceEpoch() << endl;
-    for(size_t fi=0; fi<ftsnds.size(); fi++)
-        ftsnds[fi]->checkFileStatus();
-    for(size_t fi=0; fi<ftfzeros.size(); fi++)
-        ftfzeros[fi]->checkFileStatus();
-    for(size_t fi=0; fi<ftlabels.size(); fi++)
-        ftlabels[fi]->checkFileStatus();
-
-    gMW->fileInfoUpdate();
-}
-
-
-FTSound* WMainWindow::getCurrentFTSound(bool forceselect) {
-
-    if(ftsnds.empty())
-        return NULL;
-
-    FileType* currenItem = m_fileslist->currentFile();
-
-    if(currenItem && currenItem->type==FileType::FTSOUND)
-        return (FTSound*)currenItem;
-
-    if(forceselect){
-        if(m_lastSelectedSound)
-            return m_lastSelectedSound;
-        else
-            return ftsnds[0];
-    }
-
-    return NULL;
-}
-
-FTLabels* WMainWindow::getCurrentFTLabels(bool forceselect) {
-
-    if(ftlabels.empty())
-        return NULL;
-
-    FileType* currenItem = m_fileslist->currentFile();
-
-    if(currenItem && currenItem->type==FileType::FTLABELS)
-        return (FTLabels*)currenItem;
-
-    if(forceselect)
-        return ftlabels[0];
-
-    return NULL;
-}
-
-
-void WMainWindow::showFileContextMenu(const QPoint& pos) {
-
-    QMenu contextmenu(this);
-
-    QList<QListWidgetItem*> l = m_fileslist->selectedItems();
-    if(l.size()==1) {
-        FileType* currenItem = m_fileslist->currentFile();
-        currenItem->fillContextMenu(contextmenu, this);
-    }
-    else {
-        contextmenu.addAction(ui->actionSelectedFilesToggleShown);
-        contextmenu.addAction(ui->actionSelectedFilesReload);
-        contextmenu.addAction(ui->actionSelectedFilesClose);
-    }
-
-    int contextmenuheight = contextmenu.sizeHint().height();
-    QPoint posglobal = mapToGlobal(pos)+QPoint(24,contextmenuheight/2);
-    contextmenu.exec(posglobal);
-}
-
-void WMainWindow::fileSelectionChanged() {
-//    COUTD << "WMainWindow::fileSelectionChanged" << endl;
-
-    QList<QListWidgetItem*> list = m_fileslist->selectedItems();
-    int nb_snd_in_selection = 0;
-    int nb_labels_in_selection = 0;
-
-    for(int i=0; i<list.size(); i++) {
-        FileType* ft = ((FileType*)list.at(i));
-        if(ft->type == FileType::FTSOUND){
-            nb_snd_in_selection++;
-            m_lastSelectedSound = (FTSound*)ft;
-        }
-
-        if(ft->type == FileType::FTLABELS)
-            nb_labels_in_selection++;
-    }
-
-    // Update the spectrogram to current selected signal
-    if(nb_snd_in_selection>0){
-        if(m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop){
-            m_gvWaveform->m_scene->update();
-            m_gvAmplitudeSpectrum->m_scene->update();
-            m_gvPhaseSpectrum->m_scene->update();
-        }
-        m_gvSpectrogram->updateSTFTPlot();
-        m_gvSpectrogram->m_scene->update();
-    }
-
-    ui->actionSelectedFilesSave->setEnabled(nb_labels_in_selection>0);
-
-    fileInfoUpdate();
-
-//    COUTD << "WMainWindow::~fileSelectionChanged" << endl;
-}
-void WMainWindow::fileInfoUpdate() {
-    QList<QListWidgetItem*> list = m_fileslist->selectedItems();
-
-    // If only one file selected
-    // Display Basic information of it
-    if(list.size()==1) {
-        ui->lblFileInfo->setText(((FileType*)list.at(0))->info());
-        ui->lblFileInfo->show();
-    }
-    else
-        ui->lblFileInfo->hide();
-}
-
-// FileType is not an qobject, thus, need to forward the message manually (i.e. without signal system).
-void WMainWindow::colorSelected(const QColor& color) {
-    FileType* currenItem = (FileType*)(m_fileslist->currentItem());
-    if(currenItem)
-        currenItem->setColor(color);
-}
-void WMainWindow::resetAmpScale(){
-    FTSound* currentftsound = getCurrentFTSound();
-    if(currentftsound) {
-        currentftsound->m_ampscale = 1.0;
-
-        currentftsound->setStatus();
-
-        allSoundsChanged();
-    }
-}
-void WMainWindow::resetDelay(){
-    FTSound* currentftsound = getCurrentFTSound();
-    if(currentftsound) {
-        currentftsound->m_delay = 0.0;
-
-        currentftsound->setStatus();
-
-        allSoundsChanged();
-    }
-}
 
 void WMainWindow::allSoundsChanged(){
 //    COUTD << "WMainWindow::allSoundsChanged" << endl;
@@ -1041,131 +670,6 @@ void WMainWindow::allSoundsChanged(){
     m_gvSpectrogram->m_dlgSettings->checkImageSize();
     // m_gvSpectrogram->soundsChanged(); // Too heavy to be here, call updateSTFTPlot(force) instead
 //    COUTD << "WMainWindow::~allSoundsChanged" << endl;
-}
-
-void WMainWindow::selectedFilesToggleShown() {
-    QList<QListWidgetItem*> list = m_fileslist->selectedItems();
-    for(int i=0; i<list.size(); i++){
-        ((FileType*)list.at(i))->setVisible(!((FileType*)list.at(i))->m_actionShow->isChecked());
-        if(((FileType*)list.at(i))==m_lastSelectedSound)
-            m_gvSpectrogram->updateSTFTPlot();
-    }
-    m_gvWaveform->m_scene->update();
-    m_gvSpectrogram->m_scene->update();
-    m_gvAmplitudeSpectrum->updateDFTs();
-    m_gvAmplitudeSpectrum->m_scene->update();
-    m_gvPhaseSpectrum->m_scene->update();
-}
-
-void WMainWindow::selectedFilesClose() {
-    m_audioengine->stopPlayback();
-
-    QList<QListWidgetItem*> l = m_fileslist->selectedItems();
-    m_fileslist->clearSelection();
-
-    bool removeSelectedSound = false;
-
-    for(int i=0; i<l.size(); i++){
-
-        FileType* ft = (FileType*)l.at(i);
-
-//        cout << "INFO: Closing file: \"" << ft->fileFullPath.toLocal8Bit().constData() << "\"" << endl;
-
-        delete ft; // Remove it from the listview
-
-        // Remove it from its own type-related list
-        if(ft->type==FileType::FTSOUND){
-            if(ft==m_lastSelectedSound){
-                removeSelectedSound = true;
-                m_lastSelectedSound = NULL;
-            }
-            ftsnds.erase(std::find(ftsnds.begin(), ftsnds.end(), (FTSound*)ft));
-        }
-        else if(ft->type==FileType::FTFZERO)
-            ftfzeros.erase(std::find(ftfzeros.begin(), ftfzeros.end(), (FTFZero*)ft));
-        else if(ft->type==FileType::FTLABELS)
-            ftlabels.erase(std::find(ftlabels.begin(), ftlabels.end(), (FTLabels*)ft));
-    }
-
-    updateWindowTitle();
-
-    if(m_gvWaveform->m_scene->sceneRect().right()>gMW->getMaxDuration()+1.0/gMW->getFs()) {
-        m_gvWaveform->updateSceneRect();
-        m_gvSpectrogram->updateSceneRect();
-        m_gvWaveform->setMouseCursorPosition(-1, true);
-        m_gvWaveform->viewSet(m_gvWaveform->m_scene->sceneRect(), true);
-    }
-
-    if(removeSelectedSound)
-        m_gvSpectrogram->clearSTFTPlot();
-
-    // If there is no more files, put the interface in a waiting-for-file state.
-    if(m_fileslist->count()==0)
-        setInWaitingForFileState();
-    else
-        allSoundsChanged();
-}
-
-void WMainWindow::selectedFilesReload() {
-//    COUTD << "WMainWindow::selectedFileReload" << endl;
-
-    m_audioengine->stopPlayback();
-
-    QList<QListWidgetItem*> l = m_fileslist->selectedItems();
-
-    bool reloadSelectedSound = false;
-    bool didanysucceed = false;
-
-    for(int i=0; i<l.size(); i++) {
-
-        FileType* ft = (FileType*)l.at(i);
-
-        if(ft->reload())
-            didanysucceed = true;
-
-        if(ft==m_lastSelectedSound)
-            reloadSelectedSound = true;
-    }
-
-    fileInfoUpdate();
-
-    if(didanysucceed && reloadSelectedSound) {
-        m_gvWaveform->m_scene->update();
-        m_gvAmplitudeSpectrum->updateDFTs();
-        m_gvSpectrogram->updateSTFTPlot(true); // Force the STFT computation
-    }
-
-//    COUTD << "WMainWindow::~selectedFileReload" << endl;
-}
-
-void WMainWindow::selectedFilesDuplicate() {
-    QList<QListWidgetItem*> l = m_fileslist->selectedItems();
-
-    for(int i=0; i<l.size(); i++) {
-        FileType* currentfile = (FileType*)l.at(i);
-
-        FileType* ft = currentfile->duplicate();
-        if(ft){
-            m_fileslist->addItem(ft);
-            m_gvWaveform->updateSceneRect();
-            allSoundsChanged();
-            ui->actionSelectedFilesClose->setEnabled(true);
-            ui->actionSelectedFilesReload->setEnabled(true);
-            ui->splitterViews->show();
-            updateWindowTitle();
-        }
-    }
-}
-
-void WMainWindow::selectedFilesSave() {
-    QList<QListWidgetItem*> l = m_fileslist->selectedItems();
-
-    for(int i=0; i<l.size(); i++) {
-        FileType* currentfile = (FileType*)l.at(i);
-
-        if(currentfile->type==FileType::FTLABELS)
-            ((FTLabels*)currentfile)->save();
-    }
 }
 
 // Put the program into a waiting-for-sound-files state
@@ -1274,7 +778,7 @@ void WMainWindow::play()
         // DEBUGSTRING << "MainWindow::play QAudio::IdleState || QAudio::StoppedState" << endl;
 
             // If stopped, play the whole signal or its selection
-            FTSound* currentftsound = getCurrentFTSound(true);
+            FTSound* currentftsound = m_fileslist->getCurrentFTSound(true);
             if(currentftsound) {
 
                 // Start by reseting any previously filtered sounds
@@ -1284,14 +788,14 @@ void WMainWindow::play()
                 }
 
                 double tstart = m_gvWaveform->m_giPlayCursor->pos().x();
-                double tstop = getMaxLastSampleTime();
+                double tstop = gFL->getMaxLastSampleTime();
                 if(m_gvWaveform->m_selection.width()>0){
                     tstart = m_gvWaveform->m_selection.left();
                     tstop = m_gvWaveform->m_selection.right();
                 }
 
                 double fstart = 0.0;
-                double fstop = getFs();
+                double fstop = gFL->getFs();
                 if(QApplication::keyboardModifiers().testFlag(Qt::ControlModifier) &&
                     m_gvAmplitudeSpectrum->m_selection.width()>0){
                     fstart = m_gvAmplitudeSpectrum->m_selection.left();
@@ -1299,9 +803,9 @@ void WMainWindow::play()
                 }
 
                 try {
-                    if(fstart!=0.0 || fstop!=getFs()){
-                        for(size_t fi=0; fi<ftsnds.size(); fi++)
-                            ftsnds[fi]->setFiltered(false);
+                    if(fstart!=0.0 || fstop!=gFL->getFs()){
+                        for(size_t fi=0; fi<m_fileslist->ftsnds.size(); fi++)
+                            m_fileslist->ftsnds[fi]->setFiltered(false);
                         currentftsound->setFiltered(true);
                         m_lastFilteredSound = currentftsound;
                     }
@@ -1316,13 +820,13 @@ void WMainWindow::play()
                     m_gvWaveform->m_initialPlayPosition = tstart;
                     m_playingftsound = currentftsound;
                     m_audioengine->startPlayback(currentftsound, tstart, tstop, fstart, fstop);
-                    fileInfoUpdate();
+                    gFL->fileInfoUpdate();
 
-                    if(fstart!=0.0 || fstop!=getFs()) {
+                    if(fstart!=0.0 || fstop!=gFL->getFs()) {
                         if(m_gvWaveform->m_giSelection->rect().width()>0)
                             m_gvWaveform->m_giFilteredSelection->setRect(m_gvWaveform->m_giSelection->rect());
                         else
-                            m_gvWaveform->m_giFilteredSelection->setRect(-0.5/getFs(), -1.0, currentftsound->getLastSampleTime()+1.0/getFs(), 2.0);
+                            m_gvWaveform->m_giFilteredSelection->setRect(-0.5/gFL->getFs(), -1.0, currentftsound->getLastSampleTime()+1.0/gFL->getFs(), 2.0);
                         m_gvWaveform->m_giFilteredSelection->show();
                     }
                     else {

@@ -46,17 +46,17 @@ GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(QGVSpectrogram* paren
 
 void GVSpectrogramWDialogSettings::checkImageSize() {
 
-    int maxsampleindex = int(gMW->getMaxWavSize())-1;
+    int maxsampleindex = int(gFL->getMaxWavSize())-1;
 
-    int stepsize = std::floor(0.5+gMW->getFs()*ui->sbSpectrogramStepSize->value());//[samples]
-    int winlen = std::floor(0.5+gMW->getFs()*ui->sbSpectrogramWindowSize->value());
+    int stepsize = std::floor(0.5+gFL->getFs()*ui->sbSpectrogramStepSize->value());//[samples]
+    int winlen = std::floor(0.5+gFL->getFs()*ui->sbSpectrogramWindowSize->value());
     if(winlen%2==0 && ui->cbSpectrogramWindowSizeForcedOdd->isChecked())
         winlen++;
     int dftlen = pow(2, std::ceil(log2(float(winlen)))+ui->sbSpectrogramOversamplingFactor->value());//[samples]
 
-    ui->lblActualWindowLength->setText(QString("%2s(%1)").arg(winlen).arg(double(winlen)/gMW->getFs()));
+    ui->lblActualWindowLength->setText(QString("%2s(%1)").arg(winlen).arg(double(winlen)/gFL->getFs()));
     ui->lblDFTSize->setText(QString("DFT size=%1").arg(dftlen));
-    ui->lblActualStepSize->setText(QString("%2s(%1)").arg(stepsize).arg(double(stepsize)/gMW->getFs()));
+    ui->lblActualStepSize->setText(QString("%2s(%1)").arg(stepsize).arg(double(stepsize)/gFL->getFs()));
 
     int imgheight = dftlen/2+1;
     int imgwidth = int(1+double(maxsampleindex+1-winlen)/stepsize);

@@ -147,7 +147,7 @@ FTLabels::FTLabels(QObject *parent)
         setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.lab");
     m_fileformat = FFNotSpecified;
 
-    gMW->ftlabels.push_back(this);
+    gFL->ftlabels.push_back(this);
 }
 
 // Construct from an existing file name
@@ -171,7 +171,7 @@ FTLabels::FTLabels(const QString& _fileName, QObject* parent, FileType::FileCont
     checkFileStatus(CFSMEXCEPTION);
     load();
 
-    gMW->ftlabels.push_back(this);
+    gFL->ftlabels.push_back(this);
 }
 
 // Copy constructor
@@ -188,7 +188,7 @@ FTLabels::FTLabels(const FTLabels& ft)
     m_lastreadtime = ft.m_lastreadtime;
     m_modifiedtime = ft.m_modifiedtime;
 
-    gMW->ftlabels.push_back(this);
+    gFL->ftlabels.push_back(this);
 
     updateTextsGeometry();
 }
@@ -309,7 +309,7 @@ void FTLabels::load() {
         if(!data.open(QFile::ReadOnly))
             throw QString("FTLabel: Cannot open file");
 
-        double fs = gMW->getFs(); // Use the sampling frequency from the loaded files
+        double fs = gFL->getFs(); // Use the sampling frequency from the loaded files
         double startt, endt;
         QString line, text;
         QTextStream stream(&data);
@@ -590,12 +590,12 @@ void FTLabels::save() {
             if(li==starts.size()-1 && waveform_labels[li]->toPlainText()=="")
                 continue;
 
-            double last = starts[li] + 1.0/gMW->getFs(); // If not end, add a single sample to start
+            double last = starts[li] + 1.0/gFL->getFs(); // If not end, add a single sample to start
             if(li<starts.size()-1)
                 last = starts[li+1]; // Otherwise use next start, if not the last label
             else {
-                if(gMW->ftsnds.size()>0)
-                    last = gMW->getCurrentFTSound(true)->getLastSampleTime(); // Or last wav's sample time
+                if(gFL->ftsnds.size()>0)
+                    last = gFL->getCurrentFTSound(true)->getLastSampleTime(); // Or last wav's sample time
             }
             stream << starts[li] << " " << last << " " << waveform_labels[li]->toPlainText() << endl;
         }
@@ -605,7 +605,7 @@ void FTLabels::save() {
         if(!data.open(QFile::WriteOnly))
             throw QString("FTLabel: Cannot open file");
 
-        double fs = gMW->getFs();
+        double fs = gFL->getFs();
 
         QTextStream stream(&data);
         stream.setCodec(gMW->m_dlgSettings->ui->cbLabelsDefaultTextEncoding->currentText().toLatin1().constData());
@@ -615,12 +615,12 @@ void FTLabels::save() {
             if(li==starts.size()-1 && waveform_labels[li]->toPlainText()=="")
                 continue;
 
-            double last = starts[li] + 1.0/gMW->getFs(); // If not end, add a single sample to start
+            double last = starts[li] + 1.0/gFL->getFs(); // If not end, add a single sample to start
             if(li<starts.size()-1)
                 last = starts[li+1]; // Otherwise use next start, if not the last label
             else {
-                if(gMW->ftsnds.size()>0)
-                    last = gMW->getCurrentFTSound(true)->getLastSampleTime(); // Or last wav's sample time
+                if(gFL->ftsnds.size()>0)
+                    last = gFL->getCurrentFTSound(true)->getLastSampleTime(); // Or last wav's sample time
             }
             stream << int(fs*starts[li]) << " " << int(fs*last) << " " << waveform_labels[li]->toPlainText() << endl;
         }
@@ -638,12 +638,12 @@ void FTLabels::save() {
             if(li==starts.size()-1 && waveform_labels[li]->toPlainText()=="")
                 continue;
 
-            double last = starts[li] + 1.0/gMW->getFs(); // If not end, add a single sample to start
+            double last = starts[li] + 1.0/gFL->getFs(); // If not end, add a single sample to start
             if(li<starts.size()-1)
                 last = starts[li+1]; // Otherwise use next start, if not the last label
             else {
-                if(gMW->ftsnds.size()>0)
-                    last = gMW->getCurrentFTSound(true)->getLastSampleTime(); // Or last wav's sample time
+                if(gFL->ftsnds.size()>0)
+                    last = gFL->getCurrentFTSound(true)->getLastSampleTime(); // Or last wav's sample time
             }
             stream << int(0.5+1e7*starts[li]) << " " << int(0.5+1e7*last) << " " << waveform_labels[li]->toPlainText() << endl;
         }
@@ -710,8 +710,8 @@ QString FTLabels::info() const {
     return str;
 }
 
-void FTLabels::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
-    FileType::fillContextMenu(contextmenu, mainwindow);
+void FTLabels::fillContextMenu(QMenu& contextmenu) {
+    FileType::fillContextMenu(contextmenu);
 
     contextmenu.setTitle("Labels");
 
@@ -741,7 +741,7 @@ void FTLabels::updateTextsGeometry(){
     for(size_t u=0; u<starts.size(); ++u){
 
         double x = 0.0;
-        if(starts[u]>gMW->getMaxLastSampleTime()-24.0/waveform_trans.m11())
+        if(starts[u]>gFL->getMaxLastSampleTime()-24.0/waveform_trans.m11())
             x = -(waveform_labels[u]->boundingRect().width()-4)/waveform_trans.m11();
 
         QTransform mat1;
@@ -787,7 +787,7 @@ void FTLabels::addLabel(double position, const QString& text){
     waveform_lines.back()->setPen(pen);
     gMW->m_gvWaveform->m_scene->addItem(waveform_lines.back());
 
-    spectrogram_lines.push_back(new QGraphicsLineItem(0, 0, 0, gMW->getFs()));
+    spectrogram_lines.push_back(new QGraphicsLineItem(0, 0, 0, gFL->getFs()));
     spectrogram_lines.back()->setPos(position, 0);
     spectrogram_lines.back()->setPen(pen);
     gMW->m_gvSpectrogram->m_scene->addItem(spectrogram_lines.back());    

@@ -87,7 +87,7 @@ public:
 
     virtual QString info() const;
     virtual double getLastSampleTime() const;
-    virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
+    virtual void fillContextMenu(QMenu& contextmenu);
     virtual bool isModified() {return m_isedited;}
     void updateTextsGeometry();
 

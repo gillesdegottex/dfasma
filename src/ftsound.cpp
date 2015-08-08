@@ -167,13 +167,13 @@ void FTSound::init(){
     m_actionResetAmpScale->setStatusTip(tr("Reset the amplitude scaling to 1"));
     connect(m_actionResetAmpScale, SIGNAL(triggered()), this, SLOT(needDFTUpdate()));
     connect(m_actionResetAmpScale, SIGNAL(triggered()), this, SLOT(resetAmpScale()));
-    connect(m_actionResetAmpScale, SIGNAL(triggered()), gMW, SLOT(fileInfoUpdate()));
+    connect(m_actionResetAmpScale, SIGNAL(triggered()), gFL, SLOT(fileInfoUpdate()));
 
     m_actionResetDelay = new QAction("Reset the delay", this);
     m_actionResetDelay->setStatusTip(tr("Reset the delay to 0s"));
     connect(m_actionResetDelay, SIGNAL(triggered()), this, SLOT(needDFTUpdate()));
     connect(m_actionResetDelay, SIGNAL(triggered()), this, SLOT(resetDelay()));
-    connect(m_actionResetDelay, SIGNAL(triggered()), gMW, SLOT(fileInfoUpdate()));
+    connect(m_actionResetDelay, SIGNAL(triggered()), gFL, SLOT(fileInfoUpdate()));
 
     m_actionResetFiltering = new QAction("Remove filtering effects", this);
     m_actionResetFiltering->setStatusTip(tr("Reset to original signal without filtering effects"));
@@ -200,7 +200,7 @@ FTSound::FTSound(const QString& _fileName, QObject *parent, int channelid)
         }
     }
 
-    gMW->ftsnds.push_back(this);
+    gFL->ftsnds.push_back(this);
 
 //    QIODevice::open(QIODevice::ReadOnly);
 }
@@ -225,7 +225,7 @@ FTSound::FTSound(const FTSound& ft)
     m_lastreadtime = ft.m_lastreadtime;
     m_modifiedtime = ft.m_modifiedtime;
 
-    gMW->ftsnds.push_back(this);
+    gFL->ftsnds.push_back(this);
 }
 
 void FTSound::load_finalize() {
@@ -369,19 +369,19 @@ void FTSound::setAvoidClicksWindowDuration(double halfduration) {
         sm_avoidclickswindow[n] /= winmax;
 }
 
-void FTSound::fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow) {
+void FTSound::fillContextMenu(QMenu& contextmenu) {
 
-    FileType::fillContextMenu(contextmenu, mainwindow);
+    FileType::fillContextMenu(contextmenu);
 
     contextmenu.setTitle("Sound");
 
-    contextmenu.addAction(mainwindow->ui->actionPlay);
+    contextmenu.addAction(gMW->ui->actionPlay);
     contextmenu.addAction(m_actionResetFiltering);
     contextmenu.addAction(m_actionInvPolarity);
     m_actionResetAmpScale->setText(QString("Reset amplitude scaling (%1dB) to 0dB").arg(20*log10(m_ampscale), 0, 'g', 3));
     m_actionResetAmpScale->setDisabled(m_ampscale==1.0);
     contextmenu.addAction(m_actionResetAmpScale);
-    m_actionResetDelay->setText(QString("Reset delay (%1s) to 0s").arg(m_delay/mainwindow->getFs(), 0, 'g', gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()));
+    m_actionResetDelay->setText(QString("Reset delay (%1s) to 0s").arg(m_delay/gFL->getFs(), 0, 'g', gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()));
     m_actionResetDelay->setDisabled(m_delay==0);
     contextmenu.addAction(m_actionResetDelay);
 }

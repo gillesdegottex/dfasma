@@ -211,7 +211,7 @@ public:
 
     double getDuration() const {return wav.size()/fs;}
     virtual double getLastSampleTime() const;
-    virtual void fillContextMenu(QMenu& contextmenu, WMainWindow* mainwindow);
+    virtual void fillContextMenu(QMenu& contextmenu);
     virtual bool isModified();
     virtual void setStatus();
     virtual void setDrawIcon(QPixmap& pm);

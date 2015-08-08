@@ -64,21 +64,15 @@ class WMainWindow : public QMainWindow
 {
     Q_OBJECT
 
-    static WMainWindow* sm_mainwindow;
     bool m_loading;
 
-    FTSound* m_lastSelectedSound;
-    FTSound* m_lastFilteredSound;
-
-    void addFilesRecursive(const QStringList& files, FileType::FType type=FileType::FTUNSET);
-    QProgressDialog* m_prgdlg;
-    void stopFileProgressDialog();
+    FilesListWidget* m_fileslist;
+    FileType* m_last_file_editing;
 
     void connectModes();
     void disconnectModes();
-    FileType* m_last_file_editing;
 
-    void initializeSoundSystem(double fs);
+    FTSound* m_lastFilteredSound;
     QProgressBar* m_pbVolume;
 
 protected:
@@ -90,11 +84,6 @@ protected:
 private slots:
     void newFile();
     void openFile();
-    void selectedFilesClose();
-    void selectedFilesReload();
-    void selectedFilesToggleShown();
-    void selectedFilesDuplicate();
-    void selectedFilesSave();
 
     void play();
     void audioStateChanged(QAudio::State state);
@@ -102,14 +91,10 @@ private slots:
     void enablePlay();
     void localEnergyChanged(double);
 
-    void showFileContextMenu(const QPoint&);
-    void resetAmpScale();
-    void resetDelay();
     void setSelectionMode(bool checked);
     void setEditMode(bool checked);
     void setLabelsEditable(bool editable);
     void execAbout();
-    void fileSelectionChanged();
     void viewsDisplayedChanged();
     void changeToolBarSizes(int size);
     void enterScrollHandDragMode();
@@ -118,56 +103,40 @@ private slots:
 public slots:
     void focusWindowChanged(QWindow*win);
     void updateWindowTitle();
-    void fileInfoUpdate();
     void allSoundsChanged(); // TODO Should drop this
     void selectAudioOutputDevice(int di);
     void selectAudioOutputDevice(const QString& devicename);
     void audioEngineError(const QString &heading, const QString &detail);
-    void colorSelected(const QColor& color);
-    void checkFileModifications();
+
     void setInWaitingForFileState();
     void updateViewsAfterAddFile(bool isfirsts);
-    void changeFileListItemsSize();
     void setEditing(FileType* ft);
 
 public:
     explicit WMainWindow(QStringList files, QWidget* parent=0);
     ~WMainWindow();
-
-    FilesListWidget* m_fileslist;
+    bool isLoading() const {return m_loading;}
 
     QSettingsAuto m_settings;
     WDialogSettings* m_dlgSettings;
 
     Ui::WMainWindow* ui;
-    bool isLoading() const {return m_loading;}
 
     // Waiting bar for operations blocking the main window
-    // (The DFT resizing is NOT blocking because in a separate thread)
     QLabel* m_globalWaitingBarLabel;
     QProgressBar* m_globalWaitingBar;
 
-    void addFiles(const QStringList& files, FileType::FType type=FileType::FTUNSET);
-    void addFile(const QString& filepath, FileType::FType type=FileType::FTUNSET);
-    std::deque<FTSound*> ftsnds;
-    std::deque<FTFZero*> ftfzeros;
-    std::deque<FTLabels*> ftlabels;
-    FTSound* getCurrentFTSound(bool forceselect=false);
-    FTLabels* getCurrentFTLabels(bool forceselect=false);
-
-    double getFs();
-    unsigned int getMaxWavSize();
-    double getMaxDuration();
-    double getMaxLastSampleTime();
-
+    // Views
     QGVWaveform* m_gvWaveform;
     QGVAmplitudeSpectrum* m_gvAmplitudeSpectrum;
     QGVPhaseSpectrum* m_gvPhaseSpectrum;
     QGVSpectrogram* m_gvSpectrogram;
     QxtSpanSlider* m_qxtSpectrogramSpanSlider;
 
+    // Audio
     AudioEngine* m_audioengine;
     FTSound* m_playingftsound;
+    void initializeSoundSystem(double fs);
 };
 
 #endif // WMAINWINDOW_H

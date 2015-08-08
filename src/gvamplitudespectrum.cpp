@@ -122,7 +122,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_giCursorHoriz->setPen(cursorPen);
     m_giCursorHoriz->hide();
     m_scene->addItem(m_giCursorHoriz);
-    m_giCursorVert = new QGraphicsLineItem(0, 0, gMW->getFs()/2.0, 0);
+    m_giCursorVert = new QGraphicsLineItem(0, 0, gFL->getFs()/2.0, 0);
     m_giCursorVert->setPen(cursorPen);
     m_giCursorVert->hide();
     m_scene->addItem(m_giCursorVert);
@@ -159,11 +159,11 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     // Min and max limits of the color range
     cursorPen = QPen(QColor(255, 0, 0));
     cursorPen.setWidth(0);
-    m_giSpectrogramMax = new QGraphicsLineItem(0, 0, gMW->getFs()/2.0, 0);
+    m_giSpectrogramMax = new QGraphicsLineItem(0, 0, gFL->getFs()/2.0, 0);
     m_giSpectrogramMax->setPen(cursorPen);
     m_giSpectrogramMax->hide();
     m_scene->addItem(m_giSpectrogramMax);
-    m_giSpectrogramMin = new QGraphicsLineItem(0, 0, gMW->getFs()/2.0, 0);
+    m_giSpectrogramMin = new QGraphicsLineItem(0, 0, gFL->getFs()/2.0, 0);
     m_giSpectrogramMin->setPen(cursorPen);
     m_giSpectrogramMin->hide();
     m_scene->addItem(m_giSpectrogramMin);
@@ -268,14 +268,14 @@ void QGVAmplitudeSpectrum::settingsModified(){
 void QGVAmplitudeSpectrum::updateAmplitudeExtent(){
 //    COUTD << "QGVAmplitudeSpectrum::updateAmplitudeExtent" << endl;
 
-    if(gMW->ftsnds.size()>0){
+    if(gFL->ftsnds.size()>0){
         // Get the maximum QSNR among all sound files
         WAVTYPE maxsqnr = -std::numeric_limits<WAVTYPE>::infinity();
-        for(unsigned int si=0; si<gMW->ftsnds.size(); si++){
-            if(gMW->ftsnds[si]->format().sampleSize()==-1)
+        for(unsigned int si=0; si<gFL->ftsnds.size(); si++){
+            if(gFL->ftsnds[si]->format().sampleSize()==-1)
                 maxsqnr = std::max(maxsqnr, 20*std::log10(std::pow(WAVTYPE(2.0),8*sizeof(WAVTYPE))));
             else
-                maxsqnr = std::max(maxsqnr, 20*std::log10(std::pow(WAVTYPE(2.0),gMW->ftsnds[si]->format().sampleSize())));
+                maxsqnr = std::max(maxsqnr, 20*std::log10(std::pow(WAVTYPE(2.0),gFL->ftsnds[si]->format().sampleSize())));
         }
 
         gMW->ui->sldAmplitudeSpectrumMin->setMaximum(0);
@@ -301,7 +301,7 @@ void QGVAmplitudeSpectrum::amplitudeMinChanged() {
 
 void QGVAmplitudeSpectrum::updateSceneRect() {
 //    COUTD << "QGVAmplitudeSpectrum::updateSceneRect " << gMW->getFs() << endl;
-    m_scene->setSceneRect(0.0, -10, gMW->getFs()/2, (10-gMW->ui->sldAmplitudeSpectrumMin->value()));
+    m_scene->setSceneRect(0.0, -10, gFL->getFs()/2, (10-gMW->ui->sldAmplitudeSpectrumMin->value()));
 }
 
 void QGVAmplitudeSpectrum::fftResizing(int prevSize, int newSize){
@@ -320,8 +320,8 @@ void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
     if(m_dlgSettings->ui->cbAmplitudeSpectrumLimitWindowDuration->isChecked() && (tend-tstart)>m_dlgSettings->ui->sbAmplitudeSpectrumWindowDurationLimit->value())
         tend = tstart+m_dlgSettings->ui->sbAmplitudeSpectrumWindowDurationLimit->value();
 
-    unsigned int nl = std::max(0, int(0.5+tstart*gMW->getFs()));
-    unsigned int nr = int(0.5+std::min(gMW->getMaxLastSampleTime(),tend)*gMW->getFs());
+    unsigned int nl = std::max(0, int(0.5+tstart*gFL->getFs()));
+    unsigned int nr = int(0.5+std::min(gFL->getMaxLastSampleTime(),tend)*gFL->getFs());
 
     if((nr-nl+1)%2==0
        && m_dlgSettings->ui->cbAmplitudeSpectrumWindowSizeForcedOdd->isChecked())
@@ -400,7 +400,7 @@ void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
 
     // Update the visible window in the waveform
     if(m_trgDFTParameters.win.size()>0) {
-        double fs = gMW->getFs();
+        double fs = gFL->getFs();
 
         FFTTYPE winmax = 0.0;
         for(size_t n=0; n<m_trgDFTParameters.win.size(); n++)
@@ -452,8 +452,8 @@ void QGVAmplitudeSpectrum::updateDFTs(){
         std::vector<FFTTYPE>& win = m_trgDFTParameters.win; // For speeding up access
 
         bool didany = false;
-        for(unsigned int fi=0; fi<gMW->ftsnds.size(); fi++){
-            FTSound* snd = gMW->ftsnds[fi];
+        for(unsigned int fi=0; fi<gFL->ftsnds.size(); fi++){
+            FTSound* snd = gFL->ftsnds[fi];
             if(!snd->isVisible())
                 continue;
 
@@ -468,7 +468,7 @@ void QGVAmplitudeSpectrum::updateDFTs(){
 
             snd->m_dft_min = std::numeric_limits<WAVTYPE>::infinity();
             snd->m_dft_max = -std::numeric_limits<WAVTYPE>::infinity();
-            if(gMW->ftsnds[fi]->m_actionInvPolarity->isChecked())
+            if(gFL->ftsnds[fi]->m_actionInvPolarity->isChecked())
                 gain *= -1;
 
             int n = 0;
@@ -564,8 +564,8 @@ void QGVAmplitudeSpectrum::viewSet(QRectF viewrect, bool sync) {
         // splitter's handle is clicked, and repeat this view until button released.
         fitInView(removeHiddenMargin(this, viewrect));
 
-        for(size_t fi=0; fi<gMW->ftfzeros.size(); fi++)
-            gMW->ftfzeros[fi]->updateTextsGeometry();
+        for(size_t fi=0; fi<gFL->ftfzeros.size(); fi++)
+            gFL->ftfzeros[fi]->updateTextsGeometry();
 
         if(sync){
             if(gMW->m_gvPhaseSpectrum && gMW->ui->actionShowPhaseSpectrum->isChecked()) {
@@ -648,21 +648,21 @@ void QGVAmplitudeSpectrum::wheelEvent(QWheelEvent* event) {
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
-    if((viewrect.width()>10.0/gMW->getFs() && numDegrees>0) || (viewrect.height()>10.0/gMW->getFs() && numDegrees<0)) {
+    if((viewrect.width()>10.0/gFL->getFs() && numDegrees>0) || (viewrect.height()>10.0/gFL->getFs() && numDegrees<0)) {
         double gx = double(mapToScene(event->pos()).x()-viewrect.left())/viewrect.width();
         double gy = double(mapToScene(event->pos()).y()-viewrect.top())/viewrect.height();
         QRectF newrect = mapToScene(viewport()->rect()).boundingRect();
         newrect.setLeft(newrect.left()+gx*0.01*viewrect.width()*numDegrees);
         newrect.setRight(newrect.right()-(1-gx)*0.01*viewrect.width()*numDegrees);
-        if(newrect.width()<10.0/gMW->getFs()){
-           newrect.setLeft(newrect.center().x()-5.0/gMW->getFs());
-           newrect.setRight(newrect.center().x()+5.0/gMW->getFs());
+        if(newrect.width()<10.0/gFL->getFs()){
+           newrect.setLeft(newrect.center().x()-5.0/gFL->getFs());
+           newrect.setRight(newrect.center().x()+5.0/gFL->getFs());
         }
         newrect.setTop(newrect.top()+gy*0.01*viewrect.height()*numDegrees);
         newrect.setBottom(newrect.bottom()-(1-gy)*0.01*viewrect.height()*numDegrees);
-        if(newrect.height()<10.0/gMW->getFs()){
-           newrect.setTop(newrect.center().y()-5.0/gMW->getFs());
-           newrect.setBottom(newrect.center().y()+5.0/gMW->getFs());
+        if(newrect.height()<10.0/gFL->getFs()){
+           newrect.setTop(newrect.center().y()-5.0/gFL->getFs());
+           newrect.setBottom(newrect.center().y()+5.0/gFL->getFs());
         }
 
         viewSet(newrect);
@@ -732,7 +732,7 @@ void QGVAmplitudeSpectrum::mousePressEvent(QMouseEvent* event){
                 // When scaling the waveform
                 m_currentAction = CAWaveformScale;
                 m_selection_pressedp = p;
-                gMW->setEditing(gMW->getCurrentFTSound());
+                gMW->setEditing(gFL->getCurrentFTSound());
                 setCursor(Qt::SizeVerCursor);
             }
         }
@@ -816,7 +816,7 @@ void QGVAmplitudeSpectrum::mouseMoveEvent(QMouseEvent* event){
     }
     else if(m_currentAction==CAWaveformScale){
         // When scaling the waveform
-        FTSound* currentftsound = gMW->getCurrentFTSound();
+        FTSound* currentftsound = gFL->getCurrentFTSound();
         if(currentftsound){
             if(!currentftsound->m_actionShow->isChecked()) {
                 QMessageBox::warning(this, "Editing a hidden file", "<p>The selected file is hidden.<br/><br/>For edition, please select only visible files.</p>");
@@ -838,7 +838,7 @@ void QGVAmplitudeSpectrum::mouseMoveEvent(QMouseEvent* event){
                 currentftsound->setStatus();
                 updateDFTs();
                 gMW->m_gvWaveform->m_scene->update();
-                gMW->fileInfoUpdate();
+                gFL->fileInfoUpdate();
                 gMW->ui->pbSpectrogramSTFTUpdate->show();
                 if(gMW->m_gvSpectrogram->m_aAutoUpdate->isChecked())
                     gMW->m_gvSpectrogram->updateSTFTSettings();
@@ -968,7 +968,7 @@ void QGVAmplitudeSpectrum::selectionClear(bool forwardsync) {
                 }
                 else {
                     rect.setTop(0.0);
-                    rect.setBottom(gMW->getFs()/2);
+                    rect.setBottom(gFL->getFs()/2);
                     gMW->m_gvSpectrogram->selectionSet(rect, false);
                 }
             }
@@ -1036,7 +1036,7 @@ void QGVAmplitudeSpectrum::selectionSet(QRectF selection, bool forwardsync) {
     m_selection = m_mouseSelection = selection;
 
     if(m_selection.left()<0) m_selection.setLeft(0);
-    if(m_selection.right()>gMW->getFs()/2.0) m_selection.setRight(gMW->getFs()/2.0);
+    if(m_selection.right()>gFL->getFs()/2.0) m_selection.setRight(gFL->getFs()/2.0);
     if(m_selection.top()<m_scene->sceneRect().top()) m_selection.setTop(m_scene->sceneRect().top());
     if(m_selection.bottom()>m_scene->sceneRect().bottom()) m_selection.setBottom(m_scene->sceneRect().bottom());
 
@@ -1068,8 +1068,8 @@ void QGVAmplitudeSpectrum::selectionSet(QRectF selection, bool forwardsync) {
 
         if(gMW->m_gvSpectrogram){
             QRectF rect = gMW->m_gvSpectrogram->m_mouseSelection;
-            rect.setTop(gMW->getFs()/2-m_mouseSelection.right());
-            rect.setBottom(gMW->getFs()/2-m_mouseSelection.left());
+            rect.setTop(gFL->getFs()/2-m_mouseSelection.right());
+            rect.setBottom(gFL->getFs()/2-m_mouseSelection.left());
             if(!gMW->m_gvSpectrogram->m_giShownSelection->isVisible()) {
                 rect.setLeft(gMW->m_gvSpectrogram->m_scene->sceneRect().left());
                 rect.setRight(gMW->m_gvSpectrogram->m_scene->sceneRect().right());
@@ -1147,17 +1147,17 @@ void QGVAmplitudeSpectrum::aunzoom(){
     // Compute max and min among all visible files
     FFTTYPE ymin = std::numeric_limits<FFTTYPE>::infinity();
     FFTTYPE ymax = -std::numeric_limits<FFTTYPE>::infinity();
-    for(unsigned int fi=0; fi<gMW->ftsnds.size(); fi++){
-        if(!gMW->ftsnds[fi]->isVisible())
+    for(unsigned int fi=0; fi<gFL->ftsnds.size(); fi++){
+        if(!gFL->ftsnds[fi]->isVisible())
             continue;
 
-        ymin = std::min(ymin, gMW->ftsnds[fi]->m_dft_min);
-        ymax = std::max(ymax, gMW->ftsnds[fi]->m_dft_max);
+        ymin = std::min(ymin, gFL->ftsnds[fi]->m_dft_min);
+        ymax = std::max(ymax, gFL->ftsnds[fi]->m_dft_max);
     }
     ymin = sigproc::log2db*ymin-3;
     ymax = sigproc::log2db*ymax+3;
 
-    QRectF rect = QRectF(0.0, -ymax, gMW->getFs()/2, (ymax-ymin));
+    QRectF rect = QRectF(0.0, -ymax, gFL->getFs()/2, (ymax-ymin));
 
     if(rect.bottom()>(-gMW->ui->sldAmplitudeSpectrumMin->value()))
         rect.setBottom(-gMW->ui->sldAmplitudeSpectrumMin->value());
@@ -1170,7 +1170,7 @@ void QGVAmplitudeSpectrum::aunzoom(){
 //    cout << "QGVAmplitudeSpectrum::aunzoom viewrect: " << viewrect.left() << "," << viewrect.right() << " X " << viewrect.top() << "," << viewrect.bottom() << endl;
 
     if(gMW->m_gvPhaseSpectrum)
-        gMW->m_gvPhaseSpectrum->viewSet(QRectF(0.0, -M_PI, gMW->getFs()/2, 2*M_PI), false);
+        gMW->m_gvPhaseSpectrum->viewSet(QRectF(0.0, -M_PI, gFL->getFs()/2, 2*M_PI), false);
 
 //    cursorUpdate(QPointF(-1,0));
 //    m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
@@ -1201,7 +1201,7 @@ void QGVAmplitudeSpectrum::setMouseCursorPosition(QPointF p, bool forwardsync) {
         txttrans.scale(1.0/trans.m11(),1.0/trans.m22());
 
         m_giCursorHoriz->show();
-        m_giCursorHoriz->setLine(viewrect.right()-50/trans.m11(), m_giCursorHoriz->line().y1(), gMW->getFs()/2.0, m_giCursorHoriz->line().y1());
+        m_giCursorHoriz->setLine(viewrect.right()-50/trans.m11(), m_giCursorHoriz->line().y1(), gFL->getFs()/2.0, m_giCursorHoriz->line().y1());
         m_giCursorVert->show();
         m_giCursorVert->setLine(m_giCursorVert->line().x1(), viewrect.top(), m_giCursorVert->line().x1(), viewrect.top()+(qfm.height())/trans.m22());
         m_giCursorPositionXTxt->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
@@ -1228,7 +1228,7 @@ void QGVAmplitudeSpectrum::setMouseCursorPosition(QPointF p, bool forwardsync) {
 
     if(forwardsync){
         if(gMW->m_gvSpectrogram)
-            gMW->m_gvSpectrogram->setMouseCursorPosition(QPointF(0.0, gMW->getFs()/2-p.x()), false);
+            gMW->m_gvSpectrogram->setMouseCursorPosition(QPointF(0.0, gFL->getFs()/2-p.x()), false);
         if(gMW->m_gvPhaseSpectrum)
             gMW->m_gvPhaseSpectrum->setMouseCursorPosition(QPointF(p.x(), 0.0), false);
     }
@@ -1237,7 +1237,7 @@ void QGVAmplitudeSpectrum::setMouseCursorPosition(QPointF p, bool forwardsync) {
 void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
 //    COUTD << "QGVAmplitudeSpectrum::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
-    double fs = gMW->getFs();
+    double fs = gFL->getFs();
 
     // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
 
@@ -1261,8 +1261,8 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
     }
 
     // Draw the f0 and its harmonics
-    for(size_t fi=0; fi<gMW->ftfzeros.size(); fi++){
-        if(!gMW->ftfzeros[fi]->m_actionShow->isChecked())
+    for(size_t fi=0; fi<gFL->ftfzeros.size(); fi++){
+        if(!gFL->ftfzeros[fi]->m_actionShow->isChecked())
             continue;
 
 //            QPen outlinePen(gMW->ftfzeros[fi]->color);
@@ -1275,13 +1275,13 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
             ct = 0.5*(m_trgDFTParameters.nl+m_trgDFTParameters.nr)/fs;
         else
             ct = gMW->m_gvWaveform->getPlayCursorPosition();
-        double cf0 = sigproc::nearest<double>(gMW->ftfzeros[fi]->ts, gMW->ftfzeros[fi]->f0s, ct, -1.0);
+        double cf0 = sigproc::nearest<double>(gFL->ftfzeros[fi]->ts, gFL->ftfzeros[fi]->f0s, ct, -1.0);
 
         if(cf0==-1)
             continue;
 
         // Draw the f0 vertical line
-        QColor c = gMW->ftfzeros[fi]->color;
+        QColor c = gFL->ftfzeros[fi]->color;
         c.setAlphaF(1.0);
         QPen outlinePen(c);
         outlinePen.setWidth(0);
@@ -1290,8 +1290,8 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
 
         // Update the f0 text
         // TODO Should be moved to setWindowRange (need to move the cf0 computation there too)
-        gMW->ftfzeros[fi]->m_aspec_txt->setPos(cf0, 0.0);
-        gMW->ftfzeros[fi]->m_aspec_txt->setText(QString("%1Hz").arg(cf0));
+        gFL->ftfzeros[fi]->m_aspec_txt->setPos(cf0, 0.0);
+        gFL->ftfzeros[fi]->m_aspec_txt->setText(QString("%1Hz").arg(cf0));
 
         // Draw harmonics up to Nyquist
         c.setAlphaF(0.5);
@@ -1303,7 +1303,7 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
 
     // Draw the spectra
     // TODO should draw spectra only if m_fft is not touching m_dft variables (it doesnt crash ??)
-    if (gMW->ftsnds.size()==0) return;
+    if (gFL->ftsnds.size()==0) return;
     if (gMW->m_gvWaveform->m_selection.width()==0) return;
 
     // Draw the filter response
@@ -1339,18 +1339,18 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
         draw_spectrum(painter, m_windft, fs, 1.0, rect);
     }
 
-    FTSound* currsnd = gMW->getCurrentFTSound(true);
+    FTSound* currsnd = gFL->getCurrentFTSound(true);
 
-    for(size_t fi=0; fi<gMW->ftsnds.size(); fi++){
-        if(!gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop->isChecked() || gMW->ftsnds[fi]!=currsnd){
-            if(gMW->ftsnds[fi]->m_actionShow->isChecked()){
-                QPen outlinePen(gMW->ftsnds[fi]->color);
+    for(size_t fi=0; fi<gFL->ftsnds.size(); fi++){
+        if(!gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop->isChecked() || gFL->ftsnds[fi]!=currsnd){
+            if(gFL->ftsnds[fi]->m_actionShow->isChecked()){
+                QPen outlinePen(gFL->ftsnds[fi]->color);
                 outlinePen.setWidth(0);
                 painter->setPen(outlinePen);
-                painter->setBrush(QBrush(gMW->ftsnds[fi]->color));
+                painter->setBrush(QBrush(gFL->ftsnds[fi]->color));
                 painter->setOpacity(1);
 
-                draw_spectrum(painter, gMW->ftsnds[fi]->m_dft, fs, 1.0, rect);
+                draw_spectrum(painter, gFL->ftsnds[fi]->m_dft, fs, 1.0, rect);
             }
         }
     }

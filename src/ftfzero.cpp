@@ -70,7 +70,7 @@ FTFZero::FTFZero(const QString& _fileName, QObject* parent, FileType::FileContai
         load();
     }
 
-    gMW->ftfzeros.push_back(this);
+    gFL->ftfzeros.push_back(this);
 }
 
 FTFZero::FTFZero(const FTFZero& ft)
@@ -85,7 +85,7 @@ FTFZero::FTFZero(const FTFZero& ft)
     m_lastreadtime = ft.m_lastreadtime;
     m_modifiedtime = ft.m_modifiedtime;
 
-    gMW->ftfzeros.push_back(this);
+    gFL->ftfzeros.push_back(this);
 
     updateTextsGeometry();
 }
