@@ -24,6 +24,7 @@ private:
 
 private slots:
     void CBSpectrumWindowTypeCurrentIndexChanged(QString txt);
+    void DFTSizeTypeChanged(int index);
 };
 
 #endif // GVAMPLITUDESPECTRUMWDIALOGSETTINGS_H

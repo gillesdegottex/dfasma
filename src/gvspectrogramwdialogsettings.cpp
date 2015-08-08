@@ -26,7 +26,14 @@ GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(QGVSpectrogram* paren
     ui->spSpectrogramWindowExpDecay->hide();
     gMW->m_settings.add(ui->sbSpectrogramStepSize);
     gMW->m_settings.add(ui->sbSpectrogramWindowSize);
+    gMW->m_settings.add(ui->cbSpectrogramDFTSizeType);
+    gMW->m_settings.add(ui->sbSpectrogramDFTSize);
     gMW->m_settings.add(ui->sbSpectrogramOversamplingFactor);
+    DFTSizeTypeChanged(ui->cbSpectrogramDFTSizeType->currentIndex());
+    connect(ui->cbSpectrogramDFTSizeType, SIGNAL(currentIndexChanged(int)), this, SLOT(DFTSizeTypeChanged(int)));
+    connect(ui->sbSpectrogramDFTSize, SIGNAL(valueChanged(int)), this, SLOT(DFTSizeChanged(int)));
+    connect(ui->sbSpectrogramOversamplingFactor, SIGNAL(valueChanged(int)), this, SLOT(DFTSizeChanged(int)));
+
     gMW->m_settings.add(ui->gbSpectrogramCepstralLiftering);
     gMW->m_settings.add(ui->sbSpectrogramCepstralLifteringOrder);
     gMW->m_settings.add(ui->cbSpectrogramCepstralLifteringPreserveDC);
@@ -55,7 +62,6 @@ void GVSpectrogramWDialogSettings::checkImageSize() {
     int dftlen = pow(2, std::ceil(log2(float(winlen)))+ui->sbSpectrogramOversamplingFactor->value());//[samples]
 
     ui->lblActualWindowLength->setText(QString("%2s(%1)").arg(winlen).arg(double(winlen)/gFL->getFs()));
-    ui->lblDFTSize->setText(QString("DFT size=%1").arg(dftlen));
     ui->lblActualStepSize->setText(QString("%2s(%1)").arg(stepsize).arg(double(stepsize)/gFL->getFs()));
 
     int imgheight = dftlen/2+1;
@@ -105,6 +111,34 @@ void GVSpectrogramWDialogSettings::CBSpectrumWindowTypeCurrentIndexChanged(QStri
     }
 
     adjustSize();
+}
+
+void GVSpectrogramWDialogSettings::DFTSizeTypeChanged(int index) {
+    if(index==0){
+        ui->sbSpectrogramOversamplingFactor->hide();
+        ui->sbSpectrogramDFTSize->show();
+    }
+    else{
+        ui->sbSpectrogramOversamplingFactor->show();
+        ui->sbSpectrogramDFTSize->hide();
+    }
+}
+
+void GVSpectrogramWDialogSettings::DFTSizeChanged(int value) {
+    Q_UNUSED(value)
+
+    int winlen = std::floor(0.5+gFL->getFs()*ui->sbSpectrogramWindowSize->value());
+    if(winlen%2==0 && ui->cbSpectrogramWindowSizeForcedOdd->isChecked())
+        winlen++;
+
+    if(ui->cbSpectrogramDFTSizeType->currentIndex()==0){
+        int osf = std::ceil(log2(ui->sbSpectrogramDFTSize->value())) - std::ceil(log2(float(winlen)));
+        ui->sbSpectrogramOversamplingFactor->setValue(osf);
+    }
+    else if(ui->cbSpectrogramDFTSizeType->currentIndex()==1){
+        int dftlen = pow(2, std::ceil(log2(float(winlen)))+ui->sbSpectrogramOversamplingFactor->value());//[samples]
+        ui->sbSpectrogramDFTSize->setValue(dftlen);
+    }
 }
 
 GVSpectrogramWDialogSettings::~GVSpectrogramWDialogSettings()

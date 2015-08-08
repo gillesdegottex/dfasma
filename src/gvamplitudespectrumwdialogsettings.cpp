@@ -37,15 +37,21 @@ GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(QGVAmplit
     ui->lblWindowExpDecay->hide();
     ui->spAmplitudeSpectrumWindowExpDecay->hide();
     gMW->m_settings.add(ui->cbAmplitudeSpectrumWindowsNormalisation);
+    gMW->m_settings.add(ui->cbAmplitudeSpectrumDFTSizeType);
+    gMW->m_settings.add(ui->sbAmplitudeSpectrumDFTSize);
     gMW->m_settings.add(ui->sbAmplitudeSpectrumOversamplingFactor);
+    DFTSizeTypeChanged(ui->cbAmplitudeSpectrumDFTSizeType->currentIndex());
 
     adjustSize();
 
     connect(ui->cbAmplitudeSpectrumWindowType, SIGNAL(currentIndexChanged(QString)), this, SLOT(CBSpectrumWindowTypeCurrentIndexChanged(QString)));
+    connect(ui->cbAmplitudeSpectrumDFTSizeType, SIGNAL(currentIndexChanged(int)), this, SLOT(DFTSizeTypeChanged(int)));
 
     // Update the DFT view automatically
     connect(ui->cbAmplitudeSpectrumLimitWindowDuration, SIGNAL(toggled(bool)), m_ampspec, SLOT(settingsModified()));
     connect(ui->sbAmplitudeSpectrumWindowDurationLimit, SIGNAL(valueChanged(double)), m_ampspec, SLOT(settingsModified()));
+    connect(ui->cbAmplitudeSpectrumDFTSizeType, SIGNAL(currentIndexChanged(int)), m_ampspec, SLOT(settingsModified()));
+    connect(ui->sbAmplitudeSpectrumDFTSize, SIGNAL(valueChanged(int)), m_ampspec, SLOT(settingsModified()));
     connect(ui->sbAmplitudeSpectrumOversamplingFactor, SIGNAL(valueChanged(int)), m_ampspec, SLOT(settingsModified()));
     connect(ui->cbAmplitudeSpectrumWindowSizeForcedOdd, SIGNAL(toggled(bool)), m_ampspec, SLOT(settingsModified()));
     connect(ui->cbAmplitudeSpectrumWindowType, SIGNAL(currentIndexChanged(int)), m_ampspec, SLOT(settingsModified()));
@@ -87,6 +93,17 @@ void GVAmplitudeSpectrumWDialogSettings::CBSpectrumWindowTypeCurrentIndexChanged
     }
 
     adjustSize();
+}
+
+void GVAmplitudeSpectrumWDialogSettings::DFTSizeTypeChanged(int index) {
+    if(index==0){
+        ui->sbAmplitudeSpectrumOversamplingFactor->hide();
+        ui->sbAmplitudeSpectrumDFTSize->show();
+    }
+    else{
+        ui->sbAmplitudeSpectrumOversamplingFactor->show();
+        ui->sbAmplitudeSpectrumDFTSize->hide();
+    }
 }
 
 GVAmplitudeSpectrumWDialogSettings::~GVAmplitudeSpectrumWDialogSettings() {

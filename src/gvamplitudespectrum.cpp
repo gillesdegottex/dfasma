@@ -390,7 +390,12 @@ void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
     }
 
     // Set the DFT length
-    newDFTParams.dftlen = pow(2, std::ceil(log2(float(newDFTParams.winlen)))+m_dlgSettings->ui->sbAmplitudeSpectrumOversamplingFactor->value());
+    if(m_dlgSettings->ui->cbAmplitudeSpectrumDFTSizeType->currentIndex()==0)
+        newDFTParams.dftlen = std::max(newDFTParams.winlen, m_dlgSettings->ui->sbAmplitudeSpectrumDFTSize->value());
+    else if(m_dlgSettings->ui->cbAmplitudeSpectrumDFTSizeType->currentIndex()==1)
+        newDFTParams.dftlen = pow(2, std::ceil(log2(float(newDFTParams.winlen)))+m_dlgSettings->ui->sbAmplitudeSpectrumOversamplingFactor->value());
+
+    COUTD << newDFTParams.dftlen << endl;
 
     if(newDFTParams==m_trgDFTParameters)
         return;

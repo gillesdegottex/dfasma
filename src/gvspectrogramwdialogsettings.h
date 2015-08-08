@@ -35,6 +35,8 @@ private slots:
 
 public slots:
     void checkImageSize();
+    void DFTSizeTypeChanged(int index);
+    void DFTSizeChanged(int value);
 };
 
 #endif // GVSPECTROGRAMWDIALOGSETTINGS_H
