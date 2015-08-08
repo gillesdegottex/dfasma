@@ -100,8 +100,12 @@ void GVAmplitudeSpectrumWDialogSettings::DFTSizeTypeChanged(int index) {
         ui->sbAmplitudeSpectrumOversamplingFactor->hide();
         ui->sbAmplitudeSpectrumDFTSize->show();
     }
-    else{
+    else if(index==1){
         ui->sbAmplitudeSpectrumOversamplingFactor->show();
+        ui->sbAmplitudeSpectrumDFTSize->hide();
+    }
+    else if(index==2){
+        ui->sbAmplitudeSpectrumOversamplingFactor->hide();
         ui->sbAmplitudeSpectrumDFTSize->hide();
     }
 }

@@ -326,6 +326,13 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Size:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QComboBox" name="cbAmplitudeSpectrumDFTSizeType">
           <property name="sizePolicy">
            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -338,12 +345,17 @@
           </property>
           <item>
            <property name="text">
-            <string>Size</string>
+            <string>Fixed</string>
            </property>
           </item>
           <item>
            <property name="text">
             <string extracomment="&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DFT size = &lt;span style=&quot; font-size:14pt;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot; font-size:14pt; vertical-align:super;&quot;&gt;⌈log2(winlen)⌉+X&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;">Oversampling factor</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Auto (fit view's resolution)</string>
            </property>
           </item>
          </widget>

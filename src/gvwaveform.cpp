@@ -1574,6 +1574,7 @@ void QGVWaveform::playCursorSet(double t, bool forwardsync){
         // Move the DFT window according to play cursor
         if(gMW->m_gvAmplitudeSpectrum && gMW->m_gvPhaseSpectrum
             && gMW->m_gvAmplitudeSpectrum->m_aFollowPlayCursor->isChecked()
+            && gMW->m_audioengine->state()==QAudio::ActiveState // TODO Means that audio is necessary for this
             && gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.winlen>1
             && (gMW->m_gvAmplitudeSpectrum->isVisible() || gMW->m_gvPhaseSpectrum->isVisible())) {
             double halfwin = ((gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.winlen-1)/2.0)/gFL->getFs();

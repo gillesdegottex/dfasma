@@ -104,9 +104,9 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     gMW->m_settings.add(m_aAmplitudeSpectrumShowLoudnessCurve);
     connect(m_aAmplitudeSpectrumShowLoudnessCurve, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
 
-    m_aFollowPlayCursor = new QAction(tr("Follow play cursor"), this);;
+    m_aFollowPlayCursor = new QAction(tr("Follow the play cursor"), this);;
     m_aFollowPlayCursor->setObjectName("m_aFollowPlayCursor");
-    m_aFollowPlayCursor->setStatusTip(tr("Update the DFT view according to the play cursor"));
+    m_aFollowPlayCursor->setStatusTip(tr("Update the DFT view according to the play cursor position"));
     m_aFollowPlayCursor->setCheckable(true);
     m_aFollowPlayCursor->setChecked(false);
     gMW->m_settings.add(m_aFollowPlayCursor);
@@ -394,6 +394,12 @@ void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
         newDFTParams.dftlen = std::max(newDFTParams.winlen, m_dlgSettings->ui->sbAmplitudeSpectrumDFTSize->value());
     else if(m_dlgSettings->ui->cbAmplitudeSpectrumDFTSizeType->currentIndex()==1)
         newDFTParams.dftlen = pow(2, std::ceil(log2(float(newDFTParams.winlen)))+m_dlgSettings->ui->sbAmplitudeSpectrumOversamplingFactor->value());
+    else if(m_dlgSettings->ui->cbAmplitudeSpectrumDFTSizeType->currentIndex()==2){
+        QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+        int dftlen = viewport()->rect().width()/((viewrect.right()-viewrect.left())/gFL->getFs());
+        dftlen = std::max(dftlen, newDFTParams.winlen);
+        newDFTParams.dftlen = pow(2, std::ceil(log2(float(dftlen))));
+    }
 
     if(newDFTParams==m_trgDFTParameters)
         return;
@@ -579,6 +585,9 @@ void QGVAmplitudeSpectrum::viewSet(QRectF viewrect, bool sync) {
             }
         }
     }
+
+    if(m_dlgSettings->ui->cbAmplitudeSpectrumDFTSizeType->currentIndex()==2)
+        setWindowRange(gMW->m_gvWaveform->m_selection.left(), gMW->m_gvWaveform->m_selection.right());
 
 //    cout << "QGVAmplitudeSpectrum::~viewSet" << endl;
 }
