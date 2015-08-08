@@ -37,9 +37,9 @@ GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(QGVAmplit
     ui->lblWindowExpDecay->hide();
     ui->spAmplitudeSpectrumWindowExpDecay->hide();
     gMW->m_settings.add(ui->cbAmplitudeSpectrumWindowsNormalisation);
-    gMW->m_settings.add(ui->cbAmplitudeSpectrumDFTSizeType);
     gMW->m_settings.add(ui->sbAmplitudeSpectrumDFTSize);
     gMW->m_settings.add(ui->sbAmplitudeSpectrumOversamplingFactor);
+    gMW->m_settings.add(ui->cbAmplitudeSpectrumDFTSizeType);
     DFTSizeTypeChanged(ui->cbAmplitudeSpectrumDFTSizeType->currentIndex());
 
     adjustSize();

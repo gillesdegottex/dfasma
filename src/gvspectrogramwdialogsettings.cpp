@@ -5,6 +5,8 @@
 
 #include <QSettings>
 
+#include "qthelper.h"
+
 GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(QGVSpectrogram* parent) :
     QDialog((QWidget*)parent),
     ui(new Ui::GVSpectrogramWDialogSettings)
@@ -26,10 +28,17 @@ GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(QGVSpectrogram* paren
     ui->spSpectrogramWindowExpDecay->hide();
     gMW->m_settings.add(ui->sbSpectrogramStepSize);
     gMW->m_settings.add(ui->sbSpectrogramWindowSize);
-    gMW->m_settings.add(ui->cbSpectrogramDFTSizeType);
     gMW->m_settings.add(ui->sbSpectrogramDFTSize);
     gMW->m_settings.add(ui->sbSpectrogramOversamplingFactor);
-    DFTSizeTypeChanged(ui->cbSpectrogramDFTSizeType->currentIndex());
+    gMW->m_settings.add(ui->cbSpectrogramDFTSizeType);
+    if(ui->cbSpectrogramDFTSizeType->currentIndex()==0){
+        ui->sbSpectrogramOversamplingFactor->hide();
+        ui->sbSpectrogramDFTSize->show();
+    }
+    else if(ui->cbSpectrogramDFTSizeType->currentIndex()==1){
+        ui->sbSpectrogramOversamplingFactor->show();
+        ui->sbSpectrogramDFTSize->hide();
+    }
     connect(ui->cbSpectrogramDFTSizeType, SIGNAL(currentIndexChanged(int)), this, SLOT(DFTSizeTypeChanged(int)));
     connect(ui->sbSpectrogramDFTSize, SIGNAL(valueChanged(int)), this, SLOT(DFTSizeChanged(int)));
     connect(ui->sbSpectrogramOversamplingFactor, SIGNAL(valueChanged(int)), this, SLOT(DFTSizeChanged(int)));
