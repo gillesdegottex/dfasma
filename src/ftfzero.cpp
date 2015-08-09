@@ -326,7 +326,7 @@ FTFZero::~FTFZero() {
 
 #include "external/REAPER/epoch_tracker/epoch_tracker.h"
 
-FTFZero::FTFZero(FTSound *ftsnd, QObject *parent)
+FTFZero::FTFZero(FTSound *ftsnd, double f0min, double f0max, QObject *parent)
     : FileType(FTFZERO, ftsnd->fileFullPath+".f0.txt", this)
 {
     Q_UNUSED(parent);
@@ -344,11 +344,9 @@ FTFZero::FTFZero(FTSound *ftsnd, QObject *parent)
 
     // Compute the f0 from the given sound file
 
-    float min_f0 = 80;
-    float max_f0 = 500;
-    float timestepsize = 0.005;
+    double timestepsize = gMW->m_dlgSettings->ui->sbEstimationStepSize->value();
 
-    EpochTracker et;
+    EpochTracker et; // TODO to put in FTSound
 
     // Initialize with the given input
     // Start with a dirty copy in the necessary format
@@ -359,7 +357,7 @@ FTFZero::FTFZero(FTSound *ftsnd, QObject *parent)
     int32_t n_samples = ftsnd->wav.size();
     float sample_rate = gFL->getFs();
     if (!et.Init(wave_datap, n_samples, sample_rate,
-          min_f0, max_f0, true, true))
+          f0min, f0max, true, true))
         throw QString("EpochTracker initialisation failed");
 
     // Compute f0 and pitchmarks.

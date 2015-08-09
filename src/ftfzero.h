@@ -47,7 +47,7 @@ public:
     FTFZero(const QString& _fileName, QObject* parent, FileType::FileContainer container=FileType::FCUNSET, FileFormat fileformat=FFNotSpecified);
     virtual FileType* duplicate();
     FTFZero(const FTFZero& ft);  // Duplicate
-    FTFZero(FTSound *ftsnd, QObject* parent); // Analysis
+    FTFZero(FTSound *ftsnd, double f0min, double f0max, QObject* parent); // Analysis
 
     std::deque<double> ts;
     std::deque<double> f0s;

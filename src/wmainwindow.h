@@ -75,6 +75,9 @@ class WMainWindow : public QMainWindow
     FTSound* m_lastFilteredSound;
     QProgressBar* m_pbVolume;
 
+    // Global waiting bar for operations blocking the main window
+    QProgressBar* m_globalWaitingBar;
+
 protected:
     void keyPressEvent(QKeyEvent* event);
     void keyReleaseEvent(QKeyEvent* event);
@@ -119,12 +122,11 @@ public:
 
     QSettingsAuto m_settings;
     WDialogSettings* m_dlgSettings;
-
     Ui::WMainWindow* ui;
 
-    // Waiting bar for operations blocking the main window
-    QLabel* m_globalWaitingBarLabel;
-    QProgressBar* m_globalWaitingBar;
+    void globalWaitingBarMessage(const QString& statusmessage);
+    void globalWaitingBarDone();
+    void globalWaitingBarClear();
 
     // Views
     QGVWaveform* m_gvWaveform;

@@ -31,6 +31,7 @@ using namespace std;
 #include <QMessageBox>
 #include <QFileInfo>
 #include <QGraphicsRectItem>
+#include <QProgressDialog>
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "gvamplitudespectrum.h"
@@ -565,20 +566,14 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
                     gMW->m_gvAmplitudeSpectrum->m_filterresponse[k] *= filterresponse[k];
                 }
 
-                gMW->m_globalWaitingBarLabel->setText(QString("Low-pass filtering (cutoff=")+QString::number(fstop)+"Hz)");
-                gMW->m_globalWaitingBarLabel->show();
-                gMW->m_globalWaitingBar->setMinimum(0);
-                gMW->m_globalWaitingBar->setMaximum(0);
-                gMW->m_globalWaitingBar->show();
-                gMW->ui->statusBar->repaint();
+                gMW->globalWaitingBarMessage(QString("Low-pass filtering (cutoff=")+QString::number(fstop)+"Hz)");
 
                 cout << "LP-filtering (cutoff=" << fstop << ", size=" << wavfiltered.size() << ")" << endl;
                 // Filter the signal
                 for(size_t bi=0; bi<num.size(); bi++)
                     sigproc::filtfilt<WAVTYPE>(wavfiltered, num[bi], den[bi], wavfiltered, delayedstart, delayedend);
 
-                gMW->m_globalWaitingBarLabel->hide();
-                gMW->m_globalWaitingBar->hide();
+                gMW->globalWaitingBarClear();
             }
 
             if (doHighPass) {
@@ -592,12 +587,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
                     gMW->m_gvAmplitudeSpectrum->m_filterresponse[k] *= filterresponse[k];
                 }
 
-                gMW->m_globalWaitingBarLabel->setText(QString("High-pass filtering (cutoff=")+QString::number(fstart)+"Hz)");
-                gMW->m_globalWaitingBarLabel->show();
-                gMW->m_globalWaitingBar->setMinimum(0);
-                gMW->m_globalWaitingBar->setMaximum(0);
-                gMW->m_globalWaitingBar->show();
-                gMW->ui->statusBar->repaint();
+                gMW->globalWaitingBarMessage(QString("Low-pass filtering (cutoff=")+QString::number(fstop)+"Hz)");
 
                 cout << "HP-filtering (cutoff=" << fstart << ", size=" << wavfiltered.size() << ")" << endl;
 
@@ -605,8 +595,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
                 for(size_t bi=0; bi<num.size(); bi++)
                     sigproc::filtfilt<WAVTYPE>(wavfiltered, num[bi], den[bi], wavfiltered, delayedstart, delayedend);
 
-                gMW->m_globalWaitingBarLabel->hide();
-                gMW->m_globalWaitingBar->hide();
+                gMW->globalWaitingBarClear();
             }
 
             if(gMW->m_dlgSettings->ui->cbPlaybackFilteringCompensateEnergy->isChecked()){
@@ -777,7 +766,24 @@ FTSound::~FTSound(){
 void FTSound::estimateFZero(){
 
     try {
-        FTFZero* ftf0 = new FTFZero(this, gMW);
+        // Get the f0 estimation range ...
+        // ... from default values ...
+        double f0min = gMW->m_dlgSettings->ui->dsbEstimationF0Min->value();
+        double f0max = gMW->m_dlgSettings->ui->dsbEstimationF0Max->value();
+        // ... or frequency selection ...
+        if(gMW->m_gvAmplitudeSpectrum->m_selection.width()>0){
+            f0min = gMW->m_gvAmplitudeSpectrum->m_selection.left();
+            f0max = gMW->m_gvAmplitudeSpectrum->m_selection.right();
+        }
+        f0min = std::max(10.0, f0min);
+
+        QString statusmessage = "Estimating F0 of "+fileFullPath+" in ["+QString::number(f0min)+","+QString::number(f0max)+"]Hz ...";
+
+        gMW->globalWaitingBarMessage(statusmessage);
+
+        FTFZero* ftf0 = new FTFZero(this, f0min, f0max, gMW);
+
+        gMW->globalWaitingBarDone();
 
         gFL->addFile(ftf0);
         gMW->m_gvSpectrogram->m_scene->update();

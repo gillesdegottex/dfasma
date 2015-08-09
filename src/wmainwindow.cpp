@@ -125,18 +125,12 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     connect(ui->actionSelectedFilesSave, SIGNAL(triggered()), gFL, SLOT(selectedFilesSave()));
     connect(ui->actionEstimationF0, SIGNAL(triggered()), gFL, SLOT(selectedFilesEstimateF0()));
 
-    m_globalWaitingBarLabel = new QLabel(ui->statusBar);
-    m_globalWaitingBarLabel->setAlignment(Qt::AlignRight);
     ui->statusBar->setStyleSheet("QStatusBar::item { border: 0px solid black }; ");
-    m_globalWaitingBarLabel->setMaximumSize(500, 18);
-    m_globalWaitingBarLabel->setText("<waiting bar info text>");
-    ui->statusBar->addPermanentWidget(m_globalWaitingBarLabel);
     m_globalWaitingBar = new QProgressBar(ui->statusBar);
     m_globalWaitingBar->setAlignment(Qt::AlignRight);
     m_globalWaitingBar->setMaximumSize(100, 14);
     m_globalWaitingBar->setValue(50);
     ui->statusBar->addPermanentWidget(m_globalWaitingBar);
-    m_globalWaitingBarLabel->hide();
     m_globalWaitingBar->hide();
 
     setAcceptDrops(true);
@@ -351,6 +345,27 @@ void WMainWindow::updateWindowTitle() {
 void WMainWindow::execAbout(){
     AboutBox box(this);
     box.exec();
+}
+
+void WMainWindow::globalWaitingBarMessage(const QString& statusmessage) {
+    gMW->statusBar()->showMessage(statusmessage);
+    gMW->m_globalWaitingBar->setMinimum(0);
+    gMW->m_globalWaitingBar->setMaximum(0);
+    gMW->m_globalWaitingBar->show();
+    statusBar()->update();
+    QCoreApplication::processEvents(); // To show the progress
+}
+
+void WMainWindow::globalWaitingBarDone(){
+    gMW->statusBar()->showMessage(gMW->statusBar()->currentMessage()+" done", 3000);
+    gMW->m_globalWaitingBar->hide();
+    QCoreApplication::processEvents(); // To show the progress
+}
+
+void WMainWindow::globalWaitingBarClear(){
+    gMW->statusBar()->clearMessage();
+    gMW->m_globalWaitingBar->hide();
+    QCoreApplication::processEvents(); // To show the progress
 }
 
 // File management =======================================================

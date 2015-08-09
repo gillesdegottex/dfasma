@@ -81,6 +81,8 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     gMW->m_settings.add(ui->cbViewsAddMarginsOnSelection);
     gMW->m_settings.add(ui->cbViewsScrollBarsShow);
     gMW->m_settings.addFont(ui->lblGridFontSample);
+    gMW->m_settings.add(ui->dsbEstimationF0Min);
+    gMW->m_settings.add(ui->dsbEstimationF0Max);
 
     adjustSize();
 }
