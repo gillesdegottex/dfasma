@@ -194,6 +194,8 @@ TEMPLATE = app
 
 RC_ICONS = icons/dfasma.ico
 
+INCLUDEPATH += external/REAPER
+
 SOURCES   += src/main.cpp\
              external/libqxt/qxtspanslider.cpp \
              src/wmainwindow.cpp \
@@ -217,7 +219,11 @@ SOURCES   += src/main.cpp\
              src/colormap.cpp \
              src/QSettingsAuto.cpp \
              src/aboutbox.cpp \
-             src/fileslistwidget.cpp
+             src/fileslistwidget.cpp \
+             external/REAPER/epoch_tracker/epoch_tracker.cc \
+             external/REAPER/epoch_tracker/fft.cc \
+             external/REAPER/epoch_tracker/fd_filter.cc \
+             external/REAPER/epoch_tracker/lpc_analyzer.cc
 
 HEADERS   += src/wmainwindow.h \
              external/libqxt/qxtglobal.h \
@@ -244,7 +250,11 @@ HEADERS   += src/wmainwindow.h \
              src/colormap.h \
              src/QSettingsAuto.h \
              src/aboutbox.h \
-             src/fileslistwidget.h
+             src/fileslistwidget.h \
+             external/REAPER/epoch_tracker/epoch_tracker.h \
+             external/REAPER/epoch_tracker/fft.h \
+             external/REAPER/epoch_tracker/fd_filter.h \
+             external/REAPER/epoch_tracker/lpc_analyzer.h
 
 FORMS     += src/wmainwindow.ui \
              src/wdialogselectchannel.ui \
