@@ -68,7 +68,12 @@ void GVSpectrogramWDialogSettings::checkImageSize() {
     int winlen = std::floor(0.5+gFL->getFs()*ui->sbSpectrogramWindowSize->value());
     if(winlen%2==0 && ui->cbSpectrogramWindowSizeForcedOdd->isChecked())
         winlen++;
-    int dftlen = pow(2, std::ceil(log2(float(winlen)))+ui->sbSpectrogramOversamplingFactor->value());//[samples]
+
+    int dftlen = -1;
+    if(ui->cbSpectrogramDFTSizeType->currentIndex()==0)
+        dftlen = ui->sbSpectrogramDFTSize->value();
+    else if(ui->cbSpectrogramDFTSizeType->currentIndex()==1)
+        dftlen = pow(2, std::ceil(log2(float(winlen)))+ui->sbSpectrogramOversamplingFactor->value());//[samples]
 
     ui->lblActualWindowLength->setText(QString("%2s(%1)").arg(winlen).arg(double(winlen)/gFL->getFs()));
     ui->lblActualStepSize->setText(QString("%2s(%1)").arg(stepsize).arg(double(stepsize)/gFL->getFs()));
@@ -84,7 +89,7 @@ void GVSpectrogramWDialogSettings::checkImageSize() {
     if(imgwidth>32768 || imgheight>32768){
         text += "<br/><font color=\"red\">Image dimensions need to be smaller than 32768.<br/>You can: increase step size, reduce window length, reduce oversampling factor,<br/>or try it! (visual artefacts expected)</font>";
     }
-    text += "<br/></body></html>";
+    text += "</body></html>";
     ui->lblImgSizeWarning->setText(text);
 }
 
