@@ -31,8 +31,9 @@ License
     This software is under the GPL (v3) License. See the file LICENSE.txt
     or http://www.gnu.org/licenses/gpl.html
     All source files of any kind (code source and any ressources), except
-    the content of the 'external' directory, which are either necessary or
-    optional for compiling this software, are under the same GPL license.
+    the content of the 'external' directory, are under the same GPL license.
+    Please refer to the content of the 'external' directory for the legal issues
+    related to those code source.
 
     The icons are under the Creative Commons License
     http://creativecommons.org/licenses/by/3.0/us/

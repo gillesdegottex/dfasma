@@ -56,7 +56,7 @@ FTFZero::FTFZero(const QString& _fileName, QObject* parent, FileType::FileContai
     Q_UNUSED(parent)
 
     if(fileFullPath.isEmpty())
-        throw QString("This ctor is for existing files. Use the empty ctor for empty f0 object.");
+        throw QString("This ctor is for existing files. Use the empty ctor for empty F0 object.");
 
     init();
 
@@ -122,7 +122,7 @@ void FTFZero::load() {
     }
 
     if(m_fileformat==FFAutoDetect)
-        throw QString("Cannot detect the file format of this f0 file");
+        throw QString("Cannot detect the file format of this F0 file");
 
     // Load the data given the format found or the one given
     if(m_fileformat==FFAsciiTimeValue){
@@ -171,7 +171,7 @@ void FTFZero::load() {
                     SDIFMatrix tmpMatrix = frame.GetMatrix(i);
 
                     if(tmpMatrix.GetNbCols()<1 || tmpMatrix.GetNbRows()<1)
-                        throw QString("f0 value is missing in a 1FQ0 frame at time ")+QString::number(t);
+                        throw QString("F0 value is missing in a 1FQ0 frame at time ")+QString::number(t);
 
                     ts.push_back(t);
                     f0s.push_back(tmpMatrix.GetDouble(0, 0));
@@ -216,7 +216,7 @@ void FTFZero::load() {
         #endif
     }
     else
-        throw QString("File format not recognized for loading this f0 file.");
+        throw QString("File format not recognized for loading this F0 file.");
 
     updateTextsGeometry();
 
@@ -242,7 +242,7 @@ bool FTFZero::reload() {
 
 QString FTFZero::info() const {
     QString str = FileType::info();
-    str += "Number of f0 values: " + QString::number(ts.size()) + "<br/>";
+    str += "Number of F0 values: " + QString::number(ts.size()) + "<br/>";
     if(ts.size()>0){
         // TODO Should be done once
         double meandts = 0.0;
@@ -272,7 +272,7 @@ QString FTFZero::info() const {
             str += QString(" with zero values");
         else
             str += QString(" without zero values");
-        str += QString("<br/>Mean f0=%3Hz").arg(meanf0, 0,'g',5);
+        str += QString("<br/>Mean F0=%1Hz").arg(meanf0, 0,'g',5);
     }
     return str;
 }

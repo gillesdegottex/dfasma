@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>626</width>
-    <height>513</height>
+    <width>669</width>
+    <height>424</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -212,7 +212,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_4">
+     <widget class="QWidget" name="tabEstimation">
       <attribute name="title">
        <string>Estimation</string>
       </attribute>
@@ -370,7 +370,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_3">
+     <widget class="QWidget" name="tabFileFormats">
       <attribute name="title">
        <string>File Formats</string>
       </attribute>
@@ -443,7 +443,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_2">
+     <widget class="QWidget" name="tabViews">
       <attribute name="title">
        <string>Views</string>
       </attribute>
@@ -600,7 +600,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="tabDocs">
       <attribute name="title">
        <string>Documentation/Shortcuts</string>
       </attribute>

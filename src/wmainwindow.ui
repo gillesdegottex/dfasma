@@ -891,10 +891,10 @@
   </action>
   <action name="actionEstimationF0">
    <property name="text">
-    <string>Estimate f0</string>
+    <string>Estimate F0</string>
    </property>
    <property name="toolTip">
-    <string>Estimate the fundamental frequency (f0) from the selected sound</string>
+    <string>Estimate the fundamental frequency (F0) from the selected sound</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
