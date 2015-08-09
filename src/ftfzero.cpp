@@ -246,28 +246,32 @@ QString FTFZero::info() const {
     if(ts.size()>0){
         // TODO Should be done once
         double meandts = 0.0;
-        double meanf0 = f0s[0];
-        int nbf0 = 0;
-        int nbzeros = 0;
-        double f0min = f0s[0];
-        double f0max = f0s[0];
-        for(size_t i=1; i<ts.size(); ++i){
-            meandts += ts[i]-ts[i-1];
-            if(f0s[i]>0){
+        double meanf0 = 0.0;
+        int nbnonzerovalues = 0;
+        int nbzerovalues = 0;
+        double f0min = std::numeric_limits<double>::infinity();
+        double f0max = -std::numeric_limits<double>::infinity();
+        for(size_t i=0; i<ts.size(); ++i){
+            if(i>0)
+                meandts += ts[i]-ts[i-1];
+            if(f0s[i]>std::numeric_limits<float>::epsilon()){
+//                COUTD << f0s[i] << endl;
                 f0min = std::min(f0min, f0s[i]);
                 f0max = std::max(f0max, f0s[i]);
                 meanf0 += f0s[i];
-                nbf0++;
+                nbnonzerovalues++;
             }
             else
-                nbzeros++;
+                nbzerovalues++;
         }
         meandts /= ts.size();
-        meanf0 /= nbf0;
+        meanf0 /= nbnonzerovalues;
         str += "Average sampling: " + QString("%1").arg(meandts, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()) + "s<br/>";
         str += QString("F0 in [%1,%2]Hz").arg(f0min, 0,'g',3).arg(f0max, 0,'g',5);
-        if(nbzeros>0)
+        if(nbzerovalues>0)
             str += QString(" with zero values");
+        else
+            str += QString(" without zero values");
         str += QString("<br/>Mean f0=%3Hz").arg(meanf0, 0,'g',5);
     }
     return str;
