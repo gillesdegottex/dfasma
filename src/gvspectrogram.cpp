@@ -1142,7 +1142,10 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
             for(int ti=0; ti<int(gFL->ftfzeros[fi]->ts.size())-1; ++ti){
                 if(gFL->ftfzeros[fi]->f0s[ti]>0.0)
                     f0min = std::min(f0min, gFL->ftfzeros[fi]->f0s[ti]);
-                painter->drawLine(QLineF(gFL->ftfzeros[fi]->ts[ti], fs/2-gFL->ftfzeros[fi]->f0s[ti], gFL->ftfzeros[fi]->ts[ti+1], fs/2-gFL->ftfzeros[fi]->f0s[ti+1]));
+                double lf0 = gFL->ftfzeros[fi]->f0s[ti];
+                double rf0 = gFL->ftfzeros[fi]->f0s[ti+1];
+                if(lf0>0 && rf0>0)
+                    painter->drawLine(QLineF(gFL->ftfzeros[fi]->ts[ti], fs/2-lf0, gFL->ftfzeros[fi]->ts[ti+1], fs/2-rf0));
             }
             if(gFL->ftfzeros[fi]->f0s.back()>0.0)
                 f0min = std::min(f0min, gFL->ftfzeros[fi]->f0s.back());
@@ -1152,9 +1155,14 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
                 c.setAlphaF(0.5);
                 outlinePen.setColor(c);
                 painter->setPen(outlinePen);
-                for(int h=2; h<int(0.5*fs/f0min)+1; h++)
-                    for(int ti=0; ti<int(gFL->ftfzeros[fi]->ts.size())-1; ++ti)
-                        painter->drawLine(QLineF(gFL->ftfzeros[fi]->ts[ti], fs/2-h*gFL->ftfzeros[fi]->f0s[ti], gFL->ftfzeros[fi]->ts[ti+1], fs/2-h*gFL->ftfzeros[fi]->f0s[ti+1]));
+                for(int h=2; h<int(0.5*fs/f0min)+1; h++){
+                    for(int ti=0; ti<int(gFL->ftfzeros[fi]->ts.size())-1; ++ti){
+                        double lf0 = gFL->ftfzeros[fi]->f0s[ti];
+                        double rf0 = gFL->ftfzeros[fi]->f0s[ti+1];
+                        if(lf0>0 && rf0>0)
+                            painter->drawLine(QLineF(gFL->ftfzeros[fi]->ts[ti], fs/2-h*gFL->ftfzeros[fi]->f0s[ti], gFL->ftfzeros[fi]->ts[ti+1], fs/2-h*gFL->ftfzeros[fi]->f0s[ti+1]));
+                    }
+                }
             }
         }
     }
