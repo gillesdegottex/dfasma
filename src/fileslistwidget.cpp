@@ -78,7 +78,19 @@ void FilesListWidget::stopFileProgressDialog() {
     QCoreApplication::processEvents(); // To show the progress
 }
 
-void FilesListWidget::addFilesRecursive(const QStringList& files, FileType::FType type) {
+void FilesListWidget::addFile(FileType* ft) {
+
+    if(ft->type==FileType::FTSOUND)
+        ftsnds.push_back((FTSound*)ft);
+    else if(ft->type==FileType::FTFZERO)
+        ftfzeros.push_back((FTFZero*)ft);
+    else if(ft->type==FileType::FTLABELS)
+        ftlabels.push_back((FTLabels*)ft);
+
+    addItem(ft);
+}
+
+void FilesListWidget::addExistingFilesRecursive(const QStringList& files, FileType::FType type) {
     for(int fi=0; fi<files.size() && !m_prgdlg->wasCanceled(); fi++) {
         if(QFileInfo(files[fi]).isDir()) {
 //            COUTD << "Add recursive" << endl;
@@ -89,7 +101,7 @@ void FilesListWidget::addFilesRecursive(const QStringList& files, FileType::FTyp
             if(fpd.count()>0){
                 for(int fpdi=0; fpdi<int(fpd.count()) && !m_prgdlg->wasCanceled(); ++fpdi){
 //                    COUTD << "Dir: " << fpd[fpdi].toLatin1().constData() << endl;
-                    addFilesRecursive(QStringList(fpd.filePath(fpd[fpdi])));
+                    addExistingFilesRecursive(QStringList(fpd.filePath(fpd[fpdi])));
                 }
             }
 
@@ -102,19 +114,19 @@ void FilesListWidget::addFilesRecursive(const QStringList& files, FileType::FTyp
 //                    COUTD << "File: " << fpd[fpdi].toLatin1().constData() << endl;
                     m_prgdlg->setValue(fpdi);
                     QCoreApplication::processEvents(); // To show the progress
-                    addFile(fpd.filePath(fpd[fpdi]));
+                    addExistingFile(fpd.filePath(fpd[fpdi]));
                 }
             }
         }
         else {
             if(m_prgdlg) m_prgdlg->setValue(fi);
             QCoreApplication::processEvents(); // To show the progress
-            addFile(files[fi], type);
+            addExistingFile(files[fi], type);
         }
     }
 }
 
-void FilesListWidget::addFiles(const QStringList& files, FileType::FType type) {
+void FilesListWidget::addExistingFiles(const QStringList& files, FileType::FType type) {
 //    COUTD << "WMainWindow::addFiles " << files.size() << endl;
 
     // These progress dialogs HAVE to be built on the stack otherwise ghost dialogs appear.
@@ -122,13 +134,13 @@ void FilesListWidget::addFiles(const QStringList& files, FileType::FType type) {
     prgdlg.setMinimumDuration(500);
     m_prgdlg = &prgdlg;
 
-    addFilesRecursive(files, type);
+    addExistingFilesRecursive(files, type);
 
     stopFileProgressDialog();
     m_prgdlg = NULL;
 }
 
-void FilesListWidget::addFile(const QString& filepath, FileType::FType type) {
+void FilesListWidget::addExistingFile(const QString& filepath, FileType::FType type) {
 //    cout << "INFO: Add file: " << filepath.toLocal8Bit().constData() << endl;
 
     if(QFileInfo(filepath).isDir())
@@ -192,7 +204,7 @@ void FilesListWidget::addFile(const QString& filepath, FileType::FType type) {
             int nchan = FTSound::getNumberOfChannels(filepath);
             if(nchan==1){
                 // If there is only one channel, just load it
-                addItem(new FTSound(filepath, this));
+                addFile(new FTSound(filepath, this));
             }
             else{
                 // If more than one channel, ask what to do
@@ -201,14 +213,14 @@ void FilesListWidget::addFile(const QString& filepath, FileType::FType type) {
                 if(dlg.exec()) {
                     if(dlg.ui->rdbImportEachChannel->isChecked()){
                         for(int ci=1; ci<=nchan; ci++){
-                            addItem(new FTSound(filepath, this, ci));
+                            addFile(new FTSound(filepath, this, ci));
                         }
                     }
                     else if(dlg.ui->rdbImportOnlyOneChannel->isChecked()){
-                        addItem(new FTSound(filepath, this, dlg.ui->sbChannelID->value()));
+                        addFile(new FTSound(filepath, this, dlg.ui->sbChannelID->value()));
                     }
                     else if(dlg.ui->rdbMergeAllChannels->isChecked()){
-                        addItem(new FTSound(filepath, this, -2));// -2 is a code for merging the channels
+                        addFile(new FTSound(filepath, this, -2));// -2 is a code for merging the channels
                     }
                 }
             }
@@ -222,9 +234,9 @@ void FilesListWidget::addFile(const QString& filepath, FileType::FType type) {
             }
         }
         else if(type == FileType::FTFZERO)
-            addItem(new FTFZero(filepath, this, container));
+            addFile(new FTFZero(filepath, this, container));
         else if(type == FileType::FTLABELS)
-            addItem(new FTLabels(filepath, this, container));
+            addFile(new FTLabels(filepath, this, container));
     }
     catch (QString err)
     {
@@ -477,7 +489,7 @@ void FilesListWidget::selectedFilesDuplicate() {
 
         FileType* ft = currentfile->duplicate();
         if(ft){
-            addItem(ft);
+            addFile(ft);
             gMW->m_gvWaveform->updateSceneRect();
             gMW->allSoundsChanged();
             gMW->ui->actionSelectedFilesClose->setEnabled(true);

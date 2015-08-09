@@ -295,7 +295,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 
     // This one seems able to open distant files because file paths arrive in gvfs format
     // in the main.
-    m_fileslist->addFiles(files);
+    m_fileslist->addExistingFiles(files);
     updateViewsAfterAddFile(true);
 
     if(files.size()>0)
@@ -358,7 +358,7 @@ void WMainWindow::execAbout(){
 void WMainWindow::newFile(){
     QMessageBox::StandardButton btn = QMessageBox::question(this, "Create a new file ...", "Do you want to create an empty label file?", QMessageBox::Yes | QMessageBox::No);
     if(btn==QMessageBox::Yes){
-        m_fileslist->addItem(new FTLabels(this));
+        m_fileslist->addFile(new FTLabels(this));
     }
 }
 
@@ -401,7 +401,7 @@ void WMainWindow::openFile() {
 
     if(files.size()>0) {
         bool isfirsts = m_fileslist->ftsnds.size()==0;
-        m_fileslist->addFiles(files, type);
+        m_fileslist->addExistingFiles(files, type);
         updateViewsAfterAddFile(isfirsts);
     }
 }
@@ -419,7 +419,7 @@ void WMainWindow::dropEvent(QDropEvent *event){
 //        files.append(lurl[lurli].url());
 
     bool isfirsts = m_fileslist->ftsnds.size()==0;
-    m_fileslist->addFiles(files);
+    m_fileslist->addExistingFiles(files);
     updateViewsAfterAddFile(isfirsts);
 }
 void WMainWindow::dragEnterEvent(QDragEnterEvent *event){

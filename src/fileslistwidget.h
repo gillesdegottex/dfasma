@@ -19,7 +19,7 @@ class FilesListWidget : public QListWidget
 
     FTSound* m_lastSelectedSound;
 
-    void addFilesRecursive(const QStringList& files, FileType::FType type=FileType::FTUNSET);
+    void addExistingFilesRecursive(const QStringList& files, FileType::FType type=FileType::FTUNSET);
 
     // The progress dialog when loading a lot of files
     QProgressDialog* m_prgdlg;
@@ -28,14 +28,13 @@ class FilesListWidget : public QListWidget
 public:
     explicit FilesListWidget(QMainWindow *parent = 0);
 
-    void closeEditor(QWidget * editor, QAbstractItemDelegate::EndEditHint hint); // Wrong: it belongs to qlistview
-
-    void addFiles(const QStringList& files, FileType::FType type=FileType::FTUNSET);
-    void addFile(const QString& filepath, FileType::FType type=FileType::FTUNSET);
-
     std::deque<FTSound*> ftsnds;
     std::deque<FTFZero*> ftfzeros;
     std::deque<FTLabels*> ftlabels;
+    void addFile(FileType* ft);
+
+    void addExistingFiles(const QStringList& files, FileType::FType type=FileType::FTUNSET);
+    void addExistingFile(const QString& filepath, FileType::FType type=FileType::FTUNSET);
 
     FileType* currentFile() const;
     FTSound* getCurrentFTSound(bool forceselect=false);
@@ -45,6 +44,9 @@ public:
     unsigned int getMaxWavSize();
     double getMaxDuration();
     double getMaxLastSampleTime();
+
+
+    void closeEditor(QWidget * editor, QAbstractItemDelegate::EndEditHint hint); // Wrong: it belongs to qlistview
 
 signals:
 

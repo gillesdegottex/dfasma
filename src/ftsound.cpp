@@ -205,8 +205,6 @@ FTSound::FTSound(const QString& _fileName, QObject *parent, int channelid)
         }
     }
 
-    gFL->ftsnds.push_back(this);
-
 //    QIODevice::open(QIODevice::ReadOnly);
 }
 
@@ -229,8 +227,6 @@ FTSound::FTSound(const FTSound& ft)
 
     m_lastreadtime = ft.m_lastreadtime;
     m_modifiedtime = ft.m_modifiedtime;
-
-    gFL->ftsnds.push_back(this);
 }
 
 void FTSound::load_finalize() {
@@ -783,8 +779,7 @@ void FTSound::estimateFZero(){
     try {
         FTFZero* ftf0 = new FTFZero(this, gMW);
 
-        gFL->ftfzeros.push_back(ftf0);
-        gFL->addItem(ftf0);
+        gFL->addFile(ftf0);
         gMW->m_gvSpectrogram->m_scene->update();
         gMW->m_gvAmplitudeSpectrum->m_scene->update();
     }

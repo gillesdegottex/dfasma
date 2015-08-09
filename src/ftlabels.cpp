@@ -146,8 +146,6 @@ FTLabels::FTLabels(QObject *parent)
     else
         setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.lab");
     m_fileformat = FFNotSpecified;
-
-    gFL->ftlabels.push_back(this);
 }
 
 // Construct from an existing file name
@@ -170,8 +168,6 @@ FTLabels::FTLabels(const QString& _fileName, QObject* parent, FileType::FileCont
 
     checkFileStatus(CFSMEXCEPTION);
     load();
-
-    gFL->ftlabels.push_back(this);
 }
 
 // Copy constructor
@@ -187,8 +183,6 @@ FTLabels::FTLabels(const FTLabels& ft)
 
     m_lastreadtime = ft.m_lastreadtime;
     m_modifiedtime = ft.m_modifiedtime;
-
-    gFL->ftlabels.push_back(this);
 
     updateTextsGeometry();
 }

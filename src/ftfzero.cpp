@@ -70,8 +70,6 @@ FTFZero::FTFZero(const QString& _fileName, QObject* parent, FileType::FileContai
         checkFileStatus(CFSMEXCEPTION);
         load();
     }
-
-    gFL->ftfzeros.push_back(this);
 }
 
 FTFZero::FTFZero(const FTFZero& ft)
@@ -85,8 +83,6 @@ FTFZero::FTFZero(const FTFZero& ft)
 
     m_lastreadtime = ft.m_lastreadtime;
     m_modifiedtime = ft.m_modifiedtime;
-
-    gFL->ftfzeros.push_back(this);
 
     updateTextsGeometry();
 }
@@ -251,19 +247,28 @@ QString FTFZero::info() const {
         // TODO Should be done once
         double meandts = 0.0;
         double meanf0 = f0s[0];
+        int nbf0 = 0;
+        int nbzeros = 0;
         double f0min = f0s[0];
         double f0max = f0s[0];
         for(size_t i=1; i<ts.size(); ++i){
-            f0min = std::min(f0min, f0s[i]);
-            f0max = std::max(f0max, f0s[i]);
             meandts += ts[i]-ts[i-1];
-            meanf0 += f0s[i];
+            if(f0s[i]>0){
+                f0min = std::min(f0min, f0s[i]);
+                f0max = std::max(f0max, f0s[i]);
+                meanf0 += f0s[i];
+                nbf0++;
+            }
+            else
+                nbzeros++;
         }
         meandts /= ts.size();
-        meanf0 /= f0s.size();
+        meanf0 /= nbf0;
         str += "Average sampling: " + QString("%1").arg(meandts, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()) + "s<br/>";
-        str += QString("F0 in [%1,%2]Hz<br/>").arg(f0min, 0,'g',3).arg(f0max, 0,'g',5);
-        str += QString("Mean f0=%3Hz").arg(meanf0, 0,'g',5);
+        str += QString("F0 in [%1,%2]Hz").arg(f0min, 0,'g',3).arg(f0max, 0,'g',5);
+        if(nbzeros>0)
+            str += QString(" with zero values");
+        str += QString("<br/>Mean f0=%3Hz").arg(meanf0, 0,'g',5);
     }
     return str;
 }
