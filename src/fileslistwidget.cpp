@@ -10,7 +10,7 @@
 #include "gvphasespectrum.h"
 #include "gvspectrogram.h"
 #include "filetype.h"
-#include "external/audioengine/audioengine.h"
+#include "../external/audioengine/audioengine.h"
 
 #include <QFileInfo>
 #include <QProgressDialog>

@@ -52,7 +52,7 @@ using namespace std;
 #include <QAction>
 #include <QScrollBar>
 #include <QMessageBox>
-#include "external/audioengine/audioengine.h"
+#include "../external/audioengine/audioengine.h"
 
 #include "qthelper.h"
 

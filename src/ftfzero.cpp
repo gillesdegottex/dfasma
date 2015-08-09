@@ -324,7 +324,7 @@ FTFZero::~FTFZero() {
 
 // Analysis --------------------------------------------------------------------
 
-#include "external/REAPER/epoch_tracker/epoch_tracker.h"
+#include "../external/REAPER/epoch_tracker/epoch_tracker.h"
 
 FTFZero::FTFZero(FTSound *ftsnd, double f0min, double f0max, QObject *parent)
     : FileType(FTFZERO, ftsnd->fileFullPath+".f0.txt", this)
