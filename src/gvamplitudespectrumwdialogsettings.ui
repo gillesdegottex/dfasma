@@ -409,9 +409,6 @@
           <property name="value">
            <number>1024</number>
           </property>
-          <property name="displayIntegerBase">
-           <number>10</number>
-          </property>
          </widget>
         </item>
         <item>
