@@ -33,6 +33,7 @@ using namespace Easdif;
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QGraphicsSimpleTextItem>
+#include <QDir>
 #include <qmath.h>
 #include <qendian.h>
 
@@ -55,7 +56,7 @@ FTFZero::FTFZero(const QString& _fileName, QObject* parent, FileType::FileContai
     Q_UNUSED(parent)
 
     if(fileFullPath.isEmpty())
-        throw QString("This ctor is for existing files. Use the empty ctor for empty label object.");
+        throw QString("This ctor is for existing files. Use the empty ctor for empty f0 object.");
 
     init();
 
@@ -309,4 +310,66 @@ double FTFZero::getLastSampleTime() const {
 
 FTFZero::~FTFZero() {
     delete m_aspec_txt;
+}
+
+
+// Analysis --------------------------------------------------------------------
+
+#include "external/REAPER/epoch_tracker/epoch_tracker.h"
+
+FTFZero::FTFZero(FTSound *ftsnd, QObject *parent)
+    : FileType(FTFZERO, ftsnd->fileFullPath+".f0.txt", this)
+{
+    Q_UNUSED(parent);
+
+    init();
+
+//    if(_fileName==""){
+////        if(gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText==FFSDIF)
+////            setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.sdif");
+////        m_fileformat = FFSDIF;
+////        else
+//        setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.txt");
+//        m_fileformat = FFAsciiTimeValue;
+//    }
+
+    // Compute the f0 from the given sound file
+
+    float min_f0 = 80;
+    float max_f0 = 500;
+    float timestepsize = 0.005;
+
+    EpochTracker et;
+
+    // Initialize with the given input
+    // Start with a dirty copy in the necessary format
+    vector<int16_t> data(ftsnd->wav.size());
+    for(size_t i=0; i<ftsnd->wav.size(); ++i)
+        data[i] = 32768*ftsnd->wav[i];
+    int16_t* wave_datap = data.data();
+    int32_t n_samples = ftsnd->wav.size();
+    float sample_rate = gFL->getFs();
+    if (!et.Init(wave_datap, n_samples, sample_rate,
+          min_f0, max_f0, true, true))
+        throw QString("EpochTracker initialisation failed");
+
+    // Compute f0 and pitchmarks.
+    if (!et.ComputeFeatures())
+        throw QString("Failed to compute features");
+
+    if (!et.TrackEpochs())
+        throw QString("Failed to track epochs");
+
+    std::vector<float> f0; // TODO Drop this temporary variable
+    std::vector<float> corr;
+    if (!et.ResampleAndReturnResults(timestepsize, &f0, &corr))
+        throw QString("Cannot resample the results");
+
+    // Everything seemed to go well, let's built the new file
+    for (size_t i = 0; i<f0.size(); ++i) {
+        ts.push_back(timestepsize*i);
+        f0s.push_back(f0[i]);
+    }
+
+    updateTextsGeometry();
 }

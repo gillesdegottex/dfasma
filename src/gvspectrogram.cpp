@@ -450,6 +450,7 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
 
 void QGVSpectrogram::updateSceneRect() {
     m_scene->setSceneRect(-1.0/gFL->getFs(), 0.0, gFL->getMaxDuration()+1.0/gFL->getFs(), gFL->getFs()/2);
+    m_scene->update();
 //    updateTextsGeometry();
 }
 

@@ -123,6 +123,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     connect(ui->actionSelectedFilesClose, SIGNAL(triggered()), gFL, SLOT(selectedFilesClose()));
     connect(ui->actionSelectedFilesDuplicate, SIGNAL(triggered()), gFL, SLOT(selectedFilesDuplicate()));
     connect(ui->actionSelectedFilesSave, SIGNAL(triggered()), gFL, SLOT(selectedFilesSave()));
+    connect(ui->actionEstimationF0, SIGNAL(triggered()), gFL, SLOT(selectedFilesEstimateF0()));
 
     m_globalWaitingBarLabel = new QLabel(ui->statusBar);
     m_globalWaitingBarLabel->setAlignment(Qt::AlignRight);
@@ -165,6 +166,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     addAction(ui->actionSelectedFilesDuplicate);
     addAction(ui->actionSelectedFilesSave);
     addAction(ui->actionPlayFiltered);
+    addAction(ui->actionEstimationF0);
 
     // Audio engine for playing the selections
     ui->actionPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));

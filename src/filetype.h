@@ -81,7 +81,7 @@ public:
     bool checkFileStatus(CHECKFILESTATUSMGT cfsmgt=CFSMQUIET);
     virtual void setStatus();
 
-    void setFullPath(const QString& fp){fileFullPath = fp;}
+    void setFullPath(const QString& fp);
     virtual bool reload()=0;
 };
 

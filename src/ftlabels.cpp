@@ -126,7 +126,7 @@ void FTLabels::init(){
     m_fileformat = FFNotSpecified;
     m_actionSave = new QAction("Save", this);
     m_actionSave->setStatusTip(tr("Save the labels times (overwrite the file !)"));
-    m_actionSave->setShortcut(QKeySequence(tr("Ctrl+S")));
+    m_actionSave->setShortcut(gMW->ui->actionSelectedFilesSave->shortcut());
     connect(m_actionSave, SIGNAL(triggered()), this, SLOT(save()));
     m_actionSaveAs = new QAction("Save as...", this);
     m_actionSaveAs->setStatusTip(tr("Save the labels times in a given file..."));

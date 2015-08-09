@@ -889,6 +889,17 @@
     <string>Ctrl+S</string>
    </property>
   </action>
+  <action name="actionEstimationF0">
+   <property name="text">
+    <string>Estimate f0</string>
+   </property>
+   <property name="toolTip">
+    <string>Estimate the fundamental frequency (f0) from the selected sound</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>

@@ -64,6 +64,8 @@ public slots:
     void selectedFilesToggleShown();
     void selectedFilesDuplicate();
     void selectedFilesSave();
+
+    void selectedFilesEstimateF0();
 };
 
 #endif // FILESLISTWIDGET_H

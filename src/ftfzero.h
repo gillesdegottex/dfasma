@@ -30,6 +30,7 @@ file provided in the source code of DFasma. Another copy can be found at
 class QGraphicsSimpleTextItem;
 
 #include "filetype.h"
+class FTSound;
 
 class FTFZero : public QObject, public FileType
 {
@@ -42,10 +43,11 @@ class FTFZero : public QObject, public FileType
 
 public:
     enum FileFormat {FFNotSpecified=0, FFAutoDetect, FFAsciiAutoDetect, FFAsciiTimeValue, FFSDIF};
-//    FTFZero(QObject* parent);
-    FTFZero(const FTFZero& ft);
+//    FTFZero(QObject* parent, const QString& _fileName="");
     FTFZero(const QString& _fileName, QObject* parent, FileType::FileContainer container=FileType::FCUNSET, FileFormat fileformat=FFNotSpecified);
     virtual FileType* duplicate();
+    FTFZero(const FTFZero& ft);  // Duplicate
+    FTFZero(FTSound *ftsnd, QObject* parent); // Analysis
 
     std::deque<double> ts;
     std::deque<double> f0s;

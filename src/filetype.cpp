@@ -132,16 +132,18 @@ FileType::FileType(FType _type, const QString& _fileName, QObject * parent)
     m_actionShow->setShortcut(gMW->ui->actionSelectedFilesToggleShown->shortcut());
 
     updateIcon();
+    setFullPath(fileFullPath);
+    setFlags(flags()|Qt::ItemIsEditable);
 
+//    QIODevice::open(QIODevice::ReadOnly);
+}
+void FileType::setFullPath(const QString& fp){
+    fileFullPath = fp;
     // Set properties common to all files
     QFileInfo fileInfo(fileFullPath);
     visibleName = fileInfo.fileName();
     setText(visibleName);
     setToolTip(fileInfo.absoluteFilePath());
-
-    setFlags(flags()|Qt::ItemIsEditable);
-
-//    QIODevice::open(QIODevice::ReadOnly);
 }
 
 QString FileType::info() const {

@@ -179,6 +179,11 @@ void FTSound::init(){
     m_actionResetFiltering->setStatusTip(tr("Reset to original signal without filtering effects"));
     connect(m_actionResetFiltering, SIGNAL(triggered()), this, SLOT(needDFTUpdate()));
     connect(m_actionResetFiltering, SIGNAL(triggered()), this, SLOT(resetFiltering()));
+
+    m_actionAnalysisFZero = new QAction("Estimate f0", this);
+    m_actionAnalysisFZero->setStatusTip(tr("Estimate the fundamental frequency (f0)"));
+    m_actionAnalysisFZero->setShortcut(gMW->ui->actionEstimationF0->shortcut());
+    connect(m_actionAnalysisFZero, SIGNAL(triggered()), this, SLOT(estimateFZero()));
 }
 
 FTSound::FTSound(const QString& _fileName, QObject *parent, int channelid)
@@ -384,6 +389,9 @@ void FTSound::fillContextMenu(QMenu& contextmenu) {
     m_actionResetDelay->setText(QString("Reset delay (%1s) to 0s").arg(m_delay/gFL->getFs(), 0, 'g', gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()));
     m_actionResetDelay->setDisabled(m_delay==0);
     contextmenu.addAction(m_actionResetDelay);
+
+    contextmenu.addSeparator();
+    contextmenu.addAction(m_actionAnalysisFZero);
 }
 
 void FTSound::needDFTUpdate() {
@@ -767,6 +775,26 @@ FTSound::~FTSound(){
     QIODevice::close();
 }
 
+
+// Analysis --------------------------------------------------------------------
+
+void FTSound::estimateFZero(){
+
+    try {
+        FTFZero* ftf0 = new FTFZero(this, gMW);
+
+        gFL->ftfzeros.push_back(ftf0);
+        gFL->addItem(ftf0);
+        gMW->m_gvSpectrogram->m_scene->update();
+        gMW->m_gvAmplitudeSpectrum->m_scene->update();
+    }
+    catch(QString err){
+        QMessageBox::warning(gMW, "Analysis of f0", "Estimation of the fundamental frequency failed for the following reason:\n"+err);
+    }
+}
+
+
+// -----------------------------------------------------------------------------
 
 //qint64 DSSound::bytesAvailable() const
 //{

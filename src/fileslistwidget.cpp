@@ -425,6 +425,8 @@ void FilesListWidget::selectedFilesClose() {
         gMW->m_gvWaveform->viewSet(gMW->m_gvWaveform->m_scene->sceneRect(), true);
     }
 
+    gMW->m_gvSpectrogram->m_scene->update();
+
     if(removeSelectedSound)
         gMW->m_gvSpectrogram->clearSTFTPlot();
 
@@ -497,6 +499,16 @@ void FilesListWidget::selectedFilesSave() {
     }
 }
 
+void FilesListWidget::selectedFilesEstimateF0() {
+    QList<QListWidgetItem*> l = selectedItems();
+
+    for(int i=0; i<l.size(); i++) {
+        FileType* currentfile = (FileType*)l.at(i);
+
+        if(currentfile->type==FileType::FTSOUND)
+            ((FTSound*)currentfile)->estimateFZero();
+    }
+}
 
 double FilesListWidget::getFs() const {
     if(ftsnds.size()>0)
