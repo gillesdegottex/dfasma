@@ -124,7 +124,9 @@ public:
     WDialogSettings* m_dlgSettings;
     Ui::WMainWindow* ui;
 
-    void globalWaitingBarMessage(const QString& statusmessage);
+    void globalWaitingBarMessage(const QString& statusmessage, int max=0);
+    void globalWaitingBarSetMaximum(int max);
+    void globalWaitingBarSetValue(int value);
     void globalWaitingBarDone();
     void globalWaitingBarClear();
 

@@ -344,9 +344,14 @@ FTFZero::FTFZero(FTSound *ftsnd, double f0min, double f0max, QObject *parent)
 
     // Compute the f0 from the given sound file
 
+    QString statusmessage = "Estimating F0 of "+fileFullPath+" in ["+QString::number(f0min)+","+QString::number(f0max)+"]Hz ...";
+    gMW->globalWaitingBarMessage(statusmessage, 6);
+
     double timestepsize = gMW->m_dlgSettings->ui->sbEstimationStepSize->value();
 
     EpochTracker et; // TODO to put in FTSound
+
+    gMW->globalWaitingBarSetValue(1);
 
     // Initialize with the given input
     // Start with a dirty copy in the necessary format
@@ -356,19 +361,33 @@ FTFZero::FTFZero(FTSound *ftsnd, double f0min, double f0max, QObject *parent)
     int16_t* wave_datap = data.data();
     int32_t n_samples = ftsnd->wav.size();
     float sample_rate = gFL->getFs();
+    if(sample_rate<6000.0)
+        QMessageBox::warning(gMW, "Problem during estimation of F0", "Sampling rate is smaller than 6kHz, which may create substantial estimation errors.");
+
+    gMW->globalWaitingBarSetValue(2);
+
     if (!et.Init(wave_datap, n_samples, sample_rate,
           f0min, f0max, true, true))
         throw QString("EpochTracker initialisation failed");
+
+    gMW->globalWaitingBarSetValue(3);
 
     // Compute f0 and pitchmarks.
     if (!et.ComputeFeatures())
         throw QString("Failed to compute features");
 
-    if (!et.TrackEpochs())
+    gMW->globalWaitingBarSetValue(4);
+
+    // et.TrackEpochs()
+    et.CreatePeriodLattice();
+    et.DoDynamicProgramming();
+    if (!et.BacktrackAndSaveOutput())
         throw QString("Failed to track epochs");
 
+    gMW->globalWaitingBarSetValue(5);
+
     std::vector<float> f0; // TODO Drop this temporary variable
-    std::vector<float> corr;
+    std::vector<float> corr; // Currently unused
     if (!et.ResampleAndReturnResults(timestepsize, &f0, &corr))
         throw QString("Cannot resample the results");
 
@@ -377,6 +396,8 @@ FTFZero::FTFZero(FTSound *ftsnd, double f0min, double f0max, QObject *parent)
         ts.push_back(timestepsize*i);
         f0s.push_back(f0[i]);
     }
+
+    gMW->globalWaitingBarDone();
 
     updateTextsGeometry();
 }

@@ -777,13 +777,7 @@ void FTSound::estimateFZero(){
         }
         f0min = std::max(10.0, f0min);
 
-        QString statusmessage = "Estimating F0 of "+fileFullPath+" in ["+QString::number(f0min)+","+QString::number(f0max)+"]Hz ...";
-
-        gMW->globalWaitingBarMessage(statusmessage);
-
         FTFZero* ftf0 = new FTFZero(this, f0min, f0max, gMW);
-
-        gMW->globalWaitingBarDone();
 
         gFL->addFile(ftf0);
         gMW->m_gvSpectrogram->m_scene->update();

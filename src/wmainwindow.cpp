@@ -347,24 +347,29 @@ void WMainWindow::execAbout(){
     box.exec();
 }
 
-void WMainWindow::globalWaitingBarMessage(const QString& statusmessage) {
-    gMW->statusBar()->showMessage(statusmessage);
-    gMW->m_globalWaitingBar->setMinimum(0);
-    gMW->m_globalWaitingBar->setMaximum(0);
-    gMW->m_globalWaitingBar->show();
+void WMainWindow::globalWaitingBarMessage(const QString& statusmessage, int max){
+    statusBar()->showMessage(statusmessage);
+    m_globalWaitingBar->setMinimum(0);
+    m_globalWaitingBar->setMaximum(max);
+    m_globalWaitingBar->show();
     statusBar()->update();
     QCoreApplication::processEvents(); // To show the progress
 }
-
+void WMainWindow::globalWaitingBarSetMaximum(int max){
+    m_globalWaitingBar->setMaximum(max);
+}
+void WMainWindow::globalWaitingBarSetValue(int value){
+    m_globalWaitingBar->setValue(value);
+}
 void WMainWindow::globalWaitingBarDone(){
-    gMW->statusBar()->showMessage(gMW->statusBar()->currentMessage()+" done", 3000);
-    gMW->m_globalWaitingBar->hide();
+    m_globalWaitingBar->setMaximum(m_globalWaitingBar->maximum());
+    statusBar()->showMessage(gMW->statusBar()->currentMessage()+" done", 3000);
+    m_globalWaitingBar->hide();
     QCoreApplication::processEvents(); // To show the progress
 }
-
 void WMainWindow::globalWaitingBarClear(){
-    gMW->statusBar()->clearMessage();
-    gMW->m_globalWaitingBar->hide();
+    statusBar()->clearMessage();
+    m_globalWaitingBar->hide();
     QCoreApplication::processEvents(); // To show the progress
 }
 
