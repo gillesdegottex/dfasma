@@ -161,7 +161,7 @@ public:
     }
 
     virtual void mouseMoveEvent(QMouseEvent * e) {
-        Q_UNUSED(e)
+        QScrollBar::mouseMoveEvent(e);
         setCursor(Qt::ArrowCursor);
     }
 };
