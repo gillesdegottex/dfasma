@@ -345,7 +345,7 @@ FTFZero::FTFZero(FTSound *ftsnd, double f0min, double f0max, QObject *parent)
     // Compute the f0 from the given sound file
 
     QString statusmessage = "Estimating F0 of "+fileFullPath+" in ["+QString::number(f0min)+","+QString::number(f0max)+"]Hz ...";
-    gMW->globalWaitingBarMessage(statusmessage, 6);
+    gMW->globalWaitingBarMessage(statusmessage, 8);
 
     double timestepsize = gMW->m_dlgSettings->ui->sbEstimationStepSize->value();
 
@@ -378,10 +378,15 @@ FTFZero::FTFZero(FTSound *ftsnd, double f0min, double f0max, QObject *parent)
 
     gMW->globalWaitingBarSetValue(4);
 
-    if (!et.TrackEpochs())
+    // et.TrackEpochs()
+    et.CreatePeriodLattice();
+    gMW->globalWaitingBarSetValue(5);
+    et.DoDynamicProgramming();
+    gMW->globalWaitingBarSetValue(6);
+    if (!et.BacktrackAndSaveOutput())
         throw QString("Failed to track epochs");
 
-    gMW->globalWaitingBarSetValue(5);
+    gMW->globalWaitingBarSetValue(7);
 
     std::vector<float> f0; // TODO Drop this temporary variable
     std::vector<float> corr; // Currently unused
