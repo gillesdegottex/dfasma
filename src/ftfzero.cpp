@@ -378,10 +378,7 @@ FTFZero::FTFZero(FTSound *ftsnd, double f0min, double f0max, QObject *parent)
 
     gMW->globalWaitingBarSetValue(4);
 
-    // et.TrackEpochs()
-    et.CreatePeriodLattice();
-    et.DoDynamicProgramming();
-    if (!et.BacktrackAndSaveOutput())
+    if (!et.TrackEpochs())
         throw QString("Failed to track epochs");
 
     gMW->globalWaitingBarSetValue(5);
