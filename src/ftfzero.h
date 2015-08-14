@@ -39,10 +39,16 @@ class FTFZero : public QObject, public FileType
     void init();
     void load();
 
+    QAction* m_actionSave;
+    QAction* m_actionSaveAs;
+
+    bool m_isedited;
+
     int m_fileformat;
 
 public:
     enum FileFormat {FFNotSpecified=0, FFAutoDetect, FFAsciiAutoDetect, FFAsciiTimeValue, FFSDIF};
+    static std::deque<QString> m_formatstrings;
 //    FTFZero(QObject* parent, const QString& _fileName="");
     FTFZero(const QString& _fileName, QObject* parent, FileType::FileContainer container=FileType::FCUNSET, FileFormat fileformat=FFNotSpecified);
     virtual FileType* duplicate();
@@ -53,6 +59,7 @@ public:
     std::deque<double> f0s;
 
     QGraphicsSimpleTextItem* m_aspec_txt;
+    virtual void fillContextMenu(QMenu& contextmenu);
     void updateTextsGeometry();
     void setColor(const QColor& _color);
 
@@ -63,6 +70,8 @@ public:
 
 public slots:
     bool reload();
+    void save();
+    void saveAs();
     void setVisible(bool shown);
 };
 

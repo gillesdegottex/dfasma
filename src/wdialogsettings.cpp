@@ -58,6 +58,13 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     #endif
     ui->cbLabelsDefaultFormat->setCurrentText(FTLabels::m_formatstrings[FTLabels::FFTEXTTimeText]);
 
+    ui->cbF0DefaultFormat->addItem(FTFZero::m_formatstrings[FTFZero::FFAsciiTimeValue]);
+    #ifdef SUPPORT_SDIF
+        ui->cbF0DefaultFormat->addItem(FTFZero::m_formatstrings[FTFZero::FFSDIF]);
+    #endif
+    ui->cbF0DefaultFormat->setCurrentText(FTFZero::m_formatstrings[FTFZero::FFAsciiTimeValue]);
+
+
     setWindowIcon(QIcon(":/icons/settings.svg"));
     setWindowIconText("Settings");
     setWindowTitle("Settings");
@@ -74,6 +81,7 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     gMW->m_settings.add(ui->sbPlaybackAvoidClicksWindowDuration);
     gMW->m_settings.add(ui->cbLabelsDefaultTextEncoding, true);
     gMW->m_settings.add(ui->cbLabelsDefaultFormat);
+    gMW->m_settings.add(ui->cbF0DefaultFormat);
     gMW->m_settings.add(ui->sbViewsToolBarSizes);
     gMW->m_settings.add(ui->sbFileListItemSize);
     gMW->m_settings.add(ui->sbViewsTimeDecimals);

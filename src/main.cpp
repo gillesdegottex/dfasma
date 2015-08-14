@@ -54,10 +54,10 @@ int main(int argc, char *argv[])
     if(FileType::m_typestrings.empty()){
         FileType::m_typestrings.push_back("All files (*)");
         FileType::m_typestrings.push_back("Sound (*.wav *.aiff *.pcm *.snd *.flac *.ogg)");
-        FileType::m_typestrings.push_back("F0 (*.bpf *.sdif)");
+        FileType::m_typestrings.push_back("F0 (*.f0.bpf *.bpf *.sdif)");
         FileType::m_typestrings.push_back("Label (*.bpf *.lab *.sdif)");
     }
-    // Map FileFormat with corresponding strings
+    // Map Labels FileFormat with corresponding strings
     if(FTLabels::m_formatstrings.empty()){
         FTLabels::m_formatstrings.push_back("Unspecified");
         FTLabels::m_formatstrings.push_back("Auto");
@@ -67,6 +67,14 @@ int main(int argc, char *argv[])
         FTLabels::m_formatstrings.push_back("Text Segment Samples (*.lab)");
         FTLabels::m_formatstrings.push_back("HTK Label File (*.lab)");
         FTLabels::m_formatstrings.push_back("SDIF 1MRK/1LAB (*.sdif)");
+    }
+    // Map F0 FileFormat with corresponding strings
+    if(FTFZero::m_formatstrings.empty()){
+        FTFZero::m_formatstrings.push_back("Unspecified");
+        FTFZero::m_formatstrings.push_back("Auto");
+        FTFZero::m_formatstrings.push_back("Auto Text");
+        FTFZero::m_formatstrings.push_back("Text Time/Value (*.f0.bpf)");
+        FTFZero::m_formatstrings.push_back("SDIF 1FQ0/1FQ0 (*.sdif)");
     }
 
 

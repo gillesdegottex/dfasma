@@ -315,6 +315,7 @@ void FilesListWidget::fileSelectionChanged() {
     QList<QListWidgetItem*> list = selectedItems();
     int nb_snd_in_selection = 0;
     int nb_labels_in_selection = 0;
+    int nb_f0_in_selection = 0;
 
     for(int i=0; i<list.size(); i++) {
         FileType* ft = ((FileType*)list.at(i));
@@ -325,6 +326,9 @@ void FilesListWidget::fileSelectionChanged() {
 
         if(ft->type == FileType::FTLABELS)
             nb_labels_in_selection++;
+
+        if(ft->type == FileType::FTFZERO)
+            nb_f0_in_selection++;
     }
 
     // Update the spectrogram to current selected signal
@@ -338,7 +342,7 @@ void FilesListWidget::fileSelectionChanged() {
         gMW->m_gvSpectrogram->m_scene->update();
     }
 
-    gMW->ui->actionSelectedFilesSave->setEnabled(nb_labels_in_selection>0);
+    gMW->ui->actionSelectedFilesSave->setEnabled(nb_labels_in_selection>0 || nb_f0_in_selection>0);
 
     fileInfoUpdate();
 
@@ -508,6 +512,9 @@ void FilesListWidget::selectedFilesSave() {
 
         if(currentfile->type==FileType::FTLABELS)
             ((FTLabels*)currentfile)->save();
+
+        if(currentfile->type==FileType::FTFZERO)
+            ((FTFZero*)currentfile)->save();
     }
 }
 

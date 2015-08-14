@@ -121,8 +121,6 @@ void FTGraphicsLabelItem::paint(QPainter *painter,const QStyleOptionGraphicsItem
 void FTLabels::init(){
     m_isedited = false;
 
-    connect(m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setVisible(bool)));
-
     m_fileformat = FFNotSpecified;
     m_actionSave = new QAction("Save", this);
     m_actionSave->setStatusTip(tr("Save the labels times (overwrite the file !)"));
@@ -517,7 +515,7 @@ void FTLabels::saveAs() {
 
 //    COUTD << fileFullPath.toLatin1().constData() << endl;
 
-    QString fp = QFileDialog::getSaveFileName(gMW, "Save file as...", fileFullPath, filters, &selectedFilter, QFileDialog::DontUseNativeDialog);
+    QString fp = QFileDialog::getSaveFileName(gMW, "Save label file as...", fileFullPath, filters, &selectedFilter, QFileDialog::DontUseNativeDialog);
 
     if(!fp.isEmpty()){
         try{
@@ -693,7 +691,8 @@ void FTLabels::save() {
 
     m_lastreadtime = QDateTime::currentDateTime();
     m_isedited = false;
-    setStatus();
+    checkFileStatus(CFSMEXCEPTION);
+    gFL->fileInfoUpdate();
     gMW->statusBar()->showMessage(fileFullPath+" saved.", 10000);
 }
 

@@ -34,20 +34,35 @@ using namespace Easdif;
 #include <QMessageBox>
 #include <QGraphicsSimpleTextItem>
 #include <QDir>
+#include <QFileDialog>
+#include <QStatusBar>
 #include <qmath.h>
 #include <qendian.h>
 
 #include "wmainwindow.h"
+#include "ui_wmainwindow.h"
 #include "ui_wdialogsettings.h"
 #include "gvamplitudespectrum.h"
 
 #include "qthelper.h"
 
+std::deque<QString> FTFZero::m_formatstrings;
+
 void FTFZero::init(){
+    m_isedited = false;
     m_fileformat = FFNotSpecified;
+
     m_aspec_txt = new QGraphicsSimpleTextItem("unset");
     gMW->m_gvAmplitudeSpectrum->m_scene->addItem(m_aspec_txt);
-    setColor(color);
+    setColor(color); // Indirectly set the proper color to the m_aspec_txt
+
+    m_actionSave = new QAction("Save", this);
+    m_actionSave->setStatusTip(tr("Save the labels (overwrite the file !)"));
+    m_actionSave->setShortcut(gMW->ui->actionSelectedFilesSave->shortcut());
+    connect(m_actionSave, SIGNAL(triggered()), this, SLOT(save()));
+    m_actionSaveAs = new QAction("Save as...", this);
+    m_actionSaveAs->setStatusTip(tr("Save the f0 curve in a given file..."));
+    connect(m_actionSaveAs, SIGNAL(triggered()), this, SLOT(saveAs()));
 }
 
 FTFZero::FTFZero(const QString& _fileName, QObject* parent, FileType::FileContainer container, FileFormat fileformat)
@@ -240,6 +255,128 @@ bool FTFZero::reload() {
     return true;
 }
 
+void FTFZero::saveAs() {
+    if(ts.size()==0){
+        QMessageBox::warning(NULL, "Nothing to save!", "There is no content to save from this file. No file will be saved.");
+        return;
+    }
+
+    // Build the filter string
+    QString filters;
+    filters += m_formatstrings[FFAsciiTimeValue];
+    #ifdef SUPPORT_SDIF
+        filters += ";;"+m_formatstrings[FFSDIF];
+    #endif
+    QString selectedFilter;
+    if(m_fileformat==FFNotSpecified) {
+        if(gMW->m_dlgSettings->ui->cbF0DefaultFormat->currentIndex()+FFAsciiTimeValue<int(m_formatstrings.size()))
+            selectedFilter = m_formatstrings[gMW->m_dlgSettings->ui->cbF0DefaultFormat->currentIndex()+FFAsciiTimeValue];
+    }
+    else
+        selectedFilter = m_formatstrings[m_fileformat];
+
+//    COUTD << fileFullPath.toLatin1().constData() << endl;
+
+    QString fp = QFileDialog::getSaveFileName(gMW, "Save F0 file as...", fileFullPath, filters, &selectedFilter, QFileDialog::DontUseNativeDialog);
+
+    if(!fp.isEmpty()){
+        try{
+            setFullPath(fp);
+            if(selectedFilter==m_formatstrings[FFAsciiTimeValue])
+                m_fileformat = FFAsciiTimeValue;
+            #ifdef SUPPORT_SDIF
+            else if(selectedFilter==m_formatstrings[FFSDIF])
+                m_fileformat = FFSDIF;
+            #endif
+
+            if(m_fileformat==FFNotSpecified || m_fileformat==FFAutoDetect)
+                m_fileformat = FFAsciiTimeValue;
+
+            save();
+        }
+        catch(QString &e) {
+            QMessageBox::critical(NULL, "Cannot save under this file path.", e);
+        }
+    }
+}
+
+void FTFZero::save() {
+    if(ts.size()==0){
+        QMessageBox::warning(NULL, "Nothing to save!", "There is no content to save from this file. No file will be saved.");
+        return;
+    }
+
+    if(m_fileformat==FFNotSpecified || m_fileformat==FFAutoDetect)
+        m_fileformat = FFAsciiTimeValue;
+
+    if(m_fileformat==FFAsciiTimeValue){
+        QFile data(fileFullPath);
+        if(!data.open(QFile::WriteOnly))
+            throw QString("FTZero: Cannot open file");
+
+        QTextStream stream(&data);
+        stream.setRealNumberPrecision(12);
+        stream.setRealNumberNotation(QTextStream::ScientificNotation);
+        stream.setCodec("ASCII");
+        for(size_t li=0; li<ts.size(); li++)
+            stream << ts[li] << " " << f0s[li] << endl;
+    }
+    else if(m_fileformat==FFSDIF){
+        #ifdef SUPPORT_SDIF
+//            SdifFileT* filew = SdifFOpen(fileFullPath.toLatin1().constData(), eWriteFile);
+
+//            if (!filew)
+//                throw QString("SDIF: Cannot save the data in the specified file (permission denied?)");
+
+//            size_t generalHeaderw = SdifFWriteGeneralHeader(filew);
+//            Q_UNUSED(generalHeaderw)
+//            size_t asciiChunksw = SdifFWriteAllASCIIChunks(filew);
+//            Q_UNUSED(asciiChunksw)
+
+//            for(size_t li=0; li<starts.size(); li++) {
+//                // cout << labels[li].toLatin1().constData() << ": " << starts[li] << ":" << ends[li] << endl;
+
+//                // Prepare the frame
+//                SDIFFrame frameToWrite;
+//                /*set the header of the frame*/
+//                frameToWrite.SetStreamID(0); // TODO Ok ??
+//                frameToWrite.SetTime(starts[li]);
+//                frameToWrite.SetSignature("1MRK");
+
+//                // Fill the matrix
+//                SDIFMatrix tmpMatrix("1LAB");
+//                tmpMatrix.Set(std::string(waveform_labels[li]->toPlainText().toLatin1().constData()));
+//                frameToWrite.AddMatrix(tmpMatrix);
+
+//                frameToWrite.Write(filew);
+//                frameToWrite.ClearData();
+//            }
+
+//            //    // Write a last empty frame for the last time
+//            //    SDIFFrame frameToWrite;
+//            //    frameToWrite.SetStreamID(0); // TODO Ok ??
+//            //    frameToWrite.SetTime(ends.back());
+//            //    frameToWrite.SetSignature("1MRK");
+//            //    SDIFMatrix tmpMatrix("1LAB", 0, 0);
+//            //    frameToWrite.AddMatrix(tmpMatrix);
+//            //    frameToWrite.Write(filew);
+
+//            SdifFClose(filew);
+
+        #else
+            throw QString("SDIF file support is not compiled in this distribution of DFasma.");
+        #endif
+    }
+    else
+        throw QString("File format not recognized for writing this F0 file.");
+
+    m_lastreadtime = QDateTime::currentDateTime();
+    m_isedited = false;
+    checkFileStatus(CFSMEXCEPTION);
+    gFL->fileInfoUpdate();
+    gMW->statusBar()->showMessage(fileFullPath+" saved.", 10000);
+}
+
 QString FTFZero::info() const {
     QString str = FileType::info();
     str += "Number of F0 values: " + QString::number(ts.size()) + "<br/>";
@@ -275,6 +412,15 @@ QString FTFZero::info() const {
         str += QString("<br/>Mean F0=%1Hz").arg(meanf0, 0,'g',5);
     }
     return str;
+}
+
+void FTFZero::fillContextMenu(QMenu& contextmenu) {
+    FileType::fillContextMenu(contextmenu);
+
+    contextmenu.setTitle("F0");
+
+    contextmenu.addAction(m_actionSave);
+    contextmenu.addAction(m_actionSaveAs);
 }
 
 void FTFZero::updateTextsGeometry(){
@@ -402,4 +548,6 @@ FTFZero::FTFZero(FTSound *ftsnd, double f0min, double f0max, QObject *parent)
     gMW->globalWaitingBarDone();
 
     updateTextsGeometry();
+
+    setStatus();
 }
