@@ -386,21 +386,21 @@ void WMainWindow::openFile() {
 //    COUTD << "WMainWindow::openFile" << endl;
 
     QString filters;
-    filters += FileType::m_typestrings[FileType::FTUNSET];
-    filters += ";;"+FileType::m_typestrings[FileType::FTSOUND];
-    filters += ";;"+FileType::m_typestrings[FileType::FTFZERO];
-    filters += ";;"+FileType::m_typestrings[FileType::FTLABELS];
+    filters += FileType::getTypeNameAndExtensions(FileType::FTUNSET);
+    filters += ";;"+FileType::getTypeNameAndExtensions(FileType::FTSOUND);
+    filters += ";;"+FileType::getTypeNameAndExtensions(FileType::FTFZERO);
+    filters += ";;"+FileType::getTypeNameAndExtensions(FileType::FTLABELS);
 
     QString selectedFilter;
     QStringList files = QFileDialog::getOpenFileNames(this, "Open File(s)...", QString(), filters, &selectedFilter, QFileDialog::ReadOnly);
 
     // Use selectedFilter for pre-selecting the file type.
     FileType::FType type = FileType::FTUNSET;
-    if(selectedFilter==FileType::m_typestrings[FileType::FTSOUND])
+    if(selectedFilter==FileType::getTypeNameAndExtensions(FileType::FTSOUND))
         type = FileType::FTSOUND;
-    else if(selectedFilter==FileType::m_typestrings[FileType::FTFZERO])
+    else if(selectedFilter==FileType::getTypeNameAndExtensions(FileType::FTFZERO))
         type = FileType::FTFZERO;
-    else if(selectedFilter==FileType::m_typestrings[FileType::FTLABELS])
+    else if(selectedFilter==FileType::getTypeNameAndExtensions(FileType::FTLABELS))
         type = FileType::FTLABELS;
 
 //    COUTD << selectedFilter.toLatin1().constData() << ": " << type << endl;

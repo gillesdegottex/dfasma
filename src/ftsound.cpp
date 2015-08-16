@@ -777,7 +777,7 @@ void FTSound::estimateFZero(){
         }
         f0min = std::max(10.0, f0min);
 
-        FTFZero* ftf0 = new FTFZero(this, f0min, f0max, gMW);
+        FTFZero* ftf0 = new FTFZero(gFL, this, f0min, f0max);
 
         gFL->addFile(ftf0);
         gMW->m_gvSpectrogram->m_scene->update();

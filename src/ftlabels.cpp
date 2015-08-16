@@ -110,7 +110,7 @@ void FTGraphicsLabelItem::keyPressEvent(QKeyEvent * event){
 }
 
 void FTGraphicsLabelItem::paint(QPainter *painter,const QStyleOptionGraphicsItem *option,QWidget *widget){
-    painter->setPen(m_ftl->color);
+    painter->setPen(m_ftl->getColor());
     QRectF br = boundingRect();
     br.adjust(+2, +2, -2, -2);
     painter->drawRect(br);
@@ -751,9 +751,9 @@ void FTLabels::updateTextsGeometry(){
 
 void FTLabels::addLabel(double position, const QString& text){
 
-    QPen pen(color);
+    QPen pen(getColor());
     pen.setWidth(0);
-    QBrush brush(color);
+    QBrush brush(getColor());
     QPen whitepen(Qt::white);
     whitepen.setWidth(1);
 
@@ -761,7 +761,7 @@ void FTLabels::addLabel(double position, const QString& text){
 
     waveform_labels.push_back(new FTGraphicsLabelItem(this, text));
     waveform_labels.back()->setPos(position, 0);
-    waveform_labels.back()->setDefaultTextColor(color);
+    waveform_labels.back()->setDefaultTextColor(getColor());
     if(gMW->ui->actionEditMode->isChecked())
         waveform_labels.back()->setTextInteractionFlags(Qt::TextEditable);
     else
@@ -839,17 +839,17 @@ void FTLabels::setVisible(bool shown){
         spectrogram_lines[u]->setVisible(shown);
     }
 }
-void FTLabels::setColor(const QColor& _color) {
-    FileType::setColor(_color);
+void FTLabels::setColor(const QColor& color) {
+    FileType::setColor(color);
 
-    QPen pen(color);
+    QPen pen(getColor());
     pen.setWidth(0);
-    QBrush brush(color);
+    QBrush brush(getColor());
     QPen whitepen(Qt::white);
     whitepen.setWidth(1);
 
     for(size_t u=0; u<starts.size(); ++u){
-        waveform_labels[u]->setDefaultTextColor(color);
+        waveform_labels[u]->setDefaultTextColor(getColor());
         spectrogram_labels[u]->setBrush(brush);
         waveform_lines[u]->setPen(pen);
         spectrogram_lines[u]->setPen(pen);

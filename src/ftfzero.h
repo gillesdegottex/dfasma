@@ -49,11 +49,10 @@ class FTFZero : public QObject, public FileType
 public:
     enum FileFormat {FFNotSpecified=0, FFAutoDetect, FFAsciiAutoDetect, FFAsciiTimeValue, FFSDIF};
     static std::deque<QString> m_formatstrings;
-//    FTFZero(QObject* parent, const QString& _fileName="");
     FTFZero(const QString& _fileName, QObject* parent, FileType::FileContainer container=FileType::FCUNSET, FileFormat fileformat=FFNotSpecified);
     virtual FileType* duplicate();
     FTFZero(const FTFZero& ft);  // Duplicate
-    FTFZero(FTSound *ftsnd, double f0min, double f0max, QObject* parent); // Analysis
+    ~FTFZero();
 
     std::deque<double> ts;
     std::deque<double> f0s;
@@ -66,7 +65,9 @@ public:
     virtual QString info() const;
     virtual double getLastSampleTime() const;
 
-    ~FTFZero();
+    // Estimation
+    FTFZero(QObject* parent, FTSound *ftsnd, double f0min, double f0max, double tstart=-1.0, double tend=-1.0);
+    void estimate(FTSound *ftsnd, double f0min, double f0max, double tstart=-1.0, double tend=-1.0);
 
 public slots:
     bool reload();

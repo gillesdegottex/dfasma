@@ -1317,7 +1317,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
         if(snd->m_actionInvPolarity->isChecked())
             a *=-1.0;
 
-        QPen wavpen(snd->color);
+        QPen wavpen(snd->getColor());
         wavpen.setWidth(0);
         painter->setPen(wavpen);
 
@@ -1377,7 +1377,7 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
         if(snd->m_actionInvPolarity->isChecked())
             gain *= -1.0;
 
-        QPen outlinePen(snd->color);
+        QPen outlinePen(snd->getColor());
         outlinePen.setWidth(0);
         painter->setPen(outlinePen);
 

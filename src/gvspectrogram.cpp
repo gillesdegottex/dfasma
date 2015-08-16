@@ -1133,7 +1133,7 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
                 continue;
 
             // Draw the f0
-            QColor c = gFL->ftfzeros[fi]->color;
+            QColor c = gFL->ftfzeros[fi]->getColor();
             c.setAlphaF(1.0);
             QPen outlinePen(c);
             outlinePen.setWidth(0);

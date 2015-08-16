@@ -50,13 +50,6 @@ extern "C" {
 int main(int argc, char *argv[])
 {
     // Set all static variables
-    // Map FileTypes with corresponding strings
-    if(FileType::m_typestrings.empty()){
-        FileType::m_typestrings.push_back("All files (*)");
-        FileType::m_typestrings.push_back("Sound (*.wav *.aiff *.pcm *.snd *.flac *.ogg)");
-        FileType::m_typestrings.push_back("F0 (*.f0.bpf *.bpf *.sdif)");
-        FileType::m_typestrings.push_back("Label (*.bpf *.lab *.sdif)");
-    }
     // Map Labels FileFormat with corresponding strings
     if(FTLabels::m_formatstrings.empty()){
         FTLabels::m_formatstrings.push_back("Unspecified");

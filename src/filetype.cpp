@@ -41,55 +41,66 @@ using namespace Easdif;
 
 #include "qthelper.h"
 
-static int sg_colors_loaded = 0;
-static deque<QColor> sg_colors;
+static deque<QColor> s_colors;
+static int s_colors_loaded = 0;
 
-QColor GetNextColor(){
+QColor FileType::GetNextColor(){
 
     // If empty, initialize the colors
-    if(sg_colors.empty()){
-        if(sg_colors_loaded==1){
-            sg_colors.push_back(QColor(64, 64, 64).lighter());
-            sg_colors.push_back(QColor(0, 0, 255).lighter());
-            sg_colors.push_back(QColor(0, 127, 0).lighter());
-            sg_colors.push_back(QColor(255, 0, 0).lighter());
-            sg_colors.push_back(QColor(0, 192, 192).lighter());
-            sg_colors.push_back(QColor(192, 0, 192).lighter());
-            sg_colors.push_back(QColor(192, 192, 0).lighter());
+    if(s_colors.empty()){
+        if(s_colors_loaded==1){
+            s_colors.push_back(QColor(64, 64, 64).lighter());
+            s_colors.push_back(QColor(0, 0, 255).lighter());
+            s_colors.push_back(QColor(0, 127, 0).lighter());
+            s_colors.push_back(QColor(255, 0, 0).lighter());
+            s_colors.push_back(QColor(0, 192, 192).lighter());
+            s_colors.push_back(QColor(192, 0, 192).lighter());
+            s_colors.push_back(QColor(192, 192, 0).lighter());
         }
-        else if(sg_colors_loaded==2){
-            sg_colors.push_back(QColor(64, 64, 64).darker());
-            sg_colors.push_back(QColor(0, 0, 255).darker());
-            sg_colors.push_back(QColor(0, 127, 0).darker());
-            sg_colors.push_back(QColor(255, 0, 0).darker());
-            sg_colors.push_back(QColor(0, 192, 192).darker());
-            sg_colors.push_back(QColor(192, 0, 192).darker());
-            sg_colors.push_back(QColor(192, 192, 0).darker());
+        else if(s_colors_loaded==2){
+            s_colors.push_back(QColor(64, 64, 64).darker());
+            s_colors.push_back(QColor(0, 0, 255).darker());
+            s_colors.push_back(QColor(0, 127, 0).darker());
+            s_colors.push_back(QColor(255, 0, 0).darker());
+            s_colors.push_back(QColor(0, 192, 192).darker());
+            s_colors.push_back(QColor(192, 0, 192).darker());
+            s_colors.push_back(QColor(192, 192, 0).darker());
         }
         else{
-            sg_colors.push_back(QColor(64, 64, 64));
-            sg_colors.push_back(QColor(0, 0, 255));
-            sg_colors.push_back(QColor(0, 127, 0));
-            sg_colors.push_back(QColor(255, 0, 0));
-            sg_colors.push_back(QColor(0, 192, 192));
-            sg_colors.push_back(QColor(192, 0, 192));
-            sg_colors.push_back(QColor(192, 192, 0));
+            s_colors.push_back(QColor(64, 64, 64));
+            s_colors.push_back(QColor(0, 0, 255));
+            s_colors.push_back(QColor(0, 127, 0));
+            s_colors.push_back(QColor(255, 0, 0));
+            s_colors.push_back(QColor(0, 192, 192));
+            s_colors.push_back(QColor(192, 0, 192));
+            s_colors.push_back(QColor(192, 192, 0));
         }
-        sg_colors_loaded++;
+        s_colors_loaded++;
     }
 
-    QColor color = sg_colors.front();
+    QColor color = s_colors.front();
 
-    sg_colors.pop_front();
+    s_colors.pop_front();
 
 //    cout << "1) R:" << color.redF() << " G:" << color.greenF() << " B:" << color.blueF() << " m:" << (color.redF()+color.greenF()+color.blueF())/3.0 << " L:" << color.lightnessF() << " V:" << color.valueF() << endl;
 
     return color;
 }
 
-std::deque<QString> FileType::m_typestrings;
+std::deque<QString> FileType::s_types_name_and_extensions;
+FileType::ClassConstructor::ClassConstructor(){
+    // Map FileTypes with corresponding strings
+    // Attention ! It has to correspond to FType definition's order.
+    if(FileType::s_types_name_and_extensions.empty()){
+        FileType::s_types_name_and_extensions.push_back("All files (*)");
+        FileType::s_types_name_and_extensions.push_back("Sound (*.wav *.aiff *.pcm *.snd *.flac *.ogg)");
+        FileType::s_types_name_and_extensions.push_back("F0 (*.f0.bpf *.bpf *.sdif)");
+        FileType::s_types_name_and_extensions.push_back("Label (*.bpf *.lab *.sdif)");
+    }
+}
+FileType::ClassConstructor FileType::s_class_constructor;
 
-void FileType::init(){
+void FileType::constructor_common(){
     m_is_editing = false;
 }
 
@@ -117,12 +128,12 @@ FileType::FileContainer FileType::guessContainer(const QString& filepath){
     return FileType::FCUNSET;
 }
 
-FileType::FileType(FType _type, const QString& _fileName, QObject * parent)
-    : type(_type)
+FileType::FileType(FType _type, const QString& _fileName, QObject * parent, const QColor& _color)
+    : m_type(_type)
+    , m_color(_color)
     , fileFullPath(_fileName)
-    , color(GetNextColor())
 {
-    init();
+    constructor_common();
 //    cout << "FileType::FileType: " << _fileName.toLocal8Bit().constData() << endl;
 
     m_actionShow = new QAction("Show", parent);
@@ -192,7 +203,7 @@ bool FileType::checkFileStatus(CHECKFILESTATUSMGT cfsmgt){
 }
 
 void FileType::setDrawIcon(QPixmap& pm){
-    pm.fill(color);
+    pm.fill(m_color);
     if(!isVisible()){
         // If Invisible, whiten the left half.
         QPainter p(&pm);
@@ -208,8 +219,8 @@ void FileType::setDrawIcon(QPixmap& pm){
     }
 }
 
-void FileType::setColor(const QColor& _color) {
-    color = _color;
+void FileType::setColor(const QColor& color) {
+    m_color = color;
     updateIcon();
 }
 
@@ -237,7 +248,7 @@ void FileType::fillContextMenu(QMenu& contextmenu) {
 
     // Add the available Matlab colors to the custom colors
     int ci = 0;
-    for(std::deque<QColor>::iterator it=sg_colors.begin(); it!=sg_colors.end(); it++,ci++)
+    for(std::deque<QColor>::iterator it=s_colors.begin(); it!=s_colors.end(); it++,ci++)
         QColorDialog::setCustomColor(ci, (*it));
 
     contextmenu.addAction("Color...", colordialog, SLOT(exec()));
@@ -296,7 +307,7 @@ void FileType::setStatus() {
 }
 
 FileType::~FileType() {
-    sg_colors.push_front(color);
+    s_colors.push_front(m_color);
 }
 
 

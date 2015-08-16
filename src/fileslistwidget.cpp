@@ -80,11 +80,11 @@ void FilesListWidget::stopFileProgressDialog() {
 
 void FilesListWidget::addFile(FileType* ft) {
 
-    if(ft->type==FileType::FTSOUND)
+    if(ft->is(FileType::FTSOUND))
         ftsnds.push_back((FTSound*)ft);
-    else if(ft->type==FileType::FTFZERO)
+    else if(ft->is(FileType::FTFZERO))
         ftfzeros.push_back((FTFZero*)ft);
-    else if(ft->type==FileType::FTLABELS)
+    else if(ft->is(FileType::FTLABELS))
         ftlabels.push_back((FTLabels*)ft);
 
     addItem(ft);
@@ -259,7 +259,7 @@ FTSound* FilesListWidget::getCurrentFTSound(bool forceselect) {
 
     FileType* currenItem = currentFile();
 
-    if(currenItem && currenItem->type==FileType::FTSOUND)
+    if(currenItem && currenItem->is(FileType::FTSOUND))
         return (FTSound*)currenItem;
 
     if(forceselect){
@@ -279,7 +279,7 @@ FTLabels* FilesListWidget::getCurrentFTLabels(bool forceselect) {
 
     FileType* currenItem = currentFile();
 
-    if(currenItem && currenItem->type==FileType::FTLABELS)
+    if(currenItem && currenItem->is(FileType::FTLABELS))
         return (FTLabels*)currenItem;
 
     if(forceselect)
@@ -319,15 +319,15 @@ void FilesListWidget::fileSelectionChanged() {
 
     for(int i=0; i<list.size(); i++) {
         FileType* ft = ((FileType*)list.at(i));
-        if(ft->type == FileType::FTSOUND){
+        if(ft->is(FileType::FTSOUND)){
             nb_snd_in_selection++;
             m_lastSelectedSound = (FTSound*)ft;
         }
 
-        if(ft->type == FileType::FTLABELS)
+        if(ft->is(FileType::FTLABELS))
             nb_labels_in_selection++;
 
-        if(ft->type == FileType::FTFZERO)
+        if(ft->is(FileType::FTFZERO))
             nb_f0_in_selection++;
     }
 
@@ -419,16 +419,16 @@ void FilesListWidget::selectedFilesClose() {
         delete ft; // Remove it from the listview
 
         // Remove it from its own type-related list
-        if(ft->type==FileType::FTSOUND){
+        if(ft->is(FileType::FTSOUND)){
             if(ft==m_lastSelectedSound){
                 removeSelectedSound = true;
                 m_lastSelectedSound = NULL;
             }
             ftsnds.erase(std::find(ftsnds.begin(), ftsnds.end(), (FTSound*)ft));
         }
-        else if(ft->type==FileType::FTFZERO)
+        else if(ft->is(FileType::FTFZERO))
             ftfzeros.erase(std::find(ftfzeros.begin(), ftfzeros.end(), (FTFZero*)ft));
-        else if(ft->type==FileType::FTLABELS)
+        else if(ft->is(FileType::FTLABELS))
             ftlabels.erase(std::find(ftlabels.begin(), ftlabels.end(), (FTLabels*)ft));
     }
 
@@ -510,10 +510,10 @@ void FilesListWidget::selectedFilesSave() {
     for(int i=0; i<l.size(); i++) {
         FileType* currentfile = (FileType*)l.at(i);
 
-        if(currentfile->type==FileType::FTLABELS)
+        if(currentfile->is(FileType::FTLABELS))
             ((FTLabels*)currentfile)->save();
 
-        if(currentfile->type==FileType::FTFZERO)
+        if(currentfile->is(FileType::FTFZERO))
             ((FTFZero*)currentfile)->save();
     }
 }
@@ -524,7 +524,7 @@ void FilesListWidget::selectedFilesEstimateF0() {
     for(int i=0; i<l.size(); i++) {
         FileType* currentfile = (FileType*)l.at(i);
 
-        if(currentfile->type==FileType::FTSOUND)
+        if(currentfile->is(FileType::FTSOUND))
             ((FTSound*)currentfile)->estimateFZero();
     }
 }

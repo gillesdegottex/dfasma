@@ -32,26 +32,38 @@ class WMainWindow;
 
 class FileType : public QListWidgetItem
 {
-    bool m_is_editing;
+public:
+    enum FType {FTUNSET=0, FTSOUND, FTFZERO, FTLABELS}; // Names corresponding to possible classes
+
+private:
+    FType m_type;
+    static std::deque<QString> s_types_name_and_extensions;
+    static struct ClassConstructor{ClassConstructor();} s_class_constructor;
+
+    QColor m_color;
+
+    bool m_is_editing; // True if the file is currently under edition and the icon is changed accordingly.
 
 protected:
     QDateTime m_modifiedtime;
     QDateTime m_lastreadtime;
 
-    void init();
+    void constructor_common();
     virtual void setDrawIcon(QPixmap& pm);
 
 public:
-    enum FType {FTUNSET=0, FTSOUND, FTFZERO, FTLABELS}; // Names corresponding to possible classes
-    static std::deque<QString> m_typestrings;
+    inline FType getType() const {return m_type;}
+    inline static QString getTypeNameAndExtensions(FType type){return s_types_name_and_extensions[type];}
+    inline bool is(FType type) const {return m_type==type;}
     enum FileContainer {FCUNSET=0, FCANYSOUND, FCTEXT, FCASCII, FCSDIF}; // File Containers (not format !)
+    static QColor GetNextColor();
 
-    FileType(FType _type, const QString& _fileName, QObject *parent);
+    FileType(FType _type, const QString& _fileName, QObject *parent, const QColor& _color=GetNextColor());
 
-    FType type;
-    QString fileFullPath;
-    QString visibleName;
-    QColor color;
+    QString fileFullPath;   // The file path on storage place
+    QString visibleName;    // The name shown in the File List
+
+    const QColor& getColor() const {return m_color;}
 
     QAction* m_actionShow;
 
@@ -67,22 +79,21 @@ public:
     #endif
 
     virtual QString info() const;
+    void setEditing(bool editing);
+    virtual void setColor(const QColor& _color);
+    virtual void updateIcon();
     virtual void setVisible(bool shown);
     bool isVisible(){return m_actionShow->isChecked();}
     virtual bool isModified() {return false;}
-    virtual void setColor(const QColor& _color);
-    virtual void updateIcon();
     virtual double getLastSampleTime() const =0;
     virtual void fillContextMenu(QMenu& contextmenu);
     virtual FileType* duplicate();
-    void setEditing(bool editing);
-
-    enum CHECKFILESTATUSMGT {CFSMQUIET, CFSMMESSAGEBOX, CFSMEXCEPTION};
-    bool checkFileStatus(CHECKFILESTATUSMGT cfsmgt=CFSMQUIET);
-    virtual void setStatus();
 
     void setFullPath(const QString& fp);
     virtual bool reload()=0;
+    enum CHECKFILESTATUSMGT {CFSMQUIET, CFSMMESSAGEBOX, CFSMEXCEPTION};
+    bool checkFileStatus(CHECKFILESTATUSMGT cfsmgt=CFSMQUIET);
+    virtual void setStatus();
 };
 
 #endif // FILETYPE_H

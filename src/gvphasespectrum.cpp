@@ -688,10 +688,10 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
             if(!gFL->ftfzeros[fi]->m_actionShow->isChecked())
                 continue;
 
-            QPen outlinePen(gFL->ftfzeros[fi]->color);
+            QPen outlinePen(gFL->ftfzeros[fi]->getColor());
             outlinePen.setWidth(0);
             painter->setPen(outlinePen);
-            painter->setBrush(QBrush(gFL->ftfzeros[fi]->color));
+            painter->setBrush(QBrush(gFL->ftfzeros[fi]->getColor()));
 
             double ct = 0.5*(gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.nl+gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.nr)/gFL->getFs();
             double cf0 = sigproc::nearest<double>(gFL->ftfzeros[fi]->ts, gFL->ftfzeros[fi]->f0s, ct, -1.0);
@@ -699,7 +699,7 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
             // cout << ct << ":" << cf0 << endl;
             if(cf0==-1) continue;
 
-            QColor c = gFL->ftfzeros[fi]->color;
+            QColor c = gFL->ftfzeros[fi]->getColor();
             c.setAlphaF(1.0);
             outlinePen.setColor(c);
             painter->setPen(outlinePen);
@@ -724,10 +724,10 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
     for(size_t fi=0; fi<gFL->ftsnds.size(); fi++){
         if(!gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop->isChecked() || gFL->ftsnds[fi]!=currsnd){
             if(gFL->ftsnds[fi]->m_actionShow->isChecked()){
-                QPen outlinePen(gFL->ftsnds[fi]->color);
+                QPen outlinePen(gFL->ftsnds[fi]->getColor());
                 outlinePen.setWidth(0);
                 painter->setPen(outlinePen);
-                painter->setBrush(QBrush(gFL->ftsnds[fi]->color));
+                painter->setBrush(QBrush(gFL->ftsnds[fi]->getColor()));
 
                 draw_spectrum(painter, gFL->ftsnds[fi]->m_dft, gFL->getFs(), (gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.winlen-1)/2.0, rect);
             }
@@ -736,10 +736,10 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
 
     if(gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop->isChecked()){
         if(currsnd->m_actionShow->isChecked()){
-            QPen outlinePen(currsnd->color);
+            QPen outlinePen(currsnd->getColor());
             outlinePen.setWidth(0);
             painter->setPen(outlinePen);
-            painter->setBrush(QBrush(currsnd->color));
+            painter->setBrush(QBrush(currsnd->getColor()));
 
             draw_spectrum(painter, currsnd->m_dft, gFL->getFs(), (gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.winlen-1)/2.0, rect);
         }

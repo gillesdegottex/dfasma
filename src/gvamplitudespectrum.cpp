@@ -1293,7 +1293,7 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
             continue;
 
         // Draw the f0 vertical line
-        QColor c = gFL->ftfzeros[fi]->color;
+        QColor c = gFL->ftfzeros[fi]->getColor();
         c.setAlphaF(1.0);
         QPen outlinePen(c);
         outlinePen.setWidth(0);
@@ -1356,10 +1356,10 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
     for(size_t fi=0; fi<gFL->ftsnds.size(); fi++){
         if(!gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop->isChecked() || gFL->ftsnds[fi]!=currsnd){
             if(gFL->ftsnds[fi]->m_actionShow->isChecked()){
-                QPen outlinePen(gFL->ftsnds[fi]->color);
+                QPen outlinePen(gFL->ftsnds[fi]->getColor());
                 outlinePen.setWidth(0);
                 painter->setPen(outlinePen);
-                painter->setBrush(QBrush(gFL->ftsnds[fi]->color));
+                painter->setBrush(QBrush(gFL->ftsnds[fi]->getColor()));
                 painter->setOpacity(1);
 
                 draw_spectrum(painter, gFL->ftsnds[fi]->m_dft, fs, 1.0, rect);
@@ -1369,10 +1369,10 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
 
     if(currsnd && gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop->isChecked()){
         if(currsnd->m_actionShow->isChecked()){
-            QPen outlinePen(currsnd->color);
+            QPen outlinePen(currsnd->getColor());
             outlinePen.setWidth(0);
             painter->setPen(outlinePen);
-            painter->setBrush(QBrush(currsnd->color));
+            painter->setBrush(QBrush(currsnd->getColor()));
             painter->setOpacity(1);
 
             draw_spectrum(painter, currsnd->m_dft, fs, 1.0, rect);

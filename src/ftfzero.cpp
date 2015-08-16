@@ -54,7 +54,7 @@ void FTFZero::init(){
 
     m_aspec_txt = new QGraphicsSimpleTextItem("unset");
     gMW->m_gvAmplitudeSpectrum->m_scene->addItem(m_aspec_txt);
-    setColor(color); // Indirectly set the proper color to the m_aspec_txt
+    setColor(getColor()); // Indirectly set the proper color to the m_aspec_txt
 
     m_actionSave = new QAction("Save", this);
     m_actionSave->setStatusTip(tr("Save the labels (overwrite the file !)"));
@@ -444,12 +444,12 @@ void FTFZero::setVisible(bool shown){
     m_aspec_txt->setVisible(shown);
 }
 
-void FTFZero::setColor(const QColor& _color) {
-    FileType::setColor(_color);
+void FTFZero::setColor(const QColor& color) {
+    FileType::setColor(color);
 
-    QPen pen(color);
+    QPen pen(getColor());
     pen.setWidth(0);
-    QBrush brush(color);
+    QBrush brush(getColor());
 
     m_aspec_txt->setPen(pen);
     m_aspec_txt->setBrush(brush);
@@ -472,12 +472,16 @@ FTFZero::~FTFZero() {
 
 #include "../external/REAPER/epoch_tracker/epoch_tracker.h"
 
-FTFZero::FTFZero(FTSound *ftsnd, double f0min, double f0max, QObject *parent)
-    : FileType(FTFZERO, ftsnd->fileFullPath+".f0.txt", this)
+FTFZero::FTFZero(QObject *parent, FTSound *ftsnd, double f0min, double f0max, double tstart, double tend)
+    : QObject(parent)
+    , FileType(FTFZERO, DropFileExtension(ftsnd->fileFullPath)+".f0.txt", this, ftsnd->getColor())
 {
-    Q_UNUSED(parent);
-
     init();
+
+    estimate(ftsnd, f0min, f0max, tstart, tend);
+}
+
+void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart, double tend) {
 
 //    if(_fileName==""){
 ////        if(gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText==FFSDIF)

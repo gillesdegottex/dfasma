@@ -11,6 +11,7 @@
 #include <QGraphicsView>
 #include <QTextStream>
 #include <QScrollBar>
+#include <QFileInfo>
 
 #include "ftsound.h"
 
@@ -165,6 +166,11 @@ public:
         setCursor(Qt::ArrowCursor);
     }
 };
+
+inline QString DropFileExtension(const QString& filepath) {
+    QFileInfo fileInfo(filepath);
+    return fileInfo.path()+fileInfo.completeBaseName();
+}
 
 //            COUTD << snd->m_dftparams.nl << " " << snd->m_dftparams.nr << " " << snd->m_dftparams.winlen << " " << snd->m_dftparams.dftlen << " " << snd->m_dftparams.ampscale << " " << snd->m_dftparams.delay << endl;
 
