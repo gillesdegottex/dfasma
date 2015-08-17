@@ -59,9 +59,9 @@ class FTLabels : public QObject, public FileType
 {
     Q_OBJECT
 
-    void init(); // Has to be called only once, at object ctor
+    void constructor_common();
     void load();
-    void sort(); // For writing files in ascending order
+    void sort(); // For keeping files in ascending order
 
     QAction* m_actionSave;
     QAction* m_actionSaveAs;

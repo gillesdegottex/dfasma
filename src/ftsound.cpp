@@ -47,10 +47,10 @@ using namespace std;
 
 #include "qthelper.h"
 
-bool FTSound::sm_playwin_use = false;
-std::vector<WAVTYPE> FTSound::sm_avoidclickswindow;
+bool FTSound::s_playwin_use = false;
+std::vector<WAVTYPE> FTSound::s_avoidclickswindow;
 
-double FTSound::fs_common = 0; // Initially, fs is undefined TODO put in wmainwindow
+double FTSound::s_fs_common = 0; // Initially, fs is undefined
 WAVTYPE FTSound::s_play_power = 0;
 std::deque<WAVTYPE> FTSound::s_play_power_values;
 
@@ -138,7 +138,7 @@ bool FTSound::DFTParameters::operator==(const DFTParameters& param) const {
 }
 
 
-void FTSound::init(){
+void FTSound::constructor_common() {
     connect(m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setVisible(bool)));
 
     m_channelid = 0;
@@ -185,13 +185,15 @@ void FTSound::init(){
     m_actionAnalysisFZero->setStatusTip(tr("Estimate the fundamental frequency (F0)"));
     m_actionAnalysisFZero->setShortcut(gMW->ui->actionEstimationF0->shortcut());
     connect(m_actionAnalysisFZero, SIGNAL(triggered()), this, SLOT(estimateFZero()));
+
+    gFL->ftsnds.push_back(this);
 }
 
 FTSound::FTSound(const QString& _fileName, QObject *parent, int channelid)
     : QIODevice(parent)
     , FileType(FTSOUND, _fileName, this)
 {
-    init();
+    FTSound::constructor_common();
 
     if(!fileFullPath.isEmpty()){
         checkFileStatus(CFSMEXCEPTION);
@@ -213,7 +215,7 @@ FTSound::FTSound(const FTSound& ft)
     : QIODevice(ft.parent())
     , FileType(FTSOUND, ft.fileFullPath, this)
 {
-    init();
+    FTSound::constructor_common();
 
     QFileInfo fileInfo(fileFullPath);
     setText(fileInfo.fileName());
@@ -235,7 +237,7 @@ void FTSound::load_finalize() {
     for(unsigned int n=0; n<wav.size(); ++n)
         m_wavmaxamp = std::max(m_wavmaxamp, abs(wav[n]));
 
-    if(sm_avoidclickswindow.size()==0)
+    if(s_avoidclickswindow.size()==0)
         FTSound::setAvoidClicksWindowDuration(gMW->m_dlgSettings->ui->sbPlaybackAvoidClicksWindowDuration->value());
 
 //    std::cout << "INFO: " << wav.size() << " samples loaded (" << wav.size()/fs << "s max amplitude=" << m_wavmaxamp << ")" << endl;
@@ -365,10 +367,10 @@ QString FTSound::info() const {
 }
 
 void FTSound::setAvoidClicksWindowDuration(double halfduration) {
-    sm_avoidclickswindow = sigproc::hann(2*int(2*halfduration*fs_common/2)+1); // Use Xms half-windows on each side
-    double winmax = sm_avoidclickswindow[(sm_avoidclickswindow.size()-1)/2];
-    for(size_t n=0; n<sm_avoidclickswindow.size(); n++)
-        sm_avoidclickswindow[n] /= winmax;
+    s_avoidclickswindow = sigproc::hann(2*int(2*halfduration*s_fs_common/2)+1); // Use Xms half-windows on each side
+    double winmax = s_avoidclickswindow[(s_avoidclickswindow.size()-1)/2];
+    for(size_t n=0; n<s_avoidclickswindow.size(); n++)
+        s_avoidclickswindow[n] /= winmax;
 }
 
 void FTSound::fillContextMenu(QMenu& contextmenu) {
@@ -464,14 +466,14 @@ void FTSound::setSamplingRate(double _fs){
     fs = _fs;
 
     // Check if fs is the same for all files
-    if(fs_common==0) {
+    if(s_fs_common==0) {
         // The system has no defined sampling rate
-        fs_common = fs;
+        s_fs_common = fs;
         FTSound::setAvoidClicksWindowDuration(gMW->m_dlgSettings->ui->sbPlaybackAvoidClicksWindowDuration->value());
     }
     else {
         // Check if fs is the same as that of the other files
-        if(fs_common!=fs)
+        if(s_fs_common!=fs)
             throw QString("The sampling rate of this file ("+QString::number(fs)+"Hz) is not the same as that of the files already loaded. DFasma manages only one sampling rate per instance. Please use another instance of DFasma.");
     }
 }
@@ -689,11 +691,11 @@ qint64 FTSound::readData(char *data, qint64 askedlen)
     while(writtenbytes<askedlen) {
         qint16 value = 0;
 
-        if(sm_playwin_use && (m_avoidclickswinpos<qint64(sm_avoidclickswindow.size()-1)/2)) {
-            value = qint16((gain*(*wavtoplay)[delayedstart]*sm_avoidclickswindow[m_avoidclickswinpos++])*32767);
+        if(s_playwin_use && (m_avoidclickswinpos<qint64(s_avoidclickswindow.size()-1)/2)) {
+            value = qint16((gain*(*wavtoplay)[delayedstart]*s_avoidclickswindow[m_avoidclickswinpos++])*32767);
         }
-        else if(sm_playwin_use && (m_pos>m_end) && m_avoidclickswinpos<qint64(sm_avoidclickswindow.size()-1)) {
-            value = qint16((gain*(*wavtoplay)[delayedend]*sm_avoidclickswindow[1+m_avoidclickswinpos++])*32767);
+        else if(s_playwin_use && (m_pos>m_end) && m_avoidclickswinpos<qint64(s_avoidclickswindow.size()-1)) {
+            value = qint16((gain*(*wavtoplay)[delayedend]*s_avoidclickswindow[1+m_avoidclickswinpos++])*32767);
         }
         else if (m_pos<=m_end) {
             int delayedpos = m_pos - m_delay;
@@ -758,6 +760,8 @@ FTSound::~FTSound(){
     stopPlay();
     if(gMW->m_gvSpectrogram) gMW->m_gvSpectrogram->m_stftcomputethread->cancelComputation(this);
     QIODevice::close();
+
+    gFL->ftsnds.erase(std::find(gFL->ftsnds.begin(), gFL->ftsnds.end(), this));
 }
 
 

@@ -36,7 +36,7 @@ class FTFZero : public QObject, public FileType
 {
     Q_OBJECT
 
-    void init();
+    void constructor_common();
     void load();
 
     QAction* m_actionSave;
@@ -45,6 +45,8 @@ class FTFZero : public QObject, public FileType
     bool m_isedited;
 
     int m_fileformat;
+
+    FTSound* m_src_snd;
 
 public:
     enum FileFormat {FFNotSpecified=0, FFAutoDetect, FFAsciiAutoDetect, FFAsciiTimeValue, FFSDIF};

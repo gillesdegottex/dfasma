@@ -49,7 +49,7 @@ class FTSound : public QIODevice, public FileType
 {
     Q_OBJECT
 
-    void init(); // Called only once upon creation
+    void constructor_common();
 
     void load(int channelid=1);       // Implementation depends on the used file library (sox, lisndfile, ...)
     void load_finalize();             // Independent of the used file lib.
@@ -71,8 +71,8 @@ public:
     FTSound(const FTSound& ft);
     virtual FileType* duplicate();
 
-    static double fs_common;  // [Hz] Sampling frequency of the sound player // TODO put in sound player
-    static std::vector<WAVTYPE> sm_avoidclickswindow;
+    static double s_fs_common;  // [Hz] Sampling frequency of the sound player // TODO put in sound player
+    static std::vector<WAVTYPE> s_avoidclickswindow;
 
     double fs; // [Hz] Sampling frequency of this specific wav file
     std::vector<WAVTYPE> wav;
@@ -192,7 +192,7 @@ public:
 
     static WAVTYPE s_play_power;
     static std::deque<WAVTYPE> s_play_power_values;
-    static bool sm_playwin_use;
+    static bool s_playwin_use;
 
     // Visualization
     QAction* m_actionInvPolarity;

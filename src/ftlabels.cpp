@@ -118,7 +118,7 @@ void FTGraphicsLabelItem::paint(QPainter *painter,const QStyleOptionGraphicsItem
 }
 
 
-void FTLabels::init(){
+void FTLabels::constructor_common(){
     m_isedited = false;
 
     m_fileformat = FFNotSpecified;
@@ -129,15 +129,18 @@ void FTLabels::init(){
     m_actionSaveAs = new QAction("Save as...", this);
     m_actionSaveAs->setStatusTip(tr("Save the labels times in a given file..."));
     connect(m_actionSaveAs, SIGNAL(triggered()), this, SLOT(saveAs()));
+
+    gFL->ftlabels.push_back(this);
 }
 
 // Construct an empty label object
 FTLabels::FTLabels(QObject *parent)
-    : FileType(FTLABELS, "", this)
+    : QObject(parent)
+    , FileType(FTLABELS, "", this)
 {
     Q_UNUSED(parent);
 
-    init();
+    FTLabels::constructor_common();
 
     if(gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText==FFSDIF)
         setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.sdif");
@@ -148,7 +151,8 @@ FTLabels::FTLabels(QObject *parent)
 
 // Construct from an existing file name
 FTLabels::FTLabels(const QString& _fileName, QObject* parent, FileType::FileContainer container, FileFormat fileformat)
-    : FileType(FTLABELS, _fileName, this)
+    : QObject(parent)
+    , FileType(FTLABELS, _fileName, this)
 {
     Q_UNUSED(parent);
 //    COUTD << "FTLabels::FTLabels " << _fileName.toLatin1().constData() << endl;
@@ -156,7 +160,7 @@ FTLabels::FTLabels(const QString& _fileName, QObject* parent, FileType::FileCont
     if(fileFullPath.isEmpty())
         throw QString("This ctor is for existing files. Use the empty ctor for empty label object.");
 
-    init();
+    FTLabels::constructor_common();
 
     m_fileformat = fileformat;
     if(container==FileType::FCSDIF)
@@ -173,7 +177,7 @@ FTLabels::FTLabels(const FTLabels& ft)
     : QObject(ft.parent())
     , FileType(FTLABELS, ft.fileFullPath, this)
 {
-    init();
+    FTLabels::constructor_common();
 
     int starti=0;
     for(std::deque<FTGraphicsLabelItem*>::const_iterator it=ft.waveform_labels.begin(); it!=ft.waveform_labels.end(); ++it, ++starti)

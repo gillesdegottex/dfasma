@@ -149,7 +149,7 @@ void WDialogSettings::setSBButterworthOrderChangeValue(int order) {
 }
 
 void WDialogSettings::setCKAvoidClicksAddWindows(bool add) {
-    FTSound::sm_playwin_use = add;
+    FTSound::s_playwin_use = add;
     FTSound::setAvoidClicksWindowDuration(ui->sbPlaybackAvoidClicksWindowDuration->value());
     ui->sbPlaybackAvoidClicksWindowDuration->setEnabled(add);
     ui->lblAvoidClicksWindowDurationLabel->setEnabled(add);

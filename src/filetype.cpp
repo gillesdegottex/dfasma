@@ -102,6 +102,8 @@ FileType::ClassConstructor FileType::s_class_constructor;
 
 void FileType::constructor_common(){
     m_is_editing = false;
+
+    gFL->m_present_items.insert(make_pair(this,true));
 }
 
 FileType::FileContainer FileType::guessContainer(const QString& filepath){
@@ -133,7 +135,7 @@ FileType::FileType(FType _type, const QString& _fileName, QObject * parent, cons
     , m_color(_color)
     , fileFullPath(_fileName)
 {
-    constructor_common();
+    FileType::constructor_common();
 //    cout << "FileType::FileType: " << _fileName.toLocal8Bit().constData() << endl;
 
     m_actionShow = new QAction("Show", parent);
@@ -307,6 +309,8 @@ void FileType::setStatus() {
 }
 
 FileType::~FileType() {
+    gFL->m_present_items.erase(this);
+
     s_colors.push_front(m_color);
 }
 

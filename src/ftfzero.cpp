@@ -48,9 +48,10 @@ using namespace Easdif;
 
 std::deque<QString> FTFZero::m_formatstrings;
 
-void FTFZero::init(){
+void FTFZero::constructor_common(){
     m_isedited = false;
     m_fileformat = FFNotSpecified;
+    m_src_snd = NULL;
 
     m_aspec_txt = new QGraphicsSimpleTextItem("unset");
     gMW->m_gvAmplitudeSpectrum->m_scene->addItem(m_aspec_txt);
@@ -63,17 +64,20 @@ void FTFZero::init(){
     m_actionSaveAs = new QAction("Save as...", this);
     m_actionSaveAs->setStatusTip(tr("Save the f0 curve in a given file..."));
     connect(m_actionSaveAs, SIGNAL(triggered()), this, SLOT(saveAs()));
+
+    gFL->ftfzeros.push_back(this);
 }
 
 FTFZero::FTFZero(const QString& _fileName, QObject* parent, FileType::FileContainer container, FileFormat fileformat)
-    : FileType(FTFZERO, _fileName, this)
+    : QObject(parent)
+    , FileType(FTFZERO, _fileName, this)
 {
     Q_UNUSED(parent)
 
     if(fileFullPath.isEmpty())
         throw QString("This ctor is for existing files. Use the empty ctor for empty F0 object.");
 
-    init();
+    FTFZero::constructor_common();
 
     m_fileformat = fileformat;
     if(container==FileType::FCSDIF)
@@ -91,7 +95,7 @@ FTFZero::FTFZero(const FTFZero& ft)
     : QObject(ft.parent())
     , FileType(FTFZERO, ft.fileFullPath, this)
 {
-    init();
+    FTFZero::constructor_common();
 
     ts = ft.ts;
     f0s = ft.f0s;
@@ -476,12 +480,20 @@ FTFZero::FTFZero(QObject *parent, FTSound *ftsnd, double f0min, double f0max, do
     : QObject(parent)
     , FileType(FTFZERO, DropFileExtension(ftsnd->fileFullPath)+".f0.txt", this, ftsnd->getColor())
 {
-    init();
+    FTFZero::constructor_common();
+
+    m_src_snd = ftsnd;
+
+    COUTD << m_src_snd << " " << gFL->hasItem(m_src_snd) << endl;
 
     estimate(ftsnd, f0min, f0max, tstart, tend);
 }
 
 void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart, double tend) {
+
+    if(ftsnd)
+        m_src_snd = ftsnd;
+
 
 //    if(_fileName==""){
 ////        if(gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText==FFSDIF)
@@ -494,12 +506,11 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
 
     // Compute the f0 from the given sound file
 
-    QString statusmessage = "Estimating F0 of "+fileFullPath+" in ["+QString::number(f0min)+","+QString::number(f0max)+"]Hz ...";
-    gMW->globalWaitingBarMessage(statusmessage, 8);
+    gMW->globalWaitingBarMessage("Estimating F0 of "+fileFullPath+" in ["+QString::number(f0min)+","+QString::number(f0max)+"]Hz ...", 8);
 
     double timestepsize = gMW->m_dlgSettings->ui->sbEstimationStepSize->value();
 
-    EpochTracker et; // TODO to put in FTSound
+    EpochTracker et; // TODO to put in FTSound because other features can be extracted from it (ex. GCIs)
 
     gMW->globalWaitingBarSetValue(1);
 

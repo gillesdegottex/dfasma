@@ -17,6 +17,13 @@ class FilesListWidget : public QListWidget
 {
     Q_OBJECT
 
+    friend FileType;
+
+    // Store which file exists in the list in a tree
+    // TODO Cannot find a way to do it already from the Qt5 library.
+    // (FilesListWidget::hasItem returns NULL)
+    std::map<FileType*,bool> m_present_items;
+
     FTSound* m_lastSelectedSound;
 
     void addExistingFilesRecursive(const QStringList& files, FileType::FType type=FileType::FTUNSET);
@@ -35,6 +42,8 @@ public:
 
     void addExistingFiles(const QStringList& files, FileType::FType type=FileType::FTUNSET);
     void addExistingFile(const QString& filepath, FileType::FType type=FileType::FTUNSET);
+
+    bool hasItem(FileType *ft) const;
 
     FileType* currentFile() const;
     FTSound* getCurrentFTSound(bool forceselect=false);

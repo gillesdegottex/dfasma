@@ -701,7 +701,7 @@ void WMainWindow::setInWaitingForFileState(){
         return;
 
     ui->splitterViews->hide();
-    FTSound::fs_common = 0;
+    FTSound::s_fs_common = 0;
     ui->actionSelectedFilesClose->setEnabled(false);
     ui->actionSelectedFilesReload->setEnabled(false);
     ui->actionSelectedFilesToggleShown->setEnabled(false);

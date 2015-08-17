@@ -80,13 +80,6 @@ void FilesListWidget::stopFileProgressDialog() {
 
 void FilesListWidget::addFile(FileType* ft) {
 
-    if(ft->is(FileType::FTSOUND))
-        ftsnds.push_back((FTSound*)ft);
-    else if(ft->is(FileType::FTFZERO))
-        ftfzeros.push_back((FTFZero*)ft);
-    else if(ft->is(FileType::FTLABELS))
-        ftlabels.push_back((FTLabels*)ft);
-
     addItem(ft);
 }
 
@@ -246,6 +239,13 @@ void FilesListWidget::addExistingFile(const QString& filepath, FileType::FType t
             if(m_prgdlg)
                 m_prgdlg->cancel();
     }
+}
+
+
+bool FilesListWidget::hasItem(FileType *ft) const {
+//    COUTD << "FilesListWidget::hasItem " << ft << endl;
+
+    return m_present_items.find(ft)!=m_present_items.end();
 }
 
 FileType* FilesListWidget::currentFile() const {
@@ -414,22 +414,14 @@ void FilesListWidget::selectedFilesClose() {
 
         FileType* ft = (FileType*)l.at(i);
 
+        if(ft==m_lastSelectedSound){
+            removeSelectedSound = true;
+            m_lastSelectedSound = NULL;
+        }
+
 //        cout << "INFO: Closing file: \"" << ft->fileFullPath.toLocal8Bit().constData() << "\"" << endl;
 
         delete ft; // Remove it from the listview
-
-        // Remove it from its own type-related list
-        if(ft->is(FileType::FTSOUND)){
-            if(ft==m_lastSelectedSound){
-                removeSelectedSound = true;
-                m_lastSelectedSound = NULL;
-            }
-            ftsnds.erase(std::find(ftsnds.begin(), ftsnds.end(), (FTSound*)ft));
-        }
-        else if(ft->is(FileType::FTFZERO))
-            ftfzeros.erase(std::find(ftfzeros.begin(), ftfzeros.end(), (FTFZero*)ft));
-        else if(ft->is(FileType::FTLABELS))
-            ftlabels.erase(std::find(ftlabels.begin(), ftlabels.end(), (FTLabels*)ft));
     }
 
     gMW->updateWindowTitle();
