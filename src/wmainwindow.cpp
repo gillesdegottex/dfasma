@@ -378,7 +378,7 @@ void WMainWindow::globalWaitingBarClear(){
 void WMainWindow::newFile(){
     QMessageBox::StandardButton btn = QMessageBox::question(this, "Create a new file ...", "Do you want to create an empty label file?", QMessageBox::Yes | QMessageBox::No);
     if(btn==QMessageBox::Yes){
-        m_fileslist->addFile(new FTLabels(this));
+        m_fileslist->addItem(new FTLabels(this));
     }
 }
 

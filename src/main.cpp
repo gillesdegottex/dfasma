@@ -49,28 +49,6 @@ extern "C" {
 
 int main(int argc, char *argv[])
 {
-    // Set all static variables
-    // Map Labels FileFormat with corresponding strings
-    if(FTLabels::m_formatstrings.empty()){
-        FTLabels::m_formatstrings.push_back("Unspecified");
-        FTLabels::m_formatstrings.push_back("Auto");
-        FTLabels::m_formatstrings.push_back("Auto Text");
-        FTLabels::m_formatstrings.push_back("Text Time/Text (*.lab)");
-        FTLabels::m_formatstrings.push_back("Text Segment Float (*.lab)");
-        FTLabels::m_formatstrings.push_back("Text Segment Samples (*.lab)");
-        FTLabels::m_formatstrings.push_back("HTK Label File (*.lab)");
-        FTLabels::m_formatstrings.push_back("SDIF 1MRK/1LAB (*.sdif)");
-    }
-    // Map F0 FileFormat with corresponding strings
-    if(FTFZero::m_formatstrings.empty()){
-        FTFZero::m_formatstrings.push_back("Unspecified");
-        FTFZero::m_formatstrings.push_back("Auto");
-        FTFZero::m_formatstrings.push_back("Auto Text");
-        FTFZero::m_formatstrings.push_back("Text Time/Value (*.f0.bpf)");
-        FTFZero::m_formatstrings.push_back("SDIF 1FQ0/1FQ0 (*.sdif)");
-    }
-
-
     #ifdef FILE_AUDIO_LIBAV
         // This call is necessarily done once in your app to initialize
         // libavformat to register all the muxers, demuxers and protocols.

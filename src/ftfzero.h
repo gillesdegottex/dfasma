@@ -36,21 +36,21 @@ class FTFZero : public QObject, public FileType
 {
     Q_OBJECT
 
+public:
+    enum FileFormat {FFNotSpecified=0, FFAutoDetect, FFAsciiAutoDetect, FFAsciiTimeValue, FFSDIF};
+    static std::deque<QString> s_formatstrings;
+
+private:
+    static struct ClassConstructor{ClassConstructor();} s_class_constructor;
     void constructor_common();
     void load();
 
     QAction* m_actionSave;
     QAction* m_actionSaveAs;
 
-    bool m_isedited;
-
-    int m_fileformat;
-
-    FTSound* m_src_snd;
+    FileFormat m_fileformat;
 
 public:
-    enum FileFormat {FFNotSpecified=0, FFAutoDetect, FFAsciiAutoDetect, FFAsciiTimeValue, FFSDIF};
-    static std::deque<QString> m_formatstrings;
     FTFZero(const QString& _fileName, QObject* parent, FileType::FileContainer container=FileType::FCUNSET, FileFormat fileformat=FFNotSpecified);
     virtual FileType* duplicate();
     FTFZero(const FTFZero& ft);  // Duplicate
@@ -70,6 +70,9 @@ public:
     // Estimation
     FTFZero(QObject* parent, FTSound *ftsnd, double f0min, double f0max, double tstart=-1.0, double tend=-1.0);
     void estimate(FTSound *ftsnd, double f0min, double f0max, double tstart=-1.0, double tend=-1.0);
+
+    FTSound* m_src_snd;
+
 
 public slots:
     bool reload();

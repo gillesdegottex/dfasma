@@ -46,10 +46,21 @@ using namespace Easdif;
 
 #include "qthelper.h"
 
-std::deque<QString> FTFZero::m_formatstrings;
+std::deque<QString> FTFZero::s_formatstrings;
+FTFZero::ClassConstructor::ClassConstructor(){
+    // Attention ! It has to correspond to FType definition's order.
+    // Map F0 FileFormat with corresponding strings
+    if(FTFZero::s_formatstrings.empty()){
+        FTFZero::s_formatstrings.push_back("Unspecified");
+        FTFZero::s_formatstrings.push_back("Auto");
+        FTFZero::s_formatstrings.push_back("Auto Text");
+        FTFZero::s_formatstrings.push_back("Text Time/Value (*.f0.bpf)");
+        FTFZero::s_formatstrings.push_back("SDIF 1FQ0/1FQ0 (*.sdif)");
+    }
+}
+FTFZero::ClassConstructor FTFZero::s_class_constructor;
 
 void FTFZero::constructor_common(){
-    m_isedited = false;
     m_fileformat = FFNotSpecified;
     m_src_snd = NULL;
 
@@ -267,17 +278,17 @@ void FTFZero::saveAs() {
 
     // Build the filter string
     QString filters;
-    filters += m_formatstrings[FFAsciiTimeValue];
+    filters += s_formatstrings[FFAsciiTimeValue];
     #ifdef SUPPORT_SDIF
-        filters += ";;"+m_formatstrings[FFSDIF];
+        filters += ";;"+s_formatstrings[FFSDIF];
     #endif
     QString selectedFilter;
     if(m_fileformat==FFNotSpecified) {
-        if(gMW->m_dlgSettings->ui->cbF0DefaultFormat->currentIndex()+FFAsciiTimeValue<int(m_formatstrings.size()))
-            selectedFilter = m_formatstrings[gMW->m_dlgSettings->ui->cbF0DefaultFormat->currentIndex()+FFAsciiTimeValue];
+        if(gMW->m_dlgSettings->ui->cbF0DefaultFormat->currentIndex()+FFAsciiTimeValue<int(s_formatstrings.size()))
+            selectedFilter = s_formatstrings[gMW->m_dlgSettings->ui->cbF0DefaultFormat->currentIndex()+FFAsciiTimeValue];
     }
     else
-        selectedFilter = m_formatstrings[m_fileformat];
+        selectedFilter = s_formatstrings[m_fileformat];
 
 //    COUTD << fileFullPath.toLatin1().constData() << endl;
 
@@ -286,10 +297,10 @@ void FTFZero::saveAs() {
     if(!fp.isEmpty()){
         try{
             setFullPath(fp);
-            if(selectedFilter==m_formatstrings[FFAsciiTimeValue])
+            if(selectedFilter==s_formatstrings[FFAsciiTimeValue])
                 m_fileformat = FFAsciiTimeValue;
             #ifdef SUPPORT_SDIF
-            else if(selectedFilter==m_formatstrings[FFSDIF])
+            else if(selectedFilter==s_formatstrings[FFSDIF])
                 m_fileformat = FFSDIF;
             #endif
 
@@ -375,7 +386,7 @@ void FTFZero::save() {
         throw QString("File format not recognized for writing this F0 file.");
 
     m_lastreadtime = QDateTime::currentDateTime();
-    m_isedited = false;
+    m_is_edited = false;
     checkFileStatus(CFSMEXCEPTION);
     gFL->fileInfoUpdate();
     gMW->statusBar()->showMessage(fileFullPath+" saved.", 10000);
@@ -469,6 +480,8 @@ double FTFZero::getLastSampleTime() const {
 
 FTFZero::~FTFZero() {
     delete m_aspec_txt;
+
+    gFL->ftfzeros.erase(std::find(gFL->ftfzeros.begin(), gFL->ftfzeros.end(), this));
 }
 
 
@@ -481,10 +494,6 @@ FTFZero::FTFZero(QObject *parent, FTSound *ftsnd, double f0min, double f0max, do
     , FileType(FTFZERO, DropFileExtension(ftsnd->fileFullPath)+".f0.txt", this, ftsnd->getColor())
 {
     FTFZero::constructor_common();
-
-    m_src_snd = ftsnd;
-
-    COUTD << m_src_snd << " " << gFL->hasItem(m_src_snd) << endl;
 
     estimate(ftsnd, f0min, f0max, tstart, tend);
 }
@@ -561,6 +570,8 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
     }
 
     gMW->globalWaitingBarDone();
+
+    COUTD << ts.size() << " " << f0s.size() << endl;
 
     updateTextsGeometry();
 

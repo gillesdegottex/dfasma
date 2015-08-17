@@ -55,8 +55,7 @@ using namespace Easdif;
 #include "qthelper.h"
 
 
-bool FTGraphicsLabelItem::sm_isEditing = false;
-std::deque<QString> FTLabels::m_formatstrings;
+bool FTGraphicsLabelItem::s_isEditing = false;
 
 FTGraphicsLabelItem::FTGraphicsLabelItem(FTLabels* ftl, const QString & text)
     : QGraphicsTextItem(text)
@@ -74,14 +73,14 @@ void FTGraphicsLabelItem::focusInEvent(QFocusEvent * event){
     Q_UNUSED(event)
 //    COUTD << "FTGraphicsLabelItem::focusInEvent " << endl;
     m_prevText = toPlainText();
-    sm_isEditing = true;
+    s_isEditing = true;
     setTextCursor(QTextCursor(document()));
     update();
 }
 void FTGraphicsLabelItem::focusOutEvent(QFocusEvent * event){
     Q_UNUSED(event)
 //    COUTD << "FTGraphicsLabelItem::focusOutEvent " << endl;
-    sm_isEditing = false;
+    s_isEditing = false;
 
     // Replace the text in the spectrogram
     std::deque<double>::iterator p = std::find(m_ftl->starts.begin(), m_ftl->starts.end(), pos().x());
@@ -117,11 +116,26 @@ void FTGraphicsLabelItem::paint(QPainter *painter,const QStyleOptionGraphicsItem
     QGraphicsTextItem::paint(painter, option, widget);
 }
 
+std::deque<QString> FTLabels::s_formatstrings;
+FTLabels::ClassConstructor::ClassConstructor(){
+    // Attention ! It has to correspond to FType definition's order.
+    // Map Labels FileFormat with corresponding strings
+    if(FTLabels::s_formatstrings.empty()){
+        FTLabels::s_formatstrings.push_back("Unspecified");
+        FTLabels::s_formatstrings.push_back("Auto");
+        FTLabels::s_formatstrings.push_back("Auto Text");
+        FTLabels::s_formatstrings.push_back("Text Time/Text (*.lab)");
+        FTLabels::s_formatstrings.push_back("Text Segment Float (*.lab)");
+        FTLabels::s_formatstrings.push_back("Text Segment Samples (*.lab)");
+        FTLabels::s_formatstrings.push_back("HTK Label File (*.lab)");
+        FTLabels::s_formatstrings.push_back("SDIF 1MRK/1LAB (*.sdif)");
+    }
+}
+FTLabels::ClassConstructor FTLabels::s_class_constructor;
 
 void FTLabels::constructor_common(){
-    m_isedited = false;
-
     m_fileformat = FFNotSpecified;
+
     m_actionSave = new QAction("Save", this);
     m_actionSave->setStatusTip(tr("Save the labels times (overwrite the file !)"));
     m_actionSave->setShortcut(gMW->ui->actionSelectedFilesSave->shortcut());
@@ -455,7 +469,7 @@ void FTLabels::load() {
     updateTextsGeometry();
 
     m_lastreadtime = QDateTime::currentDateTime();
-    m_isedited = false;
+    m_is_edited = false;
     setStatus();
 }
 
@@ -476,7 +490,7 @@ void FTLabels::clear() {
             delete spectrogram_lines[li];
         spectrogram_lines.clear();
 
-        m_isedited = true;
+        m_is_edited = true;
         setStatus();
     }
 //    COUTD << "FTLabels::~clear" << endl;
@@ -502,20 +516,20 @@ void FTLabels::saveAs() {
 
     // Build the filter string
     QString filters;
-    filters += m_formatstrings[FFTEXTTimeText];
-    filters += ";;"+m_formatstrings[FFTEXTSegmentsFloat];
-    filters += ";;"+m_formatstrings[FFTEXTSegmentsSample];
-    filters += ";;"+m_formatstrings[FFTEXTSegmentsHTK];
+    filters += s_formatstrings[FFTEXTTimeText];
+    filters += ";;"+s_formatstrings[FFTEXTSegmentsFloat];
+    filters += ";;"+s_formatstrings[FFTEXTSegmentsSample];
+    filters += ";;"+s_formatstrings[FFTEXTSegmentsHTK];
     #ifdef SUPPORT_SDIF
-        filters += ";;"+m_formatstrings[FFSDIF];
+        filters += ";;"+s_formatstrings[FFSDIF];
     #endif
     QString selectedFilter;
     if(m_fileformat==FFNotSpecified) {
-        if(gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText<int(m_formatstrings.size()))
-            selectedFilter = m_formatstrings[gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText];
+        if(gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText<int(s_formatstrings.size()))
+            selectedFilter = s_formatstrings[gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText];
     }
     else
-        selectedFilter = m_formatstrings[m_fileformat];
+        selectedFilter = s_formatstrings[m_fileformat];
 
 //    COUTD << fileFullPath.toLatin1().constData() << endl;
 
@@ -524,16 +538,16 @@ void FTLabels::saveAs() {
     if(!fp.isEmpty()){
         try{
             setFullPath(fp);
-            if(selectedFilter==m_formatstrings[FFTEXTTimeText])
+            if(selectedFilter==s_formatstrings[FFTEXTTimeText])
                 m_fileformat = FFTEXTTimeText;
-            else if(selectedFilter==m_formatstrings[FFTEXTSegmentsFloat])
+            else if(selectedFilter==s_formatstrings[FFTEXTSegmentsFloat])
                 m_fileformat = FFTEXTSegmentsFloat;
-            else if(selectedFilter==m_formatstrings[FFTEXTSegmentsSample])
+            else if(selectedFilter==s_formatstrings[FFTEXTSegmentsSample])
                 m_fileformat = FFTEXTSegmentsSample;
-            else if(selectedFilter==m_formatstrings[FFTEXTSegmentsHTK])
+            else if(selectedFilter==s_formatstrings[FFTEXTSegmentsHTK])
                 m_fileformat = FFTEXTSegmentsHTK;
             #ifdef SUPPORT_SDIF
-            else if(selectedFilter==m_formatstrings[FFSDIF])
+            else if(selectedFilter==s_formatstrings[FFSDIF])
                 m_fileformat = FFSDIF;
             #endif
 
@@ -694,7 +708,7 @@ void FTLabels::save() {
         throw QString("File format not recognized for writing this label file.");
 
     m_lastreadtime = QDateTime::currentDateTime();
-    m_isedited = false;
+    m_is_edited = false;
     checkFileStatus(CFSMEXCEPTION);
     gFL->fileInfoUpdate();
     gMW->statusBar()->showMessage(fileFullPath+" saved.", 10000);
@@ -791,7 +805,7 @@ void FTLabels::addLabel(double position, const QString& text){
 
     sort();
 
-    m_isedited = true;
+    m_is_edited = true;
     setStatus();
 }
 
@@ -804,7 +818,7 @@ void FTLabels::moveLabel(int index, double position){
 
     sort();
 
-    m_isedited = true;
+    m_is_edited = true;
     setStatus();
 }
 void FTLabels::moveAllLabel(double delay){
@@ -816,7 +830,7 @@ void FTLabels::moveAllLabel(double delay){
         spectrogram_lines[u]->setPos(spectrogram_lines[u]->pos().x()+delay, 0);
         spectrogram_labels[u]->setPos(spectrogram_labels[u]->pos().x()+delay, 0);
     }
-    m_isedited = true;
+    m_is_edited = true;
     setStatus();
 }
 
@@ -825,7 +839,7 @@ void FTLabels::changeText(int index, const QString& text){
     waveform_labels[index]->setPlainText(text);
     spectrogram_labels[index]->setText(text);
 
-    m_isedited = true;
+    m_is_edited = true;
     setStatus();
 }
 
@@ -878,7 +892,7 @@ void FTLabels::removeLabel(int index){
     spectrogram_lines.erase(spectrogram_lines.begin()+index);
     delete linetoremove;
 
-    m_isedited = true;
+    m_is_edited = true;
     setStatus();
 }
 
@@ -939,4 +953,6 @@ void FTLabels::sort(){
 
 FTLabels::~FTLabels() {
     clear();
+
+    gFL->ftlabels.erase(std::find(gFL->ftlabels.begin(), gFL->ftlabels.end(), this));
 }

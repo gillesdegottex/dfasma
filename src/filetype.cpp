@@ -102,8 +102,10 @@ FileType::ClassConstructor FileType::s_class_constructor;
 
 void FileType::constructor_common(){
     m_is_editing = false;
+    m_is_edited = false;
+    m_is_source = false;
 
-    gFL->m_present_items.insert(make_pair(this,true));
+    gFL->m_present_files.insert(make_pair(this,true));
 }
 
 FileType::FileContainer FileType::guessContainer(const QString& filepath){
@@ -205,6 +207,7 @@ bool FileType::checkFileStatus(CHECKFILESTATUSMGT cfsmgt){
 }
 
 void FileType::setDrawIcon(QPixmap& pm){
+    COUTD << "FileType::setDrawIcon " << fileFullPath << endl;
     pm.fill(m_color);
     if(!isVisible()){
         // If Invisible, whiten the left half.
@@ -216,6 +219,11 @@ void FileType::setDrawIcon(QPixmap& pm){
     }
     if(m_is_editing){
         QSvgRenderer renderer(QString(":/icons/edit2_white.svg"));
+        QPainter p(&pm);
+        renderer.render(&p);
+    }    
+    if(m_is_source){
+        QSvgRenderer renderer(QString(":/icons/source.svg"));
         QPainter p(&pm);
         renderer.render(&p);
     }
@@ -238,6 +246,14 @@ void FileType::setEditing(bool editing){
         updateIcon();
     }
 }
+
+void FileType::setIsSource(bool issource){
+    if(m_is_source!=issource){
+        m_is_source=issource;
+        updateIcon();
+    }
+}
+
 
 void FileType::fillContextMenu(QMenu& contextmenu) {
     contextmenu.addAction(m_actionShow);
@@ -309,7 +325,7 @@ void FileType::setStatus() {
 }
 
 FileType::~FileType() {
-    gFL->m_present_items.erase(this);
+    gFL->m_present_files.erase(this);
 
     s_colors.push_front(m_color);
 }

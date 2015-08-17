@@ -1274,7 +1274,8 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
 
     // Draw the f0 and its harmonics
     for(size_t fi=0; fi<gFL->ftfzeros.size(); fi++){
-        if(!gFL->ftfzeros[fi]->m_actionShow->isChecked())
+        if(!gFL->ftfzeros[fi]->m_actionShow->isChecked()
+            || gFL->ftfzeros[fi]->ts.size()==0)
             continue;
 
 //            QPen outlinePen(gMW->ftfzeros[fi]->color);

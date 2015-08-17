@@ -41,10 +41,11 @@ private:
     static struct ClassConstructor{ClassConstructor();} s_class_constructor;
 
     QColor m_color;
-
     bool m_is_editing; // True if the file is currently under edition and the icon is changed accordingly.
+    bool m_is_source;  // True if the file has to show the source symbol.
 
 protected:
+    bool m_is_edited;   // True if the file has been modified and might need to be saved.
     QDateTime m_modifiedtime;
     QDateTime m_lastreadtime;
 
@@ -80,11 +81,12 @@ public:
 
     virtual QString info() const;
     void setEditing(bool editing);
+    void setIsSource(bool issource);
     virtual void setColor(const QColor& _color);
     virtual void updateIcon();
     virtual void setVisible(bool shown);
     bool isVisible(){return m_actionShow->isChecked();}
-    virtual bool isModified() {return false;}
+    virtual bool isModified() {return m_is_edited;}
     virtual double getLastSampleTime() const =0;
     virtual void fillContextMenu(QMenu& contextmenu);
     virtual FileType* duplicate();

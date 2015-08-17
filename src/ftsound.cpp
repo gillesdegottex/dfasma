@@ -783,7 +783,7 @@ void FTSound::estimateFZero(){
 
         FTFZero* ftf0 = new FTFZero(gFL, this, f0min, f0max);
 
-        gFL->addFile(ftf0);
+        gFL->addItem(ftf0);
         gMW->m_gvSpectrogram->m_scene->update();
         gMW->m_gvAmplitudeSpectrum->m_scene->update();
     }

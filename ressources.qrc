@@ -31,5 +31,6 @@
         <file>icons/edit2_selected.svg</file>
         <file>icons/selection_selected.svg</file>
         <file>icons/edit2_white.svg</file>
+        <file>icons/source.svg</file>
     </qresource>
 </RCC>

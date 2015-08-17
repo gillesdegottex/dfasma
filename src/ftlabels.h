@@ -38,7 +38,7 @@ class FTLabels;
 class FTGraphicsLabelItem : public QGraphicsTextItem
 {
     FTLabels* m_ftl;
-    static bool sm_isEditing;
+    static bool s_isEditing;
     QString m_prevText;
 
 public:
@@ -51,7 +51,7 @@ public:
 
     virtual void paint(QPainter *painter,const QStyleOptionGraphicsItem *option,QWidget *widget);
 
-    static bool isEditing() {return sm_isEditing;}
+    static bool isEditing() {return s_isEditing;}
 };
 
 
@@ -59,6 +59,12 @@ class FTLabels : public QObject, public FileType
 {
     Q_OBJECT
 
+public:
+    enum FileFormat {FFNotSpecified=0, FFAutoDetect, FFTEXTAutoDetect, FFTEXTTimeText, FFTEXTSegmentsFloat, FFTEXTSegmentsSample, FFTEXTSegmentsHTK, FFSDIF};
+    static std::deque<QString> s_formatstrings;
+
+private:
+    static struct ClassConstructor{ClassConstructor();} s_class_constructor;
     void constructor_common();
     void load();
     void sort(); // For keeping files in ascending order
@@ -66,14 +72,9 @@ class FTLabels : public QObject, public FileType
     QAction* m_actionSave;
     QAction* m_actionSaveAs;
 
-    bool m_isedited;
-
-    int m_fileformat;
+    FileFormat m_fileformat;
 
 public:
-    enum FileFormat {FFNotSpecified=0, FFAutoDetect, FFTEXTAutoDetect, FFTEXTTimeText, FFTEXTSegmentsFloat, FFTEXTSegmentsSample, FFTEXTSegmentsHTK, FFSDIF};
-    static std::deque<QString> m_formatstrings;
-
     FTLabels(QObject *parent);
     FTLabels(const FTLabels& ft);
     FTLabels(const QString& _fileName, QObject* parent, FileType::FileContainer container=FileType::FCUNSET, FileFormat fileformat=FFNotSpecified);
@@ -88,7 +89,6 @@ public:
     virtual QString info() const;
     virtual double getLastSampleTime() const;
     virtual void fillContextMenu(QMenu& contextmenu);
-    virtual bool isModified() {return m_isedited;}
     void updateTextsGeometry();
 
     int getNbLabels() const {return int(starts.size());}

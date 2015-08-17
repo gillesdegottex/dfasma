@@ -78,11 +78,6 @@ void FilesListWidget::stopFileProgressDialog() {
     QCoreApplication::processEvents(); // To show the progress
 }
 
-void FilesListWidget::addFile(FileType* ft) {
-
-    addItem(ft);
-}
-
 void FilesListWidget::addExistingFilesRecursive(const QStringList& files, FileType::FType type) {
     for(int fi=0; fi<files.size() && !m_prgdlg->wasCanceled(); fi++) {
         if(QFileInfo(files[fi]).isDir()) {
@@ -197,7 +192,7 @@ void FilesListWidget::addExistingFile(const QString& filepath, FileType::FType t
             int nchan = FTSound::getNumberOfChannels(filepath);
             if(nchan==1){
                 // If there is only one channel, just load it
-                addFile(new FTSound(filepath, this));
+                addItem(new FTSound(filepath, this));
             }
             else{
                 // If more than one channel, ask what to do
@@ -206,14 +201,14 @@ void FilesListWidget::addExistingFile(const QString& filepath, FileType::FType t
                 if(dlg.exec()) {
                     if(dlg.ui->rdbImportEachChannel->isChecked()){
                         for(int ci=1; ci<=nchan; ci++){
-                            addFile(new FTSound(filepath, this, ci));
+                            addItem(new FTSound(filepath, this, ci));
                         }
                     }
                     else if(dlg.ui->rdbImportOnlyOneChannel->isChecked()){
-                        addFile(new FTSound(filepath, this, dlg.ui->sbChannelID->value()));
+                        addItem(new FTSound(filepath, this, dlg.ui->sbChannelID->value()));
                     }
                     else if(dlg.ui->rdbMergeAllChannels->isChecked()){
-                        addFile(new FTSound(filepath, this, -2));// -2 is a code for merging the channels
+                        addItem(new FTSound(filepath, this, -2));// -2 is a code for merging the channels
                     }
                 }
             }
@@ -227,9 +222,9 @@ void FilesListWidget::addExistingFile(const QString& filepath, FileType::FType t
             }
         }
         else if(type == FileType::FTFZERO)
-            addFile(new FTFZero(filepath, this, container));
+            addItem(new FTFZero(filepath, this, container));
         else if(type == FileType::FTLABELS)
-            addFile(new FTLabels(filepath, this, container));
+            addItem(new FTLabels(filepath, this, container));
     }
     catch (QString err)
     {
@@ -242,10 +237,12 @@ void FilesListWidget::addExistingFile(const QString& filepath, FileType::FType t
 }
 
 
-bool FilesListWidget::hasItem(FileType *ft) const {
+bool FilesListWidget::hasFile(FileType *ft) const {
 //    COUTD << "FilesListWidget::hasItem " << ft << endl;
 
-    return m_present_items.find(ft)!=m_present_items.end();
+    if(ft==NULL) return false;
+
+    return m_present_files.find(ft)!=m_present_files.end();
 }
 
 FileType* FilesListWidget::currentFile() const {
@@ -340,6 +337,26 @@ void FilesListWidget::fileSelectionChanged() {
         }
         gMW->m_gvSpectrogram->updateSTFTPlot();
         gMW->m_gvSpectrogram->m_scene->update();
+    }
+
+    // Update sources
+    // First clear
+    for(size_t fi=0; fi<m_current_sourced.size(); ++fi){
+        if(hasFile(m_current_sourced[fi]))
+            m_current_sourced[fi]->setIsSource(false);
+    }
+    m_current_sourced.clear();
+    // Then show the source symbol ('S')
+    if(list.size()==1){
+        FileType* ft = ((FileType*)list.at(0));
+        if(ft->is(FileType::FTFZERO)){
+            FTFZero* ftf0 = (FTFZero*)ft;
+            if(hasFile(ftf0->m_src_snd)){
+                FLAG
+                ftf0->m_src_snd->setIsSource(true);
+                m_current_sourced.push_back(ftf0->m_src_snd);
+            }
+        }
     }
 
     gMW->ui->actionSelectedFilesSave->setEnabled(nb_labels_in_selection>0 || nb_f0_in_selection>0);
@@ -485,7 +502,7 @@ void FilesListWidget::selectedFilesDuplicate() {
 
         FileType* ft = currentfile->duplicate();
         if(ft){
-            addFile(ft);
+            addItem(ft);
             gMW->m_gvWaveform->updateSceneRect();
             gMW->allSoundsChanged();
             gMW->ui->actionSelectedFilesClose->setEnabled(true);

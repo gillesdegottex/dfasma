@@ -59,6 +59,12 @@ inline QTextStream& operator<<(QTextStream& stream, const QRectF& rectf) {
     return stream;
 }
 
+inline std::ostream& operator<<(std::ostream& stream, const QString& str) {
+    stream << str.toLocal8Bit().constData();
+
+    return stream;
+}
+
 inline std::ostream& operator<<(std::ostream& stream, const QRectF& rectf) {
     stream << "[" << rectf.left() << "," << rectf.right() << "]x[" << rectf.top() << "," << rectf.bottom() << "]";
 

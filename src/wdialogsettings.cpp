@@ -49,20 +49,20 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     for(int ai=0; ai<avcodecs.size(); ++ai)
         ui->cbLabelsDefaultTextEncoding->addItem(avcodecs[ai]);
     ui->cbLabelsDefaultTextEncoding->setCurrentText("UTF-8");
-    ui->cbLabelsDefaultFormat->addItem(FTLabels::m_formatstrings[FTLabels::FFTEXTTimeText]);
-    ui->cbLabelsDefaultFormat->addItem(FTLabels::m_formatstrings[FTLabels::FFTEXTSegmentsFloat]);
-    ui->cbLabelsDefaultFormat->addItem(FTLabels::m_formatstrings[FTLabels::FFTEXTSegmentsSample]);
-    ui->cbLabelsDefaultFormat->addItem(FTLabels::m_formatstrings[FTLabels::FFTEXTSegmentsHTK]);
+    ui->cbLabelsDefaultFormat->addItem(FTLabels::s_formatstrings[FTLabels::FFTEXTTimeText]);
+    ui->cbLabelsDefaultFormat->addItem(FTLabels::s_formatstrings[FTLabels::FFTEXTSegmentsFloat]);
+    ui->cbLabelsDefaultFormat->addItem(FTLabels::s_formatstrings[FTLabels::FFTEXTSegmentsSample]);
+    ui->cbLabelsDefaultFormat->addItem(FTLabels::s_formatstrings[FTLabels::FFTEXTSegmentsHTK]);
     #ifdef SUPPORT_SDIF
-        ui->cbLabelsDefaultFormat->addItem(FTLabels::m_formatstrings[FTLabels::FFSDIF]);
+        ui->cbLabelsDefaultFormat->addItem(FTLabels::s_formatstrings[FTLabels::FFSDIF]);
     #endif
-    ui->cbLabelsDefaultFormat->setCurrentText(FTLabels::m_formatstrings[FTLabels::FFTEXTTimeText]);
+    ui->cbLabelsDefaultFormat->setCurrentText(FTLabels::s_formatstrings[FTLabels::FFTEXTTimeText]);
 
-    ui->cbF0DefaultFormat->addItem(FTFZero::m_formatstrings[FTFZero::FFAsciiTimeValue]);
+    ui->cbF0DefaultFormat->addItem(FTFZero::s_formatstrings[FTFZero::FFAsciiTimeValue]);
     #ifdef SUPPORT_SDIF
-        ui->cbF0DefaultFormat->addItem(FTFZero::m_formatstrings[FTFZero::FFSDIF]);
+        ui->cbF0DefaultFormat->addItem(FTFZero::s_formatstrings[FTFZero::FFSDIF]);
     #endif
-    ui->cbF0DefaultFormat->setCurrentText(FTFZero::m_formatstrings[FTFZero::FFAsciiTimeValue]);
+    ui->cbF0DefaultFormat->setCurrentText(FTFZero::s_formatstrings[FTFZero::FFAsciiTimeValue]);
 
 
     setWindowIcon(QIcon(":/icons/settings.svg"));

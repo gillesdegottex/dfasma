@@ -11,8 +11,7 @@ class QProgressDialog;
 #include "ftlabels.h"
 
 class FilesListWidget;
-extern FilesListWidget* gFL; // Global accessor of the Main Window
-
+extern FilesListWidget* gFL; // Global accessor of the file list
 class FilesListWidget : public QListWidget
 {
     Q_OBJECT
@@ -22,11 +21,11 @@ class FilesListWidget : public QListWidget
     // Store which file exists in the list in a tree
     // TODO Cannot find a way to do it already from the Qt5 library.
     // (FilesListWidget::hasItem returns NULL)
-    std::map<FileType*,bool> m_present_items;
-
+    std::map<FileType*,bool> m_present_files;
     FTSound* m_lastSelectedSound;
-
     void addExistingFilesRecursive(const QStringList& files, FileType::FType type=FileType::FTUNSET);
+
+    std::deque<FileType*> m_current_sourced;
 
     // The progress dialog when loading a lot of files
     QProgressDialog* m_prgdlg;
@@ -38,12 +37,10 @@ public:
     std::deque<FTSound*> ftsnds;
     std::deque<FTFZero*> ftfzeros;
     std::deque<FTLabels*> ftlabels;
-    void addFile(FileType* ft);
+    bool hasFile(FileType *ft) const;
 
     void addExistingFiles(const QStringList& files, FileType::FType type=FileType::FTUNSET);
     void addExistingFile(const QString& filepath, FileType::FType type=FileType::FTUNSET);
-
-    bool hasItem(FileType *ft) const;
 
     FileType* currentFile() const;
     FTSound* getCurrentFTSound(bool forceselect=false);
@@ -54,10 +51,7 @@ public:
     double getMaxDuration();
     double getMaxLastSampleTime();
 
-
     void closeEditor(QWidget * editor, QAbstractItemDelegate::EndEditHint hint); // Wrong: it belongs to qlistview
-
-signals:
 
 public slots:
     void changeFileListItemsSize();
