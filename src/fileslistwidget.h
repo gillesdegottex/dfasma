@@ -12,6 +12,8 @@ class QProgressDialog;
 
 class FilesListWidget;
 extern FilesListWidget* gFL; // Global accessor of the file list
+class FileType;
+
 class FilesListWidget : public QListWidget
 {
     Q_OBJECT
