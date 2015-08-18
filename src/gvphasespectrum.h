@@ -85,6 +85,7 @@ public:
     void draw_grid(QPainter* painter, const QRectF& rect);
 
 //    QAction* m_aShowProperties;
+    QAction* m_aPhaseSpectrumGridUsePiFraction;
 
     ~QGVPhaseSpectrum();
 

@@ -541,6 +541,7 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
     // Initialize with the given input
     // Start with a dirty copy in the necessary format
     // TODO #388: compute only the necessary values (and not do all, then select)
+    //            though doing so, the dynamic prog result wont be the same.
     vector<int16_t> data(m_src_snd->wav.size());
     for(size_t i=0; i<m_src_snd->wav.size(); ++i)
         data[i] = 32768*m_src_snd->wav[i];
