@@ -181,7 +181,7 @@ void FTSound::constructor_common() {
     connect(m_actionResetFiltering, SIGNAL(triggered()), this, SLOT(needDFTUpdate()));
     connect(m_actionResetFiltering, SIGNAL(triggered()), this, SLOT(resetFiltering()));
 
-    m_actionAnalysisFZero = new QAction("Estimate f0", this);
+    m_actionAnalysisFZero = new QAction("Estimate F0", this);
     m_actionAnalysisFZero->setStatusTip(tr("Estimate the fundamental frequency (F0)"));
     m_actionAnalysisFZero->setShortcut(gMW->ui->actionEstimationF0->shortcut());
     connect(m_actionAnalysisFZero, SIGNAL(triggered()), this, SLOT(estimateFZero()));

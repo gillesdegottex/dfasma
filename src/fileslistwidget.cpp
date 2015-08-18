@@ -339,22 +339,20 @@ void FilesListWidget::fileSelectionChanged() {
         gMW->m_gvSpectrogram->m_scene->update();
     }
 
-    // Update sources
+    // Update source symbols
     // First clear
-    for(size_t fi=0; fi<m_current_sourced.size(); ++fi){
+    for(size_t fi=0; fi<m_current_sourced.size(); ++fi)
         if(hasFile(m_current_sourced[fi]))
             m_current_sourced[fi]->setIsSource(false);
-    }
     m_current_sourced.clear();
     // Then show the source symbol ('S')
     if(list.size()==1){
         FileType* ft = ((FileType*)list.at(0));
         if(ft->is(FileType::FTFZERO)){
-            FTFZero* ftf0 = (FTFZero*)ft;
-            if(hasFile(ftf0->m_src_snd)){
-                FLAG
-                ftf0->m_src_snd->setIsSource(true);
-                m_current_sourced.push_back(ftf0->m_src_snd);
+            FTSound* ftsnd = ((FTFZero*)ft)->m_src_snd;
+            if(hasFile(ftsnd)){
+                ftsnd->setIsSource(true);
+                m_current_sourced.push_back(ftsnd);
             }
         }
     }
@@ -535,6 +533,12 @@ void FilesListWidget::selectedFilesEstimateF0() {
 
         if(currentfile->is(FileType::FTSOUND))
             ((FTSound*)currentfile)->estimateFZero();
+
+        if(currentfile->is(FileType::FTFZERO)){
+            ((FTFZero*)currentfile)->estimate(NULL, gMW->m_gvAmplitudeSpectrum->m_selection.left(), gMW->m_gvAmplitudeSpectrum->m_selection.right(), gMW->m_gvWaveform->m_selection.left(), gMW->m_gvWaveform->m_selection.right());
+            gMW->m_gvAmplitudeSpectrum->m_scene->update();
+            gMW->m_gvSpectrogram->m_scene->update();
+        }
     }
 }
 

@@ -207,7 +207,6 @@ bool FileType::checkFileStatus(CHECKFILESTATUSMGT cfsmgt){
 }
 
 void FileType::setDrawIcon(QPixmap& pm){
-    COUTD << "FileType::setDrawIcon " << fileFullPath << endl;
     pm.fill(m_color);
     if(!isVisible()){
         // If Invisible, whiten the left half.

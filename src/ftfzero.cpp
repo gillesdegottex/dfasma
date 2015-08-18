@@ -76,6 +76,11 @@ void FTFZero::constructor_common(){
     m_actionSaveAs->setStatusTip(tr("Save the f0 curve in a given file..."));
     connect(m_actionSaveAs, SIGNAL(triggered()), this, SLOT(saveAs()));
 
+    m_actionAnalysisFZero = new QAction("Recompute F0", this);
+    m_actionAnalysisFZero->setStatusTip(tr("Re-estimate the fundamental frequency (F0)"));
+    m_actionAnalysisFZero->setShortcut(gMW->ui->actionEstimationF0->shortcut());
+//    connect(m_actionAnalysisFZero, SIGNAL(triggered()), this, SLOT(estimateFZero()));
+
     gFL->ftfzeros.push_back(this);
 }
 
@@ -503,6 +508,13 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
     if(ftsnd)
         m_src_snd = ftsnd;
 
+    f0min = std::max(f0min, 20.0); // Fix hard-coded minimum for f0
+    f0max = std::min(f0max, gFL->getFs()/2.0); // Fix hard-coded minimum for f0
+    if(tstart!=-1) tstart = std::max(tstart, 0.0);
+    if(tend!=-1) tend = std::min(tend, m_src_snd->getLastSampleTime());
+
+//    COUTD << "FTFZero::estimate src=" << m_src_snd->visibleName << " [" << f0min << "," << f0max << "]Hz [" << tstart << "," << tend << "]s" << endl;
+
 
 //    if(_fileName==""){
 ////        if(gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText==FFSDIF)
@@ -519,17 +531,17 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
 
     double timestepsize = gMW->m_dlgSettings->ui->sbEstimationStepSize->value();
 
-    EpochTracker et; // TODO to put in FTSound because other features can be extracted from it (ex. GCIs)
+    EpochTracker et; // TODO to put in FTSound because other features can be extracted from it (ex. GCIs, voicing)
 
     gMW->globalWaitingBarSetValue(1);
 
     // Initialize with the given input
     // Start with a dirty copy in the necessary format
-    vector<int16_t> data(ftsnd->wav.size());
-    for(size_t i=0; i<ftsnd->wav.size(); ++i)
-        data[i] = 32768*ftsnd->wav[i];
+    vector<int16_t> data(m_src_snd->wav.size());
+    for(size_t i=0; i<m_src_snd->wav.size(); ++i)
+        data[i] = 32768*m_src_snd->wav[i];
     int16_t* wave_datap = data.data();
-    int32_t n_samples = ftsnd->wav.size();
+    int32_t n_samples = m_src_snd->wav.size();
     float sample_rate = gFL->getFs();
     if(sample_rate<6000.0)
         QMessageBox::warning(gMW, "Problem during estimation of F0", "Sampling rate is smaller than 6kHz, which may create substantial estimation errors.");
@@ -563,17 +575,82 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
     if (!et.ResampleAndReturnResults(timestepsize, &f0, &corr))
         throw QString("Cannot resample the results");
 
-    // Everything seemed to go well, let's built the new file
-    for (size_t i = 0; i<f0.size(); ++i) {
-        ts.push_back(timestepsize*i);
-        f0s.push_back(f0[i]);
+    // Everything seemed to go well, let's fill/replace the f0 curve
+    if(tstart==-1 && tend==-1){
+        ts.clear();
+        f0s.clear();
+        for (size_t i=0; i<f0.size(); ++i) {
+            ts.push_back(timestepsize*i);
+            f0s.push_back(f0[i]);
+        }
+    }
+    else{
+
+//        FLAG
+//        // Start by erasing the values within the time segment
+//        std::deque<double>::iterator itlb = std::lower_bound(ts.begin(), ts.end(), tstart);
+//        std::deque<double>::iterator ithb = std::upper_bound(ts.begin(), ts.end(), tend);
+//        FLAG
+////        COUTD << it << endl;
+//        COUTD << *itlb << "," << *ithb << endl;
+//        COUTD << itlb-ts.begin() << "," << ithb-ts.begin() << endl;
+//        COUTD << ithb-itlb << endl;
+
+//        ts.erase(itlb, ithb);
+//        FLAG
+//        f0s.erase(f0s.begin()+(itlb-ts.begin()), f0s.begin()+(ithb-ts.begin()));
+//        COUTD << ts.size() << " " << f0s.size() << endl;
+
+        int first = -1;
+        int last = -1;
+        for(size_t i=0; i<ts.size(); ++i){
+            if(ts[i]<tstart)
+                first = i;
+            if(ts[i]<tend)
+                last = i;
+        }
+        first++;
+//        COUTD << first << "," << last << " size=" << ts.size() << endl;
+//        COUTD << ts[first] << "," << ts[last] << endl;
+//        COUTD << last-first+1 << endl;
+
+        std::deque<double>::iterator tsl = ts.erase(ts.begin()+first, ts.begin()+last+1);
+        std::deque<double>::iterator f0sl = f0s.erase(f0s.begin()+first, f0s.begin()+last+1);
+
+//        for(size_t i=first; i<=last; ++i)
+//            f0s[i] = 0.0;
+
+//        FLAG
+
+        // And insert the new values of the newly computed values
+
+        // Find the elements in the new values
+        int nitlb = std::ceil(tstart/timestepsize);
+        int nithb = std::floor(tend/timestepsize);
+
+//        COUTD << nitlb << "," << nithb << endl;
+//        COUTD << timestepsize*nitlb << "," << timestepsize*nithb << endl;
+//        COUTD << nithb-nitlb << endl;
+
+        // Add the new times ...
+        std::vector<double> nts(nithb-nitlb);
+        COUTD << nts.size() << endl;
+        for(size_t i=0; i<nts.size(); ++i)
+            nts[i] = timestepsize*(nitlb+i);
+//        FLAG
+        ts.insert(tsl, nts.begin(), nts.end());
+
+//        FLAG
+        // ... and the new f0 values.
+        f0s.insert(f0sl, f0.begin()+nitlb, f0.begin()+nithb);
+//        FLAG
     }
 
     gMW->globalWaitingBarDone();
 
-    COUTD << ts.size() << " " << f0s.size() << endl;
-
     updateTextsGeometry();
 
     setStatus();
+
+//    COUTD << ts.size() << " " << f0s.size() << endl;
 }

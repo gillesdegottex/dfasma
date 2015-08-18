@@ -71,8 +71,9 @@ public:
     FTFZero(QObject* parent, FTSound *ftsnd, double f0min, double f0max, double tstart=-1.0, double tend=-1.0);
     void estimate(FTSound *ftsnd, double f0min, double f0max, double tstart=-1.0, double tend=-1.0);
 
+    // Analysis
+    QAction* m_actionAnalysisFZero;
     FTSound* m_src_snd;
-
 
 public slots:
     bool reload();

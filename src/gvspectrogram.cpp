@@ -1148,7 +1148,6 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
                 if(lf0>0 && rf0>0)
                     painter->drawLine(QLineF(gFL->ftfzeros[fi]->ts[ti], fs/2-lf0, gFL->ftfzeros[fi]->ts[ti+1], fs/2-rf0));
             }
-            COUTD << gFL->ftfzeros[fi]->ts.size() << " " << gFL->ftfzeros[fi]->f0s.size() << endl;
             if(gFL->ftfzeros[fi]->f0s.back()>0.0)
                 f0min = std::min(f0min, gFL->ftfzeros[fi]->f0s.back());
 
