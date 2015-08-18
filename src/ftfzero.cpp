@@ -629,6 +629,7 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
 
     updateTextsGeometry();
 
+    m_is_edited = true;
     setStatus();
 
 //    COUTD << ts.size() << " " << f0s.size() << endl;
