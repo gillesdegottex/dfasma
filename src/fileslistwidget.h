@@ -12,13 +12,12 @@ class QProgressDialog;
 
 class FilesListWidget;
 extern FilesListWidget* gFL; // Global accessor of the file list
-class FileType;
 
 class FilesListWidget : public QListWidget
 {
     Q_OBJECT
 
-    friend FileType;
+    friend class FileType;
 
     // Store which file exists in the list in a tree
     // TODO Cannot find a way to do it already from the Qt5 library.
