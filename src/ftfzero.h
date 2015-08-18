@@ -68,8 +68,8 @@ public:
     virtual double getLastSampleTime() const;
 
     // Estimation
-    FTFZero(QObject* parent, FTSound *ftsnd, double f0min, double f0max, double tstart=-1.0, double tend=-1.0);
-    void estimate(FTSound *ftsnd, double f0min, double f0max, double tstart=-1.0, double tend=-1.0);
+    FTFZero(QObject* parent, FTSound *ftsnd, double f0min, double f0max, double tstart=-1.0, double tend=-1.0, bool force=false);
+    void estimate(FTSound *ftsnd, double f0min, double f0max, double tstart=-1.0, double tend=-1.0, bool force=false);
 
     // Analysis
     QAction* m_actionAnalysisFZero;

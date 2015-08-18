@@ -238,8 +238,6 @@ public slots:
     void resetAmpScale();
     void resetDelay();
     void setVisible(bool shown);
-
-    void estimateFZero();
 };
 
 #endif // FTSOUND_H

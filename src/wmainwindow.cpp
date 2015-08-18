@@ -124,6 +124,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     connect(ui->actionSelectedFilesDuplicate, SIGNAL(triggered()), gFL, SLOT(selectedFilesDuplicate()));
     connect(ui->actionSelectedFilesSave, SIGNAL(triggered()), gFL, SLOT(selectedFilesSave()));
     connect(ui->actionEstimationF0, SIGNAL(triggered()), gFL, SLOT(selectedFilesEstimateF0()));
+    connect(ui->actionEstimationF0Forced, SIGNAL(triggered()), gFL, SLOT(selectedFilesEstimateF0()));
 
     ui->statusBar->setStyleSheet("QStatusBar::item { border: 0px solid black }; ");
     m_globalWaitingBar = new QProgressBar(ui->statusBar);
@@ -161,6 +162,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     addAction(ui->actionSelectedFilesSave);
     addAction(ui->actionPlayFiltered);
     addAction(ui->actionEstimationF0);
+    addAction(ui->actionEstimationF0Forced);
 
     // Audio engine for playing the selections
     ui->actionPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));

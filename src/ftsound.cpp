@@ -184,7 +184,7 @@ void FTSound::constructor_common() {
     m_actionAnalysisFZero = new QAction("Estimate F0", this);
     m_actionAnalysisFZero->setStatusTip(tr("Estimate the fundamental frequency (F0)"));
     m_actionAnalysisFZero->setShortcut(gMW->ui->actionEstimationF0->shortcut());
-    connect(m_actionAnalysisFZero, SIGNAL(triggered()), this, SLOT(estimateFZero()));
+//    connect(m_actionAnalysisFZero, SIGNAL(triggered()), this, SLOT(estimateFZero()));
 
     gFL->ftsnds.push_back(this);
 }
@@ -762,34 +762,6 @@ FTSound::~FTSound(){
     QIODevice::close();
 
     gFL->ftsnds.erase(std::find(gFL->ftsnds.begin(), gFL->ftsnds.end(), this));
-}
-
-
-// Analysis --------------------------------------------------------------------
-
-void FTSound::estimateFZero(){
-
-    try {
-        // Get the f0 estimation range ...
-        // ... from default values ...
-        double f0min = gMW->m_dlgSettings->ui->dsbEstimationF0Min->value();
-        double f0max = gMW->m_dlgSettings->ui->dsbEstimationF0Max->value();
-        // ... or frequency selection ...
-        if(gMW->m_gvAmplitudeSpectrum->m_selection.width()>0){
-            f0min = gMW->m_gvAmplitudeSpectrum->m_selection.left();
-            f0max = gMW->m_gvAmplitudeSpectrum->m_selection.right();
-        }
-        f0min = std::max(10.0, f0min);
-
-        FTFZero* ftf0 = new FTFZero(gFL, this, f0min, f0max);
-
-        gFL->addItem(ftf0);
-        gMW->m_gvSpectrogram->m_scene->update();
-        gMW->m_gvAmplitudeSpectrum->m_scene->update();
-    }
-    catch(QString err){
-        QMessageBox::warning(gMW, "Analysis of f0", "Estimation of the fundamental frequency failed for the following reason:\n"+err);
-    }
 }
 
 

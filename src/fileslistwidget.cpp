@@ -528,16 +528,41 @@ void FilesListWidget::selectedFilesSave() {
 void FilesListWidget::selectedFilesEstimateF0() {
     QList<QListWidgetItem*> l = selectedItems();
 
+    // Get the f0 estimation range ...
+    double f0min = gMW->m_dlgSettings->ui->dsbEstimationF0Min->value();
+    double f0max = gMW->m_dlgSettings->ui->dsbEstimationF0Max->value();
+    if(gMW->m_gvAmplitudeSpectrum->m_selection.width()>0.0){
+        f0min = gMW->m_gvAmplitudeSpectrum->m_selection.left();
+        f0max = gMW->m_gvAmplitudeSpectrum->m_selection.right();
+    }
+    double tstart = -1;
+    double tend = -1;
+    if(gMW->m_gvWaveform->m_selection.width()>0.0){
+        tstart = gMW->m_gvWaveform->m_selection.left();
+        tend = gMW->m_gvWaveform->m_selection.right();
+    }
+
+    bool force = QGuiApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
+
     for(int i=0; i<l.size(); i++) {
-        FileType* currentfile = (FileType*)l.at(i);
+        try {
+            FileType* currentfile = (FileType*)l.at(i);
 
-        if(currentfile->is(FileType::FTSOUND))
-            ((FTSound*)currentfile)->estimateFZero();
+            // If from a sound, generate a new F0 file
+            if(currentfile->is(FileType::FTSOUND)){
+                FTFZero* ftf0 = new FTFZero(gFL, (FTSound*)currentfile, f0min, f0max, tstart, tend, force);
+                gFL->addItem(ftf0);
+            }
 
-        if(currentfile->is(FileType::FTFZERO)){
-            ((FTFZero*)currentfile)->estimate(NULL, gMW->m_gvAmplitudeSpectrum->m_selection.left(), gMW->m_gvAmplitudeSpectrum->m_selection.right(), gMW->m_gvWaveform->m_selection.left(), gMW->m_gvWaveform->m_selection.right());
-            gMW->m_gvAmplitudeSpectrum->m_scene->update();
+            // If from an F0 file, update it
+            if(currentfile->is(FileType::FTFZERO))
+                ((FTFZero*)currentfile)->estimate(NULL, f0min, f0max, tstart, tend, force);
+
             gMW->m_gvSpectrogram->m_scene->update();
+            gMW->m_gvAmplitudeSpectrum->m_scene->update();
+        }
+        catch(QString err){
+            QMessageBox::warning(gMW, "Analysis of f0", "Estimation of the fundamental frequency failed for the following reason:\n"+err);
         }
     }
 }

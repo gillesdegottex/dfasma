@@ -295,7 +295,7 @@
                <string>Hz</string>
               </property>
               <property name="minimum">
-               <double>1.000000000000000</double>
+               <double>20.000000000000000</double>
               </property>
               <property name="maximum">
                <double>96000.000000000000000</double>
@@ -327,7 +327,7 @@
                <string>Hz</string>
               </property>
               <property name="minimum">
-               <double>1.000000000000000</double>
+               <double>20.000000000000000</double>
               </property>
               <property name="maximum">
                <double>96000.000000000000000</double>

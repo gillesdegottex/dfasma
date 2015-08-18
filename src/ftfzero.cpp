@@ -494,26 +494,26 @@ FTFZero::~FTFZero() {
 
 #include "../external/REAPER/epoch_tracker/epoch_tracker.h"
 
-FTFZero::FTFZero(QObject *parent, FTSound *ftsnd, double f0min, double f0max, double tstart, double tend)
+FTFZero::FTFZero(QObject *parent, FTSound *ftsnd, double f0min, double f0max, double tstart, double tend, bool force)
     : QObject(parent)
     , FileType(FTFZERO, DropFileExtension(ftsnd->fileFullPath)+".f0.txt", this, ftsnd->getColor())
 {
     FTFZero::constructor_common();
 
-    estimate(ftsnd, f0min, f0max, tstart, tend);
+    estimate(ftsnd, f0min, f0max, tstart, tend, force);
 }
 
-void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart, double tend) {
+void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart, double tend, bool force) {
 
     if(ftsnd)
         m_src_snd = ftsnd;
 
-    f0min = std::max(f0min, 20.0); // Fix hard-coded minimum for f0
+    f0min = std::max(f0min, gMW->m_dlgSettings->ui->dsbEstimationF0Min->minimum()); // Fix hard-coded minimum for f0
     f0max = std::min(f0max, gFL->getFs()/2.0); // Fix hard-coded minimum for f0
     if(tstart!=-1) tstart = std::max(tstart, 0.0);
     if(tend!=-1) tend = std::min(tend, m_src_snd->getLastSampleTime());
 
-//    COUTD << "FTFZero::estimate src=" << m_src_snd->visibleName << " [" << f0min << "," << f0max << "]Hz [" << tstart << "," << tend << "]s" << endl;
+//    COUTD << "FTFZero::estimate src=" << m_src_snd->visibleName << " [" << f0min << "," << f0max << "]Hz [" << tstart << "," << tend << "]s " << force << endl;
 
 
 //    if(_fileName==""){
@@ -532,6 +532,9 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
     double timestepsize = gMW->m_dlgSettings->ui->sbEstimationStepSize->value();
 
     EpochTracker et; // TODO to put in FTSound because other features can be extracted from it (ex. GCIs, voicing)
+    et.set_external_frame_interval(timestepsize);
+    et.set_unvoiced_pulse_interval(timestepsize);
+    if(force) et.set_unvoiced_cost(100); // Set arbitray huge cost for avoiding unvoiced segments
 
     gMW->globalWaitingBarSetValue(1);
 
@@ -575,8 +578,9 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
     if (!et.ResampleAndReturnResults(timestepsize, &f0, &corr))
         throw QString("Cannot resample the results");
 
-    // Everything seemed to go well, let's fill/replace the f0 curve
+    // Estimation is done, let's fill/replace the f0 curve
     if(tstart==-1 && tend==-1){
+        // If time segment is undefined, clear replace everything
         ts.clear();
         f0s.clear();
         for (size_t i=0; i<f0.size(); ++i) {
@@ -585,65 +589,38 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
         }
     }
     else{
+        // Find where the former values are
+        // (using log-time search)
+        std::deque<double>::iterator itlb = std::lower_bound(ts.begin(), ts.end(), tstart);
+        std::deque<double>::iterator ithb = std::upper_bound(ts.begin(), ts.end(), tend);
+        int first = itlb-ts.begin();
+        int last = ithb-ts.begin()-1;
 
-//        FLAG
-//        // Start by erasing the values within the time segment
-//        std::deque<double>::iterator itlb = std::lower_bound(ts.begin(), ts.end(), tstart);
-//        std::deque<double>::iterator ithb = std::upper_bound(ts.begin(), ts.end(), tend);
-//        FLAG
-////        COUTD << it << endl;
-//        COUTD << *itlb << "," << *ithb << endl;
-//        COUTD << itlb-ts.begin() << "," << ithb-ts.begin() << endl;
-//        COUTD << ithb-itlb << endl;
-
-//        ts.erase(itlb, ithb);
-//        FLAG
-//        f0s.erase(f0s.begin()+(itlb-ts.begin()), f0s.begin()+(ithb-ts.begin()));
-//        COUTD << ts.size() << " " << f0s.size() << endl;
-
-        int first = -1;
-        int last = -1;
-        for(size_t i=0; i<ts.size(); ++i){
-            if(ts[i]<tstart)
-                first = i;
-            if(ts[i]<tend)
-                last = i;
-        }
-        first++;
-//        COUTD << first << "," << last << " size=" << ts.size() << endl;
-//        COUTD << ts[first] << "," << ts[last] << endl;
 //        COUTD << last-first+1 << endl;
-
-        std::deque<double>::iterator tsl = ts.erase(ts.begin()+first, ts.begin()+last+1);
-        std::deque<double>::iterator f0sl = f0s.erase(f0s.begin()+first, f0s.begin()+last+1);
 
 //        for(size_t i=first; i<=last; ++i)
 //            f0s[i] = 0.0;
 
-//        FLAG
+        // Erase the former values
+        std::deque<double>::iterator tsl = ts.erase(ts.begin()+first, ts.begin()+last+1);
+        std::deque<double>::iterator f0sl = f0s.erase(f0s.begin()+first, f0s.begin()+last+1);
 
-        // And insert the new values of the newly computed values
+        // And insert the new values
 
         // Find the elements in the new values
         int nitlb = std::ceil(tstart/timestepsize);
         int nithb = std::floor(tend/timestepsize);
 
-//        COUTD << nitlb << "," << nithb << endl;
-//        COUTD << timestepsize*nitlb << "," << timestepsize*nithb << endl;
-//        COUTD << nithb-nitlb << endl;
-
         // Add the new times ...
-        std::vector<double> nts(nithb-nitlb);
-        COUTD << nts.size() << endl;
+        std::vector<double> nts(nithb-nitlb+1);
         for(size_t i=0; i<nts.size(); ++i)
             nts[i] = timestepsize*(nitlb+i);
-//        FLAG
         ts.insert(tsl, nts.begin(), nts.end());
+//        ts.clear(); ts.insert(ts.end(), nts.begin(), nts.end());
 
-//        FLAG
         // ... and the new f0 values.
-        f0s.insert(f0sl, f0.begin()+nitlb, f0.begin()+nithb);
-//        FLAG
+        f0s.insert(f0sl, f0.begin()+nitlb, f0.begin()+nithb+1);
+//        f0s.clear(); f0s.insert(f0s.end(), f0.begin()+nitlb, f0.begin()+nithb+1);
     }
 
     gMW->globalWaitingBarDone();
