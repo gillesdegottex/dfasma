@@ -209,6 +209,7 @@ SOURCES   += src/main.cpp\
              src/gvamplitudespectrumwdialogsettings.cpp \
              src/fftresizethread.cpp \
              src/gvphasespectrum.cpp \
+             src/gvspectrumgroupdelay.cpp \
              src/wdialogsettings.cpp \
              src/gvspectrogram.cpp \
              src/stftcomputethread.cpp \
@@ -241,6 +242,7 @@ HEADERS   += src/wmainwindow.h \
              src/gvamplitudespectrum.h \
              src/gvamplitudespectrumwdialogsettings.h \
              src/gvphasespectrum.h \
+             src/gvspectrumgroupdelay.h \
              src/wdialogsettings.h \
              src/gvspectrogram.h \
              src/stftcomputethread.h \
