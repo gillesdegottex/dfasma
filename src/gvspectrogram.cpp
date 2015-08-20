@@ -33,6 +33,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "stftcomputethread.h"
 #include "gvamplitudespectrum.h"
 #include "gvphasespectrum.h"
+#include "gvspectrumgroupdelay.h"
 #include "ftsound.h"
 #include "ftlabels.h"
 #include "ftfzero.h"
@@ -931,6 +932,21 @@ void QGVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
                 gMW->m_gvPhaseSpectrum->selectionSet(rect, false);
             }
         }
+        if(gMW->m_gvSpectrumGroupDelay){
+            if(m_selection.height()>=gFL->getFs()/2){
+                gMW->m_gvSpectrumGroupDelay->selectionClear();
+            }
+            else{
+                QRectF rect = gMW->m_gvSpectrumGroupDelay->m_mouseSelection;
+                rect.setLeft(gFL->getFs()/2-m_selection.bottom());
+                rect.setRight(gFL->getFs()/2-m_selection.top());
+                if(rect.height()==0){
+                    rect.setTop(gMW->m_gvSpectrumGroupDelay->m_scene->sceneRect().top());
+                    rect.setBottom(gMW->m_gvSpectrumGroupDelay->m_scene->sceneRect().bottom());
+                }
+                gMW->m_gvSpectrumGroupDelay->selectionSet(rect, false);
+            }
+        }
     }
 
     selectionSetTextInForm();
@@ -1051,6 +1067,8 @@ void QGVSpectrogram::setMouseCursorPosition(QPointF p, bool forwardsync) {
                 gMW->m_gvAmplitudeSpectrum->setMouseCursorPosition(QPointF(0.5*gFL->getFs()-p.y(), 0.0), false);
             if(gMW->m_gvPhaseSpectrum)
                 gMW->m_gvPhaseSpectrum->setMouseCursorPosition(QPointF(0.5*gFL->getFs()-p.y(), 0.0), false);
+            if(gMW->m_gvSpectrumGroupDelay)
+                gMW->m_gvSpectrumGroupDelay->setMouseCursorPosition(QPointF(0.5*gFL->getFs()-p.y(), 0.0), false);
         }
     }
 }

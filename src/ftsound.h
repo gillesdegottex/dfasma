@@ -170,6 +170,8 @@ public:
     };
 
     std::vector<std::complex<FFTTYPE> > m_dft; // Store the _log_ of the DFT
+//    std::vector<std::complex<FFTTYPE> > m_dft; // Store the _log_ of the DFT
+    std::vector<FFTTYPE> m_gd; // Store the Group Delay (GD)
     DFTParameters m_dftparams;
     FFTTYPE m_dft_min;
     FFTTYPE m_dft_max;

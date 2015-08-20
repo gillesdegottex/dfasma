@@ -141,6 +141,12 @@
              </property>
              <item>
               <widget class="QSlider" name="sldWaveformAmplitude">
+               <property name="minimumSize">
+                <size>
+                 <width>18</width>
+                 <height>0</height>
+                </size>
+               </property>
                <property name="maximumSize">
                 <size>
                  <width>18</width>
@@ -157,6 +163,12 @@
              </item>
              <item>
               <widget class="QPushButton" name="btnFitViewToSoundsAmplitude">
+               <property name="minimumSize">
+                <size>
+                 <width>18</width>
+                 <height>0</height>
+                </size>
+               </property>
                <property name="maximumSize">
                 <size>
                  <width>18</width>
@@ -376,7 +388,7 @@
         </layout>
        </widget>
        <widget class="QWidget" name="wSpectra" native="true">
-        <layout class="QVBoxLayout" name="verticalLayout_3">
+        <layout class="QVBoxLayout" name="verticalLayout_2">
          <property name="spacing">
           <number>0</number>
          </property>
@@ -480,36 +492,16 @@
           </layout>
          </item>
          <item>
-          <widget class="QWidget" name="wSpectraBar" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
+          <layout class="QHBoxLayout" name="horizontalLayout_10">
+           <property name="spacing">
+            <number>0</number>
            </property>
-           <layout class="QVBoxLayout" name="verticalLayout_2">
-            <property name="spacing">
-             <number>0</number>
-            </property>
-            <property name="leftMargin">
-             <number>0</number>
-            </property>
-            <property name="topMargin">
-             <number>0</number>
-            </property>
-            <property name="rightMargin">
-             <number>0</number>
-            </property>
-            <property name="bottomMargin">
-             <number>0</number>
-            </property>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_8">
            <item>
-            <layout class="QVBoxLayout" name="lSpectraToolBar"/>
+            <layout class="QVBoxLayout" name="lSpectraToolBar">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+            </layout>
            </item>
            <item>
             <widget class="QSplitter" name="splitterSpectra">
@@ -535,9 +527,15 @@
                </property>
                <item>
                 <widget class="QSlider" name="sldAmplitudeSpectrumMin">
+                 <property name="minimumSize">
+                  <size>
+                   <width>18</width>
+                   <height>0</height>
+                  </size>
+                 </property>
                  <property name="maximumSize">
                   <size>
-                   <width>16</width>
+                   <width>18</width>
                    <height>16777215</height>
                   </size>
                  </property>
@@ -585,7 +583,7 @@
                 <number>0</number>
                </property>
                <item>
-                <widget class="QLabel" name="lblPhaseSpectrum">
+                <widget class="QLabel" name="lblSpectrumPhase">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -594,13 +592,13 @@
                  </property>
                  <property name="minimumSize">
                   <size>
-                   <width>16</width>
+                   <width>18</width>
                    <height>0</height>
                   </size>
                  </property>
                  <property name="maximumSize">
                   <size>
-                   <width>16</width>
+                   <width>18</width>
                    <height>16777215</height>
                   </size>
                  </property>
@@ -611,6 +609,57 @@
                </item>
                <item>
                 <layout class="QVBoxLayout" name="lSpectrumPhaseGraphicsView">
+                 <property name="spacing">
+                  <number>0</number>
+                 </property>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="wSpectrumGroupDelay" native="true">
+              <layout class="QHBoxLayout" name="horizontalLayout_8">
+               <property name="spacing">
+                <number>0</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="lblSpectrumGroupDelay">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>18</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>18</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QVBoxLayout" name="lSpectrumGroupDelayGraphicsView">
                  <property name="spacing">
                   <number>0</number>
                  </property>
@@ -656,6 +705,7 @@
    <addaction name="separator"/>
    <addaction name="actionShowAmplitudeSpectrum"/>
    <addaction name="actionShowPhaseSpectrum"/>
+   <addaction name="actionShowGroupDelaySpectrum"/>
    <addaction name="actionShowSpectrogram"/>
    <addaction name="separator"/>
    <addaction name="actionPlay"/>
@@ -853,7 +903,7 @@
     <string>Show or hide the spectrogram</string>
    </property>
    <property name="shortcut">
-    <string>F8</string>
+    <string>F9</string>
    </property>
   </action>
   <action name="actionFileNew">
@@ -909,6 +959,27 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+F</string>
+   </property>
+  </action>
+  <action name="actionShowGroupDelaySpectrum">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../ressources.qrc">
+     <normaloff>:/icons/phasespectrum.svg</normaloff>:/icons/phasespectrum.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Show group delay</string>
+   </property>
+   <property name="toolTip">
+    <string>Show or hide the group delay</string>
+   </property>
+   <property name="shortcut">
+    <string>F8</string>
    </property>
   </action>
  </widget>

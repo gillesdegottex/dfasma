@@ -46,6 +46,7 @@ class AudioEngine;
 class QGVWaveform;
 class QGVAmplitudeSpectrum;
 class QGVPhaseSpectrum;
+class QGVSpectrumGroupDelay;
 class QGVSpectrogram;
 class QHBoxLayout;
 class QProgressBar;
@@ -134,6 +135,7 @@ public:
     QGVWaveform* m_gvWaveform;
     QGVAmplitudeSpectrum* m_gvAmplitudeSpectrum;
     QGVPhaseSpectrum* m_gvPhaseSpectrum;
+    QGVSpectrumGroupDelay* m_gvSpectrumGroupDelay;
     QGVSpectrogram* m_gvSpectrogram;
     QxtSpanSlider* m_qxtSpectrogramSpanSlider;
 

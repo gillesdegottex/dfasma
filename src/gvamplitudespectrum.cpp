@@ -31,6 +31,7 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "gvwaveform.h"
 #include "gvphasespectrum.h"
+#include "gvspectrumgroupdelay.h"
 #include "gvspectrogram.h"
 #include "ftsound.h"
 #include "ftfzero.h"
@@ -404,6 +405,12 @@ void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
     if(newDFTParams==m_trgDFTParameters)
         return;
 
+    if(gMW->m_gvSpectrumGroupDelay
+        && newDFTParams.winlen!=m_trgDFTParameters.winlen){
+        gMW->m_gvSpectrumGroupDelay->updateSceneRect(((newDFTParams.winlen-1)/2)/gFL->getFs());
+        gMW->m_gvSpectrumGroupDelay->m_scene->update();
+    }
+
     // From now on we want the new parameters ...
     m_trgDFTParameters = newDFTParams;
 
@@ -501,10 +508,37 @@ void QGVAmplitudeSpectrum::updateDFTs(){
 
             m_fft->execute(); // Compute the DFT
 
+            // Store first the complex values of the DFT
+            // (so that it can be used to compute the group delay)
             std::vector<std::complex<WAVTYPE> >* pdft = &(snd->m_dft);
             snd->m_dft.resize(dftlen/2+1);
+            for(n=0; n<dftlen/2+1; n++)
+                (*pdft)[n] = m_fft->out[n];
+
+            // If the group delay is requested, update its data
+            if(gMW->ui->actionShowGroupDelaySpectrum->isChecked()){
+                // y = nx[n]
+                for(int n=0; n<m_trgDFTParameters.winlen; n++)
+                    m_fft->in[n] *= n;
+
+                m_fft->execute(); // Compute the DFT of y
+
+                // (Xr*Yr+Xi*Yi) / |X|^2
+                snd->m_gd.resize(dftlen/2+1);
+                WAVTYPE fs = gFL->getFs();
+                for(int n=0; n<dftlen/2+1; n++) {
+                    WAVTYPE xp2 = std::real(snd->m_dft[n])*std::real(snd->m_dft[n]) + std::imag(snd->m_dft[n])*std::imag(snd->m_dft[n]);
+                    snd->m_gd[n] = (std::real(snd->m_dft[n])*std::real(m_fft->out[n]) + std::imag(snd->m_dft[n])*std::imag(m_fft->out[n]))/xp2;
+                    snd->m_gd[n] -= (m_trgDFTParameters.winlen-1)/2; // Remove the window's delay
+
+                    snd->m_gd[n] /= fs; // measure it in [second]
+                }
+            }
+
+            // Convert the spectrum values to log values
+            pdft = &(snd->m_dft);
             for(n=0; n<dftlen/2+1; n++) {
-                (*pdft)[n] = std::complex<WAVTYPE>(std::log(std::abs(m_fft->out[n])),std::arg(m_fft->out[n]));
+                (*pdft)[n] = std::complex<WAVTYPE>(std::log(std::abs((*pdft)[n])),std::arg((*pdft)[n]));
                 WAVTYPE y = (*pdft)[n].real();
                 snd->m_dft_min = std::min(snd->m_dft_min, y);
                 snd->m_dft_max = std::max(snd->m_dft_max, y);
@@ -540,6 +574,8 @@ void QGVAmplitudeSpectrum::updateDFTs(){
             m_scene->update();
             if(gMW->m_gvPhaseSpectrum)
                 gMW->m_gvPhaseSpectrum->m_scene->update();
+            if(gMW->m_gvSpectrumGroupDelay)
+                gMW->m_gvSpectrumGroupDelay->m_scene->update();
         }
     }
 
@@ -582,6 +618,13 @@ void QGVAmplitudeSpectrum::viewSet(QRectF viewrect, bool sync) {
                 phaserect.setLeft(viewrect.left());
                 phaserect.setRight(viewrect.right());
                 gMW->m_gvPhaseSpectrum->viewSet(phaserect, false);
+            }
+
+            if(gMW->m_gvSpectrumGroupDelay && gMW->ui->actionShowGroupDelaySpectrum->isChecked()) {
+                QRectF gdrect = gMW->m_gvSpectrumGroupDelay->mapToScene(gMW->m_gvSpectrumGroupDelay->viewport()->rect()).boundingRect();
+                gdrect.setLeft(viewrect.left());
+                gdrect.setRight(viewrect.right());
+                gMW->m_gvSpectrumGroupDelay->viewSet(gdrect, false);
             }
         }
     }
@@ -1078,6 +1121,17 @@ void QGVAmplitudeSpectrum::selectionSet(QRectF selection, bool forwardsync) {
             gMW->m_gvPhaseSpectrum->selectionSet(rect, false);
         }
 
+        if(gMW->m_gvSpectrumGroupDelay){
+            QRectF rect = gMW->m_gvSpectrumGroupDelay->m_mouseSelection;
+            rect.setLeft(m_mouseSelection.left());
+            rect.setRight(m_mouseSelection.right());
+            if(rect.height()==0) {
+                rect.setTop(gMW->m_gvSpectrumGroupDelay->m_scene->sceneRect().top());
+                rect.setBottom(gMW->m_gvSpectrumGroupDelay->m_scene->sceneRect().bottom());
+            }
+            gMW->m_gvSpectrumGroupDelay->selectionSet(rect, false);
+        }
+
         if(gMW->m_gvSpectrogram){
             QRectF rect = gMW->m_gvSpectrogram->m_mouseSelection;
             rect.setTop(gFL->getFs()/2-m_mouseSelection.right());
@@ -1243,6 +1297,8 @@ void QGVAmplitudeSpectrum::setMouseCursorPosition(QPointF p, bool forwardsync) {
             gMW->m_gvSpectrogram->setMouseCursorPosition(QPointF(0.0, gFL->getFs()/2-p.x()), false);
         if(gMW->m_gvPhaseSpectrum)
             gMW->m_gvPhaseSpectrum->setMouseCursorPosition(QPointF(p.x(), 0.0), false);
+        if(gMW->m_gvSpectrumGroupDelay)
+            gMW->m_gvSpectrumGroupDelay->setMouseCursorPosition(QPointF(p.x(), 0.0), false);
     }
 }
 
