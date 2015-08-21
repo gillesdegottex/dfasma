@@ -92,6 +92,7 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     gMW->m_settings.add(ui->dsbEstimationF0Min);
     gMW->m_settings.add(ui->dsbEstimationF0Max);
 
+    ui->lblAudioOutputDeviceFormat->hide();
     adjustSize();
 }
 

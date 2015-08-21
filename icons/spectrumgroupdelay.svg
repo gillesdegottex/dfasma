@@ -109,20 +109,20 @@
      inkscape:groupmode="layer">
     <path
        style="fill:#000000;stroke:#000000;stroke-width:1.34994948px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 22.181626,48.756503 c 5.570161,3.79245 8.637935,-34.760111 9.807045,-34.013542 13.55383,-0.02377 19.187858,0.04791 19.110398,-2.725823 C 51.021582,9.2434019 49.279742,9.6083905 21.594816,9.8407964 14.824779,11.914651 12.249724,17.646059 9.7689631,21.396425 8.8489587,22.787258 16.450969,14.921757 18.519523,14.79788 27.4587,14.671133 30.685011,14.683701 30.685011,14.683701 21.737195,46.089931 20.013107,47.28006 22.181626,48.756503 z"
+       d="m 21.18592,48.756503 c 5.570161,3.79245 8.637935,-34.760111 9.807045,-34.013542 13.55383,-0.02377 19.187858,0.04791 19.110398,-2.725823 C 50.025876,9.2434019 48.284036,9.6083905 20.59911,9.8407964 13.829073,11.914651 11.254018,17.646059 8.7732572,21.396425 7.8532528,22.787258 15.455263,14.921757 17.523817,14.79788 26.462994,14.671133 29.689305,14.683701 29.689305,14.683701 20.741489,46.089931 19.017401,47.28006 21.18592,48.756503 z"
        id="path3021"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="sczcsccs" />
     <text
        xml:space="preserve"
        style="font-size:31.74762917px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Symbol;-inkscape-font-specification:Symbol"
-       x="34.459789"
+       x="33.464085"
        y="53.203632"
        id="text3815"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan3817"
-         x="34.459789"
+         x="33.464085"
          y="53.203632"
          style="font-style:oblique;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:DejaVu Sans Mono;-inkscape-font-specification:DejaVu Sans Mono Bold Oblique">g</tspan></text>
   </g>

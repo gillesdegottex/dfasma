@@ -97,7 +97,6 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 
     // Prepare the UI (everything which is independent of settings)
     ui->setupUi(this);
-    ui->lblFileInfo->hide();
     ui->pbSpectrogramSTFTUpdate->hide();
     m_qxtSpectrogramSpanSlider = new QxtSpanSlider(Qt::Vertical, this);
     m_qxtSpectrogramSpanSlider->setMinimum(0);
@@ -108,12 +107,11 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     m_qxtSpectrogramSpanSlider->setHandleMovementMode(QxtSpanSlider::NoOverlapping);
     ui->horizontalLayout_6->insertWidget(1, m_qxtSpectrogramSpanSlider);
 
+    m_dlgSettings = new WDialogSettings(this);
+
     m_fileslist = new FilesListWidget(this);
     ui->vlFilesList->addWidget(m_fileslist);
-
-    m_dlgSettings = new WDialogSettings(this);
-    m_dlgSettings->ui->lblAudioOutputDeviceFormat->hide();
-    m_dlgSettings->adjustSize();
+    ui->lblFileInfo->hide();
 
     ui->mainToolBar->setIconSize(QSize(1.5*m_dlgSettings->ui->sbViewsToolBarSizes->value(),1.5*m_dlgSettings->ui->sbViewsToolBarSizes->value()));
     connect(m_dlgSettings->ui->sbFileListItemSize, SIGNAL(valueChanged(int)), gFL, SLOT(changeFileListItemsSize()));
@@ -217,7 +215,11 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 
     // Link axis' views
     connect(m_gvAmplitudeSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvPhaseSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
+    connect(m_gvAmplitudeSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrumGroupDelay->horizontalScrollBar(), SLOT(setValue(int)));
     connect(m_gvPhaseSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvAmplitudeSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
+    connect(m_gvPhaseSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrumGroupDelay->horizontalScrollBar(), SLOT(setValue(int)));
+    connect(m_gvSpectrumGroupDelay->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvAmplitudeSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
+    connect(m_gvSpectrumGroupDelay->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvPhaseSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
     connect(m_gvWaveform->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrogram->horizontalScrollBar(), SLOT(setValue(int)));
     connect(m_gvSpectrogram->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvWaveform->horizontalScrollBar(), SLOT(setValue(int)));
 
@@ -231,6 +233,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     connect(ui->actionShowSpectrogram, SIGNAL(toggled(bool)), ui->wSpectrogram, SLOT(setVisible(bool)));
     connect(ui->actionShowAmplitudeSpectrum, SIGNAL(toggled(bool)), this, SLOT(viewsDisplayedChanged()));
     connect(ui->actionShowPhaseSpectrum, SIGNAL(toggled(bool)), this, SLOT(viewsDisplayedChanged()));
+    connect(ui->actionShowGroupDelaySpectrum, SIGNAL(toggled(bool)), this, SLOT(viewsDisplayedChanged()));
     connect(m_dlgSettings->ui->sbViewsToolBarSizes, SIGNAL(valueChanged(int)), this, SLOT(changeToolBarSizes(int)));
     viewsDisplayedChanged();
 
@@ -271,6 +274,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 //        std::cout << *it << " ";
 //    std::cout << std::endl;
     if(sizesSpectra.count()==0) {
+        sizesSpectra.append(100);
         sizesSpectra.append(100);
         sizesSpectra.append(100);
     }
@@ -497,10 +501,17 @@ void WMainWindow::viewsDisplayedChanged() {
     gMW->m_gvWaveform->m_aWaveformShowWindow->setChecked(gMW->m_gvWaveform->m_aWaveformShowWindow->isChecked() && (ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked() || ui->actionShowGroupDelaySpectrum->isChecked()));
     gMW->m_gvWaveform->m_aWaveformShowWindow->setEnabled(ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked() || ui->actionShowGroupDelaySpectrum->isChecked());
 
-    if(ui->actionShowPhaseSpectrum->isChecked()) // TODO
+    // Set the horizontal scroll bars of the spectra
+    m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    m_gvPhaseSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    m_gvSpectrumGroupDelay->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    if(ui->actionShowPhaseSpectrum->isChecked()
+       || ui->actionShowGroupDelaySpectrum->isChecked())
         m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    else if(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow->isChecked())
-        m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    if(ui->actionShowGroupDelaySpectrum->isChecked()){
+        m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        m_gvPhaseSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    }
 
     gMW->m_gvAmplitudeSpectrum->selectionSetTextInForm();
 }

@@ -31,7 +31,7 @@
         <file>icons/edit2_white.svg</file>
         <file>icons/source.svg</file>
         <file>icons/spectrumamplitude.svg</file>
-        <file>icons/spectrumgroupdelay.svg</file>
         <file>icons/spectrumphase.svg</file>
+        <file>icons/spectrumgroupdelay.svg</file>
     </qresource>
 </RCC>
