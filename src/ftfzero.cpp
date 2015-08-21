@@ -53,9 +53,9 @@ FTFZero::ClassConstructor::ClassConstructor(){
     if(FTFZero::s_formatstrings.empty()){
         FTFZero::s_formatstrings.push_back("Unspecified");
         FTFZero::s_formatstrings.push_back("Auto");
-        FTFZero::s_formatstrings.push_back("Auto Text");
-        FTFZero::s_formatstrings.push_back("Text Time/Value (*.f0.bpf)");
-        FTFZero::s_formatstrings.push_back("SDIF 1FQ0/1FQ0 (*.sdif)");
+        FTFZero::s_formatstrings.push_back("Text - Auto");
+        FTFZero::s_formatstrings.push_back("Text - Time Value (*.f0.bpf)");
+        FTFZero::s_formatstrings.push_back("SDIF - 1FQ0/1FQ0 (*.sdif)");
     }
 }
 FTFZero::ClassConstructor FTFZero::s_class_constructor;

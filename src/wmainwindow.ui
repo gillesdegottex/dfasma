@@ -852,7 +852,7 @@
     <string>Show amplitude spectrum</string>
    </property>
    <property name="toolTip">
-    <string>Show or hide the amplitude spectrum</string>
+    <string>Show/hide the amplitude spectrum</string>
    </property>
    <property name="shortcut">
     <string>F6</string>
@@ -873,7 +873,7 @@
     <string>Show phase spectrum</string>
    </property>
    <property name="toolTip">
-    <string>Show or hide the phase spectrum</string>
+    <string>Show/hide the phase spectrum</string>
    </property>
    <property name="shortcut">
     <string>F7</string>
@@ -897,7 +897,7 @@
     <string>Show spectrogram</string>
    </property>
    <property name="toolTip">
-    <string>Show or hide the spectrogram</string>
+    <string>Show/hide the spectrogram</string>
    </property>
    <property name="shortcut">
     <string>F9</string>
@@ -973,7 +973,7 @@
     <string>Show group delay</string>
    </property>
    <property name="toolTip">
-    <string>Show or hide the group delay</string>
+    <string>Show/hide the group delay</string>
    </property>
    <property name="shortcut">
     <string>F8</string>

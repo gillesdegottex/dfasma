@@ -803,7 +803,7 @@ void WMainWindow::audioOutputFormatChanged(const QAudioFormat &format) {
             str += " big endian";
         else if(byteOrder==QAudioFormat::LittleEndian)
             str += " little endian";
-        str += "<br/>";
+//        str += "<br/>";
 
         m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText("<small>"+str+"</small>");
         m_dlgSettings->ui->lblAudioOutputDeviceFormat->show();

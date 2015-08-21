@@ -123,12 +123,12 @@ FTLabels::ClassConstructor::ClassConstructor(){
     if(FTLabels::s_formatstrings.empty()){
         FTLabels::s_formatstrings.push_back("Unspecified");
         FTLabels::s_formatstrings.push_back("Auto");
-        FTLabels::s_formatstrings.push_back("Auto Text");
-        FTLabels::s_formatstrings.push_back("Text Time/Text (*.lab)");
-        FTLabels::s_formatstrings.push_back("Text Segment Float (*.lab)");
-        FTLabels::s_formatstrings.push_back("Text Segment Samples (*.lab)");
+        FTLabels::s_formatstrings.push_back("Text - Auto");
+        FTLabels::s_formatstrings.push_back("Text - Time Text (*.lab)");
+        FTLabels::s_formatstrings.push_back("Text - Segment [float] (*.lab)");
+        FTLabels::s_formatstrings.push_back("Text - Segment [samples] (*.lab)");
         FTLabels::s_formatstrings.push_back("HTK Label File (*.lab)");
-        FTLabels::s_formatstrings.push_back("SDIF 1MRK/1LAB (*.sdif)");
+        FTLabels::s_formatstrings.push_back("SDIF - 1MRK/1LAB (*.sdif)");
     }
 }
 FTLabels::ClassConstructor FTLabels::s_class_constructor;
