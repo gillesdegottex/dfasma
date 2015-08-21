@@ -1067,10 +1067,9 @@ void QGVAmplitudeSpectrum::selectionSetTextInForm() {
         if (gMW->m_gvAmplitudeSpectrum->isVisible() && m_selection.height()>0) {
             str += QString(" x [%4,%5]%6dB").arg(-m_selection.bottom()).arg(-m_selection.top()).arg(m_selection.height());
         }
-//        COUTD << gMW->m_gvPhaseSpectrum->isVisible() << endl;
-        if (gMW->m_gvPhaseSpectrum->isVisible() && gMW->m_gvPhaseSpectrum->m_selection.height()>0) {
-            str += QString(" x [%7,%8]%9rad").arg(-gMW->m_gvPhaseSpectrum->m_selection.bottom()).arg(-gMW->m_gvPhaseSpectrum->m_selection.top()).arg(gMW->m_gvPhaseSpectrum->m_selection.height());
-        }
+//        if (gMW->m_gvPhaseSpectrum->isVisible() && gMW->m_gvPhaseSpectrum->m_selection.height()>0) {
+//            str += QString(" x [%7,%8]%9rad").arg(-gMW->m_gvPhaseSpectrum->m_selection.bottom()).arg(-gMW->m_gvPhaseSpectrum->m_selection.top()).arg(gMW->m_gvPhaseSpectrum->m_selection.height());
+//        }
     }
 
     gMW->ui->lblSpectrumSelectionTxt->setText(str);
