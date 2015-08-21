@@ -58,17 +58,6 @@ QGVSpectrumGroupDelay::QGVSpectrumGroupDelay(WMainWindow* parent)
     m_scene = new QGraphicsScene(this);
     setScene(m_scene);
 
-    //    m_dlgSettings = new GVPhaseSpectrumWDialogSettings(this);
-
-    m_aPhaseSpectrumGridUsePiFraction = new QAction(tr("Use &Pi fraction"), this);
-    m_aPhaseSpectrumGridUsePiFraction->setObjectName("m_aPhaseSpectrumGridUsePiFraction");
-    m_aPhaseSpectrumGridUsePiFraction->setStatusTip(tr("Use fraction of Pi for displaying the grid instead of decimals"));
-//    m_aPhaseSpectrumGridUsePiFraction->setIcon(QIcon(":/icons/grid.svg"));
-    m_aPhaseSpectrumGridUsePiFraction->setCheckable(true);
-    m_aPhaseSpectrumGridUsePiFraction->setChecked(false);
-    gMW->m_settings.add(m_aPhaseSpectrumGridUsePiFraction);
-    connect(m_aPhaseSpectrumGridUsePiFraction, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
-
     // Cursor
     m_giCursorHoriz = new QGraphicsLineItem(0, -100, 0, 100);
     QPen cursorPen(QColor(64, 64, 64));
@@ -117,14 +106,11 @@ QGVSpectrumGroupDelay::QGVSpectrumGroupDelay(WMainWindow* parent)
 
     // Build the context menu
     m_contextmenu.addAction(gMW->m_gvAmplitudeSpectrum->m_aAmplitudeSpectrumShowGrid);
-//    m_contextmenu.addAction(gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop);
-    m_contextmenu.addAction(m_aPhaseSpectrumGridUsePiFraction);
     m_contextmenu.addSeparator();
-//    m_aShowProperties = new QAction(tr("&Properties"), this);
-//    m_aShowProperties->setStatusTip(tr("Open the properties configuration panel of the spectrum view"));
-//    m_contextmenu.addAction(m_aShowProperties);
-//    connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
-//    connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(updateSceneRect()));
+    m_contextmenu.addAction(gMW->m_gvAmplitudeSpectrum->m_aAutoUpdateDFT);
+    m_contextmenu.addAction(gMW->m_gvAmplitudeSpectrum->m_aFollowPlayCursor);
+    m_contextmenu.addSeparator();
+    m_contextmenu.addAction(gMW->m_gvAmplitudeSpectrum->m_aShowProperties);
 
     connect(gMW->m_gvAmplitudeSpectrum->m_aAmplitudeSpectrumShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
     connect(gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop, SIGNAL(triggered()), m_scene, SLOT(update()));
@@ -142,13 +128,23 @@ void QGVSpectrumGroupDelay::showScrollBars(bool show) {
 }
 
 void QGVSpectrumGroupDelay::updateSceneRect(double maxdelay) {
-    COUTD << "QGVSpectrumGroupDelay::updateSceneRect " << maxdelay << endl;
-    if(maxdelay!=-1)
+//    COUTD << "QGVSpectrumGroupDelay::updateSceneRect " << maxdelay << endl;
+    maxdelay = std::min(maxdelay, gFL->getMaxDuration()/2);
+    if(maxdelay!=-1){
         m_scene->setSceneRect(0.0, -maxdelay, gFL->getFs()/2, 2*maxdelay);
+        QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+        if(viewrect.top()<sceneRect().top() || viewrect.bottom()>sceneRect().bottom()){
+            viewrect.setTop(sceneRect().top());
+            viewrect.setBottom(sceneRect().bottom());
+            viewSet(viewrect, false);
+        }
+    }
+    else
+        m_scene->setSceneRect(0.0, -gFL->getMaxDuration()/2, gFL->getFs()/2, gFL->getMaxDuration());
 }
 
 void QGVSpectrumGroupDelay::viewSet(QRectF viewrect, bool sync) {
-//    cout << "QGVSpectrumGroupDelay::viewSet" << endl;
+//    COUTD << "QGVSpectrumGroupDelay::viewSet" << endl;
 
     QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
 
@@ -157,9 +153,9 @@ void QGVSpectrumGroupDelay::viewSet(QRectF viewrect, bool sync) {
             viewrect = currentviewrect;
 
         if(viewrect.top()<=m_scene->sceneRect().top())
-            viewrect.setTop(m_scene->sceneRect().top()-0.1);
+            viewrect.setTop(m_scene->sceneRect().top());
         if(viewrect.bottom()>=m_scene->sceneRect().bottom())
-            viewrect.setBottom(m_scene->sceneRect().bottom()+0.1);
+            viewrect.setBottom(m_scene->sceneRect().bottom());
         if(viewrect.left()<m_scene->sceneRect().left())
             viewrect.setLeft(m_scene->sceneRect().left());
         if(viewrect.right()>m_scene->sceneRect().right())
@@ -405,9 +401,7 @@ void QGVSpectrumGroupDelay::mouseMoveEvent(QMouseEvent* event){
         selectionSet(m_mouseSelection, true);
     }
     else if(m_currentAction==CAMovingWaveformSelection) {
-        double dy = -(p.y()-m_selection_pressedp.y());
-        // cout << "CAMovingWaveformSelection at " << m_selection_pressedp.x() << " " << dy << "s" << endl;
-        double dt = ((gFL->getFs()/m_selection_pressedp.x())*dy/(sceneRect().height()))/gFL->getFs();
+        double dt = (p.y()-m_selection_pressedp.y());
         QRectF wavsel = m_wavselection_pressed;
         wavsel.setLeft(wavsel.left()+dt);
         wavsel.setRight(wavsel.right()+dt);
@@ -855,33 +849,7 @@ void QGVSpectrumGroupDelay::draw_grid(QPainter* painter, const QRectF& rect){
     // Draw the horizontal lines
     double lstep;
     int m;
-    if(m_aPhaseSpectrumGridUsePiFraction->isChecked()){
-        // Adapt the lines ordinates to the viewport
-        lstep = sceneRect().height();
-        m=1;
-        while(int(viewrect.height()/lstep)<3){
-            lstep /= 2;
-            m++;
-        }
-
-//        int mn=0;
-//        painter->setPen(gridPen);
-//        painter->drawLine(QLineF(rect.left(), 0, rect.right(), 0));
-//    //    for(double l=int(viewrect.top()/lstep)*lstep; l<=rect.bottom(); l+=lstep){
-//        for(double l=0.0; l<=rect.bottom(); l+=lstep){
-//    //        if(mn%m==0) painter->setPen(gridPen);
-//    //        else        painter->setPen(thinGridPen);
-//            painter->drawLine(QLineF(rect.left(), l, rect.right(), l));
-//            mn++;
-//        }
-//        for(double l=0.0; l>=rect.top(); l-=lstep){
-//    //        if(mn%m==0) painter->setPen(gridPen);
-//    //        else        painter->setPen(thinGridPen);
-//            painter->drawLine(QLineF(rect.left(), l, rect.right(), l));
-//            mn++;
-//        }
-    }
-    else{
+    {
         // Adapt the lines ordinates to the viewport
         double f = log10(float(viewrect.height()));
         int fi;

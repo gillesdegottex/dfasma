@@ -17,8 +17,6 @@
         <file>icons/unzoomy.svg</file>
         <file>icons/dfasma.svg</file>
         <file>icons/dfasma.ico</file>
-        <file>icons/amplitudespectrum.svg</file>
-        <file>icons/phasespectrum.svg</file>
         <file>icons/spectrogram.svg</file>
         <file>README.txt</file>
         <file>icons/cancel.svg</file>
@@ -32,5 +30,8 @@
         <file>icons/selection_selected.svg</file>
         <file>icons/edit2_white.svg</file>
         <file>icons/source.svg</file>
+        <file>icons/spectrumamplitude.svg</file>
+        <file>icons/spectrumgroupdelay.svg</file>
+        <file>icons/spectrumphase.svg</file>
     </qresource>
 </RCC>

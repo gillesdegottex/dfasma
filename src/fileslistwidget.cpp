@@ -8,6 +8,7 @@
 #include "gvwaveform.h"
 #include "gvamplitudespectrum.h"
 #include "gvphasespectrum.h"
+#include "gvspectrumgroupdelay.h"
 #include "gvspectrogram.h"
 #include "filetype.h"
 #include "../external/audioengine/audioengine.h"
@@ -29,6 +30,8 @@ FilesListWidget::FilesListWidget(QMainWindow *parent)
     , m_prgdlg(NULL)
 {
     gFL = this;
+
+//    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
 
     setSelectionMode(QAbstractItemView::ExtendedSelection);
     setDragDropMode(QAbstractItemView::InternalMove);
@@ -284,7 +287,16 @@ FTLabels* FilesListWidget::getCurrentFTLabels(bool forceselect) {
 
     return NULL;
 }
-
+void FilesListWidget::setLabelsEditable(bool editable){
+    for(size_t fi=0; fi<ftlabels.size(); fi++){
+        for(size_t li=0; li<ftlabels[fi]->waveform_labels.size(); li++){
+            if(editable)
+                ftlabels[fi]->waveform_labels[li]->setTextInteractionFlags(Qt::TextEditorInteraction);
+            else
+                ftlabels[fi]->waveform_labels[li]->setTextInteractionFlags(Qt::NoTextInteraction);
+        }
+    }
+}
 
 void FilesListWidget::showFileContextMenu(const QPoint& pos) {
 
@@ -415,6 +427,7 @@ void FilesListWidget::selectedFilesToggleShown() {
     gMW->m_gvAmplitudeSpectrum->updateDFTs();
     gMW->m_gvAmplitudeSpectrum->m_scene->update();
     gMW->m_gvPhaseSpectrum->m_scene->update();
+    gMW->m_gvSpectrumGroupDelay->m_scene->update();
 }
 
 void FilesListWidget::selectedFilesClose() {

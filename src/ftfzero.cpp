@@ -441,6 +441,8 @@ void FTFZero::fillContextMenu(QMenu& contextmenu) {
 
     contextmenu.addAction(m_actionSave);
     contextmenu.addAction(m_actionSaveAs);
+    contextmenu.addSeparator();
+    contextmenu.addAction(m_actionAnalysisFZero);
 }
 
 void FTFZero::updateTextsGeometry(){
@@ -526,8 +528,10 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
 //    }
 
     // Compute the f0 from the given sound file
-
-    gMW->globalWaitingBarMessage("Estimating F0 of "+fileFullPath+" in ["+QString::number(f0min)+","+QString::number(f0max)+"]Hz ...", 8);
+    QString msg = "Estimating F0 of "+fileFullPath+" in ["+QString::number(f0min)+","+QString::number(f0max)+"]Hz ";
+    if(force)
+        msg += " without voiced/unvoiced decision ";
+    gMW->globalWaitingBarMessage(msg+"...", 8);
 
     double timestepsize = gMW->m_dlgSettings->ui->sbEstimationStepSize->value();
 

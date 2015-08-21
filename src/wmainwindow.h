@@ -97,7 +97,6 @@ private slots:
 
     void setSelectionMode(bool checked);
     void setEditMode(bool checked);
-    void setLabelsEditable(bool editable);
     void execAbout();
     void viewsDisplayedChanged();
     void changeToolBarSizes(int size);

@@ -82,9 +82,6 @@ public:
     void draw_spectrum(QPainter* painter, std::vector<WAVTYPE> &gd, double fs, double delay, const QRectF& rect);
     void draw_grid(QPainter* painter, const QRectF& rect);
 
-//    QAction* m_aShowProperties;
-    QAction* m_aPhaseSpectrumGridUsePiFraction;
-
     ~QGVSpectrumGroupDelay();
 
 signals:

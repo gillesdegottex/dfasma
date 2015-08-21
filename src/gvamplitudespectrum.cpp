@@ -79,7 +79,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
 
     m_aAmplitudeSpectrumShowGrid = new QAction(tr("Show &grid"), this);
     m_aAmplitudeSpectrumShowGrid->setObjectName("m_aAmplitudeSpectrumShowGrid");
-    m_aAmplitudeSpectrumShowGrid->setStatusTip(tr("Show &grid"));
+    m_aAmplitudeSpectrumShowGrid->setStatusTip(tr("Show or hide the grid"));
     m_aAmplitudeSpectrumShowGrid->setIcon(QIcon(":/icons/grid.svg"));
     m_aAmplitudeSpectrumShowGrid->setCheckable(true);
     m_aAmplitudeSpectrumShowGrid->setChecked(true);
@@ -405,10 +405,10 @@ void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
     if(newDFTParams==m_trgDFTParameters)
         return;
 
-    if(gMW->m_gvSpectrumGroupDelay
-        && newDFTParams.winlen!=m_trgDFTParameters.winlen){
+    if(newDFTParams.winlen!=m_trgDFTParameters.winlen
+        && gMW->m_gvSpectrumGroupDelay
+        && gMW->ui->actionShowGroupDelaySpectrum->isChecked()){
         gMW->m_gvSpectrumGroupDelay->updateSceneRect(((newDFTParams.winlen-1)/2)/gFL->getFs());
-        gMW->m_gvSpectrumGroupDelay->m_scene->update();
     }
 
     // From now on we want the new parameters ...
@@ -1012,6 +1012,8 @@ void QGVAmplitudeSpectrum::selectionClear(bool forwardsync) {
 
     if(gMW->m_gvPhaseSpectrum)
         gMW->m_gvPhaseSpectrum->selectionClear();
+    if(gMW->m_gvSpectrumGroupDelay)
+        gMW->m_gvSpectrumGroupDelay->selectionClear();
 
     if(forwardsync){
         if(gMW->m_gvSpectrogram){
@@ -1174,8 +1176,11 @@ void QGVAmplitudeSpectrum::selectionZoomOn(){
         viewSet(zoomonrect);
 
         viewUpdateTexts();
+
         if(gMW->m_gvPhaseSpectrum)
             gMW->m_gvPhaseSpectrum->viewUpdateTexts();
+        if(gMW->m_gvSpectrumGroupDelay)
+            gMW->m_gvSpectrumGroupDelay->viewUpdateTexts();
 
         setMouseCursorPosition(QPointF(-1,0), false);
 //        m_aZoomOnSelection->setEnabled(false);
@@ -1237,6 +1242,8 @@ void QGVAmplitudeSpectrum::aunzoom(){
 
     if(gMW->m_gvPhaseSpectrum)
         gMW->m_gvPhaseSpectrum->viewSet(QRectF(0.0, -M_PI, gFL->getFs()/2, 2*M_PI), false);
+    if(gMW->m_gvSpectrumGroupDelay)
+        gMW->m_gvSpectrumGroupDelay->viewSet(QRectF(0.0, sceneRect().top(), gFL->getFs()/2, sceneRect().height()), false);
 
 //    cursorUpdate(QPointF(-1,0));
 //    m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);

@@ -58,9 +58,7 @@ QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
     m_scene = new QGraphicsScene(this);
     setScene(m_scene);
 
-    //    m_dlgSettings = new GVPhaseSpectrumWDialogSettings(this);
-
-    m_aPhaseSpectrumGridUsePiFraction = new QAction(tr("Use &Pi fraction"), this);
+    m_aPhaseSpectrumGridUsePiFraction = new QAction(tr("Grid uses fractions of &Pi"), this);
     m_aPhaseSpectrumGridUsePiFraction->setObjectName("m_aPhaseSpectrumGridUsePiFraction");
     m_aPhaseSpectrumGridUsePiFraction->setStatusTip(tr("Use fraction of Pi for displaying the grid instead of decimals"));
 //    m_aPhaseSpectrumGridUsePiFraction->setIcon(QIcon(":/icons/grid.svg"));
@@ -117,14 +115,12 @@ QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
 
     // Build the context menu
     m_contextmenu.addAction(gMW->m_gvAmplitudeSpectrum->m_aAmplitudeSpectrumShowGrid);
-//    m_contextmenu.addAction(gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop);
     m_contextmenu.addAction(m_aPhaseSpectrumGridUsePiFraction);
     m_contextmenu.addSeparator();
-//    m_aShowProperties = new QAction(tr("&Properties"), this);
-//    m_aShowProperties->setStatusTip(tr("Open the properties configuration panel of the spectrum view"));
-//    m_contextmenu.addAction(m_aShowProperties);
-//    connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
-//    connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(updateSceneRect()));
+    m_contextmenu.addAction(gMW->m_gvAmplitudeSpectrum->m_aAutoUpdateDFT);
+    m_contextmenu.addAction(gMW->m_gvAmplitudeSpectrum->m_aFollowPlayCursor);
+    m_contextmenu.addSeparator();
+    m_contextmenu.addAction(gMW->m_gvAmplitudeSpectrum->m_aShowProperties);
 
     connect(gMW->m_gvAmplitudeSpectrum->m_aAmplitudeSpectrumShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
     connect(gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop, SIGNAL(triggered()), m_scene, SLOT(update()));

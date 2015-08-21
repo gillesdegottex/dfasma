@@ -137,7 +137,7 @@
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_12">
              <property name="spacing">
-              <number>9</number>
+              <number>0</number>
              </property>
              <item>
               <widget class="QSlider" name="sldWaveformAmplitude">
@@ -849,7 +849,7 @@
    </property>
    <property name="icon">
     <iconset resource="../ressources.qrc">
-     <normaloff>:/icons/amplitudespectrum.svg</normaloff>:/icons/amplitudespectrum.svg</iconset>
+     <normaloff>:/icons/spectrumamplitude.svg</normaloff>:/icons/spectrumamplitude.svg</iconset>
    </property>
    <property name="text">
     <string>Show amplitude spectrum</string>
@@ -870,7 +870,7 @@
    </property>
    <property name="icon">
     <iconset resource="../ressources.qrc">
-     <normaloff>:/icons/phasespectrum.svg</normaloff>:/icons/phasespectrum.svg</iconset>
+     <normaloff>:/icons/spectrumphase.svg</normaloff>:/icons/spectrumphase.svg</iconset>
    </property>
    <property name="text">
     <string>Show phase spectrum</string>
@@ -970,7 +970,7 @@
    </property>
    <property name="icon">
     <iconset resource="../ressources.qrc">
-     <normaloff>:/icons/phasespectrum.svg</normaloff>:/icons/phasespectrum.svg</iconset>
+     <normaloff>:/icons/spectrumgroupdelay.svg</normaloff>:/icons/spectrumgroupdelay.svg</iconset>
    </property>
    <property name="text">
     <string>Show group delay</string>

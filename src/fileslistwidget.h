@@ -58,6 +58,7 @@ public slots:
     void changeFileListItemsSize();
     void checkFileModifications();
     void fileInfoUpdate();
+    void setLabelsEditable(bool editable);
 
     void showFileContextMenu(const QPoint&);
     void resetAmpScale();

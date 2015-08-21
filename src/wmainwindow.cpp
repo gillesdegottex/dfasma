@@ -492,12 +492,12 @@ void WMainWindow::updateViewsAfterAddFile(bool isfirsts) {
 }
 
 void WMainWindow::viewsDisplayedChanged() {
-    ui->wSpectra->setVisible(ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked());
+    ui->wSpectra->setVisible(ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked() || ui->actionShowGroupDelaySpectrum->isChecked());
 
-    gMW->m_gvWaveform->m_aWaveformShowWindow->setChecked(gMW->m_gvWaveform->m_aWaveformShowWindow->isChecked() && (ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked()));
-    gMW->m_gvWaveform->m_aWaveformShowWindow->setEnabled(ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked());
+    gMW->m_gvWaveform->m_aWaveformShowWindow->setChecked(gMW->m_gvWaveform->m_aWaveformShowWindow->isChecked() && (ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked() || ui->actionShowGroupDelaySpectrum->isChecked()));
+    gMW->m_gvWaveform->m_aWaveformShowWindow->setEnabled(ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked() || ui->actionShowGroupDelaySpectrum->isChecked());
 
-    if(ui->actionShowPhaseSpectrum->isChecked())
+    if(ui->actionShowPhaseSpectrum->isChecked()) // TODO
         m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     else if(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow->isChecked())
         m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -653,7 +653,7 @@ void WMainWindow::setEditMode(bool checked){
     else
         setSelectionMode(true);
 
-    setLabelsEditable(checked);
+    gFL->setLabelsEditable(checked);
 }
 
 void WMainWindow::setEditing(FileType *ft){
@@ -663,17 +663,6 @@ void WMainWindow::setEditing(FileType *ft){
         m_last_file_editing->setEditing(false);
 
     m_last_file_editing = ft;
-}
-
-void WMainWindow::setLabelsEditable(bool editable){
-    for(size_t fi=0; fi<m_fileslist->ftlabels.size(); fi++){
-        for(size_t li=0; li<m_fileslist->ftlabels[fi]->waveform_labels.size(); li++){
-            if(editable)
-                m_fileslist->ftlabels[fi]->waveform_labels[li]->setTextInteractionFlags(Qt::TextEditorInteraction);
-            else
-                m_fileslist->ftlabels[fi]->waveform_labels[li]->setTextInteractionFlags(Qt::NoTextInteraction);
-        }
-    }
 }
 
 void WMainWindow::enterScrollHandDragMode(){
