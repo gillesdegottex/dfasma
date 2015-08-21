@@ -42,6 +42,8 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     ui(new Ui::WDialogSettings)
 {
     ui->setupUi(this);
+    ui->btnSettingsSave->setIcon(style()->standardIcon(QStyle::SP_DialogSaveButton));
+    ui->btnSettingsClear->setIcon(style()->standardIcon(QStyle::SP_DialogResetButton));
 
     // Fill the comboboxes
     QList<QByteArray> avcodecs = QTextCodec::availableCodecs();

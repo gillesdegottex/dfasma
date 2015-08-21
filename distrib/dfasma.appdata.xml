@@ -10,8 +10,8 @@
     <p>
       A tool to compare mono audio files in time and frequency.
     </p>
-    <p>DFasma is an open-source software used to compare audio files (mono only) in
-    time and frequency. The comparison is first visual, using wavforms and spectra.
+    <p>DFasma is an open-source software used to compare audio files in
+    time and frequency. The comparison is first visual, using wavforms, spectra and spectrogram.
     Listening segments of the loaded files is also possible in order to allow
     perceptual comparison.
     </p>

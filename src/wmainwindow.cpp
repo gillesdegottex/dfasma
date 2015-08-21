@@ -246,8 +246,8 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
         sizesMain.append(onesize);
     }
     if(sizesMain.count()==0) {
-        sizesMain.append(100);
-        sizesMain.append(600);
+        sizesMain.append(200);
+        sizesMain.append(500);
     }
     ui->splitterMain->setSizes(sizesMain);
 
@@ -297,7 +297,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
         for(int di=0; di<audioDevices.size(); di++)
             m_dlgSettings->ui->cbPlaybackAudioOutputDevices->addItem(audioDevices[di].deviceName());
         if(m_dlgSettings->ui->cbPlaybackAudioOutputDevices->count()==0){
-            m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText("No audio device available.");
+            m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText("<small>No audio device available.</small>");
             m_dlgSettings->ui->lblAudioOutputDeviceFormat->show();
 //            m_dlgSettings->ui->cbPlaybackAudioOutputDevices->hide();
         }
@@ -805,7 +805,7 @@ void WMainWindow::audioOutputFormatChanged(const QAudioFormat &format) {
             str += " little endian";
         str += "<br/>";
 
-        m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText(str);
+        m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText("<small>"+str+"</small>");
         m_dlgSettings->ui->lblAudioOutputDeviceFormat->show();
         ui->actionPlay->setEnabled(true);
         m_pbVolume->setEnabled(true);
@@ -817,7 +817,7 @@ void WMainWindow::audioEngineError(const QString &heading, const QString &detail
     Q_UNUSED(heading)
     Q_UNUSED(detail)
     if(!m_audioengine->isInitialized()) {
-        m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText(heading+": "+detail);
+        m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText("<small>"+heading+": "+detail+"</small>");
         ui->actionPlay->setEnabled(false);
         m_pbVolume->setEnabled(false);
     }

@@ -49,6 +49,16 @@ DFASMAVERSIONGITPRO = $$system(git describe --tags --always)
 message(Version from Git: $$DFASMAVERSIONGITPRO)
 DEFINES += DFASMAVERSIONGIT=$$system(git describe --tags --always)
 
+# To place the application's files in the proper folder
+isEmpty(PREFIX){
+    PREFIX = /usr/local
+}
+unix:DEFINES += PREFIX=$$PREFIX
+# To place the shortcut in the proper folder
+isEmpty(PREFIXSHORTCUT){
+    PREFIXSHORTCUT = /usr
+}
+
 # Manage Architecture
 win32:message(For Windows)
 unix:message(For Linux)
@@ -193,6 +203,14 @@ TARGET = dfasma
 TEMPLATE = app
 
 RC_ICONS = icons/dfasma.ico
+RESOURCES += ressources.qrc
+
+FORMS     += src/wmainwindow.ui \
+             src/wdialogselectchannel.ui \
+             src/wdialogsettings.ui \
+             src/gvamplitudespectrumwdialogsettings.ui \
+             src/gvspectrogramwdialogsettings.ui \
+             src/aboutbox.ui
 
 INCLUDEPATH += external/REAPER
 
@@ -258,11 +276,17 @@ HEADERS   += src/wmainwindow.h \
              external/REAPER/epoch_tracker/fd_filter.h \
              external/REAPER/epoch_tracker/lpc_analyzer.h
 
-FORMS     += src/wmainwindow.ui \
-             src/wdialogselectchannel.ui \
-             src/wdialogsettings.ui \
-             src/gvamplitudespectrumwdialogsettings.ui \
-             src/gvspectrogramwdialogsettings.ui \
-             src/aboutbox.ui
 
-RESOURCES += ressources.qrc
+# Installation configurations --------------------------------------------------
+target.path = $$PREFIX/bin
+shortcut.path = $$PREFIXSHORTCUT/share/applications
+shortcut.files = distrib/dfasma.desktop
+iconsvg.path = $$PREFIX/share/icons/hicolor/scalable/apps
+iconsvg.files = icons/dfasma.svg
+iconpng.path = $$PREFIX/share/icons/hicolor/128x128/apps
+iconpng.files = icons/dfasma.png
+appdata.path = $$PREFIX/share/appdata
+appdata.files = distrib/dfasma.appdata.xml
+#translations.path = $$PREFIX/share/fmit/tr
+#translations.files = tr/*
+INSTALLS += target shortcut iconsvg iconpng appdata

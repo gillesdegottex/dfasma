@@ -69,13 +69,14 @@
           </item>
           <item>
            <widget class="QLabel" name="lblAudioOutputDeviceFormat">
-            <property name="font">
-             <font>
-              <pointsize>8</pointsize>
-             </font>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
             <property name="text">
-             <string>No audio output format specified yet</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:small;&quot;&gt;No audio output format specified yet.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
            </widget>
           </item>
