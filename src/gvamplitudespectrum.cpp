@@ -198,7 +198,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_aSelectionClear->setEnabled(false);
     connect(m_aSelectionClear, SIGNAL(triggered()), this, SLOT(selectionClear()));
 
-    m_aAutoUpdateDFT = new QAction(tr("Auto-Update"), this);;
+    m_aAutoUpdateDFT = new QAction(tr("Auto-Update DFT"), this);;
     m_aAutoUpdateDFT->setStatusTip(tr("Auto-Update the DFT view when the time selection is modified"));
     m_aAutoUpdateDFT->setCheckable(true);
     m_aAutoUpdateDFT->setChecked(true);

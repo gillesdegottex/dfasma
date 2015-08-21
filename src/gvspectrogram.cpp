@@ -104,8 +104,8 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     gMW->m_settings.add(m_aSpectrogramShowHarmonics);
     connect(m_aSpectrogramShowHarmonics, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
 
-    m_aAutoUpdate = new QAction(tr("Auto-Update"), this);
-    m_aAutoUpdate->setStatusTip(tr("Auto-Update the DFT view when the time selection is modified"));
+    m_aAutoUpdate = new QAction(tr("Auto-Update STFT"), this);
+    m_aAutoUpdate->setStatusTip(tr("Auto-Update the STFT view when the waveform is modified"));
     m_aAutoUpdate->setCheckable(true);
     m_aAutoUpdate->setChecked(false);
     m_aAutoUpdate->setIcon(QIcon(":/icons/autoupdate.svg"));
