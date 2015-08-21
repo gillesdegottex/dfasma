@@ -520,6 +520,11 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
     if(ftsnd)
         m_src_snd = ftsnd;
 
+    if(!gFL->hasFile(m_src_snd)){
+        QMessageBox::warning(gMW, "Missing Source file", "The source file used for updating the F0 is not present in DFasma anymore.");
+        return;
+    }
+
     f0min = std::max(f0min, gMW->m_dlgSettings->ui->dsbEstimationF0Min->minimum()); // Fix hard-coded minimum for f0
     f0max = std::min(f0max, gFL->getFs()/2.0); // Fix hard-coded minimum for f0
     if(tstart!=-1) tstart = std::max(tstart, 0.0);
