@@ -41,6 +41,23 @@ using namespace Easdif;
 
 #include "qthelper.h"
 
+// Class-related ===============================================================
+
+std::deque<QString> FileType::s_types_name_and_extensions;
+
+FileType::ClassConstructor::ClassConstructor(){
+    // Map FileTypes with corresponding strings
+    // Attention ! It has to correspond to FType definition's order.
+    if(FileType::s_types_name_and_extensions.empty()){
+        FileType::s_types_name_and_extensions.push_back("All files (*)");
+        FileType::s_types_name_and_extensions.push_back("Sound (*.wav *.aiff *.pcm *.snd *.flac *.ogg)");
+        FileType::s_types_name_and_extensions.push_back("F0 (*.f0.bpf *.bpf *.sdif)");
+        FileType::s_types_name_and_extensions.push_back("Label (*.bpf *.lab *.sdif)");
+    }
+}
+FileType::ClassConstructor FileType::s_class_constructor;
+
+
 static deque<QColor> s_colors;
 static int s_colors_loaded = 0;
 
@@ -87,27 +104,6 @@ QColor FileType::GetNextColor(){
     return color;
 }
 
-std::deque<QString> FileType::s_types_name_and_extensions;
-FileType::ClassConstructor::ClassConstructor(){
-    // Map FileTypes with corresponding strings
-    // Attention ! It has to correspond to FType definition's order.
-    if(FileType::s_types_name_and_extensions.empty()){
-        FileType::s_types_name_and_extensions.push_back("All files (*)");
-        FileType::s_types_name_and_extensions.push_back("Sound (*.wav *.aiff *.pcm *.snd *.flac *.ogg)");
-        FileType::s_types_name_and_extensions.push_back("F0 (*.f0.bpf *.bpf *.sdif)");
-        FileType::s_types_name_and_extensions.push_back("Label (*.bpf *.lab *.sdif)");
-    }
-}
-FileType::ClassConstructor FileType::s_class_constructor;
-
-void FileType::constructor_common(){
-    m_is_editing = false;
-    m_is_edited = false;
-    m_is_source = false;
-
-    gFL->m_present_files.insert(make_pair(this,true));
-}
-
 FileType::FileContainer FileType::guessContainer(const QString& filepath){
     // TODO Could make a ligther one based on the file extension, instead of opening the file
 
@@ -132,19 +128,140 @@ FileType::FileContainer FileType::guessContainer(const QString& filepath){
     return FileType::FCUNSET;
 }
 
+bool FileType::hasFileExtension(const QString& filepath, const QString& ext){
+    int ret = filepath.lastIndexOf(ext, -1, Qt::CaseInsensitive);
+
+    return ret!=-1 && (ret==filepath.length()-ext.length());
+}
+
+// This function TRY TO GUESS if the file is ASCII or not
+// It may say it is ASCII whereas it is a non-ASCII text file (e.g. UTF) or a binary file (possible false positive)
+// If the file is truely a simple ASCII (non-UTF), the return value is always correct (no possible false negative)
+// For this reason, is container type has to be the last one to be tested.
+bool FileType::isFileASCII(const QString& filename) {
+//    COUTD << "FileType::isFileASCII " << filename.toLatin1().constData() << endl;
+
+    // ASCII chars should be 0< c <=127
+
+    int c;
+    // COUTD << "EOF='" << EOF << "'" << endl;
+    std::ifstream a(filename.toLatin1().constData());
+    int n = 0;
+    // Assume the first Ko is sufficient for testing ASCII content
+    while((c = a.get()) != EOF && n<1000){
+//         COUTD << "'" << c << "'" << endl;
+        if(c==0 || c>127)
+            return false;
+    }
+
+    return true;
+}
+
+// This function TRY TO GUESS if the file is simple  text (ascii or utf or whatever text) or not (e.g. binary)
+// It may say it is text whereas it is a binary file (possible false positive)
+// If the file is truely a simple text file, the return value is always correct (no possible false negative)
+// For this reason, is container type has to be the last one to be tested.
+bool FileType::isFileTEXT(const QString& filename) {
+//    COUTD << "FileType::isFileText " << filename.toLatin1().constData() << endl;
+
+    // ASCII chars should be 0< c <=127
+
+    int c;
+    // COUTD << "EOF='" << EOF << "'" << endl;
+    std::ifstream a(filename.toLatin1().constData());
+    int n = 0;
+    // Assume the first Ko is sufficient for testing ASCII content
+    while((c = a.get()) != EOF && n<1000){
+//         COUTD << "'" << c << "'" << endl;
+        if(c==0)
+            return false;
+    }
+
+    return true;
+}
+
+#ifdef SUPPORT_SDIF
+
+bool FileType::isFileSDIF(const QString& filename) {
+    try{
+        SDIFEntity readentity;
+        if (readentity.OpenRead(filename.toLocal8Bit().constData())){
+            readentity.Close();
+            return true;
+        }
+    }
+    catch(SDIFBadHeader& e) {
+    }
+    catch(SDIFEof& e) {
+    }
+
+    return false;
+}
+
+bool FileType::SDIF_hasFrame(const QString& filename, const QString& framesignature) {
+
+    SDIFEntity readentity;
+    // open the file
+    if(!readentity.OpenRead(filename.toLocal8Bit().constData()))
+        return false;
+
+    // enable frame dir to be able to work with selections
+    readentity.EnableFrameDir();
+
+    bool found = false;
+
+    // The header is not always filled properly.
+    // Thus, parse the file until the given frame is found
+    // create frame directory output
+    {
+        Easdif::SDIFEntity::const_iterator it = readentity.begin();
+        Easdif::SDIFEntity::const_iterator ite = readentity.end();
+        // establish directory
+        while(it !=ite)
+            ++it;
+        readentity.Rewind();
+        // const Easdif::Directory & dir= readentity.GetDirectory();
+        // dir.size()
+
+        it = readentity.begin();
+        for(int ii=0; !found && it!=ite; ++it,++ii) {
+            char* sigstr = SdifSignatureToString(it.GetLoc().LocSignature());
+            // cout << sigstr << endl;
+            if (QString(sigstr).compare(framesignature)==0)
+                found = true;
+        }
+    }
+
+    return found;
+}
+#endif
+
+
+// Instance-related ============================================================
+
+void FileType::constructor_internal(){
+    m_is_editing = false;
+    m_is_edited = false;
+    m_is_source = false;
+
+    m_actionShow = new QAction("Show", NULL); // All subclasses are QObject
+    m_actionShow->setStatusTip("Show this file in the views");
+    m_actionShow->setCheckable(true);
+    m_actionShow->setChecked(true);
+    m_actionShow->setShortcut(gMW->ui->actionSelectedFilesToggleShown->shortcut());
+}
+
+void FileType::constructor_external(){
+    gFL->m_present_files.insert(make_pair(this,true));
+}
+
 FileType::FileType(FType _type, const QString& _fileName, QObject * parent, const QColor& _color)
     : m_type(_type)
     , m_color(_color)
     , fileFullPath(_fileName)
 {
-    FileType::constructor_common();
+    FileType::constructor_internal();
 //    cout << "FileType::FileType: " << _fileName.toLocal8Bit().constData() << endl;
-
-    m_actionShow = new QAction("Show", parent);
-    m_actionShow->setStatusTip("Show this file in the views");
-    m_actionShow->setCheckable(true);
-    m_actionShow->setChecked(true);
-    m_actionShow->setShortcut(gMW->ui->actionSelectedFilesToggleShown->shortcut());
 
     updateIcon();
     setFullPath(fileFullPath);
@@ -202,7 +319,6 @@ bool FileType::checkFileStatus(CHECKFILESTATUSMGT cfsmgt){
         m_modifiedtime = fi.lastModified();
         setStatus();
     }
-
     return true;
 }
 
@@ -328,112 +444,3 @@ FileType::~FileType() {
 
     s_colors.push_front(m_color);
 }
-
-
-bool FileType::hasFileExtension(const QString& filepath, const QString& ext){
-    int ret = filepath.lastIndexOf(ext, -1, Qt::CaseInsensitive);
-
-    return ret!=-1 && (ret==filepath.length()-ext.length());
-}
-
-// This function TRY TO GUESS if the file is ASCII or not
-// It may say it is ASCII whereas it is a non-ASCII text file (e.g. UTF) or a binary file (possible false positive)
-// If the file is truely a simple ASCII (non-UTF), the return value is always correct (no possible false negative)
-// For this reason, is container type has to be the last one to be tested.
-bool FileType::isFileASCII(const QString& filename) {
-//    COUTD << "FileType::isFileASCII " << filename.toLatin1().constData() << endl;
-
-    // ASCII chars should be 0< c <=127
-
-    int c;
-    // COUTD << "EOF='" << EOF << "'" << endl;
-    std::ifstream a(filename.toLatin1().constData());
-    int n = 0;
-    // Assume the first Ko is sufficient for testing ASCII content
-    while((c = a.get()) != EOF && n<1000){
-//         COUTD << "'" << c << "'" << endl;
-        if(c==0 || c>127)
-            return false;
-    }
-
-    return true;
-}
-
-// This function TRY TO GUESS if the file is simple  text (ascii or utf or whatever text) or not (e.g. binary)
-// It may say it is text whereas it is a binary file (possible false positive)
-// If the file is truely a simple text file, the return value is always correct (no possible false negative)
-// For this reason, is container type has to be the last one to be tested.
-bool FileType::isFileTEXT(const QString& filename) {
-//    COUTD << "FileType::isFileText " << filename.toLatin1().constData() << endl;
-
-    // ASCII chars should be 0< c <=127
-
-    int c;
-    // COUTD << "EOF='" << EOF << "'" << endl;
-    std::ifstream a(filename.toLatin1().constData());
-    int n = 0;
-    // Assume the first Ko is sufficient for testing ASCII content
-    while((c = a.get()) != EOF && n<1000){
-//         COUTD << "'" << c << "'" << endl;
-        if(c==0)
-            return false;
-    }
-
-    return true;
-}
-
-#ifdef SUPPORT_SDIF
-
-bool FileType::isFileSDIF(const QString& filename) {
-    try{
-        SDIFEntity readentity;
-        if (readentity.OpenRead(filename.toLocal8Bit().constData())){
-            readentity.Close();
-            return true;
-        }
-    }
-    catch(SDIFBadHeader& e) {
-    }
-    catch(SDIFEof& e) {
-    }
-
-    return false;
-}
-
-bool FileType::SDIF_hasFrame(const QString& filename, const QString& framesignature) {
-
-    SDIFEntity readentity;
-    // open the file
-    if(!readentity.OpenRead(filename.toLocal8Bit().constData()))
-        return false;
-
-    // enable frame dir to be able to work with selections
-    readentity.EnableFrameDir();
-
-    bool found = false;
-
-    // The header is not always filled properly.
-    // Thus, parse the file until the given frame is found
-    // create frame directory output
-    {
-        Easdif::SDIFEntity::const_iterator it = readentity.begin();
-        Easdif::SDIFEntity::const_iterator ite = readentity.end();
-        // establish directory
-        while(it !=ite)
-            ++it;
-        readentity.Rewind();
-        // const Easdif::Directory & dir= readentity.GetDirectory();
-        // dir.size()
-
-        it = readentity.begin();
-        for(int ii=0; !found && it!=ite; ++it,++ii) {
-            char* sigstr = SdifSignatureToString(it.GetLoc().LocSignature());
-            // cout << sigstr << endl;
-            if (QString(sigstr).compare(framesignature)==0)
-                found = true;
-        }
-    }
-
-    return found;
-}
-#endif

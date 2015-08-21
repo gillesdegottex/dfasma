@@ -142,7 +142,7 @@ void WDialogSettings::settingsSave() {
 }
 void WDialogSettings::settingsClear() {
     gMW->m_settings.clearAll();
-    QMessageBox::information(this, "Reset factory settings", "<p>The settings have been reset to their original values.</p><p>Please restart DFasma</p>");
+    QMessageBox::warning(this, "Factory settings restored", "<p>The settings have been restored to their original values.</p><p>Please restart DFasma</p>");
 }
 
 

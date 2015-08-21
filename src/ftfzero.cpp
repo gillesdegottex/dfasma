@@ -60,7 +60,7 @@ FTFZero::ClassConstructor::ClassConstructor(){
 }
 FTFZero::ClassConstructor FTFZero::s_class_constructor;
 
-void FTFZero::constructor_common(){
+void FTFZero::constructor_internal(){
     m_fileformat = FFNotSpecified;
     m_src_snd = NULL;
 
@@ -80,6 +80,10 @@ void FTFZero::constructor_common(){
     m_actionAnalysisFZero->setStatusTip(tr("Re-estimate the fundamental frequency (F0)"));
     m_actionAnalysisFZero->setShortcut(gMW->ui->actionEstimationF0->shortcut());
 //    connect(m_actionAnalysisFZero, SIGNAL(triggered()), this, SLOT(estimateFZero()));
+}
+
+void FTFZero::constructor_external(){
+    FileType::constructor_external();
 
     gFL->ftfzeros.push_back(this);
 }
@@ -93,7 +97,7 @@ FTFZero::FTFZero(const QString& _fileName, QObject* parent, FileType::FileContai
     if(fileFullPath.isEmpty())
         throw QString("This ctor is for existing files. Use the empty ctor for empty F0 object.");
 
-    FTFZero::constructor_common();
+    FTFZero::constructor_internal();
 
     m_fileformat = fileformat;
     if(container==FileType::FCSDIF)
@@ -105,13 +109,15 @@ FTFZero::FTFZero(const QString& _fileName, QObject* parent, FileType::FileContai
         checkFileStatus(CFSMEXCEPTION);
         load();
     }
+
+    FTFZero::constructor_external();
 }
 
 FTFZero::FTFZero(const FTFZero& ft)
     : QObject(ft.parent())
     , FileType(FTFZERO, ft.fileFullPath, this)
 {
-    FTFZero::constructor_common();
+    FTFZero::constructor_internal();
 
     ts = ft.ts;
     f0s = ft.f0s;
@@ -120,6 +126,8 @@ FTFZero::FTFZero(const FTFZero& ft)
     m_modifiedtime = ft.m_modifiedtime;
 
     updateTextsGeometry();
+
+    FTFZero::constructor_external();
 }
 
 FileType* FTFZero::duplicate(){
@@ -500,9 +508,11 @@ FTFZero::FTFZero(QObject *parent, FTSound *ftsnd, double f0min, double f0max, do
     : QObject(parent)
     , FileType(FTFZERO, DropFileExtension(ftsnd->fileFullPath)+".f0.txt", this, ftsnd->getColor())
 {
-    FTFZero::constructor_common();
+    FTFZero::constructor_internal();
 
     estimate(ftsnd, f0min, f0max, tstart, tend, force);
+
+    FTFZero::constructor_external();
 }
 
 void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart, double tend, bool force) {

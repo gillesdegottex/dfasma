@@ -138,7 +138,7 @@ bool FTSound::DFTParameters::operator==(const DFTParameters& param) const {
 }
 
 
-void FTSound::constructor_common() {
+void FTSound::constructor_internal() {
     connect(m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setVisible(bool)));
 
     m_channelid = 0;
@@ -162,19 +162,16 @@ void FTSound::constructor_common() {
     m_actionInvPolarity->setCheckable(true);
     m_actionInvPolarity->setChecked(false);
     connect(m_actionInvPolarity, SIGNAL(triggered()), this, SLOT(needDFTUpdate()));
-    connect(m_actionInvPolarity, SIGNAL(triggered()), gMW, SLOT(allSoundsChanged()));
 
     m_actionResetAmpScale = new QAction("Reset amplitude", this);
     m_actionResetAmpScale->setStatusTip(tr("Reset the amplitude scaling to 1"));
     connect(m_actionResetAmpScale, SIGNAL(triggered()), this, SLOT(needDFTUpdate()));
     connect(m_actionResetAmpScale, SIGNAL(triggered()), this, SLOT(resetAmpScale()));
-    connect(m_actionResetAmpScale, SIGNAL(triggered()), gFL, SLOT(fileInfoUpdate()));
 
     m_actionResetDelay = new QAction("Reset the delay", this);
     m_actionResetDelay->setStatusTip(tr("Reset the delay to 0s"));
     connect(m_actionResetDelay, SIGNAL(triggered()), this, SLOT(needDFTUpdate()));
     connect(m_actionResetDelay, SIGNAL(triggered()), this, SLOT(resetDelay()));
-    connect(m_actionResetDelay, SIGNAL(triggered()), gFL, SLOT(fileInfoUpdate()));
 
     m_actionResetFiltering = new QAction("Remove filtering effects", this);
     m_actionResetFiltering->setStatusTip(tr("Reset to original signal without filtering effects"));
@@ -185,6 +182,14 @@ void FTSound::constructor_common() {
     m_actionAnalysisFZero->setStatusTip(tr("Estimate the fundamental frequency (F0)"));
     m_actionAnalysisFZero->setShortcut(gMW->ui->actionEstimationF0->shortcut());
 //    connect(m_actionAnalysisFZero, SIGNAL(triggered()), this, SLOT(estimateFZero()));
+}
+
+void FTSound::constructor_external() {
+    FileType::constructor_external();
+
+    connect(m_actionInvPolarity, SIGNAL(triggered()), gMW, SLOT(allSoundsChanged()));
+    connect(m_actionResetAmpScale, SIGNAL(triggered()), gFL, SLOT(fileInfoUpdate()));
+    connect(m_actionResetDelay, SIGNAL(triggered()), gFL, SLOT(fileInfoUpdate()));
 
     gFL->ftsnds.push_back(this);
 }
@@ -193,7 +198,7 @@ FTSound::FTSound(const QString& _fileName, QObject *parent, int channelid)
     : QIODevice(parent)
     , FileType(FTSOUND, _fileName, this)
 {
-    FTSound::constructor_common();
+    FTSound::constructor_internal();
 
     if(!fileFullPath.isEmpty()){
         checkFileStatus(CFSMEXCEPTION);
@@ -202,11 +207,11 @@ FTSound::FTSound(const QString& _fileName, QObject *parent, int channelid)
             load_finalize();
         }
         catch(std::bad_alloc err){
-            QMessageBox::critical(NULL, "Memory full!", "There is not enough free memory for computing this STFT");
-
+            QMessageBox::critical(NULL, "Memory full!", "There is not enough free memory for loading this file.");
             throw QString("Memory cannot hold this file!");
         }
     }
+    FTSound::constructor_external();
 
 //    QIODevice::open(QIODevice::ReadOnly);
 }
@@ -215,7 +220,7 @@ FTSound::FTSound(const FTSound& ft)
     : QIODevice(ft.parent())
     , FileType(FTSOUND, ft.fileFullPath, this)
 {
-    FTSound::constructor_common();
+    FTSound::constructor_internal();
 
     QFileInfo fileInfo(fileFullPath);
     setText(fileInfo.fileName());
@@ -230,6 +235,8 @@ FTSound::FTSound(const FTSound& ft)
 
     m_lastreadtime = ft.m_lastreadtime;
     m_modifiedtime = ft.m_modifiedtime;
+
+    FTSound::constructor_external();
 }
 
 void FTSound::load_finalize() {
@@ -473,8 +480,9 @@ void FTSound::setSamplingRate(double _fs){
     }
     else {
         // Check if fs is the same as that of the other files
-        if(s_fs_common!=fs)
+        if(s_fs_common!=fs){
             throw QString("The sampling rate of this file ("+QString::number(fs)+"Hz) is not the same as that of the files already loaded. DFasma manages only one sampling rate per instance. Please use another instance of DFasma.");
+        }
     }
 }
 

@@ -49,7 +49,9 @@ class FTSound : public QIODevice, public FileType
 {
     Q_OBJECT
 
-    void constructor_common();
+private:
+    void constructor_internal();
+    void constructor_external();
 
     void load(int channelid=1);       // Implementation depends on the used file library (sox, lisndfile, ...)
     void load_finalize();             // Independent of the used file lib.
@@ -66,13 +68,14 @@ class FTSound : public QIODevice, public FileType
     bool m_isplaying;
 
 public:
+    static QString getAudioFileReadingDescription();
+    static QStringList getAudioFileReadingSupportedFormats();
+    static int getNumberOfChannels(const QString& filePath);
+    static double s_fs_common;  // [Hz] Sampling frequency of the sound player // TODO put in sound player
 
     FTSound(const QString& _fileName, QObject* parent, int channelid=1);
     FTSound(const FTSound& ft);
     virtual FileType* duplicate();
-
-    static double s_fs_common;  // [Hz] Sampling frequency of the sound player // TODO put in sound player
-    static std::vector<WAVTYPE> s_avoidclickswindow;
 
     double fs; // [Hz] Sampling frequency of this specific wav file
     std::vector<WAVTYPE> wav;
@@ -226,10 +229,8 @@ public:
     bool isPlaying() const {return m_isplaying;}
     void stopPlay();
 
+    static std::vector<WAVTYPE> s_avoidclickswindow;
     static void setAvoidClicksWindowDuration(double halfduration);
-    static QString getAudioFileReadingDescription();
-    static QStringList getAudioFileReadingSupportedFormats();
-    static int getNumberOfChannels(const QString& filePath);
 
     ~FTSound();
 

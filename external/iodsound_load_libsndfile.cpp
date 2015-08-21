@@ -27,6 +27,8 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <iostream>
 using namespace std;
 
+#include "../src/qthelper.h"
+
 extern "C" {
 #include    <stdio.h>
 #include    <sndfile.h>
@@ -148,7 +150,6 @@ void FTSound::load(int channelid){
         throw QString("libsndfile: The requested channel ID is higher than the number of channels in the file.");
 
     m_fileaudioformat.setChannelCount(sfinfo.channels);
-
     m_fileaudioformat.setSampleRate(sfinfo.samplerate);
     setSamplingRate(sfinfo.samplerate);
 

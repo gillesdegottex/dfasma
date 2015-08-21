@@ -133,7 +133,7 @@ FTLabels::ClassConstructor::ClassConstructor(){
 }
 FTLabels::ClassConstructor FTLabels::s_class_constructor;
 
-void FTLabels::constructor_common(){
+void FTLabels::constructor_internal(){
     m_fileformat = FFNotSpecified;
 
     m_actionSave = new QAction("Save", this);
@@ -143,6 +143,10 @@ void FTLabels::constructor_common(){
     m_actionSaveAs = new QAction("Save as...", this);
     m_actionSaveAs->setStatusTip(tr("Save the labels times in a given file..."));
     connect(m_actionSaveAs, SIGNAL(triggered()), this, SLOT(saveAs()));
+}
+
+void FTLabels::constructor_external(){
+    FileType::constructor_external();
 
     gFL->ftlabels.push_back(this);
 }
@@ -154,13 +158,15 @@ FTLabels::FTLabels(QObject *parent)
 {
     Q_UNUSED(parent);
 
-    FTLabels::constructor_common();
+    FTLabels::constructor_internal();
 
     if(gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText==FFSDIF)
         setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.sdif");
     else
         setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.lab");
     m_fileformat = FFNotSpecified;
+
+    FTLabels::constructor_external();
 }
 
 // Construct from an existing file name
@@ -174,7 +180,7 @@ FTLabels::FTLabels(const QString& _fileName, QObject* parent, FileType::FileCont
     if(fileFullPath.isEmpty())
         throw QString("This ctor is for existing files. Use the empty ctor for empty label object.");
 
-    FTLabels::constructor_common();
+    FTLabels::constructor_internal();
 
     m_fileformat = fileformat;
     if(container==FileType::FCSDIF)
@@ -184,6 +190,8 @@ FTLabels::FTLabels(const QString& _fileName, QObject* parent, FileType::FileCont
 
     checkFileStatus(CFSMEXCEPTION);
     load();
+
+    FTLabels::constructor_external();
 }
 
 // Copy constructor
@@ -191,7 +199,7 @@ FTLabels::FTLabels(const FTLabels& ft)
     : QObject(ft.parent())
     , FileType(FTLABELS, ft.fileFullPath, this)
 {
-    FTLabels::constructor_common();
+    FTLabels::constructor_internal();
 
     int starti=0;
     for(std::deque<FTGraphicsLabelItem*>::const_iterator it=ft.waveform_labels.begin(); it!=ft.waveform_labels.end(); ++it, ++starti)
@@ -201,6 +209,8 @@ FTLabels::FTLabels(const FTLabels& ft)
     m_modifiedtime = ft.m_modifiedtime;
 
     updateTextsGeometry();
+
+    FTLabels::constructor_external();
 }
 
 FileType* FTLabels::duplicate(){

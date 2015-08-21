@@ -44,8 +44,6 @@ extern "C" {
 #include <iostream>
 
 #include "qthelper.h"
-#include "filetype.h"
-#include "ftlabels.h"
 
 int main(int argc, char *argv[])
 {

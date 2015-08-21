@@ -42,7 +42,8 @@ public:
 
 private:
     static struct ClassConstructor{ClassConstructor();} s_class_constructor;
-    void constructor_common();
+    void constructor_internal();
+    void constructor_external();
     void load();
 
     QAction* m_actionSave;

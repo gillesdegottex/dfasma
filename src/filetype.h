@@ -40,6 +40,8 @@ private:
     static std::deque<QString> s_types_name_and_extensions;
     static struct ClassConstructor{ClassConstructor();} s_class_constructor;
 
+    void constructor_internal(); // Called by each FileType constructor
+
     QColor m_color;
     bool m_is_editing; // True if the file is currently under edition and the icon is changed accordingly.
     bool m_is_source;  // True if the file has to show the source symbol.
@@ -49,7 +51,8 @@ protected:
     QDateTime m_modifiedtime;
     QDateTime m_lastreadtime;
 
-    void constructor_common();
+    void constructor_external(); // Has to be called by each subclass constructor
+                                 // once the file is guaranteed to be included in the application
     virtual void setDrawIcon(QPixmap& pm);
 
 public:
