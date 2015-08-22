@@ -151,7 +151,7 @@ void GVSpectrogramWDialogSettings::DFTSizeChanged(int value) {
         winlen++;
 
     if(ui->cbSpectrogramDFTSizeType->currentIndex()==0){
-        int osf = std::ceil(log2(ui->sbSpectrogramDFTSize->value())) - std::ceil(log2(float(winlen)));
+        int osf = std::ceil(log2(float(ui->sbSpectrogramDFTSize->value()))) - std::ceil(log2(float(winlen)));
         ui->sbSpectrogramOversamplingFactor->setValue(osf);
     }
     else if(ui->cbSpectrogramDFTSizeType->currentIndex()==1){
