@@ -1,4 +1,12 @@
 os: unstable
+
+platform:
+  - x86
+  - x64
+
+configuration:
+  - Release
+
 install:
   - set QTDIR=C:\Qt\Qt5.3.2\5.3\mingw482_32
   - set PATH=%PATH%;%QTDIR%\bin;C:\MinGW\bin
@@ -25,11 +33,12 @@ install:
 #  - ps: cd external
 #  - git clone  https://github.com/gillesdegottex/REAPER.git
 #  - ps: cd ..
+
 build_script:
   - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\dfasma\lib\libsndfile-1.0.25-w32" "FFT_LIBDIR=C:\projects\dfasma\lib\fftw-3.3.4-dll32" dfasma.pro
   - mingw32-make
-  - ps: Get-ChildItem .
+  - ps: Get-ChildItem release
 
 artifacts:
-  - path: dfasma.exe
+  - path: release/dfasma.exe
   
