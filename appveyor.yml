@@ -28,3 +28,7 @@ install:
 build_script:
   - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\dfasma\lib\libsndfile-1.0.25-w32" "FFT_LIBDIR=C:\projects\dfasma\lib\fftw-3.3.4-dll32" dfasma.pro
   - mingw32-make
+
+artifacts:
+  - path: test.zip
+  
