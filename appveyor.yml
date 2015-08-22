@@ -30,5 +30,6 @@ build_script:
   - mingw32-make
 
 artifacts:
-  - path: test.zip
+  - ps: Get-ChildItem .
+  - path: dfasma.exe
   
