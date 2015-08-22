@@ -578,6 +578,8 @@ void FilesListWidget::selectedFilesEstimateF0() {
             QMessageBox::warning(gMW, "Analysis of f0", "Estimation of the fundamental frequency failed for the following reason:\n"+err);
         }
     }
+
+    gMW->updateWindowTitle();
 }
 
 double FilesListWidget::getFs() const {

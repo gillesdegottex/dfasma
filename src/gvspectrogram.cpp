@@ -817,8 +817,12 @@ void QGVSpectrogram::selectionClear(bool forwardsync) {
     selectionSetTextInForm();
 
     if(forwardsync){
-        if(gMW->m_gvWaveform)      gMW->m_gvWaveform->selectionClear(false);
-        if(gMW->m_gvAmplitudeSpectrum)      gMW->m_gvAmplitudeSpectrum->selectionClear(false);
+        if(gMW->m_gvWaveform)
+            gMW->m_gvWaveform->selectionClear(false);
+        if(gMW->m_gvAmplitudeSpectrum)
+            gMW->m_gvAmplitudeSpectrum->selectionClear(false);
+        if(gMW->m_gvAmplitudeSpectrum)
+            gMW->m_gvSpectrumGroupDelay->selectionClear(false);
     }
 }
 
