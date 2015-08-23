@@ -51,9 +51,9 @@ install:
 #     Directly from author (working)
 #  - appveyor DownloadFile http://www.jrsoftware.org/download.php/is.exe
 #  - is.exe /SP- /VERYSILENT /NORESTART /SUPPRESSMSGBOXES
-#  - ps: Get-ChildItem "C:\Program Files (x86)\Inno Setup 5"
 #     From Choco
   - choco install -y curl 7zip InnoSetup
+  - ps: Get-ChildItem "C:\Program Files (x86)\Inno Setup 5"
 
   - echo %CD%
   
