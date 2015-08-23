@@ -1,8 +1,8 @@
 os: Windows Server 2012 R2
 
 platform:
-  - x86
-#  - x64
+#  - x86
+  - x64
 
 configuration:
   - Release
@@ -67,11 +67,11 @@ build_script:
   - set PATH=%PATH%;C:\Qt\Tools\QtCreator\bin
   - C:\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release
   - ps: Get-ChildItem release
-  - ps: .\distrib\package_appveyor_Win64bit.sh
+  - ps: .\distrib\package_appveyor_Win64bit.ps1
   - ps: Get-ChildItem distrib
 
 artifacts:
-  - path: release/dfasma.exe
-  - path: distrib/DFasma-*-Win64bit.exe
+  - path: release\dfasma.exe
+  - path: distrib\DFasma-*-Win64bit.exe
   
   
