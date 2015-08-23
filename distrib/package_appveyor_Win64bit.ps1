@@ -1,6 +1,6 @@
 #http://doc.qt.io/qt-5/windows-deployment.html
-VERSION=$(git describe --tags --always)
-echo Version: $VERSION
+$VERSION = (git describe --tags --always) | Out-String
+echo "Version: $VERSION"
 
 PACKAGENAME=DFasma-$VERSION-Win64bit
 QTPATH=/Qt/5.4/msvc2013_64_opengl
