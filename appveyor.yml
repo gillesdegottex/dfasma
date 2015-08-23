@@ -34,9 +34,9 @@ install:
 #  - ps: cd libsndfile-1.0.25-w32
 #  - echo %CD%
 # TODO Replace with original
-  - appveyor DownloadFile http://www.mega-nerd.com/libsndfile/files/libsndfile-1.0.25-w64-setup.exe
-  - libsndfile-1.0.25-w64-setup.exe /s
-  - ps: Get-ChildItem "C:\Program Files\Mega-Nerd\libsndfile"
+#  - appveyor DownloadFile http://www.mega-nerd.com/libsndfile/files/libsndfile-1.0.25-w64-setup.exe
+#  - libsndfile-1.0.25-w64-setup.exe /s
+#  - ps: Get-ChildItem "C:\Program Files\Mega-Nerd\libsndfile"
 
   - appveyor DownloadFile http://gillesdegottex.eu/libsndfile-1.0.25-w64.zip
   - ps: 7z x libsndfile-1.0.25-w64.zip -y
@@ -48,7 +48,7 @@ install:
   
 # For packaging
   - appveyor DownloadFile http://www.jrsoftware.org/download.php/is.exe
-  - ps: is.exe
+  - is.exe
 
   - echo %CD%
   
