@@ -50,6 +50,9 @@ class QGVSpectrogram : public QGraphicsView
 
     QGraphicsPathItem* m_giPlayCursor;
 
+    FTFZero* m_editing_fzero;
+//    std::deque<QPointF> m_editing_fzero_newvalues; // TODO DELETE
+
 public:
     explicit QGVSpectrogram(WMainWindow* parent);
 
@@ -78,7 +81,7 @@ public:
     bool m_bottomismin;
     QPointF m_pressed_mouseinviewport;
     QRectF m_pressed_viewrect;
-    enum CurrentAction {CANothing, CAMoving, CAZooming, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight, CAModifSelectionTop, CAModifSelectionBottom, CAWaveformScale};
+    enum CurrentAction {CANothing, CAMoving, CAZooming, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight, CAModifSelectionTop, CAModifSelectionBottom, CAWaveformScale, CAEditFZero};
     int m_currentAction;
 
     QRectF m_selection, m_mouseSelection;

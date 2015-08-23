@@ -493,6 +493,12 @@ double FTFZero::getLastSampleTime() const {
         return *((ts.end()-1));
 }
 
+void FTFZero::edit(double t, double f0){
+//    COUTD << "FTFZero::edit " << t << " " << f0 << endl;
+
+
+}
+
 FTFZero::~FTFZero() {
     delete m_aspec_txt;
 

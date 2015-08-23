@@ -61,6 +61,7 @@ using namespace std;
 
 QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     : QGraphicsView(parent)
+    , m_editing_fzero(NULL)
     , m_imgSTFT(1, 1, QImage::Format_RGB32)
 {
     setStyleSheet("QGraphicsView { border-style: none; }");
@@ -630,7 +631,16 @@ void QGVSpectrogram::mousePressEvent(QMouseEvent* event){
             }
         }
         if(gMW->ui->actionEditMode->isChecked()){
-            playCursorSet(p.x(), true); // Place the play cursor
+            FTFZero* current_fzero = gFL->getCurrentFTFZero(false);
+            if(current_fzero){
+                m_currentAction = CAEditFZero;
+                m_editing_fzero = current_fzero;
+                m_selection_pressedp = p;
+                m_editing_fzero->edit(p.x(), p.y());
+                m_scene->update();
+            }
+            else
+                playCursorSet(p.x(), true); // Place the play cursor
         }
     }
     else if(event->buttons()&Qt::RightButton) {
@@ -710,6 +720,14 @@ void QGVSpectrogram::mouseMoveEvent(QMouseEvent* event){
         m_mouseSelection.setBottomRight(p);
         selectionSet(m_mouseSelection, true);
     }
+    else if (m_currentAction==CAEditFZero){
+        // Editing an F0 curve
+        if(p!=m_selection_pressedp){
+            m_editing_fzero->edit(p.x(), p.y());
+            m_selection_pressedp = p;
+            m_scene->update();
+        }
+    }
     else{
         QRect selview = mapFromScene(m_giShownSelection->boundingRect()).boundingRect();
 
@@ -759,6 +777,18 @@ void QGVSpectrogram::mouseReleaseEvent(QMouseEvent* event) {
 //    COUTD << "QGVSpectrogram::mouseReleaseEvent" << endl;
 
     QPointF p = mapToScene(event->pos());
+
+//    if(gMW->ui->actionEditMode->isChecked()){
+//        if(m_currentAction==CAEditFZero){
+//            if(m_editing_fzero_newvalues.size()>1){
+//                COUTD << "Update using the " << m_editing_fzero_newvalues.size() << " new values" << endl;
+
+//            }
+//            m_editing_fzero_newvalues.clear();
+//        }
+//    }
+
+
 
     m_currentAction = CANothing;
 
@@ -1189,6 +1219,21 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
             }
         }
     }
+
+    // TODO DELETE
+//    // Draw the F0 edition
+//    // TODO Use GraphicItem
+//    if(m_editing_fzero){
+//        QColor c = m_editing_fzero->getColor();
+//        c.setAlphaF(1.0);
+//        QPen outlinePen(c);
+//        outlinePen.setWidth(0);
+//        painter->setPen(outlinePen);
+//        for(size_t i=0; i<m_editing_fzero_newvalues.size()-1; ++i){
+//            painter->drawLine(QLineF(m_editing_fzero_newvalues[i], m_editing_fzero_newvalues[i+1]));
+//        }
+//    }
+
 
 //    cout << "QGVSpectrogram::~drawBackground" << endl;
 }

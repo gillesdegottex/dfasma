@@ -72,6 +72,8 @@ public:
     FTFZero(QObject* parent, FTSound *ftsnd, double f0min, double f0max, double tstart=-1.0, double tend=-1.0, bool force=false);
     void estimate(FTSound *ftsnd, double f0min, double f0max, double tstart=-1.0, double tend=-1.0, bool force=false);
 
+    void edit(double t, double f0);
+
     // Analysis
     QAction* m_actionAnalysisFZero;
     FTSound* m_src_snd;

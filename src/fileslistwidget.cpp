@@ -270,6 +270,22 @@ FTSound* FilesListWidget::getCurrentFTSound(bool forceselect) {
     return NULL;
 }
 
+FTFZero* FilesListWidget::getCurrentFTFZero(bool forceselect) {
+
+    if(ftfzeros.empty())
+        return NULL;
+
+    FileType* currenItem = currentFile();
+
+    if(currenItem && currenItem->is(FileType::FTFZERO))
+        return (FTFZero*)currenItem;
+
+    if(forceselect)
+        return ftfzeros[0];
+
+    return NULL;
+}
+
 FTLabels* FilesListWidget::getCurrentFTLabels(bool forceselect) {
 
     if(ftlabels.empty())

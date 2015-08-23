@@ -46,6 +46,7 @@ public:
     FileType* currentFile() const;
     FTSound* getCurrentFTSound(bool forceselect=false);
     FTLabels* getCurrentFTLabels(bool forceselect=false);
+    FTFZero* getCurrentFTFZero(bool forceselect=false);
 
     double getFs() const;
     unsigned int getMaxWavSize();
