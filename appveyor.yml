@@ -35,6 +35,7 @@ install:
 #  - echo %CD%
 # TODO Replace with original
   - appveyor DownloadFile http://www.mega-nerd.com/libsndfile/files/libsndfile-1.0.25-w64-setup.exe
+  - ps: Get-ChildItem .
   - ps: libsndfile-1.0.25-w64-setup.exe
   - ps: Get-ChildItem "C:\Program Files\Mega-Nerd\libsndfile"
 
@@ -46,6 +47,10 @@ install:
 # Leave lib folder
   - ps: cd ..
   
+# For packaging
+  - appveyor DownloadFile http://www.jrsoftware.org/download.php/is.exe
+  - ps: is.exe
+
   - echo %CD%
   
   - git submodule update --init --recursive
