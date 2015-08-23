@@ -580,6 +580,7 @@ void FilesListWidget::selectedFilesEstimateF0() {
             m_prgdlg->setValue(i);
         }
         catch(QString err){
+            gMW->globalWaitingBarDone();
             stopFileProgressDialog();
             QMessageBox::StandardButton ret=QMessageBox::warning(gMW, "Error during F) estimation", "Estimation of the F0 of "+currentfile->visibleName+" failed for the following reason:\n"+err, QMessageBox::Ok | QMessageBox::Abort, QMessageBox::Ok);
             if(ret==QMessageBox::Abort)

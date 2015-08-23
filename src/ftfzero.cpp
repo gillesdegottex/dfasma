@@ -525,8 +525,10 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
         return;
     }
 
+    double fs = gFL->getFs();
+
     f0min = std::max(f0min, gMW->m_dlgSettings->ui->dsbEstimationF0Min->minimum()); // Fix hard-coded minimum for f0
-    f0max = std::min(f0max, gFL->getFs()/2.0); // Fix hard-coded minimum for f0
+    f0max = std::min(f0max, fs/2.0); // Fix hard-coded minimum for f0
     if(tstart!=-1) tstart = std::max(tstart, 0.0);
     if(tend!=-1) tend = std::min(tend, m_src_snd->getLastSampleTime());
 
@@ -559,21 +561,28 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
 
     // Initialize with the given input
     // Start with a dirty copy in the necessary format
-    // TODO #388: compute only the necessary values (and not do all, then select)
-    //            though doing so, the dynamic prog result wont be the same.
-    vector<int16_t> data(m_src_snd->wav.size());
-    for(size_t i=0; i<m_src_snd->wav.size(); ++i)
-        data[i] = 32768*m_src_snd->wav[i];
-    int16_t* wave_datap = data.data();
-    int32_t n_samples = m_src_snd->wav.size();
-    float sample_rate = gFL->getFs();
-    if(sample_rate<6000.0)
+    // #388: Compute only the necessary values (and not all of the file)
+    //       Doing so, the dynamic prog result is not the same.
+    int64_t iskipfirst = std::min(int64_t(m_src_snd->wav.size()),std::max(int64_t(0),int64_t(fs*(tstart-10*timestepsize))));
+    int64_t iskiplast;
+    if(tend!=-1)
+        iskiplast = std::min(int64_t(m_src_snd->wav.size()),std::max(int64_t(0),int64_t(fs*(tend+10*timestepsize))));
+    else
+        iskiplast = m_src_snd->wav.size()-1;
+//    COUTD << iskipfirst << " " << iskiplast << endl;
+    double tiskipfirst = iskipfirst/fs; // First index of signal's segment which is analyzed.
+//    double tiskiplast = iskiplast/fs;
+//    COUTD << tiskipfirst << " " << tiskiplast << endl;
+    vector<int16_t> data(iskiplast-iskipfirst+1);
+    for(size_t i=0; i<data.size(); ++i)
+        data[i] = 32768*m_src_snd->wav[i+iskipfirst];
+//    COUTD << iskipfirst << " " << data.size() << endl;
+    if(fs<6000.0)
         QMessageBox::warning(gMW, "Problem during estimation of F0", "Sampling rate is smaller than 6kHz, which may create substantial estimation errors.");
 
     gMW->globalWaitingBarSetValue(2);
 
-    if (!et.Init(wave_datap, n_samples, sample_rate,
-          f0min, f0max, true, true))
+    if (!et.Init(data.data(), data.size(), fs, f0min, f0max, true, true))
         throw QString("EpochTracker initialisation failed");
 
     gMW->globalWaitingBarSetValue(3);
@@ -599,23 +608,27 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
     if (!et.ResampleAndReturnResults(timestepsize, &f0, &corr))
         throw QString("Cannot resample the results");
 
+    // Force clip the f0 values
+    for (size_t i=0; i<f0.size(); ++i)
+        if(f0[i]>0.0)
+            f0[i] = std::max(float(f0min),std::min(float(f0max),f0[i]));
+
     // Estimation is done, let's fill/replace the f0 curve
     if(tstart==-1 && tend==-1){
         // If time segment is undefined, clear replace everything
-        ts.clear();
+        ts.resize(f0.size());
+        for (size_t i=0; i<ts.size(); ++i)
+            ts[i] = timestepsize*i;
         f0s.clear();
-        for (size_t i=0; i<f0.size(); ++i) {
-            ts.push_back(timestepsize*i);
-            f0s.push_back(f0[i]);
-        }
+        f0s.insert(f0s.end(), f0.begin(), f0.end());
     }
     else{
         // Find where the former values are
         // (using log-time search)
         std::deque<double>::iterator itlb = std::lower_bound(ts.begin(), ts.end(), tstart);
         std::deque<double>::iterator ithb = std::upper_bound(ts.begin(), ts.end(), tend);
-        int first = itlb-ts.begin();
-        int last = ithb-ts.begin()-1;
+        int erasefirst = itlb-ts.begin();
+        int eraselast = ithb-ts.begin()-1;
 
 //        COUTD << last-first+1 << endl;
 
@@ -623,19 +636,19 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
 //            f0s[i] = 0.0;
 
         // Erase the former values
-        std::deque<double>::iterator tsl = ts.erase(ts.begin()+first, ts.begin()+last+1);
-        std::deque<double>::iterator f0sl = f0s.erase(f0s.begin()+first, f0s.begin()+last+1);
+        std::deque<double>::iterator tsl = ts.erase(ts.begin()+erasefirst, ts.begin()+eraselast+1);
+        std::deque<double>::iterator f0sl = f0s.erase(f0s.begin()+erasefirst, f0s.begin()+eraselast+1);
 
         // And insert the new values
 
         // Find the elements in the new values
-        int nitlb = std::ceil(tstart/timestepsize);
-        int nithb = std::floor(tend/timestepsize);
+        int nitlb = std::ceil((tstart-tiskipfirst)/timestepsize);
+        int nithb = std::floor((tend-tiskipfirst)/timestepsize);
 
         // Add the new times ...
         std::vector<double> nts(nithb-nitlb+1);
         for(size_t i=0; i<nts.size(); ++i)
-            nts[i] = timestepsize*(nitlb+i);
+            nts[i] = timestepsize*(nitlb+i) + tiskipfirst;
         ts.insert(tsl, nts.begin(), nts.end());
 //        ts.clear(); ts.insert(ts.end(), nts.begin(), nts.end());
 
