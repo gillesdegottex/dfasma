@@ -31,8 +31,6 @@ FilesListWidget::FilesListWidget(QMainWindow *parent)
 {
     gFL = this;
 
-//    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
-
     setSelectionMode(QAbstractItemView::ExtendedSelection);
     setDragDropMode(QAbstractItemView::InternalMove);
     setWordWrap(true);
@@ -557,10 +555,15 @@ void FilesListWidget::selectedFilesEstimateF0() {
 
     bool force = QGuiApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
 
-    for(int i=0; i<l.size(); i++) {
-        try {
-            FileType* currentfile = (FileType*)l.at(i);
+    // These progress dialogs HAVE to be built on the stack otherwise ghost dialogs appear.
+    QProgressDialog prgdlg("Estimating F0...", "Abort", 0, l.size(), this);
+    prgdlg.setMinimumDuration(500);
+    m_prgdlg = &prgdlg;
 
+    for(int i=0; i<l.size() && !m_prgdlg->wasCanceled(); i++) {
+        FileType* currentfile = (FileType*)l.at(i);
+
+        try {
             // If from a sound, generate a new F0 file
             if(currentfile->is(FileType::FTSOUND)){
                 FTFZero* ftf0 = new FTFZero(gFL, (FTSound*)currentfile, f0min, f0max, tstart, tend, force);
@@ -573,11 +576,20 @@ void FilesListWidget::selectedFilesEstimateF0() {
 
             gMW->m_gvSpectrogram->m_scene->update();
             gMW->m_gvAmplitudeSpectrum->m_scene->update();
+
+            m_prgdlg->setValue(i);
         }
         catch(QString err){
-            QMessageBox::warning(gMW, "Analysis of f0", "Estimation of the fundamental frequency failed for the following reason:\n"+err);
+            stopFileProgressDialog();
+            QMessageBox::StandardButton ret=QMessageBox::warning(gMW, "Error during F) estimation", "Estimation of the F0 of "+currentfile->visibleName+" failed for the following reason:\n"+err, QMessageBox::Ok | QMessageBox::Abort, QMessageBox::Ok);
+            if(ret==QMessageBox::Abort)
+                if(m_prgdlg)
+                    m_prgdlg->cancel();
         }
     }
+
+    stopFileProgressDialog();
+    m_prgdlg = NULL;
 
     gMW->updateWindowTitle();
 }

@@ -127,7 +127,7 @@ FTLabels::ClassConstructor::ClassConstructor(){
         FTLabels::s_formatstrings.push_back("Text - Time Text (*.lab)");
         FTLabels::s_formatstrings.push_back("Text - Segment [float] (*.lab)");
         FTLabels::s_formatstrings.push_back("Text - Segment [samples] (*.lab)");
-        FTLabels::s_formatstrings.push_back("HTK Label File (*.lab)");
+        FTLabels::s_formatstrings.push_back("Text - HTK Label File (*.lab)");
         FTLabels::s_formatstrings.push_back("SDIF - 1MRK/1LAB (*.sdif)");
     }
 }
