@@ -67,7 +67,7 @@ build_script:
   - set PATH=%PATH%;C:\Qt\Tools\QtCreator\bin
   - C:\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release
   - ps: Get-ChildItem release
-  - ps: .\distrib\package_appveyor_Win64bit.ps1
+  - ps: '.\distrib\package_appveyor_Win64bit.ps1'
   - ps: Get-ChildItem distrib
 
 artifacts:
