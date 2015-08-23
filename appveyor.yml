@@ -48,7 +48,7 @@ install:
   
 # For packaging
   - appveyor DownloadFile http://www.jrsoftware.org/download.php/is.exe
-  - is.exe
+  - is.exe /SP- /VERYSILENT /NORESTART /SUPPRESSMSGBOXES
 
   - echo %CD%
   
