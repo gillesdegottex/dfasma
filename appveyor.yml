@@ -34,6 +34,10 @@ install:
 #  - ps: cd libsndfile-1.0.25-w32
 #  - echo %CD%
 # TODO Replace with original
+  - appveyor DownloadFile http://www.mega-nerd.com/libsndfile/files/libsndfile-1.0.25-w64-setup.exe
+  - ps: libsndfile-1.0.25-w64-setup.exe
+  - ps: Get-ChildItem "C:\Program Files\Mega-Nerd\libsndfile"
+
   - appveyor DownloadFile http://gillesdegottex.eu/libsndfile-1.0.25-w64.zip
   - ps: 7z x libsndfile-1.0.25-w64.zip -y
 #  - ps: lib /MACHINE:X86 /def:libfftw3-3.def # Needed only for MSVC (lib is still unrecognized command)
