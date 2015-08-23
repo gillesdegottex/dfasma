@@ -68,10 +68,10 @@ build_script:
   - C:\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release
   - ps: Get-ChildItem release
   - ps: .\distrib\package_appveyor_Win64bit.sh
-  - ps: Get-ChildItem .
+  - ps: Get-ChildItem distrib
 
 artifacts:
   - path: release/dfasma.exe
-  - path: DFasma-*-Win64bit.exe
+  - path: distrib/DFasma-*-Win64bit.exe
   
   
