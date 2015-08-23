@@ -35,7 +35,6 @@ install:
 #  - echo %CD%
 # TODO Replace with original
   - appveyor DownloadFile http://www.mega-nerd.com/libsndfile/files/libsndfile-1.0.25-w64-setup.exe
-  - ps: Get-ChildItem .
   - libsndfile-1.0.25-w64-setup.exe /s
   - ps: Get-ChildItem "C:\Program Files\Mega-Nerd\libsndfile"
 
