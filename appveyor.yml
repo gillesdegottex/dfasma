@@ -19,7 +19,7 @@ install:
 
   - ps: New-Item -ItemType directory -Name lib | Out-String
   - ps: cd lib
-  
+
   - ps: New-Item -ItemType directory -Name fftw-3.3.4-dll64 | Out-String
   - ps: cd fftw-3.3.4-dll64
 #  - echo %CD%
@@ -66,14 +66,13 @@ build_script:
   - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\dfasma\lib\libsndfile-1.0.25-w64" "FFT_LIBDIR=C:\projects\dfasma\lib\fftw-3.3.4-dll64" dfasma.pro
   - set PATH=%PATH%;C:\Qt\Tools\QtCreator\bin
   - C:\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release
-  
+
 # Build package
-  - ps: Get-ChildItem release
+#  - ps: Get-ChildItem release
   - ps: '.\distrib\package_appveyor_Win64bit.ps1'
   - ps: Get-ChildItem distrib
 
 artifacts:
-  - path: release\dfasma.exe
   - path: distrib\DFasma-*-Win*bit.exe
   
   
