@@ -72,6 +72,6 @@ build_script:
 
 artifacts:
   - path: release\dfasma.exe
-  - path: distrib\DFasma-*-Win64bit.exe
+  - path: distrib\DFasma-*-Win*bit.exe
   
   
