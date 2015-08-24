@@ -24,11 +24,11 @@ cd $PACKAGENAME
 #export PATH=\C$QTPATH\bin:$PATH
 #echo $PATH
 $env:Path += ";C:\$QTPATH\bin"
-c:$QTPATH\bin\windeployqt.exe --no-translations dfasma.exe
+& c:$QTPATH\bin\windeployqt.exe --no-translations dfasma.exe
 cd ..
 
 # Add the MSVC redistribution installer
-Get-ChildItem c:\Qt\vcredist
+#Get-ChildItem c:\Qt\vcredist
 Copy-Item c:\Qt\vcredist\vcredist_sp1_x64.exe $PACKAGENAME
 
 # Add the translations
