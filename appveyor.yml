@@ -33,7 +33,7 @@ install:
   - ps: cd $libfftfile
 #  - echo %CD%
 
-  - ps: Invoke-WebRequest "ftp://ftp.fftw.org/pub/fftw/$libfftfile.zip"
+  - ps: Invoke-WebRequest "ftp://ftp.fftw.org/pub/fftw/$libfftfile.zip" -OutFile "$libfftfile.zip"
   - ps: Get-ChildItem .
 #  - appveyor DownloadFile "ftp://ftp.fftw.org/pub/fftw/$libfftfile.zip"
   - ps: 7z x "$libfftfile.zip" -y
