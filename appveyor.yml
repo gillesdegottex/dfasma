@@ -32,7 +32,9 @@ install:
   - ps: New-Item -ItemType directory -Name $libfftfile | Out-Null
   - ps: cd $libfftfile
 #  - echo %CD%
-  - appveyor DownloadFile "ftp://ftp.fftw.org/pub/fftw/$libfftfile.zip"
+
+  - ps: Invoke-WebRequest "ftp://ftp.fftw.org/pub/fftw/$libfftfile.zip"
+#  - appveyor DownloadFile "ftp://ftp.fftw.org/pub/fftw/$libfftfile.zip"
   - ps: 7z x $libfftfile.zip -y
   - ps: if ($env:platform -eq 'x64') {lib /machine:x64 /def:libfftw3-3.def}
   - ps: if ($env:platform -eq 'x86') {lib /machine:x86 /def:libfftw3-3.def}
