@@ -3,7 +3,7 @@ $VERSION = (git describe --tags --always) | Out-String
 echo "Version: $VERSION"
 
 $PACKAGENAME = "DFasma-$VERSION-Win64bit"
-$QTPATH=\Qt\5.4\msvc2013_64_opengl
+$QTPATH = "/Qt/5.4/msvc2013_64_opengl"
 
 echo Packaging $PACKAGENAME
 echo " "
