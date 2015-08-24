@@ -19,7 +19,7 @@ install:
 #  - ps: Get-ChildItem .
   - ps: if ($env:platform -eq 'x64') {$vcplatform = "amd64"}
   - ps: if ($env:platform -eq 'x86') {$vcplatform = "x86"}
-  - ps: echo $env:vcplatform
+  - ps: echo $vcplatform
   - cmd: vcvarsall %vcplatform%
   - ps: cd "C:\projects\dfasma"
 
