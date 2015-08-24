@@ -9,7 +9,9 @@ $QTPATH = "\Qt\5.4\msvc2013_64_opengl"
 echo "Packaging $PACKAGENAME"
 echo " "
 
-New-Item -ItemType directory -Name $PACKAGENAME
+cd distrib
+
+New-Item -ItemType directory -Name $PACKAGENAME | Out-Null
 
 # Add the executable
 Copy-Item c:\projects\dfasma\release\dfasma.exe $PACKAGENAME
