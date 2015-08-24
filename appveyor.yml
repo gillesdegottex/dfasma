@@ -26,12 +26,15 @@ install:
   - ps: New-Item -ItemType directory -Name lib | Out-Null
   - ps: cd lib
 
-  - ps: New-Item -ItemType directory -Name fftw-3.3.4-dll64 | Out-Null
-  - ps: cd fftw-3.3.4-dll64
+  - ps: if ($env:platform -eq 'x64') {$libfftfile = "fftw-3.3.4-dll64"}
+  - ps: if ($env:platform -eq 'x86') {$libfftfile = "fftw-3.3.4-dll32"}
+  - ps: New-Item -ItemType directory -Name $libfftfile | Out-Null
+  - ps: cd $libfftfile
 #  - echo %CD%
-  - appveyor DownloadFile ftp://ftp.fftw.org/pub/fftw/fftw-3.3.4-dll64.zip
-  - ps: 7z x fftw-3.3.4-dll64.zip -y
-  - ps: lib /machine:x64 /def:libfftw3-3.def
+  - appveyor DownloadFile ftp://ftp.fftw.org/pub/fftw/$libfftfile.zip
+  - ps: 7z x $libfftfile.zip -y
+  - ps: if ($env:platform -eq 'x64') {lib /machine:x64 /def:libfftw3-3.def}
+  - ps: if ($env:platform -eq 'x86') {lib /machine:x86 /def:libfftw3-3.def}
   - ps: Get-ChildItem .
   - ps: cd ..
 #  - ps: Get-ChildItem C:\projects\dfasma\lib\fftw-3.3.4-dll32
