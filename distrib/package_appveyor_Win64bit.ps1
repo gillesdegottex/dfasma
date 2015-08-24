@@ -39,4 +39,4 @@ Copy-Item c:\Qt\vcredist\vcredist_sp1_x64.exe $PACKAGENAME
 
 #"C:/Program Files (x86)/Inno Setup 5/ISCC"
 
-& "C:\Program Files (x86)\Inno Setup 5\ISCC.exe" /o. /dMyAppVersion=$VERSION DFasma_MSVC2012_OpenGL_Win64bit.iss
+& "c:\Program Files (x86)\Inno Setup 5\ISCC.exe" /o. /dMyAppVersion=$VERSION DFasma_MSVC2012_OpenGL_Win64bit.iss
