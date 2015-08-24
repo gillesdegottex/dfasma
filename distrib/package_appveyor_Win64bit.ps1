@@ -1,6 +1,6 @@
 #http://doc.qt.io/qt-5/windows-deployment.html
 $VERSION = (git describe --tags --always) | Out-String
-$VERSION -replace "`n|`r"
+$VERSION = $VERSION -replace "`n|`r"
 echo "Version: $VERSION"
 
 $PACKAGENAME = "DFasma-$VERSION-Win64bit"
@@ -19,16 +19,17 @@ Copy-Item c:\projects\dfasma\lib\fftw-3.3.4-dll64\libfftw3-3.dll $PACKAGENAME
 Copy-Item c:\projects\dfasma\lib\libsndfile-1.0.25-w64\bin\libsndfile-1.dll $PACKAGENAME
 
 # Add the Qt related libs
-cd $PACKAGENAME\
+cd $PACKAGENAME
 #C:/Qt/5.2.1/msvc2012_64_opengl/bin/qtenv2.bat
 #export PATH=\C$QTPATH\bin:$PATH
 #echo $PATH
-$env:Path += ";\C$QTPATH\bin"
+$env:Path += ";C:\$QTPATH\bin"
 c:$QTPATH\bin\windeployqt.exe --no-translations dfasma.exe
 cd ..
 
 # Add the MSVC redistribution installer
-cp C:\Qt\vcredist\vcredist_sp1_x64.exe $PACKAGENAME\
+Get-ChildItem c:\Qt\vcredist
+Copy-Item c:\Qt\vcredist\vcredist_sp1_x64.exe $PACKAGENAME
 
 # Add the translations
 # mkdir $PACKAGENAME/tr
