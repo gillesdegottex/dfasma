@@ -35,9 +35,8 @@ install:
 
   - ps: Invoke-WebRequest "ftp://ftp.fftw.org/pub/fftw/$libfftfile.zip"
 #  - appveyor DownloadFile "ftp://ftp.fftw.org/pub/fftw/$libfftfile.zip"
-  - ps: 7z x $libfftfile.zip -y
-  - ps: if ($env:platform -eq 'x64') {lib /machine:x64 /def:libfftw3-3.def}
-  - ps: if ($env:platform -eq 'x86') {lib /machine:x86 /def:libfftw3-3.def}
+  - ps: 7z x "$libfftfile.zip" -y
+  - ps: lib /machine:$env:platform /def:libfftw3-3.def}
   - ps: Get-ChildItem .
   - ps: cd ..
 #  - ps: Get-ChildItem C:\projects\dfasma\lib\fftw-3.3.4-dll32
