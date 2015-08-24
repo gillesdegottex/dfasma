@@ -9,8 +9,8 @@ configuration:
 
 install:
   - ps: echo $env:platform
-  - ps: if ($env:platform -eq 'x64') {$env:QTDIR = c:\Qt\5.4\msvc2013_64_opengl}
-  - ps: if ($env:platform -eq 'x86') {$env:QTDIR = c:\Qt\5.4\msvc2013_opengl}
+  - ps: if ($env:platform -eq 'x64') {$env:QTDIR = "C:\Qt\5.4\msvc2013_64_opengl"}
+  - ps: if ($env:platform -eq 'x86') {$env:QTDIR = "C:\Qt\5.4\msvc2013_opengl"}
   - ps: Get-ChildItem C:\Qt\5.4
   - set PATH=%PATH%;%QTDIR%\bin
   
