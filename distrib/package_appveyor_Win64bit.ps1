@@ -2,13 +2,13 @@
 $VERSION = (git describe --tags --always) | Out-String
 echo "Version: $VERSION"
 
-$PACKAGENAME = "DFasma-${VERSION}-Win64bit"
+$PACKAGENAME = "DFasma-$VERSION`-Win64bit"
 $QTPATH = "\Qt\5.4\msvc2013_64_opengl"
 
 echo "Packaging $PACKAGENAME"
 echo " "
 
-mkdir $PACKAGENAME
+New-Item -ItemType directory -Name $PACKAGENAME
 
 # Add the executable
 cp release\dfasma.exe $PACKAGENAME\
