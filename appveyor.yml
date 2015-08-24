@@ -37,7 +37,7 @@ install:
   - ps: Get-ChildItem .
 #  - appveyor DownloadFile "ftp://ftp.fftw.org/pub/fftw/$libfftfile.zip"
   - ps: 7z x "$libfftfile.zip" -y
-  - ps: lib /machine:$env:platform /def:libfftw3-3.def}
+  - ps: lib /machine:$env:platform /def:libfftw3-3.def
   - ps: Get-ChildItem .
   - ps: cd ..
 #  - ps: Get-ChildItem C:\projects\dfasma\lib\fftw-3.3.4-dll32
