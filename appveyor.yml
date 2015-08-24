@@ -17,10 +17,10 @@ install:
   - cmd: vcvarsall amd64
   - ps: cd "C:\projects\dfasma"
 
-  - ps: New-Item -ItemType directory -Name lib | Out-String
+  - ps: New-Item -ItemType directory -Name lib | Out-Null
   - ps: cd lib
 
-  - ps: New-Item -ItemType directory -Name fftw-3.3.4-dll64 | Out-String
+  - ps: New-Item -ItemType directory -Name fftw-3.3.4-dll64 | Out-Null
   - ps: cd fftw-3.3.4-dll64
 #  - echo %CD%
   - appveyor DownloadFile ftp://ftp.fftw.org/pub/fftw/fftw-3.3.4-dll64.zip
