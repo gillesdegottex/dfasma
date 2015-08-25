@@ -21,8 +21,9 @@ install:
   - ps: if ($env:platform -eq 'x86') {$vcplatform = "x86"}
   - ps: echo $vcplatform
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  - cmd: if $env:platform EQU x64 ECHO "It is 64b"
-  - cmd: if $env:platform EQU x86 ECHO "It is 32b"
+  - cmd: echo %env:platform%
+  - cmd: if %env:platform% EQU x64 ECHO "It is 64b"
+  - cmd: if %env:platform% EQU x86 ECHO "It is 32b"
   - cmd: vcvarsall %vcplatform%
 #  - ps: "& .\\vcvarsall.bat $vcplatform"
   - ps: cd "C:\projects\dfasma"
