@@ -22,7 +22,7 @@ install:
   - ps: echo $vcplatform
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #  - cmd: vcvarsall %vcplatform%
-  - ps: "& c:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat $vcplatform"
+  - ps: "& 'c:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat' $vcplatform"
   - ps: cd "C:\projects\dfasma"
 
   - ps: New-Item -ItemType directory -Name lib | Out-Null
