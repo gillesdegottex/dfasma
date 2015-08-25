@@ -78,7 +78,7 @@ install:
 build_script:
   - ps: echo $libfftfile $libsndfile
 #  - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\Program Files\Mega-Nerd\libsndfile" "FFT_LIBDIR=C:\projects\dfasma\lib\fftw-3.3.4-dll64" dfasma.pro
-  - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\dfasma\lib\$libsndfile" "FFT_LIBDIR=C:\projects\dfasma\lib\$libfftfile" dfasma.pro
+  - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\dfasma\lib\%libsndfile%" "FFT_LIBDIR=C:\projects\dfasma\lib\%libfftfile%" dfasma.pro
   - set PATH=%PATH%;C:\Qt\Tools\QtCreator\bin
   - C:\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release
 
