@@ -27,13 +27,13 @@ install:
   - ps: New-Item -ItemType directory -Name lib | Out-Null
   - ps: cd lib
 
+  - ps: echo "Install FFTW3"
   - ps: if ($env:platform -eq 'x64') {$libfftfile = "fftw-3.3.4-dll64"}
   - ps: if ($env:platform -eq 'x86') {$libfftfile = "fftw-3.3.4-dll32"}
   - ps: echo $libfftfile
   - ps: New-Item -ItemType directory -Name $libfftfile | Out-Null
   - ps: cd $libfftfile
 #  - echo %CD%
-
   - ps: Invoke-WebRequest "ftp://ftp.fftw.org/pub/fftw/$libfftfile.zip" -OutFile "$libfftfile.zip"
   - ps: Get-ChildItem .
 #  - appveyor DownloadFile "ftp://ftp.fftw.org/pub/fftw/$libfftfile.zip"
@@ -45,6 +45,7 @@ install:
 #  - ps: Get-ChildItem C:\projects\dfasma\lib\fftw-3.3.4-dll32
 #  - ps: lib /MACHINE:X86 /def:libfftw3-3.def # Needed only for MSVC (lib is still unrecognized command)
 
+  - ps: echo "Install libsndfile"
 #  - ps: New-Item -ItemType directory -Name libsndfile-1.0.25-w32
 #  - ps: cd libsndfile-1.0.25-w32
 #  - echo %CD%
@@ -52,7 +53,6 @@ install:
 #  - appveyor DownloadFile http://www.mega-nerd.com/libsndfile/files/libsndfile-1.0.25-w64-setup.exe
 #  - libsndfile-1.0.25-w64-setup.exe /s
 #  - ps: Get-ChildItem "C:\Program Files\Mega-Nerd\libsndfile"
-
   - ps: if ($env:platform -eq 'x64') {$libsndfile = "libsndfile-1.0.25-w64"}
   - ps: if ($env:platform -eq 'x86') {$libsndfile = "libsndfile-1.0.25-w32"}
   - ps: Invoke-WebRequest "http://gillesdegottex.eu/$libsndfile.zip" -OutFile "$libsndfile.zip"
@@ -71,7 +71,7 @@ install:
 #  - is.exe /SP- /VERYSILENT /NORESTART /SUPPRESSMSGBOXES
 #     From Choco
   - choco install -y InnoSetup
-  - ps: Get-ChildItem "C:\Program Files (x86)\Inno Setup 5"
+#  - ps: Get-ChildItem "C:\Program Files (x86)\Inno Setup 5"
 
   - echo %CD%
   
