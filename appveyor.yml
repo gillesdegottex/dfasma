@@ -8,29 +8,42 @@ configuration:
   - Release
 
 install:
-  - set QTDIR=C:\Qt\5.4\msvc2013_64_opengl
+  - ps: echo $env:platform
+  - ps: if ($env:platform -eq 'x64') {$env:QTDIR = "C:\Qt\5.4\msvc2013_64_opengl"}
+  - ps: if ($env:platform -eq 'x86') {$env:QTDIR = "C:\Qt\5.4\msvc2013_opengl"}
+  - ps: echo $env:QTDIR
   - ps: Get-ChildItem C:\Qt\5.4
   - set PATH=%PATH%;%QTDIR%\bin
   
   - ps: cd "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC"
 #  - ps: Get-ChildItem .
-  - cmd: vcvarsall amd64
+  - cmd: if "%PLATFORM%" == "x64" call vcvarsall.bat amd64
+  - cmd: if "%PLATFORM%" == "x86" call vcvarsall.bat x86
+#  - cmd: vcvarsall amd64
   - ps: cd "C:\projects\dfasma"
 
-  - ps: New-Item -ItemType directory -Name lib
+  - ps: New-Item -ItemType directory -Name lib | Out-Null
   - ps: cd lib
-  
-  - ps: New-Item -ItemType directory -Name fftw-3.3.4-dll64
-  - ps: cd fftw-3.3.4-dll64
+
+  - ps: echo "Install FFTW3"
+  - ps: if ($env:platform -eq 'x64') {$libfftfile = "fftw-3.3.4-dll64"}
+  - ps: if ($env:platform -eq 'x86') {$libfftfile = "fftw-3.3.4-dll32"}
+  - ps: echo $libfftfile
+  - ps: New-Item -ItemType directory -Name $libfftfile | Out-Null
+  - ps: cd $libfftfile
 #  - echo %CD%
-  - appveyor DownloadFile ftp://ftp.fftw.org/pub/fftw/fftw-3.3.4-dll64.zip
-  - ps: 7z x fftw-3.3.4-dll64.zip -y
-  - ps: lib /machine:x64 /def:libfftw3-3.def
+  - ps: Invoke-WebRequest "ftp://ftp.fftw.org/pub/fftw/$libfftfile.zip" -OutFile "$libfftfile.zip"
+  - ps: Get-ChildItem .
+#  - appveyor DownloadFile "ftp://ftp.fftw.org/pub/fftw/$libfftfile.zip"
+  - ps: 7z x "$libfftfile.zip" -y
+  - ps: lib /machine:$env:platform /def:libfftw3-3.def
   - ps: Get-ChildItem .
   - ps: cd ..
+  - ps: Move-Item "$libfftfile" libfftfile
 #  - ps: Get-ChildItem C:\projects\dfasma\lib\fftw-3.3.4-dll32
 #  - ps: lib /MACHINE:X86 /def:libfftw3-3.def # Needed only for MSVC (lib is still unrecognized command)
 
+  - ps: echo "Install libsndfile"
 #  - ps: New-Item -ItemType directory -Name libsndfile-1.0.25-w32
 #  - ps: cd libsndfile-1.0.25-w32
 #  - echo %CD%
@@ -38,11 +51,13 @@ install:
 #  - appveyor DownloadFile http://www.mega-nerd.com/libsndfile/files/libsndfile-1.0.25-w64-setup.exe
 #  - libsndfile-1.0.25-w64-setup.exe /s
 #  - ps: Get-ChildItem "C:\Program Files\Mega-Nerd\libsndfile"
-
-  - appveyor DownloadFile http://gillesdegottex.eu/libsndfile-1.0.25-w64.zip
-  - ps: 7z x libsndfile-1.0.25-w64.zip -y
+  - ps: if ($env:platform -eq 'x64') {$libsndfile = "libsndfile-1.0.25-w64"}
+  - ps: if ($env:platform -eq 'x86') {$libsndfile = "libsndfile-1.0.25-w32"}
+  - ps: Invoke-WebRequest "http://gillesdegottex.eu/$libsndfile.zip" -OutFile "$libsndfile.zip"
+  - ps: 7z x "$libsndfile.zip" -y
+  - ps: Move-Item "$libsndfile" libsndfile
 #  - ps: lib /MACHINE:X86 /def:libfftw3-3.def # Needed only for MSVC (lib is still unrecognized command)
-#  - ps: Get-ChildItem C:\projects\dfasma\lib\libsndfile-1.0.25-w32
+#  - ps: Get-ChildItem "c:\projects\dfasma\lib\$libsndfile"
 
 # Leave lib folder
   - ps: cd ..
@@ -54,7 +69,7 @@ install:
 #  - is.exe /SP- /VERYSILENT /NORESTART /SUPPRESSMSGBOXES
 #     From Choco
   - choco install -y InnoSetup
-  - ps: Get-ChildItem "C:\Program Files (x86)\Inno Setup 5"
+#  - ps: Get-ChildItem "C:\Program Files (x86)\Inno Setup 5"
 
   - echo %CD%
   
@@ -63,15 +78,19 @@ install:
 
 build_script:
 #  - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\Program Files\Mega-Nerd\libsndfile" "FFT_LIBDIR=C:\projects\dfasma\lib\fftw-3.3.4-dll64" dfasma.pro
-  - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\dfasma\lib\libsndfile-1.0.25-w64" "FFT_LIBDIR=C:\projects\dfasma\lib\fftw-3.3.4-dll64" dfasma.pro
+  - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\dfasma\lib\libsndfile" "FFT_LIBDIR=C:\projects\dfasma\lib\libfftfile" dfasma.pro
   - set PATH=%PATH%;C:\Qt\Tools\QtCreator\bin
   - C:\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release
-  - ps: Get-ChildItem release
+
+# Build package
+  - ps: Get-ChildItem c:\projects\dfasma\lib
+  - ps: Get-ChildItem c:\projects\dfasma\lib\libsndfile
+  - ps: Get-ChildItem c:\projects\dfasma\lib\libfftfile
+#  - ps: Get-ChildItem release
   - ps: '.\distrib\package_appveyor_Win64bit.ps1'
   - ps: Get-ChildItem distrib
 
 artifacts:
-  - path: release\dfasma.exe
-  - path: distrib\DFasma-*-Win64bit.exe
+  - path: distrib\DFasma-*-Win*bit.exe
   
   

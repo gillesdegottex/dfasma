@@ -1,32 +1,37 @@
 #http://doc.qt.io/qt-5/windows-deployment.html
 $VERSION = (git describe --tags --always) | Out-String
+$VERSION = $VERSION -replace "`n|`r"
 echo "Version: $VERSION"
 
-PACKAGENAME=DFasma-$VERSION-Win64bit
-QTPATH=/Qt/5.4/msvc2013_64_opengl
+$PACKAGENAME = "DFasma-$VERSION-Win64bit"
+$QTPATH = "\Qt\5.4\msvc2013_64_opengl"
 
-echo Packaging $PACKAGENAME
+echo "Packaging $PACKAGENAME"
 echo " "
 
-mkdir $PACKAGENAME
+cd distrib
+
+New-Item -ItemType directory -Name $PACKAGENAME | Out-Null
 
 # Add the executable
-cp release/dfasma.exe $PACKAGENAME/
+Copy-Item c:\projects\dfasma\release\dfasma.exe $PACKAGENAME
 
 # Add libraries
-cp lib/fftw-3.3.4-dll64/libfftw3-3.dll $PACKAGENAME/
-cp lib/libsndfile-1.0.25-w64/bin/libsndfile-1.dll $PACKAGENAME/
+Copy-Item c:\projects\dfasma\lib\libfftfile\libfftw3-3.dll $PACKAGENAME
+Copy-Item c:\projects\dfasma\lib\libsndfile\bin\libsndfile-1.dll $PACKAGENAME
 
 # Add the Qt related libs
-cd $PACKAGENAME/
+cd $PACKAGENAME
 #C:/Qt/5.2.1/msvc2012_64_opengl/bin/qtenv2.bat
-export PATH=/C$QTPATH/bin:$PATH
-echo $PATH
-C:$QTPATH/bin/windeployqt.exe --no-translations dfasma.exe
+#export PATH=\C$QTPATH\bin:$PATH
+#echo $PATH
+$env:Path += ";C:\$QTPATH\bin"
+& c:$QTPATH\bin\windeployqt.exe --no-translations dfasma.exe
 cd ..
 
 # Add the MSVC redistribution installer
-cp C:/Qt/vcredist/vcredist_sp1_x64.exe $PACKAGENAME/
+#Get-ChildItem c:\Qt\vcredist
+#Copy-Item c:\Qt\vcredist\vcredist_sp1_x64.exe $PACKAGENAME
 
 # Add the translations
 # mkdir $PACKAGENAME/tr
@@ -36,4 +41,7 @@ cp C:/Qt/vcredist/vcredist_sp1_x64.exe $PACKAGENAME/
 
 #"C:/Program Files (x86)/Inno Setup 5/ISCC"
 
-& "C:/Program Files (x86)/Inno Setup 5/ISCC.exe" /o. /dMyAppVersion=$VERSION "DFasma_MSVC2012_OpenGL_Win64bit.iss"
+& "c:\Program Files (x86)\Inno Setup 5\ISCC.exe" /o. /dMyAppVersion=$VERSION c:\projects\dfasma\distrib\DFasma_MSVC2012_OpenGL_Win64bit.iss
+
+# Get out of distrib
+cd ..
