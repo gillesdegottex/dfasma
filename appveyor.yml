@@ -86,7 +86,7 @@ build_script:
 # Build package
   - ps: Get-ChildItem c:\projects\dfasma\lib
   - ps: Get-ChildItem c:\projects\dfasma\lib\libsndfile
-  - ps: Get-ChildItem c:\projects\dfasma\lib\libfftwfile
+  - ps: Get-ChildItem c:\projects\dfasma\lib\libfftfile
 #  - ps: Get-ChildItem release
   - ps: '.\distrib\package_appveyor_Win64bit.ps1'
   - ps: Get-ChildItem distrib
