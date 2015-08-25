@@ -31,7 +31,7 @@ cd ..
 
 # Add the MSVC redistribution installer
 #Get-ChildItem c:\Qt\vcredist
-Copy-Item c:\Qt\vcredist\vcredist_sp1_x64.exe $PACKAGENAME
+#Copy-Item c:\Qt\vcredist\vcredist_sp1_x64.exe $PACKAGENAME
 
 # Add the translations
 # mkdir $PACKAGENAME/tr
