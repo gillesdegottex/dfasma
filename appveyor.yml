@@ -21,10 +21,8 @@ install:
   - ps: if ($env:platform -eq 'x86') {$vcplatform = "x86"}
   - ps: echo $vcplatform
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  - cmd: ECHO "%PLATFORM%"
-  - cmd: ECHO "%APPVEYOR_BUILD_NUMBER%"
-  - cmd: if "%vcplatform%" == "amd64" vcvarsall amd64
-  - cmd: if "%vcplatform%" == "x86" vcvarsall x86
+  - cmd: if "%PLATFORM%" == "x64" vcvarsall amd64
+  - cmd: if "%PLATFORM%" == "x86" vcvarsall x86
 #  - cmd: vcvarsall %vcplatform%
 #  - ps: "& .\\vcvarsall.bat $vcplatform"
   - ps: cd "C:\projects\dfasma"
