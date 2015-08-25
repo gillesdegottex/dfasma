@@ -56,7 +56,7 @@ install:
   - ps: Invoke-WebRequest "http://gillesdegottex.eu/$libsndfile.zip" -OutFile "$libsndfile.zip"
   - ps: 7z x "$libsndfile.zip" -y
 #  - ps: lib /MACHINE:X86 /def:libfftw3-3.def # Needed only for MSVC (lib is still unrecognized command)
-#  - ps: Get-ChildItem C:\projects\dfasma\lib\libsndfile-1.0.25-w32
+  - ps: Get-ChildItem "c:\projects\dfasma\lib\$libsndfile"
 
 # Leave lib folder
   - ps: cd ..
