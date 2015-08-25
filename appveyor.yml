@@ -21,7 +21,7 @@ install:
   - ps: if ($env:platform -eq 'x86') {$vcplatform = "x86"}
   - ps: echo $vcplatform
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  - cmd: vcvarsall amd64
+  - cmd: vcvarsall "$vcplatform"
   - ps: cd "C:\projects\dfasma"
 
   - ps: New-Item -ItemType directory -Name lib | Out-Null
