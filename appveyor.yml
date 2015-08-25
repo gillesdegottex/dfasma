@@ -9,9 +9,9 @@ configuration:
 
 environment:
   matrix:
-  - platform: x86
+  - Platform: x86
     flupflop: "x86"
-  - platform: x64
+  - Platform: x64
     flupflop: "x64"
 
 install:
