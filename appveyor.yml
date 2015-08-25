@@ -23,7 +23,8 @@ install:
   - cmd: ECHO "%PLATFORM%"
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   - cmd: if "%PLATFORM%" == "x64" ECHO "64b"
-#  vcvarsall amd64
+  - cmd: if "%PLATFORM%" == "x64" call vcvarsall.bat amd64
+#  
   - cmd: if "%PLATFORM%" == "x86" ECHO "32b"
 #  vcvarsall x86
 #  - cmd: vcvarsall %vcplatform%
