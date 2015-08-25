@@ -7,7 +7,15 @@ platform:
 configuration:
   - Release
 
+environment:
+  matrix:
+  - platform: x86
+    flupflop: "x86"
+  - platform: x64
+    flupflop: "x64"
+
 install:
+  - ps: echo $flupflop
   - ps: echo $env:platform
   - ps: if ($env:platform -eq 'x64') {$env:QTDIR = "C:\Qt\5.4\msvc2013_64_opengl"}
   - ps: if ($env:platform -eq 'x86') {$env:QTDIR = "C:\Qt\5.4\msvc2013_opengl"}
