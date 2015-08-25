@@ -22,6 +22,7 @@ install:
   - ps: echo $vcplatform
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   - cmd: ECHO "%vcplatform%"
+  - cmd: ECHO "%APPVEYOR_BUILD_NUMBER%"
   - cmd: if "%vcplatform%" == "amd64" vcvarsall amd64
   - cmd: if "%vcplatform%" == "x86" vcvarsall x86
 #  - cmd: vcvarsall %vcplatform%
