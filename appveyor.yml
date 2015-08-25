@@ -1,7 +1,7 @@
 os: Windows Server 2012 R2
 
 platform:
-  - x86
+#  - x86
   - x64
 
 configuration:
@@ -84,6 +84,9 @@ build_script:
   - C:\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release
 
 # Build package
+  - ps: Get-ChildItem c:\projects\dfasma\lib
+  - ps: Get-ChildItem c:\projects\dfasma\lib\libsndfile
+  - ps: Get-ChildItem c:\projects\dfasma\lib\libfftwfile
 #  - ps: Get-ChildItem release
   - ps: '.\distrib\package_appveyor_Win64bit.ps1'
   - ps: Get-ChildItem distrib
