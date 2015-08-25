@@ -40,6 +40,7 @@ install:
   - ps: lib /machine:$env:platform /def:libfftw3-3.def
   - ps: Get-ChildItem .
   - ps: cd ..
+  - ps: Move-Item "$libfftfile" libfftfile
 #  - ps: Get-ChildItem C:\projects\dfasma\lib\fftw-3.3.4-dll32
 #  - ps: lib /MACHINE:X86 /def:libfftw3-3.def # Needed only for MSVC (lib is still unrecognized command)
 
@@ -55,6 +56,7 @@ install:
   - ps: if ($env:platform -eq 'x86') {$libsndfile = "libsndfile-1.0.25-w32"}
   - ps: Invoke-WebRequest "http://gillesdegottex.eu/$libsndfile.zip" -OutFile "$libsndfile.zip"
   - ps: 7z x "$libsndfile.zip" -y
+  - ps: Move-Item "$libsndfile" libsndfile
 #  - ps: lib /MACHINE:X86 /def:libfftw3-3.def # Needed only for MSVC (lib is still unrecognized command)
 #  - ps: Get-ChildItem "c:\projects\dfasma\lib\$libsndfile"
 
@@ -76,13 +78,8 @@ install:
 #  - ps: cd ..
 
 build_script:
-  - ps: echo $libfftfile $libsndfile
-  - ps: $AUDIODIR = "FILE_AUDIO_LIBDIR=C:\projects\dfasma\lib\$libsndfile"
-  - ps: echo $AUDIODIR
-  - ps: $FFTDIR = "FFT_LIBDIR=C:\projects\dfasma\lib\$libfftfile"
-  - ps: echo $FFTDIR
 #  - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\Program Files\Mega-Nerd\libsndfile" "FFT_LIBDIR=C:\projects\dfasma\lib\fftw-3.3.4-dll64" dfasma.pro
-  - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\FLOP\%libsndfile%" dfasma.pro
+  - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\dfasma\lib\libsndfile" "FFT_LIBDIR=C:\projects\dfasma\lib\libfftfile" dfasma.pro
   - set PATH=%PATH%;C:\Qt\Tools\QtCreator\bin
   - C:\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release
 
