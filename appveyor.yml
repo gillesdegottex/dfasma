@@ -7,13 +7,6 @@ platform:
 configuration:
   - Release
 
-environment:
-  matrix:
-  - Platform: x86
-    flupflop: "x86"
-  - Platform: x64
-    flupflop: "x64"
-
 install:
   - ps: echo $flupflop
   - ps: echo $env:platform
