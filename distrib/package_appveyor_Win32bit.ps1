@@ -3,7 +3,7 @@ $VERSION = (git describe --tags --always) | Out-String
 $VERSION = $VERSION -replace "`n|`r"
 echo "Version: $VERSION"
 
-$PACKAGENAME = "DFasma-$VERSION-Win64bit"
+$PACKAGENAME = "DFasma-$VERSION-Win32bit"
 $QTPATH = "\Qt\5.4\msvc2013_opengl"
 
 echo "Packaging $PACKAGENAME"
