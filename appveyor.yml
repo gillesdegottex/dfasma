@@ -22,9 +22,9 @@ install:
   - ps: echo $vcplatform
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   - cmd: ECHO %vcplatform%
-  - cmd: if "%vcplatform%" == "amd64" ECHO "It is 64b"
-  - cmd: if "%vcplatform%" == "x86" ECHO "It is 32b"
-  - cmd: vcvarsall %vcplatform%
+  - cmd: if "%vcplatform%" == "amd64" vcvarsall amd64
+  - cmd: if "%vcplatform%" == "x86" vcvarsall x86
+#  - cmd: vcvarsall %vcplatform%
 #  - ps: "& .\\vcvarsall.bat $vcplatform"
   - ps: cd "C:\projects\dfasma"
 
