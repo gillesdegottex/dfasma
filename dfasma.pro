@@ -119,6 +119,8 @@ CONFIG(file_audio_libsndfile, file_audio_libsndfile|file_audio_libsox|file_audio
         gcc: LIBS += -L$$FILE_AUDIO_LIBDIR/lib -L$$FILE_AUDIO_LIBDIR/bin -lsndfile-1
     }
     unix:LIBS += -lsndfile
+    unix:LIBS += $$FILE_AUDIO_LIBDIR/lib/
+    unix:INCLUDEPATH += $$FILE_AUDIO_LIBDIR/include
 }
 CONFIG(file_audio_libsox, file_audio_libsndfile|file_audio_libsox|file_audio_builtin|file_audio_qt|file_audio_libav) {
     message(Audio file reader: libsox)
@@ -170,6 +172,8 @@ CONFIG(fft_fftw3, fft_fftw3|fft_builtin_fftreal){
         }
     }
     unix {
+        LIBS += $$FFT_LIBDIR/lib/
+        INCLUDEPATH += $$FFT_LIBDIR/include
         CONFIG(precision_double) {
             LIBS += -lfftw3
         }
