@@ -6,7 +6,7 @@ compiler:
 
 os:
   - linux
-#  - osx
+  - osx
 
 # whitelist
 branches:
@@ -15,11 +15,18 @@ branches:
 
 before_install:
  - echo $TRAVIS_OS_NAME
- - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
- - sudo apt-get update -qq
- - sudo apt-get install qtbase5-dev qtdeclarative5-dev libqt5webkit5-dev
- - sudo apt-get install qt5-default qttools5-dev-tools qtmobility-dev qtmultimedia5-dev libqt5svg5-dev
- - sudo apt-get install libfftw3-dev libsndfile1-dev libpulse-dev
+ # Linux related install
+ - if [ "$TRAVIS_OS_NAME" = "linux" ]; then echo "Compilation on Linux"; fi
+ - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa; fi
+ - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get update -qq; fi
+ - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install qtbase5-dev qtdeclarative5-dev libqt5webkit5-dev; fi
+ - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install qt5-default qttools5-dev-tools qtmobility-dev qtmultimedia5-dev libqt5svg5-dev; fi
+ - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install libfftw3-dev libsndfile1-dev libpulse-dev; fi
+ # OSX related install
+ - if [ "$TRAVIS_OS_NAME" = "osx" ]; then echo "Compilation on OSX"; fi
+ - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install fftw; fi
+ - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install libsndfile; fi
+ - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install qt5; fi
 
 script:
  - qmake dfasma.pro
