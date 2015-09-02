@@ -38,5 +38,6 @@ before_install:
  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew link --force qt5; fi
 
 script:
- - qmake dfasma.pro
+ - if [ "$TRAVIS_OS_NAME" = "linux" ]; then qmake dfasma.pro; fi
+ - if [ "$TRAVIS_OS_NAME" = "osx" ]; then qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=/usr/local/Cellar/libsndfile/1.0.25" "FFT_LIBDIR=/usr/local/Cellar/fftw/3.3.4" dfasma.pro; fi
  - make
