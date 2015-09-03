@@ -89,18 +89,18 @@ build_script:
   - ps: Get-ChildItem c:\projects\dfasma\lib\libfftfile
   - ps: if ($env:platform -eq 'x64') {& '.\distrib\package_appveyor_Win64bit.ps1'}
   - ps: if ($env:platform -eq 'x86') {& '.\distrib\package_appveyor_Win32bit.ps1'}
+  - ps: Move-Item distrib/*.exe .
   - ps: Get-ChildItem distrib
-  - ps: echo ${appveyor_build_version}
-  - ps: $GITPROJECTVERSION = (git describe --tags --always) | Out-String
-  - ps: $GITPROJECTVERSION = $GITPROJECTVERSION -replace "`n|`r"
-  - ps: echo "Version $GITPROJECTVERSION"
+  #- ps: $GITPROJECTVERSION = (git describe --tags --always) | Out-String
+  #- ps: $GITPROJECTVERSION = $GITPROJECTVERSION -replace "`n|`r"
+  #- ps: echo "Version $GITPROJECTVERSION"
   - echo APPVEYOR_REPO_TAG_NAME %APPVEYOR_REPO_TAG_NAME%
   - if defined APPVEYOR_REPO_TAG_NAME set RELEASEVERSION=%APPVEYOR_REPO_TAG_NAME:~1%
   - echo Version %RELEASEVERSION%
 
 
 artifacts:
-  - path: distrib\DFasma-*-Win*bit.exe
+  - path: DFasma-*-Win*bit.exe
     name: newinstallers   # Reference used for deployment
 
 
