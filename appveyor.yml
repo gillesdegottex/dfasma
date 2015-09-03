@@ -105,8 +105,8 @@ artifacts:
 
 
 deploy:
-  release: Version %RELEASEVERSION%
-  tag: %APPVEYOR_REPO_TAG_NAME%
+  release: Version $(releaseversion)
+  tag: $(appveyor_repo_tag_name)
   provider: GitHub
   auth_token:
     secure: TQgRc2OQ+3qGZXRW1yf2AIuYeOAC2FeC4wgfhZv2qZr8yMZF6AST9ER9xfRMJ4Ze # your encrypted token from GitHub
