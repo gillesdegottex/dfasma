@@ -50,3 +50,13 @@ script:
 
 after_success:
     "curl --ftp-create-dirs -T dfasma-$PROJECTGITVERSION.dmg -u $FTP_USER:$FTP_PASSWORD ftp://$FTP_SITE/home/"
+
+
+deploy:
+  provider: releases
+  api_key: b9bdfada6e5876554db2415f4252e82abdac6baf
+  file: dfasma-$PROJECTGITVERSION.dmg
+  skip_cleanup: true
+  on:
+    #tags: true
+    condition: $TRAVIS_OS_NAME = osx
