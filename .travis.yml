@@ -49,7 +49,7 @@ script:
     - echo $TRAVIS_TAG
 
 after_success:
-    - curl --ftp-create-dirs -T dfasma-$PROJECTGITVERSION.dmg -u $FTP_USER:$FTP_PASSWORD ftp://$FTP_SITE/home/
+    - if [ "$TRAVIS_OS_NAME" = "osx" ]; then curl --ftp-create-dirs -T dfasma-$PROJECTGITVERSION.dmg -u $FTP_USER:$FTP_PASSWORD ftp://$FTP_SITE/home/; fi
 
 deploy:
   skip_cleanup: true
@@ -60,3 +60,4 @@ deploy:
   on:
     repo: gillesdegottex/dfasma
     condition: $TRAVIS_OS_NAME = osx
+    condition: $CC = gcc
