@@ -114,13 +114,14 @@ CONFIG(file_audio_libsndfile, file_audio_libsndfile|file_audio_libsox|file_audio
             }
         }
         message(FILE_AUDIO_LIBDIR=$$FILE_AUDIO_LIBDIR)
-        INCLUDEPATH += $$FILE_AUDIO_LIBDIR/include
         msvc: LIBS += "$$FILE_AUDIO_LIBDIR/lib/libsndfile-1.lib"
         gcc: LIBS += -L$$FILE_AUDIO_LIBDIR/lib -L$$FILE_AUDIO_LIBDIR/bin -lsndfile-1
     }
     unix:LIBS += -lsndfile
-    unix:LIBS += $$FILE_AUDIO_LIBDIR/lib/
-    unix:INCLUDEPATH += $$FILE_AUDIO_LIBDIR/include
+    !isEmpty(FILE_AUDIO_LIBDIR){
+        INCLUDEPATH += $$FILE_AUDIO_LIBDIR/include
+        LIBS += -L$$FILE_AUDIO_LIBDIR/lib
+    }
 }
 CONFIG(file_audio_libsox, file_audio_libsndfile|file_audio_libsox|file_audio_builtin|file_audio_qt|file_audio_libav) {
     message(Audio file reader: libsox)
@@ -160,8 +161,10 @@ CONFIG(fft_fftw3, fft_fftw3|fft_builtin_fftreal){
             }
         }
         message(FFT_LIBDIR=$$FFT_LIBDIR)
-        INCLUDEPATH += $$FFT_LIBDIR
-        LIBS += -L$$FFT_LIBDIR
+        !isEmpty(FFT_LIBDIR){
+            INCLUDEPATH += $$FFT_LIBDIR
+            LIBS += -L$$FFT_LIBDIR
+        }
         CONFIG(precision_double) {
             msvc: LIBS += $$FFT_LIBDIR/libfftw3-3.lib
             gcc: LIBS += -lfftw3-3
@@ -172,8 +175,10 @@ CONFIG(fft_fftw3, fft_fftw3|fft_builtin_fftreal){
         }
     }
     unix {
-        LIBS += $$FFT_LIBDIR/lib/
-        INCLUDEPATH += $$FFT_LIBDIR/include
+        !isEmpty(FFT_LIBDIR){
+            INCLUDEPATH += $$FFT_LIBDIR/include
+            LIBS += -L$$FFT_LIBDIR/lib
+        }
         CONFIG(precision_double) {
             LIBS += -lfftw3
         }
