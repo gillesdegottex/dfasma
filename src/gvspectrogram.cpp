@@ -429,7 +429,7 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
             if(m_dlgSettings->ui->cbSpectrogramDFTSizeType->currentIndex()==0)
                 dftlen = m_dlgSettings->ui->sbSpectrogramDFTSize->value();
             else if(m_dlgSettings->ui->cbSpectrogramDFTSizeType->currentIndex()==1)
-                dftlen = pow(2, std::ceil(log2(float(m_win.size())))+m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());//[samples]
+                dftlen = std::pow(2.0, std::ceil(log2(float(m_win.size())))+m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());//[samples]
             int cepliftorder = -1;//[samples]
             if(gMW->m_gvSpectrogram->m_dlgSettings->ui->gbSpectrogramCepstralLiftering->isChecked())
                 cepliftorder = gMW->m_gvSpectrogram->m_dlgSettings->ui->sbSpectrogramCepstralLifteringOrder->value();

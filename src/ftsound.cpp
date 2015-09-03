@@ -343,7 +343,7 @@ QString FTSound::info() const {
         else if(sampletype==QAudioFormat::Float)
             str += "float";
         str += "<br/>";
-        str += "SQNR="+QString::number(20*std::log10(std::pow(2,m_fileaudioformat.sampleSize())))+"dB<br/>";
+        str += "SQNR="+QString::number(20*std::log10(std::pow(2.0,m_fileaudioformat.sampleSize())))+"dB<br/>";
 //        if(sampletype!=QAudioFormat::Unknown) {
 //            double smallest=1.0;
 //            if(sampletype==QAudioFormat::SignedInt)

@@ -394,12 +394,12 @@ void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
     if(m_dlgSettings->ui->cbAmplitudeSpectrumDFTSizeType->currentIndex()==0)
         newDFTParams.dftlen = std::max(newDFTParams.winlen, m_dlgSettings->ui->sbAmplitudeSpectrumDFTSize->value());
     else if(m_dlgSettings->ui->cbAmplitudeSpectrumDFTSizeType->currentIndex()==1)
-        newDFTParams.dftlen = pow(2, std::ceil(log2(float(newDFTParams.winlen)))+m_dlgSettings->ui->sbAmplitudeSpectrumOversamplingFactor->value());
+        newDFTParams.dftlen = std::pow(2.0, std::ceil(log2(float(newDFTParams.winlen)))+m_dlgSettings->ui->sbAmplitudeSpectrumOversamplingFactor->value());
     else if(m_dlgSettings->ui->cbAmplitudeSpectrumDFTSizeType->currentIndex()==2){
         QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
         int dftlen = viewport()->rect().width()/((viewrect.right()-viewrect.left())/gFL->getFs());
         dftlen = std::max(dftlen, newDFTParams.winlen);
-        newDFTParams.dftlen = pow(2, std::ceil(log2(float(dftlen))));
+        newDFTParams.dftlen = std::pow(2.0, std::ceil(log2(float(dftlen))));
     }
 
     if(newDFTParams==m_trgDFTParameters)

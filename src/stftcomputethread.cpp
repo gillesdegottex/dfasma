@@ -362,7 +362,7 @@ void STFTComputeThread::run() {
                 }
 
                 // SampleSize is not always reliable
-    //            m_params_current.stftparams.snd->m_stft_min = std::max(FFTTYPE(-2.0*20*std::log10(std::pow(2,m_params_current.stftparams.snd->format().sampleSize()))), m_params_current.stftparams.snd->m_stft_min); Why doing this ??
+    //            m_params_current.stftparams.snd->m_stft_min = std::max(FFTTYPE(-2.0*20*std::log10(std::pow(2.0,m_params_current.stftparams.snd->format().sampleSize()))), m_params_current.stftparams.snd->m_stft_min); Why doing this ??
     //            COUTD << "Image Spent: " << starttime.elapsed() << std::endl;
             }
         }

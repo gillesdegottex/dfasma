@@ -98,7 +98,7 @@ inline int f2h(double freq, double AFreq=440.0)
 */
 inline double h2f(double ht, double AFreq=440.0)
 {
-    return AFreq * pow(2.0, ht/12.0);
+    return AFreq * std::pow(2.0, ht/12.0);
 }
 //! convert half-tones from A3 to the corresponding note name
 /*!
