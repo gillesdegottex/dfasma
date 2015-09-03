@@ -26,6 +26,8 @@ before_install:
     - echo $TRAVIS_OS_NAME
     - echo $TRAVIS_COMMIT
     - echo $TRAVIS_TAG
+    - export TRAVIS_TAG=`git describe --tags --exact-match HEAD 2>/dev/null`
+    - echo $TRAVIS_TAG
 
 install:
     - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa; fi
@@ -58,4 +60,5 @@ deploy:
   file: DFasma-$PROJECTGITVERSION.dmg
   on:
     repo: gillesdegottex/dfasma
+    tags: true
     condition: $TRAVIS_OS_NAME = osx && $CC = gcc
