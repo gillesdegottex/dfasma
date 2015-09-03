@@ -125,5 +125,5 @@ deploy:
     secure: hyevsAk3rL4taNeuyDilFw==
   password:
     secure: ZUyJJvGHPrOB8b+qchVzxg==
-  folder: home
+  folder: /home/
   artifact: newinstallers
