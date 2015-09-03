@@ -94,7 +94,7 @@ build_script:
   - ps: echo "$appveyor_build_version"
   - ps: $VERSION = (git describe --tags --always) | Out-String
   - ps: $VERSION = $VERSION -replace "`n|`r"
-  - ps: echo "Version: $VERSION"
+  - ps: echo "Version $VERSION"
 
 
 artifacts:
