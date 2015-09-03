@@ -90,8 +90,7 @@ build_script:
   - ps: if ($env:platform -eq 'x64') {& '.\distrib\package_appveyor_Win64bit.ps1'}
   - ps: if ($env:platform -eq 'x86') {& '.\distrib\package_appveyor_Win32bit.ps1'}
   - ps: Get-ChildItem distrib
-  - echo %appveyor_build_version%
-  - ps: echo "$appveyor_build_version"
+  - ps: echo ${appveyor_build_version}
   - ps: $VERSION = (git describe --tags --always) | Out-String
   - ps: $VERSION = $VERSION -replace "`n|`r"
   - ps: echo "Version $VERSION"
@@ -102,12 +101,12 @@ artifacts:
 
 
 deploy:
-  release: DFasma-v$(appveyor_build_version)
+  release: "Version $VERSION"
   provider: GitHub
   auth_token:
     secure: TQgRc2OQ+3qGZXRW1yf2AIuYeOAC2FeC4wgfhZv2qZr8yMZF6AST9ER9xfRMJ4Ze # your encrypted token from GitHub
-  artifact: distrib\DFasma-*-Win*bit.exe # upload all installers
-  draft: true
+  artifact: /distrib/DFasma-.*-Win.*bit\.exe # upload all installers
+  draft: false
   prerelease: false
   on:
     branch: master                 # release from master branch only
