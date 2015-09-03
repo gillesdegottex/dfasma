@@ -274,7 +274,7 @@ void QGVAmplitudeSpectrum::updateAmplitudeExtent(){
         WAVTYPE maxsqnr = -std::numeric_limits<WAVTYPE>::infinity();
         for(unsigned int si=0; si<gFL->ftsnds.size(); si++){
             if(gFL->ftsnds[si]->format().sampleSize()==-1)
-                maxsqnr = std::max(maxsqnr, 20*std::log10(std::pow(2.0, 8*sizeof(WAVTYPE))));
+                maxsqnr = std::max(maxsqnr, 20*std::log10(std::pow(2.0, int(8*sizeof(WAVTYPE)))));
             else
                 maxsqnr = std::max(maxsqnr, 20*std::log10(std::pow(2.0, gFL->ftsnds[si]->format().sampleSize())));
         }
