@@ -105,7 +105,7 @@ artifacts:
 
 
 deploy:
-  release: Version ${releaseversion}
+  #release: Version ${releaseversion}
   #tag: ${appveyor_repo_tag_name}
   provider: GitHub
   auth_token:
