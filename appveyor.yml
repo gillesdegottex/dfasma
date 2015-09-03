@@ -94,6 +94,8 @@ build_script:
   - ps: $GITPROJECTVERSION = (git describe --tags --always) | Out-String
   - ps: $GITPROJECTVERSION = $GITPROJECTVERSION -replace "`n|`r"
   - ps: echo "Version $GITPROJECTVERSION"
+  - ps: echo "$APPVEYOR_REPO_TAG_NAME"
+  - echo %APPVEYOR_REPO_TAG_NAME%
 
 
 artifacts:
@@ -102,7 +104,8 @@ artifacts:
 
 
 deploy:
-  release: "Version ${GITPROJECTVERSION}"
+  release: Version ${APPVEYOR_REPO_TAG_NAME}
+  tag: ${APPVEYOR_REPO_TAG_NAME}
   provider: GitHub
   auth_token:
     secure: TQgRc2OQ+3qGZXRW1yf2AIuYeOAC2FeC4wgfhZv2qZr8yMZF6AST9ER9xfRMJ4Ze # your encrypted token from GitHub
