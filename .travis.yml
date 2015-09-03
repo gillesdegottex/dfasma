@@ -20,7 +20,7 @@ branches:
 
 before_install:
     - git submodule update --init --recursive
-    - git pull --tags
+    - git fetch --tags
     - sleep 1
     - export PROJECTGITVERSION=`git describe --tags --always`
     - echo $PROJECTGITVERSION
