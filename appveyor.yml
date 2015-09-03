@@ -9,6 +9,8 @@ configuration:
 
 install:
   - echo APPVEYOR_REPO_TAG_NAME %APPVEYOR_REPO_TAG_NAME%
+  - set GITPROJECTVERSION=`git describe --tags --always`
+  - echo GITPROJECTVERSION %GITPROJECTVERSION%
   - ps: echo $env:platform
   - ps: if ($env:platform -eq 'x64') {$env:QTDIR = "C:\Qt\5.4\msvc2013_64_opengl"}
   - ps: if ($env:platform -eq 'x86') {$env:QTDIR = "C:\Qt\5.4\msvc2013_opengl"}
@@ -93,7 +95,10 @@ build_script:
   - ps: echo ${appveyor_build_version}
   - ps: $GITPROJECTVERSION = (git describe --tags --always) | Out-String
   - ps: $GITPROJECTVERSION = $GITPROJECTVERSION -replace "`n|`r"
-  - ps: echo "Version $GITPROJECTVERSION"
+  - ps: echo "Version $GITPROJECTVERSION
+  - echo GITPROJECTVERSION %GITPROJECTVERSION%
+  - set GITPROJECTVERSION=`git describe --tags --always`
+  - echo GITPROJECTVERSION %GITPROJECTVERSION%
   - echo APPVEYOR_REPO_TAG_NAME %APPVEYOR_REPO_TAG_NAME%
   - if defined APPVEYOR_REPO_TAG_NAME set RELEASEVERSION=%APPVEYOR_REPO_TAG_NAME:~1%
   - echo RELEASEVERSION %RELEASEVERSION%
