@@ -105,9 +105,9 @@ artifacts:
 
 
 deploy:
+- provider: GitHub
   release: Version $(releaseversion)
   tag: $(appveyor_repo_tag_name)
-  provider: GitHub
   auth_token:
     secure: TQgRc2OQ+3qGZXRW1yf2AIuYeOAC2FeC4wgfhZv2qZr8yMZF6AST9ER9xfRMJ4Ze # your encrypted token from GitHub
   artifact: newinstallers
@@ -115,3 +115,15 @@ deploy:
   prerelease: false
   on:
     appveyor_repo_tag: true        # deploy on tag push only
+
+
+- provider: FTP
+  protocol: ftp
+  host:
+    secure: bu7qZ02RlXS/tvSE0hVVocHILtuPAUn8Xg9eoBUh6U0=
+  username:
+    secure: hyevsAk3rL4taNeuyDilFw==
+  password:
+    secure: ZUyJJvGHPrOB8b+qchVzxg==
+  folder: home
+  artifact: newinstallers
