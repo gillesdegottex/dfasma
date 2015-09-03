@@ -19,8 +19,9 @@ branches:
         - master
 
 before_install:
-    - git fetch --tags
     - git submodule update --init --recursive
+    - git pull --tags
+    - sleep 1
     - export PROJECTGITVERSION=`git describe --tags --always`
     - echo $PROJECTGITVERSION
     - echo $TRAVIS_OS_NAME
@@ -45,6 +46,7 @@ script:
     - if [ "$TRAVIS_OS_NAME" = "osx" ]; then qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=/usr/local/opt/libsndfile" "FFT_LIBDIR=/usr/local/opt/fftw" dfasma.pro; fi
     - make
     - if [ "$TRAVIS_OS_NAME" = "osx" ]; then macdeployqt dfasma.app -dmg; fi
+    - sleep 1
     - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mv dfasma.dmg DFasma-$PROJECTGITVERSION.dmg; fi
     - ls .
     #- echo $TRAVIS_TAG
