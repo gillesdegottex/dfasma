@@ -20,14 +20,16 @@ branches:
   - master
 
 before_install:
-- git submodule update --init --recursive
 - git fetch --tags
+- git submodule update --init --recursive
 - git describe --tags --always
 - export PROJECTGITVERSION=`git describe --tags --always`
 - echo $PROJECTGITVERSION
 - echo $TRAVIS_OS_NAME
 - echo $TRAVIS_COMMIT
 - echo $TRAVIS_TAG
+
+install:
 - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa; fi
 - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get update -qq; fi
 - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install qtbase5-dev qtdeclarative5-dev libqt5webkit5-dev; fi
@@ -43,8 +45,8 @@ script:
 - if [ "$TRAVIS_OS_NAME" = "osx" ]; then qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=/usr/local/opt/libsndfile" "FFT_LIBDIR=/usr/local/opt/fftw" dfasma.pro; fi
 - make
 - if [ "$TRAVIS_OS_NAME" = "osx" ]; then macdeployqt dfasma.app -dmg; fi
+- if [ "$TRAVIS_OS_NAME" = "osx" ]; then mv dfasma.dmg dfasma-$PROJECTGITVERSION.dmg; fi
 - ls .
-- echo $PROJECTGITVERSION
 
 after_success:
-    "curl --ftp-create-dirs -T dfasma.dmg -u $FTP_USER:$FTP_PASSWORD ftp://$FTP_SITE/home/"
+    "curl --ftp-create-dirs -T dfasma-$PROJECTGITVERSION.dmg -u $FTP_USER:$FTP_PASSWORD ftp://$FTP_SITE/home/"
