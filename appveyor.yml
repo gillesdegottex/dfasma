@@ -114,5 +114,4 @@ deploy:
   draft: true
   prerelease: false
   on:
-    branch: ${appveyor_repo_tag_name}
     appveyor_repo_tag: true        # deploy on tag push only
