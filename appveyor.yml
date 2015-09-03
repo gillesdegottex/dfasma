@@ -96,7 +96,7 @@ build_script:
   - ps: echo "Version $GITPROJECTVERSION"
   - echo APPVEYOR_REPO_TAG_NAME %APPVEYOR_REPO_TAG_NAME%
   - if defined APPVEYOR_REPO_TAG_NAME set RELEASEVERSION=%APPVEYOR_REPO_TAG_NAME:~1%
-  - echo "Version:" %RELEASEVERSION%
+  - echo Version: %RELEASEVERSION%
 
 
 artifacts:
@@ -105,8 +105,8 @@ artifacts:
 
 
 deploy:
-  #release: Version ${releaseversion}
-  #tag: ${appveyor_repo_tag_name}
+  release: Version ${releaseversion}
+  tag: ${appveyor_repo_tag_name}
   provider: GitHub
   auth_token:
     secure: TQgRc2OQ+3qGZXRW1yf2AIuYeOAC2FeC4wgfhZv2qZr8yMZF6AST9ER9xfRMJ4Ze # your encrypted token from GitHub
@@ -114,5 +114,5 @@ deploy:
   draft: true
   prerelease: false
   on:
-    branch: master                 # release from master branch only
+    branch: ${appveyor_repo_tag_name}
     appveyor_repo_tag: true        # deploy on tag push only
