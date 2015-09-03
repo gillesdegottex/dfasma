@@ -20,6 +20,9 @@ branches:
   - master
 
 before_install:
+- git describe --tags --always
+- export PROJECTGITVERSION=`git describe --tags --always`
+- echo $PROJECTGITVERSION
 - echo $TRAVIS_OS_NAME
 - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa; fi
 - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get update -qq; fi
@@ -37,6 +40,7 @@ script:
 - make
 - if [ "$TRAVIS_OS_NAME" = "osx" ]; then macdeployqt dfasma.app -dmg; fi
 - ls .
+- echo $PROJECTGITVERSION
 
 after_success:
     "curl --ftp-create-dirs -T dfasma.dmg -u $FTP_USER:$FTP_PASSWORD ftp://$FTP_SITE/home/"
