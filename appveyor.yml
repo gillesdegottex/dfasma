@@ -8,7 +8,7 @@ configuration:
   - Release
 
 install:
-  - echo %APPVEYOR_REPO_TAG_NAME%
+  - echo APPVEYOR_REPO_TAG_NAME: %APPVEYOR_REPO_TAG_NAME%
   - ps: echo $env:platform
   - ps: if ($env:platform -eq 'x64') {$env:QTDIR = "C:\Qt\5.4\msvc2013_64_opengl"}
   - ps: if ($env:platform -eq 'x86') {$env:QTDIR = "C:\Qt\5.4\msvc2013_opengl"}
@@ -96,7 +96,7 @@ build_script:
   - ps: echo "Version $GITPROJECTVERSION"
   - echo %APPVEYOR_REPO_TAG_NAME%
   - if defined APPVEYOR_REPO_TAG_NAME set RELEASEVERSION=%APPVEYOR_REPO_TAG_NAME:~1%
-  - echo %RELEASEVERSION%
+  - echo RELEASEVERSION: %RELEASEVERSION%
 
 
 artifacts:
