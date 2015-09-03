@@ -37,4 +37,4 @@ script:
 - ls .
 
 after_success:
-    "curl --ftp-create-dirs -T dfasma.dmg -u $FTP_USER:$FTP_PASSWORD ftp://hatchpan.synology.me/home"
+    "curl --ftp-create-dirs -T dfasma.dmg -u $FTP_USER:$FTP_PASSWORD ftp://hatchpan.synology.me/home/"
