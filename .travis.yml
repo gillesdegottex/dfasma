@@ -54,9 +54,9 @@ after_success:
 
 deploy:
   provider: releases
-  api_key: b9bdfada6e5876554db2415f4252e82abdac6baf
+  api_key: "b19bd9502b7c22bc9c52354235d64006283b2dcf"
   file: dfasma-$PROJECTGITVERSION.dmg
   skip_cleanup: true
   on:
-    #tags: true
+    tags: true
     condition: $TRAVIS_OS_NAME = osx
