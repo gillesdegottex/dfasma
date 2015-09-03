@@ -8,7 +8,7 @@ configuration:
   - Release
 
 install:
-  - ps: echo $flupflop
+  - echo %APPVEYOR_REPO_TAG_NAME%
   - ps: echo $env:platform
   - ps: if ($env:platform -eq 'x64') {$env:QTDIR = "C:\Qt\5.4\msvc2013_64_opengl"}
   - ps: if ($env:platform -eq 'x86') {$env:QTDIR = "C:\Qt\5.4\msvc2013_opengl"}
@@ -94,17 +94,18 @@ build_script:
   - ps: $GITPROJECTVERSION = (git describe --tags --always) | Out-String
   - ps: $GITPROJECTVERSION = $GITPROJECTVERSION -replace "`n|`r"
   - ps: echo "Version $GITPROJECTVERSION"
-  - ps: echo "$APPVEYOR_REPO_TAG_NAME"
   - echo %APPVEYOR_REPO_TAG_NAME%
+  - echo %APPVEYOR_REPO_TAG_NAME:~1%
+  - if defined APPVEYOR_REPO_TAG_NAME set RELEASEVERSION=%APPVEYOR_REPO_TAG_NAME:~1%
 
 
 artifacts:
   - path: distrib\DFasma-*-Win*bit.exe
-    name: newinstallers
+    name: newinstallers   # Reference used for deployment
 
 
 deploy:
-  release: Version ${APPVEYOR_REPO_TAG_NAME}
+  release: Version ${RELEASEVERSION}
   tag: ${APPVEYOR_REPO_TAG_NAME}
   provider: GitHub
   auth_token:
