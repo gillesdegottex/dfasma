@@ -20,6 +20,8 @@ branches:
   - master
 
 before_install:
+- git submodule update --init --recursive
+- git fetch --tags
 - git describe --tags --always
 - export PROJECTGITVERSION=`git describe --tags --always`
 - echo $PROJECTGITVERSION
