@@ -89,7 +89,7 @@ signals:
 public slots:
     void showScrollBars(bool show);
 
-    void updateSceneRect(double maxdelay=-1);
+    void updateSceneRect();
 
     void azoomin();
     void azoomout();

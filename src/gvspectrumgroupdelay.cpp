@@ -127,20 +127,21 @@ void QGVSpectrumGroupDelay::showScrollBars(bool show) {
     }
 }
 
-void QGVSpectrumGroupDelay::updateSceneRect(double maxdelay) {
-//    COUTD << "QGVSpectrumGroupDelay::updateSceneRect " << maxdelay << endl;
-    maxdelay = std::min(maxdelay, gFL->getMaxDuration()/2);
-    if(maxdelay!=-1){
-        m_scene->setSceneRect(0.0, -maxdelay, gFL->getFs()/2, 2*maxdelay);
-        QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-        if(viewrect.top()<sceneRect().top() || viewrect.bottom()>sceneRect().bottom()){
-            viewrect.setTop(sceneRect().top());
-            viewrect.setBottom(sceneRect().bottom());
-            viewSet(viewrect, false);
-        }
+void QGVSpectrumGroupDelay::updateSceneRect() {
+
+    double maxdelay = gFL->getMaxDuration()/2;
+
+    if(gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.winlen>0)
+        maxdelay = ((gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.winlen-1)/2)/gFL->getFs();
+
+    m_scene->setSceneRect(0.0, -maxdelay, gFL->getFs()/2, 2*maxdelay);
+
+    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+    if(viewrect.top()<sceneRect().top() || viewrect.bottom()>sceneRect().bottom()){
+        viewrect.setTop(sceneRect().top());
+        viewrect.setBottom(sceneRect().bottom());
+        viewSet(viewrect, false);
     }
-    else
-        m_scene->setSceneRect(0.0, -gFL->getMaxDuration()/2, gFL->getFs()/2, gFL->getMaxDuration());
 }
 
 void QGVSpectrumGroupDelay::viewSet(QRectF viewrect, bool sync) {
@@ -190,6 +191,7 @@ void QGVSpectrumGroupDelay::resizeEvent(QResizeEvent* event) {
     if(event->oldSize().isEmpty() && !event->size().isEmpty()) {
 
         updateSceneRect();
+        gMW->m_gvAmplitudeSpectrum->updateDFTs();
 
         if(gMW->m_gvAmplitudeSpectrum->viewport()->rect().width()*gMW->m_gvAmplitudeSpectrum->viewport()->rect().height()>0){
             QRectF phaserect = gMW->m_gvAmplitudeSpectrum->mapToScene(gMW->m_gvAmplitudeSpectrum->viewport()->rect()).boundingRect();

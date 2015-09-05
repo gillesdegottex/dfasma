@@ -407,14 +407,12 @@ void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
     if(newDFTParams==m_trgDFTParameters)
         return;
 
-    if(newDFTParams.winlen!=m_trgDFTParameters.winlen
-        && gMW->m_gvSpectrumGroupDelay
-        && gMW->ui->actionShowGroupDelaySpectrum->isChecked()){
-        gMW->m_gvSpectrumGroupDelay->updateSceneRect(((newDFTParams.winlen-1)/2)/gFL->getFs());
-    }
-
     // From now on we want the new parameters ...
     m_trgDFTParameters = newDFTParams;
+
+    if(gMW->m_gvSpectrumGroupDelay
+        && gMW->ui->actionShowGroupDelaySpectrum->isChecked())
+        gMW->m_gvSpectrumGroupDelay->updateSceneRect();
 
     // Update the visible window in the waveform
     if(m_trgDFTParameters.win.size()>0) {
