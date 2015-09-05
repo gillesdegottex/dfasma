@@ -42,6 +42,7 @@ using namespace Easdif;
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "ui_wdialogsettings.h"
+#include "gvwaveform.h"
 #include "gvamplitudespectrum.h"
 
 #include "qthelper.h"
@@ -505,6 +506,94 @@ FTFZero::~FTFZero() {
     gFL->ftfzeros.erase(std::find(gFL->ftfzeros.begin(), gFL->ftfzeros.end(), this));
 }
 
+// Drawing ---------------------------------------------------------------------
+
+void FTFZero::draw_time_freq(QPainter* painter, const QRectF& rect, bool draw_harmonics){
+    Q_UNUSED(rect)
+
+    if(!m_actionShow->isChecked()
+       || ts.size()<2)
+        return;
+
+    double ny = gFL->getFs()/2;
+
+    QColor c = getColor();
+    c.setAlphaF(1.0);
+    QPen outlinePen(c);
+    outlinePen.setWidth(0);
+    painter->setPen(outlinePen);
+    double f0min = ny;
+    for(int ti=0; ti<int(ts.size())-1; ++ti){
+        if(f0s[ti]>0.0)
+            f0min = std::min(f0min, f0s[ti]);
+        double lf0 = f0s[ti];
+        double rf0 = f0s[ti+1];
+        if(lf0>0 && rf0>0)
+            painter->drawLine(QLineF(ts[ti], ny-lf0, ts[ti+1], ny-rf0));
+    }
+    if(f0s.back()>0.0)
+        f0min = std::min(f0min, f0s.back());
+
+    if(draw_harmonics){
+        // Draw harmonics up to Nyquist
+        c.setAlphaF(0.5);
+        outlinePen.setColor(c);
+        painter->setPen(outlinePen);
+        for(int h=2; h<int(ny/f0min)+1; h++){
+            for(int ti=0; ti<int(ts.size())-1; ++ti){
+                double lf0 = f0s[ti];
+                double rf0 = f0s[ti+1];
+                if(lf0>0 && rf0>0)
+                    painter->drawLine(QLineF(ts[ti], ny-h*f0s[ti], ts[ti+1], ny-h*f0s[ti+1]));
+            }
+        }
+    }
+}
+
+void FTFZero::draw_freq_amp(QPainter* painter, const QRectF& rect){
+    Q_UNUSED(rect)
+
+    if(!m_actionShow->isChecked()
+       || ts.size()<1)
+        return;
+
+    //            QPen outlinePen(gMW->ftfzeros[fi]->color);
+    //            outlinePen.setWidth(0);
+    //            painter->setPen(outlinePen);
+    //            painter->setBrush(QBrush(gMW->ftfzeros[fi]->color));
+
+    double ny = gFL->getFs()/2;
+
+    double ct = 0.0; // The time where the f0 curve has to be sampled
+    if(gMW->m_gvWaveform->hasSelection())
+        ct = 0.5*(gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.nl+gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.nr)/gFL->getFs();
+    else
+        ct = gMW->m_gvWaveform->getPlayCursorPosition();
+    double cf0 = sigproc::nearest<double>(ts, f0s, ct, -1.0);
+
+    if(cf0==-1)
+        return;
+
+    // Draw the f0 vertical line
+    QColor c = getColor();
+    c.setAlphaF(1.0);
+    QPen outlinePen(c);
+    outlinePen.setWidth(0);
+    painter->setPen(outlinePen);
+    painter->drawLine(QLineF(cf0, -3000, cf0, 3000));
+
+    // Update the f0 text
+    // TODO Should be moved to setWindowRange (need to move the cf0 computation there too)
+    m_aspec_txt->setPos(cf0, 0.0);
+    m_aspec_txt->setText(QString("%1Hz").arg(cf0));
+
+    // Draw harmonics up to Nyquist
+    c.setAlphaF(0.5);
+    outlinePen.setColor(c);
+    painter->setPen(outlinePen);
+    for(int h=2; h<int(ny/cf0)+1; h++)
+        painter->drawLine(QLineF(h*cf0, -3000, h*cf0, 3000));
+}
 
 // Analysis --------------------------------------------------------------------
 

@@ -364,8 +364,13 @@ void FilesListWidget::fileSelectionChanged() {
             gMW->m_gvWaveform->m_scene->update();
             gMW->m_gvAmplitudeSpectrum->m_scene->update();
             gMW->m_gvPhaseSpectrum->m_scene->update();
+            gMW->m_gvSpectrumGroupDelay->m_scene->update();
         }
         gMW->m_gvSpectrogram->updateSTFTPlot();
+        gMW->m_gvSpectrogram->m_scene->update();
+    }
+    if(m_nb_fzeros_in_selection>0){
+        gMW->m_gvAmplitudeSpectrum->m_scene->update();
         gMW->m_gvSpectrogram->m_scene->update();
     }
 

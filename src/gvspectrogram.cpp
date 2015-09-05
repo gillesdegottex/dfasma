@@ -1126,8 +1126,6 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 
 //    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVSpectrogram::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
-    double fs = gFL->getFs();
-
     // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
@@ -1178,47 +1176,13 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
     if(m_aSpectrogramShowGrid->isChecked())
         draw_grid(painter, rect);
 
-    // Draw the f0 grids
-    if(!gFL->ftfzeros.empty()) {
-        for(size_t fi=0; fi<gFL->ftfzeros.size(); fi++){
-            if(!gFL->ftfzeros[fi]->m_actionShow->isChecked()
-               || gFL->ftfzeros[fi]->ts.size()<2)
-                continue;
-
-            // Draw the f0
-            QColor c = gFL->ftfzeros[fi]->getColor();
-            c.setAlphaF(1.0);
-            QPen outlinePen(c);
-            outlinePen.setWidth(0);
-            painter->setPen(outlinePen);
-            double f0min = fs/2;
-            for(int ti=0; ti<int(gFL->ftfzeros[fi]->ts.size())-1; ++ti){
-                if(gFL->ftfzeros[fi]->f0s[ti]>0.0)
-                    f0min = std::min(f0min, gFL->ftfzeros[fi]->f0s[ti]);
-                double lf0 = gFL->ftfzeros[fi]->f0s[ti];
-                double rf0 = gFL->ftfzeros[fi]->f0s[ti+1];
-                if(lf0>0 && rf0>0)
-                    painter->drawLine(QLineF(gFL->ftfzeros[fi]->ts[ti], fs/2-lf0, gFL->ftfzeros[fi]->ts[ti+1], fs/2-rf0));
-            }
-            if(gFL->ftfzeros[fi]->f0s.back()>0.0)
-                f0min = std::min(f0min, gFL->ftfzeros[fi]->f0s.back());
-
-            if(m_aSpectrogramShowHarmonics->isChecked()){
-                // Draw harmonics up to Nyquist
-                c.setAlphaF(0.5);
-                outlinePen.setColor(c);
-                painter->setPen(outlinePen);
-                for(int h=2; h<int(0.5*fs/f0min)+1; h++){
-                    for(int ti=0; ti<int(gFL->ftfzeros[fi]->ts.size())-1; ++ti){
-                        double lf0 = gFL->ftfzeros[fi]->f0s[ti];
-                        double rf0 = gFL->ftfzeros[fi]->f0s[ti+1];
-                        if(lf0>0 && rf0>0)
-                            painter->drawLine(QLineF(gFL->ftfzeros[fi]->ts[ti], fs/2-h*gFL->ftfzeros[fi]->f0s[ti], gFL->ftfzeros[fi]->ts[ti+1], fs/2-h*gFL->ftfzeros[fi]->f0s[ti+1]));
-                    }
-                }
-            }
-        }
-    }
+    // Draw the f0s
+    FTFZero* curfzero = gFL->getCurrentFTFZero(true);
+    for(size_t fi=0; fi<gFL->ftfzeros.size(); ++fi)
+        if(gFL->ftfzeros[fi]!=curfzero)
+            gFL->ftfzeros[fi]->draw_time_freq(painter, rect, m_aSpectrogramShowHarmonics->isChecked());
+    if(curfzero)
+        curfzero->draw_time_freq(painter, rect, m_aSpectrogramShowHarmonics->isChecked());
 
     // TODO DELETE
 //    // Draw the F0 edition

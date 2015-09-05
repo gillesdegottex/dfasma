@@ -1337,46 +1337,12 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
     }
 
     // Draw the f0 and its harmonics
-    for(size_t fi=0; fi<gFL->ftfzeros.size(); fi++){
-        if(!gFL->ftfzeros[fi]->m_actionShow->isChecked()
-            || gFL->ftfzeros[fi]->ts.size()==0)
-            continue;
-
-//            QPen outlinePen(gMW->ftfzeros[fi]->color);
-//            outlinePen.setWidth(0);
-//            painter->setPen(outlinePen);
-//            painter->setBrush(QBrush(gMW->ftfzeros[fi]->color));
-
-        double ct = 0.0; // The time where the f0 curve has to be sampled
-        if(gMW->m_gvWaveform->hasSelection())
-            ct = 0.5*(m_trgDFTParameters.nl+m_trgDFTParameters.nr)/fs;
-        else
-            ct = gMW->m_gvWaveform->getPlayCursorPosition();
-        double cf0 = sigproc::nearest<double>(gFL->ftfzeros[fi]->ts, gFL->ftfzeros[fi]->f0s, ct, -1.0);
-
-        if(cf0==-1)
-            continue;
-
-        // Draw the f0 vertical line
-        QColor c = gFL->ftfzeros[fi]->getColor();
-        c.setAlphaF(1.0);
-        QPen outlinePen(c);
-        outlinePen.setWidth(0);
-        painter->setPen(outlinePen);
-        painter->drawLine(QLineF(cf0, -3000, cf0, 3000));
-
-        // Update the f0 text
-        // TODO Should be moved to setWindowRange (need to move the cf0 computation there too)
-        gFL->ftfzeros[fi]->m_aspec_txt->setPos(cf0, 0.0);
-        gFL->ftfzeros[fi]->m_aspec_txt->setText(QString("%1Hz").arg(cf0));
-
-        // Draw harmonics up to Nyquist
-        c.setAlphaF(0.5);
-        outlinePen.setColor(c);
-        painter->setPen(outlinePen);
-        for(int h=2; h<int(0.5*fs/cf0)+1; h++)
-            painter->drawLine(QLineF(h*cf0, -3000, h*cf0, 3000));
-    }
+    FTFZero* curfzero = gFL->getCurrentFTFZero(true);
+    for(size_t fi=0; fi<gFL->ftfzeros.size(); fi++)
+        if(gFL->ftfzeros[fi]!=curfzero)
+            gFL->ftfzeros[fi]->draw_freq_amp(painter, rect);
+    if(curfzero)
+        curfzero->draw_freq_amp(painter, rect);
 
     // Draw the spectra
     // TODO should draw spectra only if m_fft is not touching m_dft variables (it doesnt crash ??)
