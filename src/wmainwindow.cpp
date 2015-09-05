@@ -475,7 +475,7 @@ void WMainWindow::updateViewsAfterAddFile(bool isfirsts) {
         ui->actionSelectedFilesClose->setEnabled(true);
         ui->actionSelectedFilesReload->setEnabled(true);
         ui->actionSelectedFilesToggleShown->setEnabled(true);
-        ui->actionSelectedFilesSave->setEnabled(false);
+        gMW->ui->actionSelectedFilesSave->setEnabled(gFL->m_nb_labels_in_selection>0 || gFL->m_nb_fzeros_in_selection>0);
         ui->splitterViews->show();
         updateWindowTitle();
         m_gvWaveform->updateSceneRect();

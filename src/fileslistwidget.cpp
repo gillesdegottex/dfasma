@@ -31,6 +31,10 @@ FilesListWidget::FilesListWidget(QMainWindow *parent)
 {
     gFL = this;
 
+    m_nb_snds_in_selection = 0;
+    m_nb_labels_in_selection = 0;
+    m_nb_fzeros_in_selection = 0;
+
     setSelectionMode(QAbstractItemView::ExtendedSelection);
     setDragDropMode(QAbstractItemView::InternalMove);
     setWordWrap(true);
@@ -336,26 +340,26 @@ void FilesListWidget::fileSelectionChanged() {
 //    COUTD << "WMainWindow::fileSelectionChanged" << endl;
 
     QList<QListWidgetItem*> list = selectedItems();
-    int nb_snd_in_selection = 0;
-    int nb_labels_in_selection = 0;
-    int nb_f0_in_selection = 0;
+    m_nb_snds_in_selection = 0;
+    m_nb_labels_in_selection = 0;
+    m_nb_fzeros_in_selection = 0;
 
     for(int i=0; i<list.size(); i++) {
         FileType* ft = ((FileType*)list.at(i));
         if(ft->is(FileType::FTSOUND)){
-            nb_snd_in_selection++;
+            m_nb_snds_in_selection++;
             m_lastSelectedSound = (FTSound*)ft;
         }
 
         if(ft->is(FileType::FTLABELS))
-            nb_labels_in_selection++;
+            m_nb_labels_in_selection++;
 
         if(ft->is(FileType::FTFZERO))
-            nb_f0_in_selection++;
+            m_nb_fzeros_in_selection++;
     }
 
     // Update the spectrogram to current selected signal
-    if(nb_snd_in_selection>0){
+    if(m_nb_snds_in_selection>0){
         if(gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop){
             gMW->m_gvWaveform->m_scene->update();
             gMW->m_gvAmplitudeSpectrum->m_scene->update();
@@ -383,7 +387,7 @@ void FilesListWidget::fileSelectionChanged() {
         }
     }
 
-    gMW->ui->actionSelectedFilesSave->setEnabled(nb_labels_in_selection>0 || nb_f0_in_selection>0);
+    gMW->ui->actionSelectedFilesSave->setEnabled(m_nb_labels_in_selection>0 || m_nb_fzeros_in_selection>0);
 
     fileInfoUpdate();
 
@@ -449,6 +453,10 @@ void FilesListWidget::selectedFilesClose() {
 
     QList<QListWidgetItem*> l = selectedItems();
     clearSelection();
+    m_nb_snds_in_selection = 0;
+    m_nb_labels_in_selection = 0;
+    m_nb_fzeros_in_selection = 0;
+    gMW->ui->actionSelectedFilesSave->setEnabled(false);
 
     bool removeSelectedSound = false;
 
@@ -476,7 +484,6 @@ void FilesListWidget::selectedFilesClose() {
     }
 
     gMW->m_gvSpectrogram->m_scene->update();
-
     if(removeSelectedSound)
         gMW->m_gvSpectrogram->clearSTFTPlot();
 

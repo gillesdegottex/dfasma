@@ -20,7 +20,7 @@ class FilesListWidget : public QListWidget
     friend class FileType;
 
     // Store which file exists in the list in a tree
-    // TODO Cannot find a way to do it already from the Qt5 library.
+    // I cannot find a way to do it already from the Qt5 library.
     // (FilesListWidget::hasItem returns NULL)
     std::map<FileType*,bool> m_present_files;
     FTSound* m_lastSelectedSound;
@@ -36,8 +36,11 @@ public:
     explicit FilesListWidget(QMainWindow *parent = 0);
 
     std::deque<FTSound*> ftsnds;
+    int m_nb_snds_in_selection;
     std::deque<FTFZero*> ftfzeros;
+    int m_nb_fzeros_in_selection;
     std::deque<FTLabels*> ftlabels;
+    int m_nb_labels_in_selection;
     bool hasFile(FileType *ft) const;
 
     void addExistingFiles(const QStringList& files, FileType::FType type=FileType::FTUNSET);
