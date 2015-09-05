@@ -303,6 +303,8 @@ void QGVAmplitudeSpectrum::amplitudeMinChanged() {
 void QGVAmplitudeSpectrum::updateSceneRect() {
 //    COUTD << "QGVAmplitudeSpectrum::updateSceneRect " << gMW->getFs() << endl;
     m_scene->setSceneRect(0.0, -10, gFL->getFs()/2, (10-gMW->ui->sldAmplitudeSpectrumMin->value()));
+    m_giSpectrogramMax->setLine(QLineF(0, 0, gFL->getFs()/2.0, 0));
+    m_giSpectrogramMin->setLine(QLineF(0, 0, gFL->getFs()/2.0, 0));
 }
 
 void QGVAmplitudeSpectrum::fftResizing(int prevSize, int newSize){
