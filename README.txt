@@ -1,6 +1,6 @@
                                 DFasma
            A tool to compare audio files in time and frequency
-                            Version 1.1.2
+                            Version 1.2.0
                 https://github.com/gillesdegottex/dfasma
 
 
