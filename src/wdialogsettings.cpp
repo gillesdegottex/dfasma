@@ -106,39 +106,42 @@ void WDialogSettings::settingsSave() {
     // Save the particular global settings
     gMW->m_settings.setValue("cbPlaybackAudioOutputDevices", ui->cbPlaybackAudioOutputDevices->currentText());
 
-    // Save the particular settings of different widgets
-    gMW->m_settings.setValue("m_qxtSpectrogramSpanSlider_lower", gMW->m_qxtSpectrogramSpanSlider->lowerValue());
-    gMW->m_settings.setValue("m_qxtSpectrogramSpanSlider_upper", gMW->m_qxtSpectrogramSpanSlider->upperValue());
+    // If some files are loaded, save the geometry of the views
+    if(gFL->count()>0){
+        // Save the particular settings of different widgets
+        gMW->m_settings.setValue("m_qxtSpectrogramSpanSlider_lower", gMW->m_qxtSpectrogramSpanSlider->lowerValue());
+        gMW->m_settings.setValue("m_qxtSpectrogramSpanSlider_upper", gMW->m_qxtSpectrogramSpanSlider->upperValue());
 
-    QString strMain;
-    QList<int> sizeslist = gMW->ui->splitterMain->sizes();
-    for(QList<int>::iterator it=sizeslist.begin(); it!=sizeslist.end(); it++){
-        if(*it==0)
-            strMain += "100 ";
-        else
-            strMain += QString::number(*it) + " ";
-    }
-    gMW->m_settings.setValue("splitterMain", strMain);
+        QString strMain;
+        QList<int> sizeslist = gMW->ui->splitterMain->sizes();
+        for(QList<int>::iterator it=sizeslist.begin(); it!=sizeslist.end(); it++){
+            if(*it==0)
+                strMain += "100 ";
+            else
+                strMain += QString::number(*it) + " ";
+        }
+        gMW->m_settings.setValue("splitterMain", strMain);
 
-    QString strViews;
-    sizeslist = gMW->ui->splitterViews->sizes();
-    for(QList<int>::iterator it=sizeslist.begin(); it!=sizeslist.end(); it++) {
-        if(*it==0)
-            strViews += "100 ";
-        else
-            strViews += QString::number(*it) + " ";
-    }
-    gMW->m_settings.setValue("splitterViews", strViews);
+        QString strViews;
+        sizeslist = gMW->ui->splitterViews->sizes();
+        for(QList<int>::iterator it=sizeslist.begin(); it!=sizeslist.end(); it++) {
+            if(*it==0)
+                strViews += "100 ";
+            else
+                strViews += QString::number(*it) + " ";
+        }
+        gMW->m_settings.setValue("splitterViews", strViews);
 
-    QString strSpectra;
-    sizeslist = gMW->ui->splitterSpectra->sizes();
-    for(QList<int>::iterator it=sizeslist.begin(); it!=sizeslist.end(); it++) {
-        if(*it==0)
-            strSpectra += "100 ";
-        else
-            strSpectra += QString::number(*it) + " ";
+        QString strSpectra;
+        sizeslist = gMW->ui->splitterSpectra->sizes();
+        for(QList<int>::iterator it=sizeslist.begin(); it!=sizeslist.end(); it++) {
+            if(*it==0)
+                strSpectra += "100 ";
+            else
+                strSpectra += QString::number(*it) + " ";
+        }
+        gMW->m_settings.setValue("splitterSpectra", strSpectra);
     }
-    gMW->m_settings.setValue("splitterSpectra", strSpectra);
 }
 void WDialogSettings::settingsClear() {
     gMW->m_settings.clearAll();
