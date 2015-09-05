@@ -120,8 +120,7 @@ deploy:
 
 - provider: FTP
   protocol: ftp
-  host:
-    secure: gillesdegottex.eu
+  host: gillesdegottex.eu
   username:
     secure: hyevsAk3rL4taNeuyDilFw==
   password:
