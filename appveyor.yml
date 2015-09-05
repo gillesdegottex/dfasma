@@ -116,15 +116,15 @@ deploy:
   prerelease: false
   on:
     appveyor_repo_tag: true        # deploy on tag push only
-    #branch: /v\d+\.\d+\.\d+/
+    branch: /v\d+\.\d+\.\d+/
 
 - provider: FTP
   protocol: ftp
   host:
-    secure: bu7qZ02RlXS/tvSE0hVVocHILtuPAUn8Xg9eoBUh6U0=
+    secure: gillesdegottex.eu
   username:
     secure: hyevsAk3rL4taNeuyDilFw==
   password:
     secure: ZUyJJvGHPrOB8b+qchVzxg==
-  folder: /home/
+  folder: /
   artifact: newinstallers
