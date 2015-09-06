@@ -35,7 +35,7 @@ CONFIG += file_audio_libsndfile
 # SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
 #CONFIG += file_sdif
 
-# Precision: precision_double, precision_float
+# Numerical precision. Chose among: precision_double, precision_float
 CONFIG += precision_double
 
 # ------------------------------------------------------------------------------
@@ -80,11 +80,21 @@ CONFIG(precision_float, precision_double|precision_float) {
 CONFIG(file_sdif) {
     message(Files: with SDIF file support)
     DEFINES += SUPPORT_SDIF
-    QMAKE_CXXFLAGS  += -I/u/anasynth/degottex/.local/include/easdif/
+
+#    isEmpty(FILE_SDIF_LIBDIR) {
+#        FILE_SDIF_LIBDIR = "$$_PRO_FILE_PWD_/external/sdif"
+#    }
+
+    unix:LIBS += -lEasdif
+    !isEmpty(FILE_SDIF_LIBDIR){
+        INCLUDEPATH += $$FILE_SDIF_LIBDIR/EASDIF_SDIF
+        LIBS += -L$$FILE_SDIF_LIBDIR/build/lib
+    }
+
+#    INCLUDEPATH += /u/anasynth/degottex/.local/include/easdif/
+#    LIBS += -L/u/anasynth/degottex/.local/lib/x86_64-Linux-rh65/
     #QMAKE_CXXFLAGS  += -I/u/formes/share/include
     #LIBS += /usr/local/lib/libEasdif_static.a
-    LIBS += -L/u/anasynth/degottex/.local/lib/x86_64-Linux-rh65/
-    LIBS += -lEasdif
 }
 
 # Audio file reading libraries -------------------------------------------------
