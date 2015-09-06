@@ -18,7 +18,8 @@
 QMAKENAME=qmake
 
 # For compilation at Ircam with SDIF support
-# OPTIONS="INCLUDEPATH+=/u/formes/share/include LIBS+=-L/u/formes/share/lib/x86_64-Linux-rh65"
+#OPTIONS="INCLUDEPATH+=/u/formes/share/include LIBS+=-L/u/formes/share/lib/x86_64-Linux-rh65 CONFIG+=file_sdif"
+OPTIONS="CONFIG+=file_sdif"
 
 # ------------------------------------------------------------------------------
 
