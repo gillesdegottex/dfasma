@@ -87,8 +87,8 @@ CONFIG(file_sdif) {
 
     unix:LIBS += -lEasdif
     !isEmpty(FILE_SDIF_LIBDIR){
-        INCLUDEPATH += $$FILE_SDIF_LIBDIR/EASDIF_SDIF
-        LIBS += -L$$FILE_SDIF_LIBDIR/build/lib
+        INCLUDEPATH += $$FILE_SDIF_LIBDIR/include
+        LIBS += -L$$FILE_SDIF_LIBDIR/lib
     }
 
 #    INCLUDEPATH += /u/anasynth/degottex/.local/include/easdif/

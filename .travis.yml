@@ -40,8 +40,9 @@ install:
 script:
     # Compile first SDIF itself
     - bash distrib/compile_sdif.sh
-    - if [ "$TRAVIS_OS_NAME" = "linux" ]; then qmake "CONFIG+=file_sdif" "FILE_SDIF_LIBDIR=external/sdif" dfasma.pro; fi
-    - if [ "$TRAVIS_OS_NAME" = "osx" ]; then qmake "CONFIG+=fft_fftw3 file_audio_libsndfile file_sdif" "FILE_AUDIO_LIBDIR=/usr/local/opt/libsndfile" "FFT_LIBDIR=/usr/local/opt/fftw" "FILE_SDIF_LIBDIR=external/sdif" dfasma.pro; fi
+    echo $TRAVIS_BUILD_DIR
+    - if [ "$TRAVIS_OS_NAME" = "linux" ]; then qmake "CONFIG+=file_sdif" "FILE_SDIF_LIBDIR=$TRAVIS_BUILD_DIR/external/sdif/easdif" dfasma.pro; fi
+    - if [ "$TRAVIS_OS_NAME" = "osx" ]; then qmake "CONFIG+=fft_fftw3 file_audio_libsndfile file_sdif" "FILE_AUDIO_LIBDIR=/usr/local/opt/libsndfile" "FFT_LIBDIR=/usr/local/opt/fftw" "FILE_SDIF_LIBDIR=$TRAVIS_BUILD_DIR/external/sdif/easdif" dfasma.pro; fi
     - make
     - if [ "$TRAVIS_OS_NAME" = "osx" ]; then macdeployqt dfasma.app -dmg; fi
     - sleep 1
