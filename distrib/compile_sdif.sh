@@ -1,4 +1,3 @@
-#!/bin/bash
 # Comile Easdif from the sourceforge sources
 
 rm -fr external/sdif
@@ -6,8 +5,6 @@ mkdir -p external/sdif
 cd external/sdif
 # Install path
 mkdir easdif
-INSTALLPATH=$PWD/easdif
-echo $INSTALLPATH
 # Build path
 mkdir build
 
@@ -18,9 +15,8 @@ cd EASDIF_SDIF
 ./autogen.sh
 cd ..
 cd build
-#cmake -DCMAKE_INSTALL_PREFIX:STRING=/usr ../EASDIF_SDIF
-#cmake -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=/usr  ../EASDIF_SDIF
-cmake -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=$INSTALLPATH ../EASDIF_SDIF
+echo $PWD/../easdif
+cmake -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=$PWD/../easdif ../EASDIF_SDIF
 make
 make install
 ls $INSTALLPATH/*
