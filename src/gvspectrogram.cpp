@@ -224,7 +224,7 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_contextmenu.addAction(m_aAutoUpdate);
     m_contextmenu.addSeparator();
     m_contextmenu.addAction(m_aShowProperties);
-    connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
+    connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(show()));
 
     connect(m_dlgSettings->ui->buttonBox->button(QDialogButtonBox::Ok), SIGNAL(clicked()), this, SLOT(updateSTFTSettings()));
     connect(m_dlgSettings->ui->buttonBox->button(QDialogButtonBox::Ok), SIGNAL(clicked()), m_dlgSettings, SLOT(close()));

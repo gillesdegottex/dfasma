@@ -240,7 +240,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_contextmenu.addAction(m_aFollowPlayCursor);
     m_contextmenu.addSeparator();
     m_contextmenu.addAction(m_aShowProperties);
-    connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
+    connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(show()));
     connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(settingsModified()));
 
     connect(gMW->ui->sldAmplitudeSpectrumMin, SIGNAL(valueChanged(int)), this, SLOT(amplitudeMinChanged()));
