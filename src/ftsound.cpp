@@ -177,11 +177,6 @@ void FTSound::constructor_internal() {
     m_actionResetFiltering->setStatusTip(tr("Reset to original signal without filtering effects"));
     connect(m_actionResetFiltering, SIGNAL(triggered()), this, SLOT(needDFTUpdate()));
     connect(m_actionResetFiltering, SIGNAL(triggered()), this, SLOT(resetFiltering()));
-
-    m_actionAnalysisFZero = new QAction("Estimate F0", this);
-    m_actionAnalysisFZero->setStatusTip(tr("Estimate the fundamental frequency (F0)"));
-    m_actionAnalysisFZero->setShortcut(gMW->ui->actionEstimationF0->shortcut());
-//    connect(m_actionAnalysisFZero, SIGNAL(triggered()), this, SLOT(estimateFZero()));
 }
 
 void FTSound::constructor_external() {
@@ -397,7 +392,7 @@ void FTSound::fillContextMenu(QMenu& contextmenu) {
     contextmenu.addAction(m_actionResetDelay);
 
     contextmenu.addSeparator();
-    contextmenu.addAction(m_actionAnalysisFZero);
+    contextmenu.addAction(gMW->ui->actionEstimationF0);
 }
 
 void FTSound::needDFTUpdate() {

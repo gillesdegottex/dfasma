@@ -205,9 +205,6 @@ public:
     QAction* m_actionResetDelay;
     QAction* m_actionResetFiltering;
 
-    // Analysis
-    QAction* m_actionAnalysisFZero;
-
     // To keep public
     // The format is not necessarily reliable since it depends fully on the file-reading library
     QAudioFormat format() const {return m_fileaudioformat;}
