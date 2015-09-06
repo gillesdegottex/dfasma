@@ -525,7 +525,8 @@ void FTFZero::draw_time_freq(QPainter* painter, const QRectF& rect, bool draw_ha
     QColor c = getColor();
     c.setAlphaF(1.0);
     QPen outlinePen(c);
-    outlinePen.setWidth(0);
+    outlinePen.setCosmetic(true);
+    outlinePen.setWidth(3);
     painter->setPen(outlinePen);
     double f0min = ny;
     for(int ti=0; ti<int(ts.size())-1; ++ti){

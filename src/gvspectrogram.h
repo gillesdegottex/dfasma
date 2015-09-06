@@ -48,7 +48,7 @@ class QGVSpectrogram : public QGraphicsView
 
     QTime m_progresswidgets_lastup;
 
-    QGraphicsPathItem* m_giPlayCursor;
+    QGraphicsLineItem* m_giPlayCursor;
 
     FTFZero* m_editing_fzero;
 //    std::deque<QPointF> m_editing_fzero_newvalues; // TODO DELETE

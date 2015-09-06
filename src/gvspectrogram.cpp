@@ -137,17 +137,11 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_scene->addItem(m_giMouseCursorTxtFreq);
 
     // Play Cursor
-    m_giPlayCursor = new QGraphicsPathItem();
+    m_giPlayCursor = new QGraphicsLineItem(0.0, 0.0, 0.0, 100000, NULL);
     QPen playCursorPen(QColor(255, 0, 0));
-    playCursorPen.setWidth(0);
+    playCursorPen.setCosmetic(true);
+    playCursorPen.setWidth(2);
     m_giPlayCursor->setPen(playCursorPen);
-    m_giPlayCursor->setBrush(QBrush(QColor(255, 0, 0)));
-    QPainterPath path;
-    path.moveTo(QPointF(0, 1000000.0));
-    path.lineTo(QPointF(0, 0.0));
-    path.lineTo(QPointF(1, 0.0));
-    path.lineTo(QPointF(1, 1000000.0));
-    m_giPlayCursor->setPath(path);
     playCursorSet(0.0, false);
     m_scene->addItem(m_giPlayCursor);
 
@@ -994,9 +988,6 @@ void QGVSpectrogram::updateTextsGeometry() {
     // Mouse Cursor
     m_giMouseCursorTxtTime->setTransform(txttrans);
     m_giMouseCursorTxtFreq->setTransform(txttrans);
-
-    // Play cursor
-    m_giPlayCursor->setTransform(QTransform::fromScale(1.0/trans.m11(), 1.0));
 
     // Labels
     for(size_t fi=0; fi<gFL->ftlabels.size(); fi++){

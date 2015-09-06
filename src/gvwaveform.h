@@ -63,7 +63,7 @@ public:
     // QGraphicsRectItem* m_giMouseSelection; // For debug purpose
 //    QGraphicsItemGroup* m_yTicksLabels; // TODO Use this instead of print them individually ?
     qreal m_initialPlayPosition;
-    QGraphicsPathItem* m_giPlayCursor;
+    QGraphicsLineItem* m_giPlayCursor;
     QGraphicsRectItem* m_giFilteredSelection;
 
     QGraphicsPathItem* m_giWindow;
