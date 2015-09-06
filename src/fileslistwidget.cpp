@@ -593,10 +593,8 @@ void FilesListWidget::selectedFilesEstimateF0() {
 
         try {
             // If from a sound, generate a new F0 file
-            if(currentfile->is(FileType::FTSOUND)){
-                FTFZero* ftf0 = new FTFZero(gFL, (FTSound*)currentfile, f0min, f0max, tstart, tend, force);
-                gFL->addItem(ftf0);
-            }
+            if(currentfile->is(FileType::FTSOUND))
+                gFL->addItem(new FTFZero(gFL, (FTSound*)currentfile, f0min, f0max, tstart, tend, force));
 
             // If from an F0 file, update it
             if(currentfile->is(FileType::FTFZERO))

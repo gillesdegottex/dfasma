@@ -78,7 +78,6 @@ public:
 
     void edit(double t, double f0);
 
-    QAction* m_actionAnalysisFZero;
     FTSound* m_src_snd;
 
 public slots:

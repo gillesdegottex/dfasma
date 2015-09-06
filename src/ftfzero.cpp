@@ -76,11 +76,6 @@ void FTFZero::constructor_internal(){
     m_actionSaveAs = new QAction("Save as...", this);
     m_actionSaveAs->setStatusTip(tr("Save the f0 curve in a given file..."));
     connect(m_actionSaveAs, SIGNAL(triggered()), this, SLOT(saveAs()));
-
-    m_actionAnalysisFZero = new QAction("Recompute F0", this);
-    m_actionAnalysisFZero->setStatusTip(tr("Re-estimate the fundamental frequency (F0)"));
-    m_actionAnalysisFZero->setShortcut(gMW->ui->actionEstimationF0->shortcut());
-//    connect(m_actionAnalysisFZero, SIGNAL(triggered()), this, SLOT(estimateFZero()));
 }
 
 void FTFZero::constructor_external(){
@@ -451,7 +446,7 @@ void FTFZero::fillContextMenu(QMenu& contextmenu) {
     contextmenu.addAction(m_actionSave);
     contextmenu.addAction(m_actionSaveAs);
     contextmenu.addSeparator();
-    contextmenu.addAction(m_actionAnalysisFZero);
+    contextmenu.addAction(gMW->ui->actionEstimationF0);
 }
 
 void FTFZero::updateTextsGeometry(){
