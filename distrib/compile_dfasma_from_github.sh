@@ -32,7 +32,7 @@ if [ -n "$OPTIONS" ]; then
 fi
 
 # Setup the working directory
-DFASMACOMPDIR=dfasma-from-github
+DFASMACOMPDIR=dfasma_from_github
 if [ -n "$1" ]; then
 	DFASMACOMPDIR=$DFASMACOMPDIR-$1
 fi
