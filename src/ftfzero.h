@@ -76,6 +76,8 @@ public:
     FTFZero(QObject* parent, FTSound *ftsnd, double f0min, double f0max, double tstart=-1.0, double tend=-1.0, bool force=false);
     void estimate(FTSound *ftsnd, double f0min, double f0max, double tstart=-1.0, double tend=-1.0, bool force=false);
 
+    static QString createFileNameFromSound(const QString& sndfilename);
+
     void edit(double t, double f0);
 
     FTSound* m_src_snd;

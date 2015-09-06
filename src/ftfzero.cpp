@@ -55,11 +55,21 @@ FTFZero::ClassConstructor::ClassConstructor(){
         FTFZero::s_formatstrings.push_back("Unspecified");
         FTFZero::s_formatstrings.push_back("Auto");
         FTFZero::s_formatstrings.push_back("Text - Auto");
-        FTFZero::s_formatstrings.push_back("Text - Time Value (*.f0.bpf)");
+        FTFZero::s_formatstrings.push_back("Text - Time Value (*.f0.txt)");
         FTFZero::s_formatstrings.push_back("SDIF - 1FQ0/1FQ0 (*.sdif)");
     }
 }
 FTFZero::ClassConstructor FTFZero::s_class_constructor;
+
+QString FTFZero::createFileNameFromSound(const QString& sndfilename){
+    QString fileName = DropFileExtension(sndfilename);
+
+    if(gMW->m_dlgSettings->ui->cbF0DefaultFormat->currentIndex()+FFAsciiTimeValue==FFSDIF)
+        return fileName+".sdif";
+    else
+        return fileName+".f0.txt";
+}
+
 
 void FTFZero::constructor_internal(){
     m_fileformat = FFNotSpecified;
@@ -596,7 +606,7 @@ void FTFZero::draw_freq_amp(QPainter* painter, const QRectF& rect){
 
 FTFZero::FTFZero(QObject *parent, FTSound *ftsnd, double f0min, double f0max, double tstart, double tend, bool force)
     : QObject(parent)
-    , FileType(FTFZERO, DropFileExtension(ftsnd->fileFullPath)+".f0.txt", this, ftsnd->getColor())
+    , FileType(FTFZERO, createFileNameFromSound(ftsnd->fileFullPath), this, ftsnd->getColor())
 {
     FTFZero::constructor_internal();
 

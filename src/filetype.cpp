@@ -51,8 +51,8 @@ FileType::ClassConstructor::ClassConstructor(){
     if(FileType::s_types_name_and_extensions.empty()){
         FileType::s_types_name_and_extensions.push_back("All files (*)");
         FileType::s_types_name_and_extensions.push_back("Sound (*.wav *.aiff *.pcm *.snd *.flac *.ogg)");
-        FileType::s_types_name_and_extensions.push_back("F0 (*.f0.bpf *.bpf *.sdif)");
-        FileType::s_types_name_and_extensions.push_back("Label (*.bpf *.lab *.sdif)");
+        FileType::s_types_name_and_extensions.push_back("F0 (*.f0.txt *.bpf *.sdif)");
+        FileType::s_types_name_and_extensions.push_back("Label (*.lab *.sdif)");
     }
 }
 FileType::ClassConstructor FileType::s_class_constructor;
