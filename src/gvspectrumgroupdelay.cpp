@@ -99,8 +99,6 @@ QGVSpectrumGroupDelay::QGVSpectrumGroupDelay(WMainWindow* parent)
     m_giShownSelection->setOpacity(0.5);
     gMW->ui->lblSpectrumSelectionTxt->setText("No selection");
 
-    showScrollBars(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow->isChecked());
-    connect(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow, SIGNAL(toggled(bool)), this, SLOT(showScrollBars(bool)));
     setResizeAnchor(QGraphicsView::AnchorViewCenter);
     setMouseTracking(true);
 
@@ -114,17 +112,6 @@ QGVSpectrumGroupDelay::QGVSpectrumGroupDelay(WMainWindow* parent)
 
     connect(gMW->m_gvAmplitudeSpectrum->m_aAmplitudeSpectrumShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
     connect(gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop, SIGNAL(triggered()), m_scene, SLOT(update()));
-}
-
-void QGVSpectrumGroupDelay::showScrollBars(bool show) {
-    if(show) {
-        setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    }
-    else {
-        setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    }
 }
 
 void QGVSpectrumGroupDelay::updateSceneRect() {

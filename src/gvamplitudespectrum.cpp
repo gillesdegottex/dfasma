@@ -207,8 +207,6 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
 
     gMW->ui->lblSpectrumSelectionTxt->setText("No selection");
 
-    showScrollBars(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow->isChecked());
-    connect(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow, SIGNAL(toggled(bool)), this, SLOT(showScrollBars(bool)));
     setResizeAnchor(QGraphicsView::AnchorViewCenter);
     setMouseTracking(true);
 
@@ -248,17 +246,32 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     connect(gMW->ui->sldAmplitudeSpectrumMin, SIGNAL(valueChanged(int)), this, SLOT(amplitudeMinChanged()));
 }
 
-void QGVAmplitudeSpectrum::showScrollBars(bool show) {
-    if(show) {
-        setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-        if(!gMW->ui->actionShowPhaseSpectrum->isChecked())
-            setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+void QGVAmplitudeSpectrum::updateScrollBars(){
+    if(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow->isChecked()){
+        gMW->m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+        gMW->m_gvPhaseSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+        gMW->m_gvSpectrumGroupDelay->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+        if(gMW->ui->actionShowPhaseSpectrum->isChecked()
+           || gMW->ui->actionShowGroupDelaySpectrum->isChecked())
+            gMW->m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        if(gMW->ui->actionShowGroupDelaySpectrum->isChecked()){
+            gMW->m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+            gMW->m_gvPhaseSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        }
+        gMW->m_gvAmplitudeSpectrum->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+        gMW->m_gvPhaseSpectrum->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+        gMW->m_gvSpectrumGroupDelay->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     }
     else {
-        setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        gMW->m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        gMW->m_gvPhaseSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        gMW->m_gvSpectrumGroupDelay->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        gMW->m_gvAmplitudeSpectrum->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        gMW->m_gvPhaseSpectrum->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        gMW->m_gvSpectrumGroupDelay->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     }
 }
+
 
 void QGVAmplitudeSpectrum::settingsModified(){
 //    COUTD << "QGVAmplitudeSpectrum::settingsModified " << gMW->m_gvWaveform->m_mouseSelection << endl;

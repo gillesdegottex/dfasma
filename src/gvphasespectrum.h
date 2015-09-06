@@ -92,8 +92,6 @@ public:
 signals:
     
 public slots:
-    void showScrollBars(bool show);
-
     void updateSceneRect();
 
     void azoomin();

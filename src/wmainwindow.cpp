@@ -213,6 +213,10 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     ui->wSpectrogram->setVisible(ui->actionShowSpectrogram->isChecked());
     connect(ui->pbSpectrogramSTFTUpdate, SIGNAL(clicked()), m_gvSpectrogram, SLOT(updateSTFTSettings()));
 
+    m_gvAmplitudeSpectrum->updateScrollBars();
+    connect(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow, SIGNAL(toggled(bool)), m_gvAmplitudeSpectrum, SLOT(updateScrollBars()));
+
+
     // Link axis' views
     connect(m_gvAmplitudeSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvPhaseSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
     connect(m_gvAmplitudeSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrumGroupDelay->horizontalScrollBar(), SLOT(setValue(int)));
@@ -502,16 +506,7 @@ void WMainWindow::viewsDisplayedChanged() {
     gMW->m_gvWaveform->m_aWaveformShowWindow->setEnabled(ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked() || ui->actionShowGroupDelaySpectrum->isChecked());
 
     // Set the horizontal scroll bars of the spectra
-    m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    m_gvPhaseSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    m_gvSpectrumGroupDelay->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    if(ui->actionShowPhaseSpectrum->isChecked()
-       || ui->actionShowGroupDelaySpectrum->isChecked())
-        m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    if(ui->actionShowGroupDelaySpectrum->isChecked()){
-        m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        m_gvPhaseSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    }
+    m_gvAmplitudeSpectrum->updateScrollBars();
 
     gMW->m_gvAmplitudeSpectrum->selectionSetTextInForm();
 }

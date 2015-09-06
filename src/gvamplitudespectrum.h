@@ -121,7 +121,7 @@ public:
 signals:
     
 public slots:
-    void showScrollBars(bool show);
+    void updateScrollBars();
 
     void setWindowRange(double tstart, double tend);
     void updateSceneRect(); // To call when fs has changed and limits in dB
