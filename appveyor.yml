@@ -116,7 +116,7 @@ deploy:
   prerelease: false
   on:
     appveyor_repo_tag: true        # deploy on tag push only
-    #branch: /v\d+\.\d+\.\d+/
+    #branch: /v\d+\.\d+\.\d+/      # Doesn't work anymore
 
 - provider: FTP
   protocol: ftp

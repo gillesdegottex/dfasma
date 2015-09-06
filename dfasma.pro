@@ -85,16 +85,11 @@ CONFIG(file_sdif) {
 #        FILE_SDIF_LIBDIR = "$$_PRO_FILE_PWD_/external/sdif"
 #    }
 
-    unix:LIBS += -lEasdif
+    LIBS += -lEasdif
     !isEmpty(FILE_SDIF_LIBDIR){
         INCLUDEPATH += $$FILE_SDIF_LIBDIR/include
         LIBS += -L$$FILE_SDIF_LIBDIR/lib
     }
-
-#    INCLUDEPATH += /u/anasynth/degottex/.local/include/easdif/
-#    LIBS += -L/u/anasynth/degottex/.local/lib/x86_64-Linux-rh65/
-    #QMAKE_CXXFLAGS  += -I/u/formes/share/include
-    #LIBS += /usr/local/lib/libEasdif_static.a
 }
 
 # Audio file reading libraries -------------------------------------------------

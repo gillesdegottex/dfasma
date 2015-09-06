@@ -17,7 +17,7 @@
 # You might want to update this depending on your Qt installation
 QMAKENAME=qmake
 
-# For SDIF support
+# For SDIF support (deactivate if it doesn't work for some reasons)
 OPTIONS="CONFIG+=file_sdif"
 # For SDIF support using Ircam's SDIF installation
 #OPTIONS="CONFIG+=file_sdif INCLUDEPATH+=/u/formes/share/include LIBS+=-L/u/formes/share/lib/x86_64-Linux-rh65"
