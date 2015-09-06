@@ -17,9 +17,10 @@
 # You might want to update this depending on your Qt installation
 QMAKENAME=qmake
 
-# For compilation at Ircam with SDIF support
-#OPTIONS="INCLUDEPATH+=/u/formes/share/include LIBS+=-L/u/formes/share/lib/x86_64-Linux-rh65 CONFIG+=file_sdif"
-OPTIONS="CONFIG+=file_sdif FILE_SDIF_LIBDIR=external/sdif"
+# For SDIF support
+OPTIONS="CONFIG+=file_sdif"
+# For SDIF support using Ircam's SDIF installation
+#OPTIONS="CONFIG+=file_sdif INCLUDEPATH+=/u/formes/share/include LIBS+=-L/u/formes/share/lib/x86_64-Linux-rh65"
 
 # ------------------------------------------------------------------------------
 
@@ -27,14 +28,14 @@ printf "\033[0;31mCompiling DFasma from GitHub\033[0m\n"
 
 printf "\033[0;31mUsing: $QMAKENAME\033[0m\n"
 
-if [ -n "$OPTIONS" ]; then
+if [[ -n "$OPTIONS" ]]; then
     printf "\033[0;31mOPTIONS=$OPTIONS\033[0m\n"
 fi
 
 # Setup the working directory
 DFASMACOMPDIR=dfasma_from_github
-if [ -n "$1" ]; then
-	DFASMACOMPDIR=$DFASMACOMPDIR-$1
+if [[ -n "$1" ]]; then
+    DFASMACOMPDIR=$DFASMACOMPDIR-$1
 fi
 
 # Clean everything
@@ -44,10 +45,17 @@ rm -fr $DFASMACOMPDIR
 git clone git://github.com/gillesdegottex/dfasma $DFASMACOMPDIR
 cd $DFASMACOMPDIR
 
+if [[ $OPTIONS == *"file_sdif"* ]]; then
+    if [[ $OPTIONS != *"/u/formes/share"* ]]; then
+        bash distrib/compile_sdif.sh
+        OPTIONS="$OPTIONS FILE_SDIF_LIBDIR=external/sdif"
+    fi
+fi
+
 # If asked, move to the requested tag
-if [ -n "$1" ]; then
-	printf "\033[0;31mReseting at $1\033[0m\n"
-	git reset --hard $1
+if [[ -n "$1" ]]; then
+    printf "\033[0;31mReseting at $1\033[0m\n"
+    git reset --hard $1
 fi
 
 # Pull the submodules
