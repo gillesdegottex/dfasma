@@ -35,7 +35,10 @@ install:
     - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install qt5; fi
     - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH=/usr/local/opt/qt5/bin:$PATH; fi
 
+    # Compile first SDIF itself
+
 script:
+    - bash compile_sdif.sh
     - if [ "$TRAVIS_OS_NAME" = "linux" ]; then qmake dfasma.pro; fi
     - if [ "$TRAVIS_OS_NAME" = "osx" ]; then qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=/usr/local/opt/libsndfile" "FFT_LIBDIR=/usr/local/opt/fftw" dfasma.pro; fi
     - make
