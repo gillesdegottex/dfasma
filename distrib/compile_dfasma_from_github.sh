@@ -45,8 +45,8 @@ rm -fr $DFASMACOMPDIR
 git clone git://github.com/gillesdegottex/dfasma $DFASMACOMPDIR
 cd $DFASMACOMPDIR
 
-if [ $OPTIONS == *"file_sdif"* ]; then
-    if [[ $OPTIONS != *"/u/formes/share"* ]]; then
+if [[ "$OPTIONS" == *"file_sdif"* ]]; then
+    if [[ "$OPTIONS" != *"/u/formes/share"* ]]; then
         bash distrib/compile_sdif.sh
         OPTIONS="$OPTIONS FILE_SDIF_LIBDIR=external/sdif"
     fi
