@@ -33,5 +33,6 @@
         <file>icons/spectrumamplitude.svg</file>
         <file>icons/spectrumphase.svg</file>
         <file>icons/spectrumgroupdelay.svg</file>
+        <file>doc_content.html</file>
     </qresource>
 </RCC>

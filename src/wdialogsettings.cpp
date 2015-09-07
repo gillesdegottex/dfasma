@@ -94,6 +94,15 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     gMW->m_settings.add(ui->dsbEstimationF0Min);
     gMW->m_settings.add(ui->dsbEstimationF0Max);
 
+    // Load the documentation
+    QFile docfile(":/doc_content.html");
+    docfile.open(QFile::ReadOnly | QFile::Text);
+    QString style = "<style>li { margin-bottom: 0.5em; }\n h4 { margin-top: 1.5em; margin-bottom: 0em; }</style>";
+    ui->textBrowser->insertHtml(style+QTextStream(&docfile).readAll());
+    QTextCursor txtcursor;
+    txtcursor.movePosition(QTextCursor::Start);
+    ui->textBrowser->setTextCursor(txtcursor);
+    
     ui->lblAudioOutputDeviceFormat->hide();
     adjustSize();
 }
