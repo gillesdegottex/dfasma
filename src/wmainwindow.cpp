@@ -103,9 +103,12 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     m_qxtSpectrogramSpanSlider->setMaximum(100);
     m_qxtSpectrogramSpanSlider->setUpperValue(90);
     m_qxtSpectrogramSpanSlider->setLowerValue(10);
+    m_qxtSpectrogramSpanSlider->setMinimumWidth(18);
+    m_qxtSpectrogramSpanSlider->setMaximumWidth(18);
+    m_qxtSpectrogramSpanSlider->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
     m_qxtSpectrogramSpanSlider->setMaximumWidth(ui->sldWaveformAmplitude->maximumWidth());
     m_qxtSpectrogramSpanSlider->setHandleMovementMode(QxtSpanSlider::NoOverlapping);
-    ui->horizontalLayout_6->insertWidget(1, m_qxtSpectrogramSpanSlider);
+    ui->lSpectrogramSliders->insertWidget(1, m_qxtSpectrogramSpanSlider);
 
     m_dlgSettings = new WDialogSettings(this);
 
