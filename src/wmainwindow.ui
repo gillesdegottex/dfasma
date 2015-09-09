@@ -256,7 +256,7 @@
            <item>
             <widget class="QLabel" name="lblSpectrogramSelectionTxt">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Ignored" vsizetype="Minimum">
+              <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
@@ -264,6 +264,12 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
                <height>20</height>
               </size>
              </property>
@@ -286,6 +292,18 @@
            </item>
            <item>
             <widget class="QPushButton" name="pbSpectrogramSTFTUpdate">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
              <property name="maximumSize">
               <size>
                <width>20</width>
@@ -352,7 +370,7 @@
               <item>
                <widget class="QProgressBar" name="pgbSpectrogramSTFTCompute">
                 <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Ignored">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
@@ -360,7 +378,7 @@
                 <property name="minimumSize">
                  <size>
                   <width>100</width>
-                  <height>0</height>
+                  <height>12</height>
                  </size>
                 </property>
                 <property name="maximumSize">
@@ -381,6 +399,18 @@
               </item>
               <item>
                <widget class="QPushButton" name="pbSTFTComputingCancel">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>20</width>
+                  <height>20</height>
+                 </size>
+                </property>
                 <property name="maximumSize">
                  <size>
                   <width>20</width>
@@ -494,7 +524,7 @@
            <item>
             <widget class="QLabel" name="lblSpectrumSelectionTxt">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Ignored" vsizetype="Minimum">
+              <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
@@ -537,7 +567,7 @@
            <item>
             <widget class="QProgressBar" name="pgbFFTResize">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
@@ -545,7 +575,7 @@
              <property name="minimumSize">
               <size>
                <width>100</width>
-               <height>0</height>
+               <height>12</height>
               </size>
              </property>
              <property name="maximumSize">
@@ -807,7 +837,7 @@
     <string>Open...</string>
    </property>
    <property name="toolTip">
-    <string>Open a sound file...</string>
+    <string>Open a file...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>

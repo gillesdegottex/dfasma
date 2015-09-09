@@ -102,7 +102,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     m_qxtSpectrogramSpanSlider->setMinimum(0);
     m_qxtSpectrogramSpanSlider->setMaximum(100);
     m_qxtSpectrogramSpanSlider->setUpperValue(90);
-    m_qxtSpectrogramSpanSlider->setLowerValue(10);
+    m_qxtSpectrogramSpanSlider->setLowerValue(30);
     m_qxtSpectrogramSpanSlider->setMinimumWidth(18);
     m_qxtSpectrogramSpanSlider->setMaximumWidth(18);
     m_qxtSpectrogramSpanSlider->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
