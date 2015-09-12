@@ -500,6 +500,7 @@ void WMainWindow::updateViewsAfterAddFile(bool isfirsts) {
             ui->actionFileNew->setEnabled(true);
         }
         allSoundsChanged();
+        m_gvSpectrogram->updateSTFTSettings(); // This will update the window computation AND trigger the STFT computation
     }
 }
 
