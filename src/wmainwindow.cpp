@@ -315,6 +315,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 
     // This one seems able to open distant files because file paths arrive in gvfs format
     // in the main.
+    // Doesn't work any more (at least with sftp). The gvfs "miracle" might not be very reliable.
     m_fileslist->addExistingFiles(files);
     updateViewsAfterAddFile(true);
 

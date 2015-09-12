@@ -67,7 +67,6 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("DFasma");
     QCoreApplication::setOrganizationDomain("gillesdegottex.eu");
     QCoreApplication::setApplicationName("DFasma");
-
     a.setWindowIcon(QIcon(":/icons/dfasma.svg"));
 
     QStringList filestoload = QApplication::arguments();
@@ -84,12 +83,12 @@ int main(int argc, char *argv[])
     #endif
     #ifdef FILE_AUDIO_LIBSOX
         sox_quit();
-    #endif
+    #endif   
 
     delete w;
 
 //    COUTD << ret << std::endl;
-    exit(ret); // WORKAROUND?: won't quit otherwise on some platform (e.g. bouzouki) TODO
+    exit(ret); // WORKAROUND?: won't quit otherwise on some platform (e.g. bouzouki) TODO This is surely related to some seg fault on exit
 
     return ret;
 }
