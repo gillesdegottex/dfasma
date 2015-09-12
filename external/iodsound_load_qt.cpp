@@ -49,13 +49,14 @@ AudioDecoder::AudioDecoder()
     format.setChannelCount(1);
     format.setSampleSize(16);
     format.setSampleRate(44100);
-    format.setCodec("audio/pcm");
-//    format.setCodec("audio/x-raw");
+//    format.setCodec("audio/pcm");
+    format.setCodec("audio/x-raw");
     format.setSampleType(QAudioFormat::SignedInt);
 //    format.setSampleType(QAudioFormat::UnSignedInt);
 
     m_decoder.setAudioFormat(format);
 
+    COUTD << m_decoder.audioFormat() << endl;
 
     connect(&m_decoder, SIGNAL(bufferReady()), this, SLOT(readBuffer()));
     connect(&m_decoder, SIGNAL(error(QAudioDecoder::Error)), this, SLOT(error(QAudioDecoder::Error)));
@@ -95,6 +96,8 @@ void AudioDecoder::readBuffer()
     QAudioBuffer buffer = m_decoder.read();
     if (!buffer.isValid())
         return;
+
+    FLAG
 
 //    if (!m_fileWriter.isOpen() && !m_fileWriter.open(m_targetFilename, buffer.format())) {
 //        m_decoder.stop();
@@ -190,6 +193,8 @@ int FTSound::getNumberOfChannels(const QString &filePath){
     if(nchan==-1)
         throw QString("Qt file reader: Cannot read the number of channels in this file.");
 
+    COUTD << nchan << endl;
+
     return nchan;
 }
 
@@ -207,10 +212,12 @@ void FTSound::load(int channelid){
 //    desiredFormat.setSampleSize(16);
 
     AudioDecoder *decoder = new AudioDecoder();
-//    decoder->setAudioFormat(desiredFormat);
     decoder->setSourceFilename(fileFullPath);
 
-    QAudioFormat format = decoder->m_decoder.audioFormat();
+    m_fileaudioformat = decoder->m_decoder.audioFormat();
+
+    COUTD << m_fileaudioformat << endl;
+    setSamplingRate(m_fileaudioformat.sampleRate());
 
 //    connect(decoder, SIGNAL(bufferReady()), this, SLOT(readBuffer()));
     decoder->start();
@@ -225,5 +232,5 @@ void FTSound::load(int channelid){
 //            wav.push_back(data[n]);
 //    };
 
-    delete decoder;
+//    delete decoder; // TODO should be done somewhere
 }
