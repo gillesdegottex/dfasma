@@ -65,11 +65,14 @@ void FilesListWidget::changeFileListItemsSize() {
 void FilesListWidget::checkFileModifications(){
 //    cout << "GET FOCUS " << QDateTime::currentMSecsSinceEpoch() << endl;
     for(size_t fi=0; fi<ftsnds.size(); fi++)
-        ftsnds[fi]->checkFileStatus();
+        if(!ftsnds[fi]->isDistantFile())
+            ftsnds[fi]->checkFileStatus();
     for(size_t fi=0; fi<ftfzeros.size(); fi++)
-        ftfzeros[fi]->checkFileStatus();
+        if(!ftfzeros[fi]->isDistantFile())
+            ftfzeros[fi]->checkFileStatus();
     for(size_t fi=0; fi<ftlabels.size(); fi++)
-        ftlabels[fi]->checkFileStatus();
+        if(!ftlabels[fi]->isDistantFile())
+            ftlabels[fi]->checkFileStatus();
 
     gFL->fileInfoUpdate();
 }
@@ -121,6 +124,9 @@ void FilesListWidget::addExistingFilesRecursive(const QStringList& files, FileTy
 
 void FilesListWidget::addExistingFiles(const QStringList& files, FileType::FType type) {
 //    COUTD << "WMainWindow::addFiles " << files.size() << endl;
+
+//    for(size_t i=0; i<files.size(); ++i)
+//        COUTD << files[i] << endl;
 
     // These progress dialogs HAVE to be built on the stack otherwise ghost dialogs appear.
     QProgressDialog prgdlg("Opening files...", "Abort", 0, files.size(), this);

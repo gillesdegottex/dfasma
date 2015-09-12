@@ -45,6 +45,7 @@ private:
     QColor m_color;
     bool m_is_editing; // True if the file is currently under edition and the icon is changed accordingly.
     bool m_is_source;  // True if the file has to show the source symbol.
+    bool m_is_distant; // True if this is a distant file (e.g. accessible through gfvs)
 
 protected:
     bool m_is_edited;   // True if the file has been modified and might need to be saved.
@@ -68,6 +69,7 @@ public:
     QString visibleName;    // The name shown in the File List
 
     const QColor& getColor() const {return m_color;}
+    bool isDistantFile() const {return m_is_distant;}
 
     QAction* m_actionShow;
 

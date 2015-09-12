@@ -721,7 +721,7 @@ void FTLabels::save() {
     m_is_edited = false;
     checkFileStatus(CFSMEXCEPTION);
     gFL->fileInfoUpdate();
-    gMW->statusBar()->showMessage(fileFullPath+" saved.", 10000);
+    gMW->statusBar()->showMessage(fileFullPath+" saved.", 3000);
 }
 
 

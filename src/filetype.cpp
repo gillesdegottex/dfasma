@@ -243,6 +243,7 @@ void FileType::constructor_internal(){
     m_is_editing = false;
     m_is_edited = false;
     m_is_source = false;
+    m_is_distant = false;
 
     m_actionShow = new QAction("Show", NULL); // All subclasses are QObject
     m_actionShow->setStatusTip("Show this file in the views");
@@ -276,6 +277,7 @@ void FileType::setFullPath(const QString& fp){
     visibleName = fileInfo.fileName();
     setText(visibleName);
     setToolTip(fileInfo.absoluteFilePath());
+    m_is_distant = fp.contains("/run/") && fp.contains("/gvfs/");
 }
 
 QString FileType::info() const {
@@ -283,18 +285,24 @@ QString FileType::info() const {
     QString str;
 
     QString datestr = m_lastreadtime.toString("HH:mm:ss ddMMM");
-    if(m_modifiedtime>m_lastreadtime) datestr = "<b>"+datestr+"</b>";
+    if(m_modifiedtime>m_lastreadtime)
+        datestr = "<b>"+datestr+"</b>";
     if(m_lastreadtime!=QDateTime())
         str += "Loaded at "+datestr+"<br/>";
 
-    if(m_lastreadtime==QDateTime())
-        str += "<b>Not saved yet</b>";
-    else if(m_modifiedtime==QDateTime())
-        str += "<b>Currently inaccessible</b>";
+    if(m_is_distant){
+        str += "Distant file (external modifications not tracked)";
+    }
     else{
-        datestr = m_modifiedtime.toString("HH:mm:ss ddMMM");
-        if(m_modifiedtime>m_lastreadtime) datestr = "<b>"+datestr+"</b>";
-        str += "Last file modification at "+datestr;
+        if(m_lastreadtime==QDateTime())
+            str += "<b>Not saved yet</b>";
+        else if(m_modifiedtime==QDateTime())
+            str += "<b>Currently inaccessible</b>";
+        else{
+            datestr = m_modifiedtime.toString("HH:mm:ss ddMMM");
+            if(m_modifiedtime>m_lastreadtime) datestr = "<b>"+datestr+"</b>";
+            str += "Last file modification at "+datestr;
+        }
     }
 
     str += "<hr/>";
