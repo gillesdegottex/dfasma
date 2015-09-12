@@ -35,7 +35,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QSettings>
 
 #include "fileslistwidget.h"
-#include "QSettingsAuto.h"
+#include "qaesettingsauto.h"
 #include "wdialogsettings.h"
 #include "filetype.h"
 
@@ -120,7 +120,7 @@ public:
     ~WMainWindow();
     bool isLoading() const {return m_loading;}
 
-    QSettingsAuto m_settings;
+    QAESettingsAuto m_settings;
     WDialogSettings* m_dlgSettings;
     Ui::WMainWindow* ui;
 

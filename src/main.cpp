@@ -43,7 +43,7 @@ extern "C" {
 
 #include <iostream>
 
-#include "qthelper.h"
+#include "qaehelpers.h"
 
 int main(int argc, char *argv[])
 {

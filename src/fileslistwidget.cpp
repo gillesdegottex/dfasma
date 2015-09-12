@@ -20,7 +20,7 @@
 
 #include <fstream>
 
-#include "qthelper.h"
+#include "qaehelpers.h"
 
 FilesListWidget* gFL = NULL;
 

@@ -4,13 +4,13 @@
 #include <QThread>
 #include <QMutex>
 
-#include "sigproc.h"
+#include "qaesigproc.h"
 
 class FFTResizeThread : public QThread
 {
     Q_OBJECT
 
-    sigproc::FFTwrapper* m_fft;   // The FFT transformer
+    qae::FFTwrapper* m_fft;   // The FFT transformer
 
     int m_size_resizing;// The size which is in preparation by FFTResizeThread
     int m_size_todo;    // The next size which has to be done by FFTResizeThread asap
@@ -22,7 +22,7 @@ signals:
     void fftResized(int prevSize, int newSize);
 
 public:
-    FFTResizeThread(sigproc::FFTwrapper* fft, QObject* parent);
+    FFTResizeThread(qae::FFTwrapper* fft, QObject* parent);
 
     void resize(int newsize); // Entry point
 

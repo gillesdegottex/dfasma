@@ -28,7 +28,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "gvspectrogram.h"
 #include "ftsound.h"
 #include "ftfzero.h"
-#include "sigproc.h"
+#include "qaesigproc.h"
 #include "ui_wdialogsettings.h"
 
 #include <iostream>
@@ -43,7 +43,7 @@ using namespace std;
 #include <QStaticText>
 #include <QDebug>
 
-#include "qthelper.h"
+#include "qaehelpers.h"
 
 QGVSpectrumGroupDelay::QGVSpectrumGroupDelay(WMainWindow* parent)
     : QGraphicsView(parent)
@@ -700,7 +700,7 @@ void QGVSpectrumGroupDelay::drawBackground(QPainter* painter, const QRectF& rect
             painter->setBrush(QBrush(gFL->ftfzeros[fi]->getColor()));
 
             double ct = 0.5*(gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.nl+gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.nr)/gFL->getFs();
-            double cf0 = sigproc::nearest<double>(gFL->ftfzeros[fi]->ts, gFL->ftfzeros[fi]->f0s, ct, -1.0);
+            double cf0 = qae::nearest<double>(gFL->ftfzeros[fi]->ts, gFL->ftfzeros[fi]->f0s, ct, -1.0);
 
             // cout << ct << ":" << cf0 << endl;
             if(cf0==-1) continue;

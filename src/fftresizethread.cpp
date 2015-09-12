@@ -1,11 +1,11 @@
 #include "fftresizethread.h"
 
-#include "sigproc.h"
+#include "qaesigproc.h"
 
-#include "qthelper.h"
+#include "qaehelpers.h"
 #include <QTextStream>
 
-FFTResizeThread::FFTResizeThread(sigproc::FFTwrapper* fft, QObject* parent)
+FFTResizeThread::FFTResizeThread(qae::FFTwrapper* fft, QObject* parent)
     : QThread(parent)
     , m_fft(fft)
     , m_size_resizing(-1)

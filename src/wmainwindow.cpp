@@ -69,7 +69,7 @@ using namespace std;
 #include <QMimeData>
 #include <QScrollBar>
 #include <QProgressDialog>
-#include "qthelper.h"
+#include "qaehelpers.h"
 
 #ifdef SUPPORT_SDIF
     #include <easdif/easdif.h>

@@ -5,7 +5,7 @@
 
 #include <QSettings>
 
-#include "qthelper.h"
+#include "qaehelpers.h"
 
 GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(QGVSpectrogram* parent) :
     QDialog((QWidget*)parent),
@@ -46,7 +46,7 @@ GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(QGVSpectrogram* paren
     gMW->m_settings.add(ui->gbSpectrogramCepstralLiftering);
     gMW->m_settings.add(ui->sbSpectrogramCepstralLifteringOrder);
     gMW->m_settings.add(ui->cbSpectrogramCepstralLifteringPreserveDC);
-    QStringList colormaps = ColorMap::getAvailableColorMaps();
+    QStringList colormaps = QAEColorMap::getAvailableColorMaps();
     for(QStringList::Iterator it=colormaps.begin(); it!=colormaps.end(); ++it)
         ui->cbSpectrogramColorMaps->addItem(*it);
     ui->cbSpectrogramColorMaps->setCurrentIndex(1);

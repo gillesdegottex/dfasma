@@ -35,7 +35,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "gvspectrogram.h"
 #include "ftsound.h"
 #include "ftfzero.h"
-#include "sigproc.h"
+#include "qaesigproc.h"
 
 #include <iostream>
 #include <algorithm>
@@ -53,7 +53,7 @@ using namespace std;
 #include <QScrollBar>
 #include <QToolTip>
 
-#include "qthelper.h"
+#include "qaehelpers.h"
 
 QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     : QGraphicsView(parent)
@@ -112,8 +112,8 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_aFollowPlayCursor->setChecked(false);
     gMW->m_settings.add(m_aFollowPlayCursor);
 
-    m_fft = new sigproc::FFTwrapper();
-    sigproc::FFTwrapper::setTimeLimitForPlanPreparation(m_dlgSettings->ui->sbAmplitudeSpectrumFFTW3MaxTimeForPlanPreparation->value());
+    m_fft = new qae::FFTwrapper();
+    qae::FFTwrapper::setTimeLimitForPlanPreparation(m_dlgSettings->ui->sbAmplitudeSpectrumFFTW3MaxTimeForPlanPreparation->value());
     m_fftresizethread = new FFTResizeThread(m_fft, this);
 
     // Cursor
@@ -364,27 +364,27 @@ void QGVAmplitudeSpectrum::setWindowRange(qreal tstart, qreal tend){
        || wintype>7){
 
         if(wintype==0)
-            m_win = sigproc::rectangular(newDFTParams.winlen);
+            m_win = qae::rectangular(newDFTParams.winlen);
         else if(wintype==1)
-            m_win = sigproc::hamming(newDFTParams.winlen);
+            m_win = qae::hamming(newDFTParams.winlen);
         else if(wintype==2)
-            m_win = sigproc::hann(newDFTParams.winlen);
+            m_win = qae::hann(newDFTParams.winlen);
         else if(wintype==3)
-            m_win = sigproc::blackman(newDFTParams.winlen);
+            m_win = qae::blackman(newDFTParams.winlen);
         else if(wintype==4)
-            m_win = sigproc::blackmannutall(newDFTParams.winlen);
+            m_win = qae::blackmannutall(newDFTParams.winlen);
         else if(wintype==5)
-            m_win = sigproc::blackmanharris(newDFTParams.winlen);
+            m_win = qae::blackmanharris(newDFTParams.winlen);
         else if(wintype==6)
-            m_win = sigproc::nutall(newDFTParams.winlen);
+            m_win = qae::nutall(newDFTParams.winlen);
         else if(wintype==7)
-            m_win = sigproc::flattop(newDFTParams.winlen);
+            m_win = qae::flattop(newDFTParams.winlen);
         else if(wintype==8)
-            m_win = sigproc::normwindow(newDFTParams.winlen, m_dlgSettings->ui->spAmplitudeSpectrumWindowNormSigma->value());
+            m_win = qae::normwindow(newDFTParams.winlen, m_dlgSettings->ui->spAmplitudeSpectrumWindowNormSigma->value());
         else if(wintype==9)
-            m_win = sigproc::expwindow(newDFTParams.winlen, m_dlgSettings->ui->spAmplitudeSpectrumWindowExpDecay->value());
+            m_win = qae::expwindow(newDFTParams.winlen, m_dlgSettings->ui->spAmplitudeSpectrumWindowExpDecay->value());
         else if(wintype==10)
-            m_win = sigproc::gennormwindow(newDFTParams.winlen, m_dlgSettings->ui->spAmplitudeSpectrumWindowNormSigma->value(), m_dlgSettings->ui->spAmplitudeSpectrumWindowNormPower->value());
+            m_win = qae::gennormwindow(newDFTParams.winlen, m_dlgSettings->ui->spAmplitudeSpectrumWindowNormSigma->value(), m_dlgSettings->ui->spAmplitudeSpectrumWindowNormPower->value());
         else
             throw QString("No window selected");
 
@@ -1237,8 +1237,8 @@ void QGVAmplitudeSpectrum::aunzoom(){
         ymin = std::min(ymin, gFL->ftsnds[fi]->m_dft_min);
         ymax = std::max(ymax, gFL->ftsnds[fi]->m_dft_max);
     }
-    ymin = sigproc::log2db*ymin-3;
-    ymax = sigproc::log2db*ymax+3;
+    ymin = qae::log2db*ymin-3;
+    ymax = qae::log2db*ymax+3;
 
     QRectF rect = QRectF(0.0, -ymax, gFL->getFs()/2, (ymax-ymin));
 
@@ -1302,7 +1302,7 @@ void QGVAmplitudeSpectrum::setMouseCursorPosition(QPointF p, bool forwardsync) {
 
         QString freqstr = QString("%1Hz").arg(m_giCursorVert->line().x1());
         if(gMW->m_dlgSettings->ui->cbViewsShowMusicNoteNames->isChecked())
-            freqstr += "("+sigproc::h2n(sigproc::f2h(m_giCursorVert->line().x1()))+")";
+            freqstr += "("+qae::h2n(qae::f2h(m_giCursorVert->line().x1()))+")";
         m_giCursorPositionXTxt->setText(freqstr);
         m_giCursorPositionXTxt->setPos(x, viewrect.top()-2/trans.m22());
 
@@ -1341,8 +1341,8 @@ void QGVAmplitudeSpectrum::drawBackground(QPainter* painter, const QRectF& rect)
         int dftlen = 4096;
         std::vector<std::complex<WAVTYPE> > elc(dftlen/2, 0.0);
         for(size_t u=0; u<elc.size(); ++u){
-            elc[u] = sigproc::equalloudnesscurvesISO226(fs*double(u)/dftlen, 0);
-            elc[u] = -elc[u]/sigproc::log2db;
+            elc[u] = qae::equalloudnesscurvesISO226(fs*double(u)/dftlen, 0);
+            elc[u] = -elc[u]/qae::log2db;
         }
         draw_spectrum(painter, elc, fs, 1.0, rect);
     }
@@ -1447,10 +1447,10 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
 
         double prevx = fs*kmin/dftlen;
         std::complex<WAVTYPE>* yp = ldft.data();
-        double prevy = sigproc::log2db*(lascale+yp[kmin].real());
+        double prevy = qae::log2db*(lascale+yp[kmin].real());
         for(int k=kmin+1; k<=kmax; ++k){
             double x = fs*k/dftlen;
-            double y = sigproc::log2db*(lascale+yp[k].real());
+            double y = qae::log2db*(lascale+yp[k].real());
             if(y<-10*viewrect.bottom()) y=-10*viewrect.bottom();
             painter->drawLine(QLineF(prevx, -prevy, x, -y));
             prevx = x;
@@ -1468,7 +1468,7 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
         double s2p = -(fullpixrect.height()-1)/viewrect.height(); // Scene to pixel
         double p2s = viewrect.width()/fullpixrect.width(); // Pixel to scene
         double yzero = mapFromScene(QPointF(0,0)).y();
-        double yinfmin = -viewrect.bottom()/sigproc::log2db; // Nothing seen below this
+        double yinfmin = -viewrect.bottom()/qae::log2db; // Nothing seen below this
 
         std::complex<WAVTYPE>* yp = ldft.data();
 
@@ -1488,8 +1488,8 @@ void QGVAmplitudeSpectrum::draw_spectrum(QPainter* painter, std::vector<std::com
                     ymax = std::max(ymax, y);
                     ypp++;
                 }
-                ymin = sigproc::log2db*(ymin);
-                ymax = sigproc::log2db*(ymax);
+                ymin = qae::log2db*(ymin);
+                ymax = qae::log2db*(ymax);
                 ymin *= s2p;
                 ymax *= s2p;
                 ymin = int(ymin-1);

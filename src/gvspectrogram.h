@@ -32,7 +32,7 @@ class QTime;
 
 #include "wmainwindow.h"
 
-#include "sigproc.h"
+#include "qaesigproc.h"
 #include "ftsound.h"
 
 class GVSpectrogramWDialogSettings;

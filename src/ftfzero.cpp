@@ -45,7 +45,7 @@ using namespace Easdif;
 #include "gvwaveform.h"
 #include "gvamplitudespectrum.h"
 
-#include "qthelper.h"
+#include "qaehelpers.h"
 
 std::deque<QString> FTFZero::s_formatstrings;
 FTFZero::ClassConstructor::ClassConstructor(){
@@ -575,7 +575,7 @@ void FTFZero::draw_freq_amp(QPainter* painter, const QRectF& rect){
         ct = 0.5*(gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.nl+gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.nr)/gFL->getFs();
     else
         ct = gMW->m_gvWaveform->getPlayCursorPosition();
-    double cf0 = sigproc::nearest<double>(ts, f0s, ct, -1.0);
+    double cf0 = qae::nearest<double>(ts, f0s, ct, -1.0);
 
     if(cf0==-1)
         return;

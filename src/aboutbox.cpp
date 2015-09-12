@@ -3,7 +3,9 @@
 
 #include <QFile>
 #include <QTextStream>
-#include "qthelper.h"
+#include "qaehelpers.h"
+#include "qaesigproc.h"
+#include "ftsound.h"
 
 #ifdef SUPPORT_SDIF
     #include <easdif/easdif.h>
@@ -80,7 +82,7 @@ AboutBox::AboutBox(QWidget *parent) :
 
     // FFT
     QString fftinfostr = "";
-    fftinfostr += "<i>Fast Fourier Transform (FFT):</i> "+sigproc::FFTwrapper::getLibraryInfo();
+    fftinfostr += "<i>Fast Fourier Transform (FFT):</i> "+qae::FFTwrapper::getLibraryInfo();
     fftinfostr += " ("+QString::number(sizeof(FFTTYPE)*8)+"bits(";
     if(sizeof(FFTTYPE)==4)  fftinfostr += "single";
     if(sizeof(FFTTYPE)==8)  fftinfostr += "double";

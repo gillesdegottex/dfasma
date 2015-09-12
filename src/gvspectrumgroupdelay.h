@@ -28,7 +28,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QMenu>
 #include <QToolBar>
 
-#include "sigproc.h"
+#include "qaesigproc.h"
 #include "ftsound.h"
 
 //class GVPhaseSpectrumWDialogSettings;

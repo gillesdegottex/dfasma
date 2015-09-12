@@ -54,7 +54,7 @@ using namespace std;
 #include <QMessageBox>
 #include "../external/audioengine/audioengine.h"
 
-#include "qthelper.h"
+#include "qaehelpers.h"
 
 QGVWaveform::QGVWaveform(WMainWindow* parent)
     : QGraphicsView(parent)
@@ -1294,7 +1294,8 @@ void QGVWaveform::draw_allwaveforms(QPainter* painter, const QRectF& rect){
 }
 
 void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* snd){
-    if(!snd->m_actionShow->isChecked())
+    if(!snd->m_actionShow->isChecked()
+        || snd->wavtoplay->empty())
         return;
 
     double fs = gFL->getFs();

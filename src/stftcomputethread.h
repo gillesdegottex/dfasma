@@ -4,14 +4,14 @@
 #include <QThread>
 #include <QMutex>
 
-#include "sigproc.h"
+#include "qaesigproc.h"
 class FTSound;
 
 class STFTComputeThread : public QThread
 {
     Q_OBJECT
 
-    sigproc::FFTwrapper* m_fft;   // The FFT transformer
+    qae::FFTwrapper* m_fft;   // The FFT transformer
 
     bool m_computing;
 

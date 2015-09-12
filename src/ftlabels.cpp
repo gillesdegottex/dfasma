@@ -47,13 +47,13 @@ using namespace Easdif;
 #include <QTextStream>
 #include <QTextCodec>
 
+#include "qaehelpers.h"
+
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "ui_wdialogsettings.h"
 #include "gvwaveform.h"
 #include "gvspectrogram.h"
-#include "qthelper.h"
-
 
 bool FTGraphicsLabelItem::s_isEditing = false;
 

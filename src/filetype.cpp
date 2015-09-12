@@ -39,7 +39,7 @@ using namespace std;
 using namespace Easdif;
 #endif
 
-#include "qthelper.h"
+#include "qaehelpers.h"
 
 // Class-related ===============================================================
 

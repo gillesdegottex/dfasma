@@ -1,16 +1,16 @@
 #include "stftcomputethread.h"
 
-#include "sigproc.h"
+#include <QtGlobal>
+
+#include "qaesigproc.h"
 
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "ftsound.h"
-#include "qthelper.h"
+#include "qaehelpers.h"
 #include "../external/libqxt/qxtspanslider.h"
-#include "colormap.h"
+#include "qaecolormap.h"
 #include "ftsound.h"
-
-#include <QtGlobal>
 
 STFTComputeThread::STFTParameters::STFTParameters(FTSound* reqnd, const std::vector<FFTTYPE>& reqwin, int reqstepsize, int reqdftlen, int reqcepliftorder, bool reqcepliftpresdc){
     clear();
@@ -52,7 +52,7 @@ bool STFTComputeThread::STFTParameters::operator==(const STFTParameters& param) 
 STFTComputeThread::STFTComputeThread(QObject* parent)
     : QThread(parent)
 {
-    m_fft = new sigproc::FFTwrapper();
+    m_fft = new qae::FFTwrapper();
 //    setPriority(QThread::IdlePriority);
 }
 
@@ -60,6 +60,10 @@ void STFTComputeThread::compute(ImageParameters reqImgSTFTParams) {
 
     if(reqImgSTFTParams.stftparams.win.size()<2)
         throw QString("Window's length is too short");
+
+    if(reqImgSTFTParams.stftparams.snd->wav.empty())
+        return; // TODO
+//        throw QString("Sound is empty");
 
     m_mutex_changingparams.lock();
 
@@ -212,7 +216,7 @@ void STFTComputeThread::run() {
                                     stft[si][n] = stft[si][n-1];
                             }
                             hspec2rcc(stft[si], m_fft, cc);
-                            std::vector<FFTTYPE> win = sigproc::hamming(params_running.stftparams.cepliftorder*2+1);
+                            std::vector<FFTTYPE> win = qae::hamming(params_running.stftparams.cepliftorder*2+1);
                             for(int n=0; n<params_running.stftparams.cepliftorder && n<int(cc.size())-1; ++n)
                                 cc[n+1] *= win[n];
                             if(!params_running.stftparams.cepliftpresdc)
@@ -229,7 +233,7 @@ void STFTComputeThread::run() {
 
                         // Convert to [dB] and compute min and max magnitudes[dB]
                         for(n=0; n<dftlen/2+1; n++) {
-                            FFTTYPE value = sigproc::log2db*stft[si][n];
+                            FFTTYPE value = qae::log2db*stft[si][n];
 
                             if(qIsNaN(value))
                                 value = -std::numeric_limits<FFTTYPE>::infinity();
@@ -302,7 +306,7 @@ void STFTComputeThread::run() {
                 int stftlen = int(params_running.stftparams.snd->m_stft.size());
                 bool colormap_reversed = params_running.colormap_reversed;
 
-                ColorMap& cmap = ColorMap::getAt(params_running.colormap_index);
+                QAEColorMap& cmap = QAEColorMap::getAt(params_running.colormap_index);
 
 //                COUTD << "IMG: stftmin=" << m_params_current.stftparams.snd->m_stft_min << "dB stftmax=" << m_params_current.stftparams.snd->m_stft_max << "dB" << std::endl;
 
@@ -322,7 +326,7 @@ void STFTComputeThread::run() {
                 if(uselw) {
                     elc = std::vector<WAVTYPE>(params_running.stftparams.dftlen/2+1, 0.0);
                     for(size_t u=0; u<elc.size(); ++u) {
-                        elc[u] = -sigproc::equalloudnesscurvesISO226(params_running.stftparams.snd->fs*double(u)/params_running.stftparams.dftlen, 0);
+                        elc[u] = -qae::equalloudnesscurvesISO226(params_running.stftparams.snd->fs*double(u)/params_running.stftparams.dftlen, 0);
                     }
                 }
 

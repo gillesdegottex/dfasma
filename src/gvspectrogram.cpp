@@ -37,7 +37,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "ftsound.h"
 #include "ftlabels.h"
 #include "ftfzero.h"
-#include "sigproc.h"
+#include "qaesigproc.h"
 
 #include <iostream>
 #include <algorithm>
@@ -57,7 +57,7 @@ using namespace std;
 #include <QScrollBar>
 #include "../external/libqxt/qxtspanslider.h"
 
-#include "qthelper.h"
+#include "qaehelpers.h"
 
 QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     : QGraphicsView(parent)
@@ -286,27 +286,27 @@ void QGVSpectrogram::updateSTFTSettings(){
     // Create the window
     int wintype = m_dlgSettings->ui->cbSpectrogramWindowType->currentIndex();
     if(wintype==0)
-        m_win = sigproc::rectangular(winlen);
+        m_win = qae::rectangular(winlen);
     else if(wintype==1)
-        m_win = sigproc::hamming(winlen);
+        m_win = qae::hamming(winlen);
     else if(wintype==2)
-        m_win = sigproc::hann(winlen);
+        m_win = qae::hann(winlen);
     else if(wintype==3)
-        m_win = sigproc::blackman(winlen);
+        m_win = qae::blackman(winlen);
     else if(wintype==4)
-        m_win = sigproc::blackmannutall(winlen);
+        m_win = qae::blackmannutall(winlen);
     else if(wintype==5)
-        m_win = sigproc::blackmanharris(winlen);
+        m_win = qae::blackmanharris(winlen);
     else if(wintype==6)
-        m_win = sigproc::nutall(winlen);
+        m_win = qae::nutall(winlen);
     else if(wintype==7)
-        m_win = sigproc::flattop(winlen);
+        m_win = qae::flattop(winlen);
     else if(wintype==8)
-        m_win = sigproc::normwindow(winlen, m_dlgSettings->ui->spSpectrogramWindowNormSigma->value());
+        m_win = qae::normwindow(winlen, m_dlgSettings->ui->spSpectrogramWindowNormSigma->value());
     else if(wintype==9)
-        m_win = sigproc::expwindow(winlen, m_dlgSettings->ui->spSpectrogramWindowExpDecay->value());
+        m_win = qae::expwindow(winlen, m_dlgSettings->ui->spSpectrogramWindowExpDecay->value());
     else if(wintype==10)
-        m_win = sigproc::gennormwindow(winlen, m_dlgSettings->ui->spSpectrogramWindowNormSigma->value(), m_dlgSettings->ui->spSpectrogramWindowNormPower->value());
+        m_win = qae::gennormwindow(winlen, m_dlgSettings->ui->spSpectrogramWindowNormSigma->value(), m_dlgSettings->ui->spSpectrogramWindowNormPower->value());
     else
         throw QString("No window selected");
 

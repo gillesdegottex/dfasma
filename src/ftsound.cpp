@@ -36,16 +36,16 @@ using namespace std;
 #include "ui_wmainwindow.h"
 #include "gvamplitudespectrum.h"
 #include "gvwaveform.h"
-#include "sigproc.h"
+#include "qaesigproc.h"
+#include "qaehelpers.h"
 
-#include "../external/mkfilter/mkfilter.h"
+#include "../external/libqaudioextra/external/mkfilter/mkfilter.h"
 
 #include "ui_wdialogsettings.h"
 #include "gvspectrogram.h"
 #include "gvspectrogramwdialogsettings.h"
 #include "ui_gvspectrogramwdialogsettings.h"
 
-#include "qthelper.h"
 
 bool FTSound::s_playwin_use = false;
 std::vector<WAVTYPE> FTSound::s_avoidclickswindow;
@@ -369,7 +369,7 @@ QString FTSound::info() const {
 }
 
 void FTSound::setAvoidClicksWindowDuration(double halfduration) {
-    s_avoidclickswindow = sigproc::hann(2*int(2*halfduration*s_fs_common/2)+1); // Use Xms half-windows on each side
+    s_avoidclickswindow = qae::hann(2*int(2*halfduration*s_fs_common/2)+1); // Use Xms half-windows on each side
     double winmax = s_avoidclickswindow[(s_avoidclickswindow.size()-1)/2];
     for(size_t n=0; n<s_avoidclickswindow.size(); n++)
         s_avoidclickswindow[n] /= winmax;
@@ -576,7 +576,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
                 cout << "LP-filtering (cutoff=" << fstop << ", size=" << wavfiltered.size() << ")" << endl;
                 // Filter the signal
                 for(size_t bi=0; bi<num.size(); bi++)
-                    sigproc::filtfilt<WAVTYPE>(wavfiltered, num[bi], den[bi], wavfiltered, delayedstart, delayedend);
+                    qae::filtfilt<WAVTYPE>(wavfiltered, num[bi], den[bi], wavfiltered, delayedstart, delayedend);
 
                 gMW->globalWaitingBarClear();
             }
@@ -598,7 +598,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
 
                 // Filter the signal
                 for(size_t bi=0; bi<num.size(); bi++)
-                    sigproc::filtfilt<WAVTYPE>(wavfiltered, num[bi], den[bi], wavfiltered, delayedstart, delayedend);
+                    qae::filtfilt<WAVTYPE>(wavfiltered, num[bi], den[bi], wavfiltered, delayedstart, delayedend);
 
                 gMW->globalWaitingBarClear();
             }
