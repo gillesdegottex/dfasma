@@ -393,6 +393,7 @@ void FilesListWidget::fileSelectionChanged() {
     }
 
     gMW->ui->actionSelectedFilesSave->setEnabled(m_nb_labels_in_selection>0 || m_nb_fzeros_in_selection>0);
+    gMW->ui->actionSelectedFilesClose->setEnabled(list.size()>0);
 
     fileInfoUpdate();
 

@@ -320,6 +320,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 
     if(files.size()>0)
         m_gvSpectrogram->updateSTFTSettings(); // This will update the window computation AND trigger the STFT computation
+    gMW->ui->actionSelectedFilesClose->setEnabled(gFL->selectedItems().size()>0);
 
     connect(ui->actionFileOpen, SIGNAL(triggered()), this, SLOT(openFile())); // Alow this only at the end
 
