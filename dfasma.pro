@@ -195,13 +195,13 @@ CONFIG(fft_fftw3, fft_fftw3|fft_builtin_fftreal){
 CONFIG(fft_builtin_fftreal, fft_fftw3|fft_builtin_fftreal){
     message(FFT Implementation: standalone built-in FFTReal)
     QMAKE_CXXFLAGS += -DFFT_FFTREAL
-    HEADERS +=  external/FFTReal/FFTReal.h \
-                external/FFTReal/FFTReal.hpp \
-                external/FFTReal/def.h \
-                external/FFTReal/DynArray.h \
-                external/FFTReal/DynArray.hpp \
-                external/FFTReal/OscSinCos.h \
-                external/FFTReal/OscSinCos.hpp
+    HEADERS +=  external/liqaudioextra/external/FFTReal/FFTReal.h \
+                external/liqaudioextra/external/FFTReal/FFTReal.hpp \
+                external/liqaudioextra/external/FFTReal/def.h \
+                external/liqaudioextra/external/FFTReal/DynArray.h \
+                external/liqaudioextra/external/FFTReal/DynArray.hpp \
+                external/liqaudioextra/external/FFTReal/OscSinCos.h \
+                external/liqaudioextra/external/FFTReal/OscSinCos.hpp
 }
 
 
@@ -227,9 +227,9 @@ FORMS     += src/wmainwindow.ui \
              src/aboutbox.ui
 
 INCLUDEPATH += external/REAPER
+INCLUDEPATH += external/libqaudioextra/include
 
 SOURCES   += src/main.cpp\
-             external/libqxt/qxtspanslider.cpp \
              src/wmainwindow.cpp \
              src/wdialogselectchannel.cpp \
              src/filetype.cpp \
@@ -246,26 +246,21 @@ SOURCES   += src/main.cpp\
              src/gvspectrogram.cpp \
              src/stftcomputethread.cpp \
              src/gvspectrogramwdialogsettings.cpp \
-             src/sigproc.cpp \
-             external/mkfilter/mkfilter.cpp \
-             external/audioengine/audioengine.cpp \
-             src/colormap.cpp \
-             src/QSettingsAuto.cpp \
              src/aboutbox.cpp \
              src/fileslistwidget.cpp \
+             external/libqxt/qxtspanslider.cpp \
+             external/audioengine/audioengine.cpp \
+             external/libqaudioextra/src/qaesigproc.cpp \
+             external/libqaudioextra/src/qaecolormap.cpp \
+             external/libqaudioextra/src/qaesettingsauto.cpp \
+             external/libqaudioextra/external/mkfilter/mkfilter.cpp \
              external/REAPER/epoch_tracker/epoch_tracker.cc \
              external/REAPER/epoch_tracker/fft.cc \
              external/REAPER/epoch_tracker/fd_filter.cc \
              external/REAPER/epoch_tracker/lpc_analyzer.cc
 
 HEADERS   += src/wmainwindow.h \
-             external/libqxt/qxtglobal.h \
-             external/libqxt/qxtnamespace.h \
-             external/libqxt/qxtspanslider.h \
-             external/libqxt/qxtspanslider_p.h \
              src/wdialogselectchannel.h \
-             src/sigproc.h \
-             external/mkfilter/mkfilter.h \
              src/filetype.h \
              src/ftsound.h \
              src/ftfzero.h \
@@ -280,11 +275,17 @@ HEADERS   += src/wmainwindow.h \
              src/stftcomputethread.h \
              src/gvspectrogramwdialogsettings.h \
              src/fftresizethread.h \
-             external/audioengine/audioengine.h \
-             src/colormap.h \
-             src/QSettingsAuto.h \
              src/aboutbox.h \
              src/fileslistwidget.h \
+             external/libqxt/qxtglobal.h \
+             external/libqxt/qxtnamespace.h \
+             external/libqxt/qxtspanslider.h \
+             external/libqxt/qxtspanslider_p.h \
+             external/audioengine/audioengine.h \
+             external/libqaudioextra/include/qaesigproc.h \
+             external/libqaudioextra/include/qaecolormap.h \
+             external/libqaudioextra/include/qaesettingsauto.h \
+             external/libqaudioextra/external/mkfilter/mkfilter.h \
              external/REAPER/epoch_tracker/epoch_tracker.h \
              external/REAPER/epoch_tracker/fft.h \
              external/REAPER/epoch_tracker/fd_filter.h \

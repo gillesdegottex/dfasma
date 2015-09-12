@@ -27,7 +27,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <iostream>
 using namespace std;
 
-#include "../src/qthelper.h"
+#include "qaehelpers.h"
 
 extern "C" {
 #include    <stdio.h>
