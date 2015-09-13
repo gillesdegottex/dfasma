@@ -176,8 +176,10 @@ void WDialogSettings::setSBAvoidClicksWindowDuration(double halfduration) {
 
 void WDialogSettings::changeFont() {
     QFontDialog dlg(ui->lblGridFontSample->font(), this);
-    if(dlg.exec()==QDialog::Accepted)
+    if(dlg.exec()==QDialog::Accepted){
         ui->lblGridFontSample->setFont(dlg.selectedFont());
+        gMW->m_gvAmplitudeSpectrum->m_grid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
+    }
 }
 
 WDialogSettings::~WDialogSettings() {

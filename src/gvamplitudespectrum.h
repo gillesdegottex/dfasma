@@ -32,6 +32,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "fftresizethread.h"
 
 #include "qaesigproc.h"
+#include "qaegraphicsitemgrid.h"
 #include "ftsound.h"
 
 class GVAmplitudeSpectrumWDialogSettings;
@@ -47,6 +48,7 @@ class QGVAmplitudeSpectrum : public QGraphicsView
     QTime m_last_parameters_change;
 
     std::vector<FFTTYPE> m_win; // Keep one here to limit allocations
+
 
 public:
     explicit QGVAmplitudeSpectrum(WMainWindow* parent);
@@ -64,6 +66,8 @@ public:
     FTSound::DFTParameters m_trgDFTParameters;
     std::vector<std::complex<FFTTYPE> > m_windft; // Window spectrum
     std::vector<FFTTYPE> m_filterresponse;
+
+    QAEGraphicsItemGrid* m_grid;
 
     // Cursor
     QGraphicsLineItem* m_giCursorHoriz;
@@ -101,7 +105,6 @@ public:
     void viewSet(QRectF viewrect=QRectF(), bool sync=true);
     void viewUpdateTexts();
     void drawBackground(QPainter* painter, const QRectF& rect);
-    void draw_grid(QPainter* painter, const QRectF& rect);
     void draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& ldft, double fs, double ascale, const QRectF& rect);
 
     ~QGVAmplitudeSpectrum();
@@ -122,6 +125,7 @@ signals:
     
 public slots:
     void updateScrollBars();
+    void gridSetVisible(bool visible);
 
     void setWindowRange(double tstart, double tend);
     void updateSceneRect(); // To call when fs has changed and limits in dB
