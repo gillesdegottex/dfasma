@@ -66,7 +66,8 @@ QString FTFZero::createFileNameFromSound(const QString& sndfilename){
 
     if(gMW->m_dlgSettings->ui->cbF0DefaultFormat->currentIndex()+FFAsciiTimeValue==FFSDIF)
         return fileName+".sdif";
-    else
+    else if(gMW->m_dlgSettings->ui->cbF0DefaultFormat->currentIndex()+FFAsciiTimeValue==FFAsciiAutoDetect
+            || gMW->m_dlgSettings->ui->cbF0DefaultFormat->currentIndex()+FFAsciiTimeValue==FFAsciiTimeValue)
         return fileName+".f0.txt";
 }
 
@@ -367,6 +368,23 @@ void FTFZero::save() {
             size_t asciiChunksw = SdifFWriteAllASCIIChunks(filew);
             Q_UNUSED(asciiChunksw)
 
+            // Save information
+            SDIFFrame frameToWrite;
+            /*set the header of the frame*/
+            frameToWrite.SetStreamID(0); // TODO Ok ??
+            frameToWrite.SetSignature("1NVT");
+            SDIFMatrix tmpMatrix("1NVT");
+            QString info = "";
+            info += "SampleRate\t"+QString::number(gFL->getFs())+"\n";
+            info += "NumChannels\t"+QString::number(1)+"\n";
+            if(gFL->hasFile(m_src_snd))
+                info += "Soundfile\t"+m_src_snd->fileFullPath+"\n";
+            info += "Version\t"+gMW->version().mid(8)+"\n";
+            info += "Creator\tDFasma\n";
+            tmpMatrix.Set(info.toLatin1().constData());
+            frameToWrite.AddMatrix(tmpMatrix);
+            frameToWrite.Write(filew);
+
             for(size_t li=0; li<ts.size(); li++) {
                 // cout << labels[li].toLatin1().constData() << ": " << starts[li] << ":" << ends[li] << endl;
 
@@ -614,6 +632,12 @@ FTFZero::FTFZero(QObject *parent, FTSound *ftsnd, double f0min, double f0max, do
     , FileType(FTFZERO, createFileNameFromSound(ftsnd->fileFullPath), this, ftsnd->getColor())
 {
     FTFZero::constructor_internal();
+
+    if(gMW->m_dlgSettings->ui->cbF0DefaultFormat->currentIndex()+FFAsciiTimeValue==FFSDIF)
+        m_fileformat = FFSDIF;
+    else if(gMW->m_dlgSettings->ui->cbF0DefaultFormat->currentIndex()+FFAsciiTimeValue==FFAsciiAutoDetect
+            || gMW->m_dlgSettings->ui->cbF0DefaultFormat->currentIndex()+FFAsciiTimeValue==FFAsciiTimeValue)
+        m_fileformat = FFAsciiTimeValue;
 
     estimate(ftsnd, f0min, f0max, tstart, tend, force);
 

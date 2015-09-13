@@ -680,6 +680,23 @@ void FTLabels::save() {
             size_t asciiChunksw = SdifFWriteAllASCIIChunks(filew);
             Q_UNUSED(asciiChunksw)
 
+            // Save information
+            SDIFFrame frameToWrite;
+            /*set the header of the frame*/
+            frameToWrite.SetStreamID(0); // TODO Ok ??
+            frameToWrite.SetSignature("1NVT");
+            SDIFMatrix tmpMatrix("1NVT");
+            QString info = "";
+            info += "SampleRate\t"+QString::number(gFL->getFs())+"\n";
+            info += "NumChannels\t"+QString::number(1)+"\n";
+//            if(gFL->hasFile(m_src_snd))
+//                info += "Soundfile\t"+m_src_snd->fileFullPath+"\n";
+            info += "Version\t"+gMW->version().mid(8)+"\n";
+            info += "Creator\tDFasma\n";
+            tmpMatrix.Set(info.toLatin1().constData());
+            frameToWrite.AddMatrix(tmpMatrix);
+            frameToWrite.Write(filew);
+
             for(size_t li=0; li<starts.size(); li++) {
                 // cout << labels[li].toLatin1().constData() << ": " << starts[li] << ":" << ends[li] << endl;
 

@@ -66,6 +66,7 @@ class WMainWindow : public QMainWindow
     Q_OBJECT
 
     bool m_loading;
+    QString m_version;
 
     FilesListWidget* m_fileslist;
     FileType* m_last_file_editing;
@@ -119,6 +120,7 @@ public:
     explicit WMainWindow(QStringList files, QWidget* parent=0);
     ~WMainWindow();
     bool isLoading() const {return m_loading;}
+    QString version();
 
     QAESettingsAuto m_settings;
     WDialogSettings* m_dlgSettings;

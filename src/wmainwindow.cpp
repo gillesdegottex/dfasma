@@ -371,6 +371,40 @@ void WMainWindow::updateWindowTitle() {
     else        setWindowTitle("DFasma");
 }
 
+QString WMainWindow::version(){
+    if(!m_version.isEmpty())
+        return m_version;
+
+    QString dfasmaversiongit(STR(DFASMAVERSIONGIT));
+
+//    QTextStream(stdout) << "'" << dfasmaversiongit << "'" << endl;
+
+    QString	dfasmaversion;
+    if(!dfasmaversiongit.isEmpty()) {
+        dfasmaversion = QString("Version ") + dfasmaversiongit;
+    }
+    else {
+        QFile readmefile(":/README.txt");
+        readmefile.open(QFile::ReadOnly | QFile::Text);
+        QTextStream readmefilestream(&readmefile);
+        readmefilestream.readLine();
+        readmefilestream.readLine();
+        dfasmaversion = readmefilestream.readLine().simplified();
+    }
+    QString m_version = dfasmaversion;
+
+    m_version += " (compiled by "+QString(COMPILER)+" for ";
+    #ifdef Q_PROCESSOR_X86_32
+      m_version += "32bits";
+    #endif
+    #ifdef Q_PROCESSOR_X86_64
+      m_version += "64bits";
+    #endif
+    m_version += ")";
+
+    return m_version;
+}
+
 void WMainWindow::execAbout(){
     AboutBox box(this);
     box.exec();

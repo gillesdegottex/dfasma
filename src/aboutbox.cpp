@@ -3,6 +3,8 @@
 
 #include <QFile>
 #include <QTextStream>
+
+#include "wmainwindow.h"
 #include "qaehelpers.h"
 #include "qaesigproc.h"
 #include "ftsound.h"
@@ -17,36 +19,9 @@ AboutBox::AboutBox(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QString dfasmaversiongit(STR(DFASMAVERSIONGIT));
+    ui->lblVersion->setText(gMW->version());
 
-//    QTextStream(stdout) << "'" << dfasmaversiongit << "'" << endl;
-
-    QString	dfasmaversion;
-    if(dfasmaversiongit.length()>0) {
-        dfasmaversion = QString("Version ") + dfasmaversiongit;
-    }
-    else {
-        QFile readmefile(":/README.txt");
-        readmefile.open(QFile::ReadOnly | QFile::Text);
-        QTextStream readmefilestream(&readmefile);
-        readmefilestream.readLine();
-        readmefilestream.readLine();
-        dfasmaversion = readmefilestream.readLine().simplified();
-    }
-    QString txt = dfasmaversion;
-
-    txt += " (compiled by "+QString(COMPILER)+" for ";
-    #ifdef Q_PROCESSOR_X86_32
-      txt += "32bits";
-    #endif
-    #ifdef Q_PROCESSOR_X86_64
-      txt += "64bits";
-    #endif
-    txt += ")";
-
-    ui->lblVersion->setText(txt);
-
-    txt = "";
+    QString txt = "";
 
     txt += "<h4>Purpose</h4>";
     txt += "<i>DFasma</i> is an open-source software whose main purpose is to compare waveforms in time and spectral domains. "; //  Even though there are a few scaling functionalities, DFasma is basically not an audio editor
