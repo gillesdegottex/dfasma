@@ -1098,30 +1098,31 @@ void QGVSpectrogram::setMouseCursorPosition(QPointF p, bool forwardsync) {
         QRectF br = m_giMouseCursorTxtTime->boundingRect();
         qreal x = p.x()+1/trans.m11();
         x = min(x, viewrect.right()-br.width()/trans.m11());
-        m_giMouseCursorTxtTime->setText(QString("%1s").arg(p.x(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()));
+        QString txt = QString("%1s").arg(p.x(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value());
+        m_giMouseCursorTxtTimeBack->setText(txt);
+        m_giMouseCursorTxtTimeBack->setPos(x+1.0/trans.m11(), viewrect.top()-(3-1.0)/trans.m22());
+        m_giMouseCursorTxtTimeBack->setTransform(txttrans);
+        m_giMouseCursorTxtTimeBack->setFont(darkfont);
+        m_giMouseCursorTxtTimeBack->show();
+        m_giMouseCursorTxtTime->setText(txt);
         m_giMouseCursorTxtTime->setPos(x, viewrect.top()-3/trans.m22());
         m_giMouseCursorTxtTime->setTransform(txttrans);
         m_giMouseCursorTxtTime->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
         m_giMouseCursorTxtTime->show();
-        m_giMouseCursorTxtTimeBack->setText(QString("%1s").arg(p.x(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()));
-        m_giMouseCursorTxtTimeBack->setPos(x+1.0/trans.m11(), viewrect.top()-(3-1.0)/trans.m22());
-//        m_giMouseCursorTxtTimeBack->setPos(x+1, viewrect.top()-1);
-        m_giMouseCursorTxtTimeBack->setTransform(txttrans);
-        m_giMouseCursorTxtTimeBack->setFont(darkfont);
-        m_giMouseCursorTxtTimeBack->show();
 
-        m_giMouseCursorTxtFreq->setText(QString("%1Hz").arg(0.5*gFL->getFs()-p.y()));
-        br = m_giMouseCursorTxtFreq->boundingRect();
-        m_giMouseCursorTxtFreq->setPos(viewrect.right()-br.width()/trans.m11(), p.y()-br.height()/trans.m22());
-        m_giMouseCursorTxtFreq->setTransform(txttrans);
-        m_giMouseCursorTxtFreq->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
-        m_giMouseCursorTxtFreq->show();
-        m_giMouseCursorTxtFreqBack->setText(QString("%1Hz").arg(0.5*gFL->getFs()-p.y()));
+        txt = QString("%1Hz").arg(0.5*gFL->getFs()-p.y());
+        m_giMouseCursorTxtFreqBack->setText(txt);
         br = m_giMouseCursorTxtFreqBack->boundingRect();
         m_giMouseCursorTxtFreqBack->setPos(viewrect.right()-(br.width()-2.0)/trans.m11(), p.y()-(br.height()-1.0)/trans.m22());
         m_giMouseCursorTxtFreqBack->setTransform(txttrans);
         m_giMouseCursorTxtFreqBack->setFont(darkfont);
         m_giMouseCursorTxtFreqBack->show();
+        m_giMouseCursorTxtFreq->setText(txt);
+        br = m_giMouseCursorTxtFreq->boundingRect();
+        m_giMouseCursorTxtFreq->setPos(viewrect.right()-br.width()/trans.m11(), p.y()-br.height()/trans.m22());
+        m_giMouseCursorTxtFreq->setTransform(txttrans);
+        m_giMouseCursorTxtFreq->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
+        m_giMouseCursorTxtFreq->show();
 
         if(forwardsync){
             if(gMW->m_gvWaveform)
