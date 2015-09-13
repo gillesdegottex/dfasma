@@ -357,45 +357,49 @@ void FTFZero::save() {
     }
     else if(m_fileformat==FFSDIF){
         #ifdef SUPPORT_SDIF
-//            SdifFileT* filew = SdifFOpen(fileFullPath.toLatin1().constData(), eWriteFile);
+            SdifFileT* filew = SdifFOpen(fileFullPath.toLatin1().constData(), eWriteFile);
 
-//            if (!filew)
-//                throw QString("SDIF: Cannot save the data in the specified file (permission denied?)");
+            if (!filew)
+                throw QString("SDIF: Cannot save the data in the specified file (permission denied?)");
 
-//            size_t generalHeaderw = SdifFWriteGeneralHeader(filew);
-//            Q_UNUSED(generalHeaderw)
-//            size_t asciiChunksw = SdifFWriteAllASCIIChunks(filew);
-//            Q_UNUSED(asciiChunksw)
+            size_t generalHeaderw = SdifFWriteGeneralHeader(filew);
+            Q_UNUSED(generalHeaderw)
+            size_t asciiChunksw = SdifFWriteAllASCIIChunks(filew);
+            Q_UNUSED(asciiChunksw)
 
-//            for(size_t li=0; li<starts.size(); li++) {
-//                // cout << labels[li].toLatin1().constData() << ": " << starts[li] << ":" << ends[li] << endl;
+            for(size_t li=0; li<ts.size(); li++) {
+                // cout << labels[li].toLatin1().constData() << ": " << starts[li] << ":" << ends[li] << endl;
 
-//                // Prepare the frame
-//                SDIFFrame frameToWrite;
-//                /*set the header of the frame*/
-//                frameToWrite.SetStreamID(0); // TODO Ok ??
-//                frameToWrite.SetTime(starts[li]);
-//                frameToWrite.SetSignature("1MRK");
+                // Prepare the frame
+                SDIFFrame frameToWrite;
+                /*set the header of the frame*/
+                frameToWrite.SetStreamID(0); // TODO Ok ??
+                frameToWrite.SetTime(ts[li]);
+                frameToWrite.SetSignature("1FQ0");
 
-//                // Fill the matrix
-//                SDIFMatrix tmpMatrix("1LAB");
-//                tmpMatrix.Set(std::string(waveform_labels[li]->toPlainText().toLatin1().constData()));
-//                frameToWrite.AddMatrix(tmpMatrix);
+                // Fill the matrix
+                SDIFMatrix tmpMatrix("1FQ0", 1, 1);
+                // SDIFMatrix tmpMatrix("1FQ0", 1, 4);
+                tmpMatrix.Set(0, 0, f0s[li]); // Frequency
+                // tmpMatrix.Set(0, 1, 1.0);  // Confidence
+                // tmpMatrix.Set(0, 2, 1.0);  // Score
+                // tmpMatrix.Set(0, 3, 1.0);  // RealAmplitude
+                frameToWrite.AddMatrix(tmpMatrix);
 
-//                frameToWrite.Write(filew);
-//                frameToWrite.ClearData();
-//            }
+                frameToWrite.Write(filew);
+                frameToWrite.ClearData();
+            }
 
-//            //    // Write a last empty frame for the last time
-//            //    SDIFFrame frameToWrite;
-//            //    frameToWrite.SetStreamID(0); // TODO Ok ??
-//            //    frameToWrite.SetTime(ends.back());
-//            //    frameToWrite.SetSignature("1MRK");
-//            //    SDIFMatrix tmpMatrix("1LAB", 0, 0);
-//            //    frameToWrite.AddMatrix(tmpMatrix);
-//            //    frameToWrite.Write(filew);
+            //    // Write a last empty frame for the last time
+            //    SDIFFrame frameToWrite;
+            //    frameToWrite.SetStreamID(0); // TODO Ok ??
+            //    frameToWrite.SetTime(ends.back());
+            //    frameToWrite.SetSignature("1MRK");
+            //    SDIFMatrix tmpMatrix("1LAB", 0, 0);
+            //    frameToWrite.AddMatrix(tmpMatrix);
+            //    frameToWrite.Write(filew);
 
-//            SdifFClose(filew);
+            SdifFClose(filew);
 
         #else
             throw QString("SDIF file support is not compiled in this distribution of DFasma.");

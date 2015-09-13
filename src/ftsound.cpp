@@ -219,7 +219,7 @@ FTSound::FTSound(const FTSound& ft)
 
     QFileInfo fileInfo(fileFullPath);
     setText(fileInfo.fileName());
-    COUTD << fileInfo.fileName().toLatin1().constData() << " (" << text().toLatin1().constData() << ")" << endl;
+//    COUTD << fileInfo.fileName().toLatin1().constData() << " (" << text().toLatin1().constData() << ")" << endl;
 
     wav = ft.wav;
     m_wavmaxamp = ft.m_wavmaxamp;
