@@ -83,10 +83,6 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_aShowProperties->setStatusTip(tr("Open the properties configuration panel of the Spectrogram view"));
     m_aShowProperties->setIcon(QIcon(":/icons/settings.svg"));
 
-//    m_gridFontPen.setColor(QColor(0,0,0));
-    m_gridFontPen.setColor(QColor(255,255,255));
-    m_gridFontPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-
     m_aSpectrogramShowGrid = new QAction(tr("Show &grid"), this);
     m_aSpectrogramShowGrid->setObjectName("m_aSpectrogramShowGrid"); // For auto settings
     m_aSpectrogramShowGrid->setStatusTip(tr("Show &grid"));
@@ -115,10 +111,20 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_stftcomputethread = new STFTComputeThread(this);
 
     // Cursor
-    m_giMouseCursorLineTime = new QGraphicsLineItem(0, 0, 1, 1);
-    QColor cursorcolor(255, 255, 255); //QColor(64, 64, 64)
-    QPen cursorPen(cursorcolor);
+    m_giMouseCursorLineTimeBack = new QGraphicsLineItem(0, 0, 1, 1);
+    QPen cursorPen(QColor(0,0,0));
     cursorPen.setWidth(0);
+    m_giMouseCursorLineTimeBack->setPen(cursorPen);
+    m_giMouseCursorLineTimeBack->hide();
+    m_scene->addItem(m_giMouseCursorLineTimeBack);
+    m_giMouseCursorLineFreqBack = new QGraphicsLineItem(0, 0, 1, 1);
+    m_giMouseCursorLineFreqBack->setPen(cursorPen);
+    m_giMouseCursorLineFreqBack->hide();
+    m_scene->addItem(m_giMouseCursorLineFreqBack);
+    QColor cursorcolor(255, 255, 255); //QColor(64, 64, 64)
+    cursorPen = QPen(cursorcolor);
+    cursorPen.setWidth(0);
+    m_giMouseCursorLineTime = new QGraphicsLineItem(0, 0, 1, 1);
     m_giMouseCursorLineTime->setPen(cursorPen);
     m_giMouseCursorLineTime->hide();
     m_scene->addItem(m_giMouseCursorLineTime);
@@ -126,7 +132,14 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_giMouseCursorLineFreq->setPen(cursorPen);
     m_giMouseCursorLineFreq->hide();
     m_scene->addItem(m_giMouseCursorLineFreq);
-    QFont font("Helvetica", 10);
+    m_giMouseCursorTxtTimeBack = new QGraphicsSimpleTextItem();
+    m_giMouseCursorTxtTimeBack->setBrush(QColor(0,0,0));
+    m_giMouseCursorTxtTimeBack->hide();
+    m_scene->addItem(m_giMouseCursorTxtTimeBack);
+    m_giMouseCursorTxtFreqBack = new QGraphicsSimpleTextItem();
+    m_giMouseCursorTxtFreqBack->setBrush(QColor(0,0,0));
+    m_giMouseCursorTxtFreqBack->hide();
+    m_scene->addItem(m_giMouseCursorTxtFreqBack);
     m_giMouseCursorTxtTime = new QGraphicsSimpleTextItem();
     m_giMouseCursorTxtTime->setBrush(cursorcolor);
     m_giMouseCursorTxtTime->hide();
@@ -1049,13 +1062,19 @@ void QGVSpectrogram::azoomout(){
 
 void QGVSpectrogram::setMouseCursorPosition(QPointF p, bool forwardsync) {
     if(p.x()==-1){
+        m_giMouseCursorLineFreqBack->hide();
+        m_giMouseCursorLineTimeBack->hide();
         m_giMouseCursorLineFreq->hide();
         m_giMouseCursorLineTime->hide();
+        m_giMouseCursorTxtTimeBack->hide();
+        m_giMouseCursorTxtFreqBack->hide();
         m_giMouseCursorTxtTime->hide();
         m_giMouseCursorTxtFreq->hide();
     }
     else {
 
+        m_giMouseCursorLineTimeBack->setPos(p.x(), 0.0);
+        m_giMouseCursorLineFreqBack->setPos(0.0, p.y());
         m_giMouseCursorLineTime->setPos(p.x(), 0.0);
         m_giMouseCursorLineFreq->setPos(0.0, p.y());
 
@@ -1064,10 +1083,17 @@ void QGVSpectrogram::setMouseCursorPosition(QPointF p, bool forwardsync) {
         QTransform txttrans;
         txttrans.scale(1.0/trans.m11(),1.0/trans.m22());
 
+        m_giMouseCursorLineTimeBack->setLine(1.0/trans.m11(), viewrect.top(), 1.0/trans.m11(), viewrect.top()+18/trans.m22());
+        m_giMouseCursorLineTimeBack->show();
+        m_giMouseCursorLineFreqBack->setLine(viewrect.right()-50/trans.m11(), 1.0/trans.m22(), gFL->getFs()/2.0, 1.0/trans.m22());
+        m_giMouseCursorLineFreqBack->show();
         m_giMouseCursorLineTime->setLine(0.0, viewrect.top(), 0.0, viewrect.top()+18/trans.m22());
         m_giMouseCursorLineTime->show();
         m_giMouseCursorLineFreq->setLine(viewrect.right()-50/trans.m11(), 0.0, gFL->getFs()/2.0, 0.0);
         m_giMouseCursorLineFreq->show();
+
+        QFont darkfont = gMW->m_dlgSettings->ui->lblGridFontSample->font();
+        darkfont.setBold(true);
 
         QRectF br = m_giMouseCursorTxtTime->boundingRect();
         qreal x = p.x()+1/trans.m11();
@@ -1077,6 +1103,12 @@ void QGVSpectrogram::setMouseCursorPosition(QPointF p, bool forwardsync) {
         m_giMouseCursorTxtTime->setTransform(txttrans);
         m_giMouseCursorTxtTime->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
         m_giMouseCursorTxtTime->show();
+        m_giMouseCursorTxtTimeBack->setText(QString("%1s").arg(p.x(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()));
+        m_giMouseCursorTxtTimeBack->setPos(x+1.0/trans.m11(), viewrect.top()-(3-1.0)/trans.m22());
+//        m_giMouseCursorTxtTimeBack->setPos(x+1, viewrect.top()-1);
+        m_giMouseCursorTxtTimeBack->setTransform(txttrans);
+        m_giMouseCursorTxtTimeBack->setFont(darkfont);
+        m_giMouseCursorTxtTimeBack->show();
 
         m_giMouseCursorTxtFreq->setText(QString("%1Hz").arg(0.5*gFL->getFs()-p.y()));
         br = m_giMouseCursorTxtFreq->boundingRect();
@@ -1084,6 +1116,12 @@ void QGVSpectrogram::setMouseCursorPosition(QPointF p, bool forwardsync) {
         m_giMouseCursorTxtFreq->setTransform(txttrans);
         m_giMouseCursorTxtFreq->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
         m_giMouseCursorTxtFreq->show();
+        m_giMouseCursorTxtFreqBack->setText(QString("%1Hz").arg(0.5*gFL->getFs()-p.y()));
+        br = m_giMouseCursorTxtFreqBack->boundingRect();
+        m_giMouseCursorTxtFreqBack->setPos(viewrect.right()-(br.width()-2.0)/trans.m11(), p.y()-(br.height()-1.0)/trans.m22());
+        m_giMouseCursorTxtFreqBack->setTransform(txttrans);
+        m_giMouseCursorTxtFreqBack->setFont(darkfont);
+        m_giMouseCursorTxtFreqBack->show();
 
         if(forwardsync){
             if(gMW->m_gvWaveform)
@@ -1195,11 +1233,24 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 
 void QGVSpectrogram::draw_grid(QPainter* painter, const QRectF& rect) {
     // Prepare the pens and fonts
-//    QPen gridPen(QColor(0,0,0));
-    QPen gridPen(QColor(255,255,255));
-    gridPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
+    QTransform trans = transform();
+    QPen darkpen(QColor(0,0,0));
+    darkpen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
+
     painter->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
     QFontMetrics qfm(gMW->m_dlgSettings->ui->lblGridFontSample->font());
+    QFont lightfont = painter->font();
+    QFont darkfont = painter->font();
+    darkfont.setBold(true);
+
+    QPen darkthickpen(QColor(0,0,0));
+    darkthickpen.setCosmetic(true);
+    darkthickpen.setWidth(1);
+    QPen lightpen(QColor(255,255,255));
+    lightpen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
+    painter->setPen(darkpen);
+    QPointF shift(1, 1);
+    QStaticText stxt;
 
     // Horizontal lines
 
@@ -1219,25 +1270,28 @@ void QGVSpectrogram::draw_grid(QPainter* painter, const QRectF& rect) {
     // cout << "lstep=" << lstep << endl;
 
     // Draw the horizontal lines
-    int mn=0;
-    painter->setPen(gridPen);
-    for(double l=gFL->getFs()/2.0-int((gFL->getFs()/2.0-rect.bottom())/lstep)*lstep; l>=rect.top(); l-=lstep){
+    painter->setPen(lightpen);
+    for(double l=gFL->getFs()/2.0-int((gFL->getFs()/2.0-rect.bottom())/lstep)*lstep; l>=rect.top(); l-=lstep)
         painter->drawLine(QLineF(rect.left(), l, rect.right(), l));
-        mn++;
-    }
+    painter->setPen(darkpen);
+    for(double l=gFL->getFs()/2.0-int((gFL->getFs()/2.0-rect.bottom())/lstep)*lstep; l>=rect.top(); l-=lstep)
+        painter->drawLine(QLineF(rect.left(), l-1.0/trans.m22(), rect.right(), l-1.0/trans.m22()));
 
     // Write the ordinates of the horizontal lines
-    painter->setPen(m_gridFontPen);
-    QTransform trans = transform();
     for(double l=gFL->getFs()/2.0-int((gFL->getFs()/2.0-rect.bottom())/lstep)*lstep; l>=rect.top(); l-=lstep){
         painter->save();
         painter->translate(QPointF(viewrect.left(), l));
         painter->scale(1.0/trans.m11(), 1.0/trans.m22());
 
-        QString txt = QString("%1Hz").arg(gFL->getFs()/2.0-l);
-        QRectF txtrect = painter->boundingRect(QRectF(), Qt::AlignLeft, txt);
-        if(l<viewrect.bottom()-0.75*txtrect.height()/trans.m22())
-            painter->drawStaticText(QPointF(0, -0.9*txtrect.height()), QStaticText(txt));
+        stxt = QStaticText(QString("%1Hz").arg(gFL->getFs()/2.0-l));
+        if(l<viewrect.bottom()-0.75*qfm.height()/trans.m22()){
+            painter->setPen(darkthickpen);
+            painter->setFont(darkfont);
+            painter->drawStaticText(QPointF(0, -qfm.height())+shift, stxt);
+            painter->setPen(lightpen);
+            painter->setFont(lightfont);
+            painter->drawStaticText(QPointF(0, -qfm.height()), stxt);
+        }
         painter->restore();
     }
 
@@ -1257,20 +1311,25 @@ void QGVSpectrogram::draw_grid(QPainter* painter, const QRectF& rect) {
 //    std::cout << "lstep=" << lstep << endl;
 
     // Draw the vertical lines
-    mn = 0;
-    painter->setPen(gridPen);
-    for(double l=int(rect.left()/lstep)*lstep; l<=rect.right(); l+=lstep){
+    painter->setPen(lightpen);
+    for(double l=int(rect.left()/lstep)*lstep; l<=rect.right(); l+=lstep)
         painter->drawLine(QLineF(l, rect.top(), l, rect.bottom()));
-        mn++;
-    }
+    painter->setPen(darkpen);
+    for(double l=int(rect.left()/lstep)*lstep; l<=rect.right(); l+=lstep)
+        painter->drawLine(QLineF(l+1.0/trans.m11(), rect.top(), l+1.0/trans.m11(), rect.bottom()));
 
     // Write the absissa of the vertical lines
-    painter->setPen(m_gridFontPen);
     for(double l=int(rect.left()/lstep)*lstep; l<=rect.right(); l+=lstep){
         painter->save();
         painter->translate(QPointF(l, viewrect.bottom()-(qfm.height()-2)/trans.m22()));
         painter->scale(1.0/trans.m11(), 1.0/trans.m22());
-        painter->drawStaticText(QPointF(0, 0), QStaticText(QString("%1s").arg(l, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value())));
+        painter->setPen(darkthickpen);
+        painter->setFont(darkfont);
+        stxt = QStaticText(QString("%1s").arg(l, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()));
+        painter->drawStaticText(QPointF(0, 0)+shift, stxt);
+        painter->setPen(lightpen);
+        painter->setFont(lightfont);
+        painter->drawStaticText(QPointF(0, 0), stxt);
         painter->restore();
     }
 }

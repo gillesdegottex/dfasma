@@ -44,8 +44,6 @@ class QGVSpectrogram : public QGraphicsView
 {
     Q_OBJECT
 
-    QPen m_gridFontPen;
-
     QTime m_progresswidgets_lastup;
 
     QGraphicsLineItem* m_giPlayCursor;
@@ -67,8 +65,13 @@ public:
 
     std::vector<FFTTYPE> m_win;
 
+    // Cursor
+    QGraphicsLineItem* m_giMouseCursorLineTimeBack;
+    QGraphicsLineItem* m_giMouseCursorLineFreqBack;
     QGraphicsLineItem* m_giMouseCursorLineTime;
     QGraphicsLineItem* m_giMouseCursorLineFreq;
+    QGraphicsSimpleTextItem* m_giMouseCursorTxtTimeBack;
+    QGraphicsSimpleTextItem* m_giMouseCursorTxtFreqBack;
     QGraphicsSimpleTextItem* m_giMouseCursorTxtTime;
     QGraphicsSimpleTextItem* m_giMouseCursorTxtFreq;
     void setMouseCursorPosition(QPointF p, bool forwardsync);
