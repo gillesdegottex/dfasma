@@ -21,6 +21,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "wmainwindow.h"
 #include <QApplication>
 #include <QObject>
+#include <QIcon>
 
 #ifdef FILE_AUDIO_LIBAV
 extern "C" {
