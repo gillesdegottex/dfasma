@@ -58,6 +58,19 @@ QGVSpectrumGroupDelay::QGVSpectrumGroupDelay(WMainWindow* parent)
     m_scene = new QGraphicsScene(this);
     setScene(m_scene);
 
+    m_aSpectrumGroupDelayShowGrid = new QAction(tr("Show &grid"), this);
+    m_aSpectrumGroupDelayShowGrid->setObjectName("m_aSpectrumGroupDelayShowGrid");
+    m_aSpectrumGroupDelayShowGrid->setStatusTip(tr("Show or hide the grid"));
+    m_aSpectrumGroupDelayShowGrid->setIcon(QIcon(":/icons/grid.svg"));
+    m_aSpectrumGroupDelayShowGrid->setCheckable(true);
+    m_aSpectrumGroupDelayShowGrid->setChecked(true);
+    gMW->m_settings.add(m_aSpectrumGroupDelayShowGrid);
+    m_grid = new QAEGraphicsItemGrid(this, "Hz", "s");
+    m_grid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
+    m_grid->setVisible(m_aSpectrumGroupDelayShowGrid->isChecked());
+    m_scene->addItem(m_grid);
+    connect(m_aSpectrumGroupDelayShowGrid, SIGNAL(toggled(bool)), this, SLOT(gridSetVisible(bool)));
+
     // Cursor
     m_giCursorHoriz = new QGraphicsLineItem(0, -100, 0, 100);
     QPen cursorPen(QColor(64, 64, 64));
@@ -103,14 +116,13 @@ QGVSpectrumGroupDelay::QGVSpectrumGroupDelay(WMainWindow* parent)
     setMouseTracking(true);
 
     // Build the context menu
-    m_contextmenu.addAction(gMW->m_gvAmplitudeSpectrum->m_aAmplitudeSpectrumShowGrid);
+    m_contextmenu.addAction(m_aSpectrumGroupDelayShowGrid);
     m_contextmenu.addSeparator();
     m_contextmenu.addAction(gMW->m_gvAmplitudeSpectrum->m_aAutoUpdateDFT);
     m_contextmenu.addAction(gMW->m_gvAmplitudeSpectrum->m_aFollowPlayCursor);
     m_contextmenu.addSeparator();
     m_contextmenu.addAction(gMW->m_gvAmplitudeSpectrum->m_aShowProperties);
 
-    connect(gMW->m_gvAmplitudeSpectrum->m_aAmplitudeSpectrumShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
     connect(gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop, SIGNAL(triggered()), m_scene, SLOT(update()));
 }
 
@@ -150,6 +162,8 @@ void QGVSpectrumGroupDelay::viewSet(QRectF viewrect, bool sync) {
             viewrect.setRight(m_scene->sceneRect().right());
 
         fitInView(removeHiddenMargin(this, viewrect));
+
+        m_grid->updateLines();
 
         if(sync){
             if(gMW->m_gvAmplitudeSpectrum && gMW->ui->actionShowAmplitudeSpectrum->isChecked()) {
@@ -348,6 +362,7 @@ void QGVSpectrumGroupDelay::mouseMoveEvent(QMouseEvent* event){
     if(m_currentAction==CAMoving) {
         // When scrolling the view around the scene
 //        setMouseCursorPosition(QPointF(-1,0), true);
+        m_grid->updateLines();
     }
     else if(m_currentAction==CAZooming) {
         double dx = -(event->pos()-m_pressed_mouseinviewport).x()/100.0;
@@ -683,10 +698,6 @@ void QGVSpectrumGroupDelay::drawBackground(QPainter* painter, const QRectF& rect
 
     // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
 
-    // Draw grid
-    if(gMW->m_gvAmplitudeSpectrum->m_aAmplitudeSpectrumShowGrid->isChecked())
-        draw_grid(painter, rect);
-
     // Draw the f0 grids
     if(!gFL->ftfzeros.empty()) {
 
@@ -814,126 +825,6 @@ void QGVSpectrumGroupDelay::draw_spectrum(QPainter* painter, std::vector<WAVTYPE
         }
 
         painter->setWorldMatrixEnabled(true); // Go back to scene coordinates
-    }
-}
-
-void QGVSpectrumGroupDelay::draw_grid(QPainter* painter, const QRectF& rect){
-
-    // TODO Everything here could be save a lot of drawing instructions
-
-    // Prepare the pens and fonts
-    QPen gridPen(QColor(192,192,192)); //192
-    gridPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-    QPen thinGridPen(QColor(224,224,224));
-    thinGridPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-    QPen gridFontPen(QColor(128,128,128));
-    gridFontPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-    painter->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
-    QFontMetrics qfm(gMW->m_dlgSettings->ui->lblGridFontSample->font());
-
-    // Horizontal lines
-
-    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-
-    // Draw the horizontal lines
-    double lstep;
-    int m;
-    {
-        // Adapt the lines ordinates to the viewport
-        double f = log10(float(viewrect.height()));
-        int fi;
-        if(f<0) fi=int(f-1);
-        else fi = int(f);
-        lstep = pow(10.0, fi);
-        m=1;
-        while(int(viewrect.height()/lstep)<3){
-            lstep /= 2;
-            m++;
-        }
-    }
-
-//    {
-        int mn=0;
-        painter->setPen(gridPen);
-        painter->drawLine(QLineF(rect.left(), 0, rect.right(), 0));
-    //    for(double l=int(viewrect.top()/lstep)*lstep; l<=rect.bottom(); l+=lstep){
-        for(double l=0.0; l<=rect.bottom(); l+=lstep){
-    //        if(mn%m==0) painter->setPen(gridPen);
-    //        else        painter->setPen(thinGridPen);
-            painter->drawLine(QLineF(rect.left(), l, rect.right(), l));
-            mn++;
-        }
-        for(double l=0.0; l>=rect.top(); l-=lstep){
-    //        if(mn%m==0) painter->setPen(gridPen);
-    //        else        painter->setPen(thinGridPen);
-            painter->drawLine(QLineF(rect.left(), l, rect.right(), l));
-            mn++;
-        }
-
-        // Write the ordinates of the horizontal lines
-        painter->setPen(gridFontPen);
-        QTransform trans = transform();
-        for(double l=0.0; l<=rect.bottom(); l+=lstep) {
-            painter->save();
-            painter->translate(QPointF(viewrect.left(), l));
-            painter->scale(1.0/trans.m11(), 1.0/trans.m22());
-
-            QString txt = QString("%1s").arg(-l);
-            QRectF txtrect = painter->boundingRect(QRectF(), Qt::AlignLeft, txt);
-            if(l<viewrect.bottom()-0.75*txtrect.height()/trans.m22())
-                painter->drawStaticText(QPointF(0, -0.9*txtrect.height()), QStaticText(txt));
-            painter->restore();
-        }
-        for(double l=0.0; l>=rect.top(); l-=lstep) {
-            painter->save();
-            painter->translate(QPointF(viewrect.left(), l));
-            painter->scale(1.0/trans.m11(), 1.0/trans.m22());
-
-            QString txt = QString("%1s").arg(-l);
-            QRectF txtrect = painter->boundingRect(QRectF(), Qt::AlignLeft, txt);
-            if(l<viewrect.bottom()-0.75*txtrect.height()/trans.m22())
-                painter->drawStaticText(QPointF(0, -0.9*txtrect.height()), QStaticText(txt));
-            painter->restore();
-        }
-//    }
-
-    {
-        // Vertical lines
-
-        // Adapt the lines absissa to the viewport
-        double f = log10(float(viewrect.width()));
-        int fi;
-        if(f<0) fi=int(f-1);
-        else fi = int(f);
-    //    std::cout << viewrect.height() << " " << f << " " << fi << endl;
-        double lstep = pow(10.0, fi);
-        int m=1;
-        while(int(viewrect.width()/lstep)<6) {
-            lstep /= 2;
-            m++;
-        }
-    //    std::cout << "lstep=" << lstep << endl;
-
-        // Draw the vertical lines
-        int mn = 0;
-        painter->setPen(gridPen);
-        for(double l=int(viewrect.left()/lstep)*lstep; l<=rect.right(); l+=lstep){
-    //        if(mn%m==0) painter->setPen(gridPen);
-    //        else        painter->setPen(thinGridPen);
-            painter->drawLine(QLineF(l, rect.top(), l, rect.bottom()));
-            mn++;
-        }
-
-        // Write the absissa of the vertical lines
-        painter->setPen(gridFontPen);
-        QTransform trans = transform();
-        for(double l=int(viewrect.left()/lstep)*lstep; l<=rect.right(); l+=lstep) {
-            painter->save();
-            painter->translate(QPointF(l, viewrect.bottom()-(qfm.height()-2)/trans.m22()));
-            painter->scale(1.0/trans.m11(), 1.0/trans.m22());
-            painter->drawStaticText(QPointF(0, 0), QStaticText(QString("%1Hz").arg(l)));
-            painter->restore();
-        }
     }
 }
 

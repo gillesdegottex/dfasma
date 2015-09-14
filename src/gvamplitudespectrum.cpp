@@ -273,12 +273,6 @@ void QGVAmplitudeSpectrum::updateScrollBars(){
     }
 }
 
-void QGVAmplitudeSpectrum::gridSetVisible(bool visible)
-{
-    m_grid->setVisible(visible);
-}
-
-
 void QGVAmplitudeSpectrum::settingsModified(){
 //    COUTD << "QGVAmplitudeSpectrum::settingsModified " << gMW->m_gvWaveform->m_mouseSelection << endl;
     if(gMW->m_gvWaveform)

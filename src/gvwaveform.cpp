@@ -262,11 +262,6 @@ void QGVWaveform::showScrollBars(bool show) {
     }
 }
 
-void QGVWaveform::gridSetVisible(bool visible)
-{
-    m_grid->setVisible(visible);
-}
-
 void QGVWaveform::fitViewToSoundsAmplitude(){
     if(gFL->ftsnds.size()>0){
         WAVTYPE maxwavmaxamp = 0.0;

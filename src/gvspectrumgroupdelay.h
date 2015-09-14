@@ -29,6 +29,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QToolBar>
 
 #include "qaesigproc.h"
+#include "qaegraphicsitemgrid.h"
 #include "ftsound.h"
 
 //class GVPhaseSpectrumWDialogSettings;
@@ -45,6 +46,9 @@ public:
 //    GVPhaseSpectrumWDialogSettings* m_dlgSettings;
 
     QGraphicsScene* m_scene;
+
+    // Graphic items
+    QAEGraphicsItemGrid* m_grid;
 
     QMenu m_contextmenu;
 
@@ -80,14 +84,16 @@ public:
     void viewUpdateTexts();
     void drawBackground(QPainter* painter, const QRectF& rect);
     void draw_spectrum(QPainter* painter, std::vector<WAVTYPE> &gd, double fs, double delay, const QRectF& rect);
-    void draw_grid(QPainter* painter, const QRectF& rect);
 
     ~QGVSpectrumGroupDelay();
+
+    QAction* m_aSpectrumGroupDelayShowGrid;
 
 signals:
     
 public slots:
     void updateSceneRect();
+    void gridSetVisible(bool visible){m_grid->setVisible(visible);}
 
     void azoomin();
     void azoomout();

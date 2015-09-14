@@ -119,7 +119,7 @@ signals:
 
 public slots:
     void showScrollBars(bool show);
-    void gridSetVisible(bool visible);
+    void gridSetVisible(bool visible){m_grid->setVisible(visible);}
 
     void updateSceneRect();
     void updateTextsGeometry();

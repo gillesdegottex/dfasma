@@ -31,9 +31,9 @@ file provided in the source code of DFasma. Another copy can be found at
 //#include "wmainwindow.h"
 
 #include "qaesigproc.h"
+#include "qaegraphicsitemgrid.h"
 #include "ftsound.h"
 
-//class GVPhaseSpectrumWDialogSettings;
 class WMainWindow;
 class QSpinBox;
 
@@ -44,11 +44,12 @@ class QGVPhaseSpectrum : public QGraphicsView
 public:
     explicit QGVPhaseSpectrum(WMainWindow* parent);
 
-//    GVPhaseSpectrumWDialogSettings* m_dlgSettings;
+    QMenu m_contextmenu;
 
     QGraphicsScene* m_scene;
 
-    QMenu m_contextmenu;
+    // Graphic items
+    QAEGraphicsItemGrid* m_grid;
 
     QGraphicsLineItem* m_giCursorHoriz;
     QGraphicsLineItem* m_giCursorVert;
@@ -82,10 +83,9 @@ public:
     void viewUpdateTexts();
     void drawBackground(QPainter* painter, const QRectF& rect);
     void draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& ldft, double fs, double delay, const QRectF& rect);
-    void draw_grid(QPainter* painter, const QRectF& rect);
 
-//    QAction* m_aShowProperties;
-    QAction* m_aPhaseSpectrumGridUsePiFraction;
+    QAction* m_aPhaseSpectrumShowGrid;
+//    QAction* m_aPhaseSpectrumGridUsePiFraction;
 
     ~QGVPhaseSpectrum();
 
@@ -93,6 +93,7 @@ signals:
     
 public slots:
     void updateSceneRect();
+    void gridSetVisible(bool visible){m_grid->setVisible(visible);}
 
     void azoomin();
     void azoomout();

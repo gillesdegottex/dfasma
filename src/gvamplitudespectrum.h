@@ -123,7 +123,7 @@ signals:
     
 public slots:
     void updateScrollBars();
-    void gridSetVisible(bool visible);
+    void gridSetVisible(bool visible){m_grid->setVisible(visible);}
 
     void setWindowRange(double tstart, double tend);
     void updateSceneRect(); // To call when fs has changed and limits in dB
