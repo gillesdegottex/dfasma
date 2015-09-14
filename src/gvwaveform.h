@@ -26,6 +26,8 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QGraphicsView>
 #include <QMenu>
 
+#include "qaegraphicsitemgrid.h"
+
 #include "ftsound.h"
 
 class WMainWindow;
@@ -66,11 +68,12 @@ public:
     QGraphicsLineItem* m_giPlayCursor;
     QGraphicsRectItem* m_giFilteredSelection;
 
-    QGraphicsPathItem* m_giWindow;
-
+    QGraphicsScene* m_scene;
     qreal m_ampzoom;
 
-    QGraphicsScene* m_scene;
+    // Graphic items
+    QAEGraphicsItemGrid* m_grid;
+    QGraphicsPathItem* m_giWindow;
 
     QAction* m_aWaveformShowGrid;
     QAction* m_aWaveformShowWindow;
@@ -99,9 +102,6 @@ public:
     void drawBackground(QPainter* painter, const QRectF& rect);
 
 //    void cursorUpdate(float x);
-    QPen m_gridPen;
-    QPen m_gridFontPen;
-    void draw_grid(QPainter* painter, const QRectF& rect);
     void draw_allwaveforms(QPainter* painter, const QRectF& rect);
     void draw_waveform(QPainter* painter, const QRectF& rect, FTSound *snd);
 
@@ -119,6 +119,7 @@ signals:
 
 public slots:
     void showScrollBars(bool show);
+    void gridSetVisible(bool visible);
 
     void updateSceneRect();
     void updateTextsGeometry();

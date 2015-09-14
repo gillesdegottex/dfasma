@@ -43,8 +43,6 @@ class QGVAmplitudeSpectrum : public QGraphicsView
 {
     Q_OBJECT
 
-    QPen m_gridFontPen;
-
     QTime m_last_parameters_change;
 
     std::vector<FFTTYPE> m_win; // Keep one here to limit allocations

@@ -74,9 +74,6 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_aShowProperties->setStatusTip(tr("Open the properties configuration panel of the spectrum view"));
     m_aShowProperties->setIcon(QIcon(":/icons/settings.svg"));
 
-    m_gridFontPen.setColor(QColor(128,128,128));
-    m_gridFontPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-
     m_aAmplitudeSpectrumShowGrid = new QAction(tr("Show &grid"), this);
     m_aAmplitudeSpectrumShowGrid->setObjectName("m_aAmplitudeSpectrumShowGrid");
     m_aAmplitudeSpectrumShowGrid->setStatusTip(tr("Show or hide the grid"));
@@ -84,7 +81,7 @@ QGVAmplitudeSpectrum::QGVAmplitudeSpectrum(WMainWindow* parent)
     m_aAmplitudeSpectrumShowGrid->setCheckable(true);
     m_aAmplitudeSpectrumShowGrid->setChecked(true);
     gMW->m_settings.add(m_aAmplitudeSpectrumShowGrid);
-    m_grid = new QAEGraphicsItemGrid();
+    m_grid = new QAEGraphicsItemGrid(this, "Hz", "dB");
     m_grid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
     m_grid->setVisible(m_aAmplitudeSpectrumShowGrid->isChecked());
     m_scene->addItem(m_grid);
@@ -634,8 +631,7 @@ void QGVAmplitudeSpectrum::viewSet(QRectF viewrect, bool sync) {
         for(size_t fi=0; fi<gFL->ftfzeros.size(); fi++)
             gFL->ftfzeros[fi]->updateTextsGeometry();
 
-        m_grid->updateLines(mapToScene(viewport()->rect()).boundingRect(),
-                            mapToScene(viewport()->rect()).boundingRect(), transform());
+        m_grid->updateLines();
 
         if(sync){
             if(gMW->m_gvPhaseSpectrum && gMW->ui->actionShowPhaseSpectrum->isChecked()) {
@@ -836,8 +832,7 @@ void QGVAmplitudeSpectrum::mouseMoveEvent(QMouseEvent* event){
     if(m_currentAction==CAMoving) {
         // When scrolling the view around the scene
         setMouseCursorPosition(QPointF(-1,0), false);
-        m_grid->updateLines(mapToScene(viewport()->rect()).boundingRect(),
-                            mapToScene(viewport()->rect()).boundingRect(), transform());
+        m_grid->updateLines();
     }
     else if(m_currentAction==CAZooming) {
         double dx = -(event->pos()-m_pressed_mouseinviewport).x()/100.0;

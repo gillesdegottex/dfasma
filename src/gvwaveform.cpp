@@ -71,11 +71,6 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     m_scene = new QGraphicsScene(this);
     setScene(m_scene);
 
-    // Grid - Prepare the pens and fonts
-    m_gridPen.setColor(QColor(192,192,192));
-    m_gridPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-    m_gridFontPen.setColor(QColor(128,128,128));
-    m_gridFontPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
     m_aWaveformShowGrid = new QAction(tr("Show &grid"), this);
     m_aWaveformShowGrid->setObjectName("m_aWaveformShowGrid");
     m_aWaveformShowGrid->setStatusTip(tr("Show &grid"));
@@ -85,6 +80,12 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     gMW->m_settings.add(m_aWaveformShowGrid);
     connect(m_aWaveformShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
     m_contextmenu.addAction(m_aWaveformShowGrid);
+    m_grid = new QAEGraphicsItemGrid(this, "s", "");
+    m_grid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
+    m_grid->setVisible(m_aWaveformShowGrid->isChecked());
+    m_scene->addItem(m_grid);    
+    connect(m_aWaveformShowGrid, SIGNAL(toggled(bool)), this, SLOT(gridSetVisible(bool)));
+
     m_aWaveformShowSelectedWaveformOnTop = new QAction(tr("Show selected wav on top"), this);
     m_aWaveformShowSelectedWaveformOnTop->setObjectName("m_aWaveformShowSelectedWaveformOnTop");
     m_aWaveformShowSelectedWaveformOnTop->setStatusTip(tr("Show the selected waveform on top of all others"));
@@ -261,6 +262,11 @@ void QGVWaveform::showScrollBars(bool show) {
     }
 }
 
+void QGVWaveform::gridSetVisible(bool visible)
+{
+    m_grid->setVisible(visible);
+}
+
 void QGVWaveform::fitViewToSoundsAmplitude(){
     if(gFL->ftsnds.size()>0){
         WAVTYPE maxwavmaxamp = 0.0;
@@ -303,6 +309,7 @@ void QGVWaveform::viewSet(QRectF viewrect, bool sync) {
         fitInView(removeHiddenMargin(this, viewrect));
 
         updateTextsGeometry();
+        m_grid->updateLines();
 
         if(sync){
             if(gMW->m_gvSpectrogram && gMW->ui->actionShowSpectrogram->isChecked()) {
@@ -627,6 +634,7 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
     if(m_currentAction==CAMoving) {
         // When scrolling along the waveform
         setMouseCursorPosition(-1, false);
+        m_grid->updateLines();
         QGraphicsView::mouseMoveEvent(event);
     }
     else if(m_currentAction==CAZooming) {
@@ -1220,9 +1228,6 @@ void QGVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
 
 //    cout << "QGVWaveform::drawBackground rect:" << rect << endl;
 
-    if(m_aWaveformShowGrid->isChecked())
-        draw_grid(painter, rect);
-
     // Plot STFT's window centers
     if(m_aWaveformShowSTFTWindowCenters->isChecked()){
         FTSound* cursnd = gFL->getCurrentFTSound(true);
@@ -1448,105 +1453,6 @@ void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* 
         snd->m_wavparams = reqparams;
 
         painter->setWorldMatrixEnabled(true); // Go back to scene coordinates
-    }
-}
-
-void QGVWaveform::draw_grid(QPainter* painter, const QRectF& rect){
-
-//    std::cout << "QGVWaveform::draw_grid " << rect.left() << " " << rect.right() << endl;
-
-    // Plot the grid
-
-    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-
-    painter->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
-    QFontMetrics qfm(gMW->m_dlgSettings->ui->lblGridFontSample->font());
-
-    QTransform trans = transform();
-
-    // Horizontal lines
-
-    // Adapt the lines ordinates to the viewport
-    double lstep;
-    if(m_ampzoom==1.0){
-        lstep = 0.25;
-    }
-    else{
-        double f = log10(float(viewrect.height()));
-        int fi;
-        if(f<0) fi=int(f-1);
-        else fi = int(f);
-        lstep = pow(10.0, fi+1);
-        int m=1;
-        while(int(float(viewrect.height())/lstep)<4){ // TODO use log2
-            lstep /= 2;
-            m++;
-        }
-    }
-
-    // Draw the horizontal lines
-    int mn = 0;
-    painter->setPen(m_gridPen);
-    for(double l=0.0; l<=float(viewrect.height()); l+=lstep){
-//        if(mn%m==0) painter->setPen(gridPen);
-//        else        painter->setPen(thinGridPen);
-        painter->drawLine(QLineF(rect.left(), l, rect.right(), l));
-        painter->drawLine(QLineF(rect.left(), -l, rect.right(), -l));
-        mn++;
-    }
-
-    // Write the ordinates of the horizontal lines
-    painter->setPen(m_gridFontPen);
-    for(double l=0.0; l<=float(viewrect.height()); l+=lstep){
-        painter->save();
-        painter->translate(QPointF(viewrect.left(), l));
-        painter->scale(1.0/trans.m11(), 1.0/trans.m22());
-        QString txt = QString("%1").arg(-l);
-        QRectF txtrect = painter->boundingRect(QRectF(), Qt::AlignLeft, txt);
-        if(l<viewrect.bottom()-txtrect.height()/trans.m22())
-            painter->drawStaticText(QPointF(0, -0.5*txtrect.bottom()), QStaticText(txt));
-        painter->restore();
-        painter->save();
-        painter->translate(QPointF(viewrect.left(), -l));
-        painter->scale(1.0/trans.m11(), 1.0/trans.m22());
-        txt = QString("%1").arg(l);
-        txtrect = painter->boundingRect(QRectF(), Qt::AlignLeft, txt);
-        painter->drawStaticText(QPointF(0, -0.5*txtrect.bottom()), QStaticText(txt));
-        painter->restore();
-    }
-
-    // Vertical lines
-
-    // Adapt the lines absissa to the viewport
-    double f = log10(float(viewrect.width()));
-    int fi;
-    if(f<0) fi=int(f-1);
-    else fi = int(f);
-    lstep = pow(10.0, fi);
-    int m = 1;
-    while(int(viewrect.width()/lstep)<6){
-        lstep /= 2;
-        m++;
-    }
-
-    // Draw the vertical lines
-    mn = 0;
-    painter->setPen(m_gridPen);
-    for(double l=int(rect.left()/lstep)*lstep; l<=rect.right(); l+=lstep){
-//        if(mn%m==0) painter->setPen(gridPen);
-//        else        painter->setPen(thinGridPen);
-        painter->drawLine(QLineF(l, rect.top(), l, rect.bottom()));
-        mn++;
-    }
-
-    // Write the absissa of the vertical lines
-    painter->setPen(m_gridFontPen);
-    for(double l=int(rect.left()/lstep)*lstep; l<=rect.right(); l+=lstep){
-        painter->save();
-        painter->translate(QPointF(l, viewrect.bottom()-(qfm.height()-2)/trans.m22()));
-        painter->scale(1.0/trans.m11(), 1.0/trans.m22());
-        painter->drawStaticText(QPointF(0, 0), QStaticText(QString("%1s").arg(l)));
-        painter->restore();
     }
 }
 
