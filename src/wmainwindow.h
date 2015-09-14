@@ -100,6 +100,7 @@ private slots:
     void setEditMode(bool checked);
     void execAbout();
     void viewsDisplayedChanged();
+    void viewsSpectrogramToggled(bool show);
     void changeToolBarSizes(int size);
     void enterScrollHandDragMode();
     void leaveScrollHandDragMode();

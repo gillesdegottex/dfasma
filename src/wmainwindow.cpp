@@ -215,6 +215,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     m_settings.add(ui->actionShowSpectrogram);
     ui->wSpectrogram->setVisible(ui->actionShowSpectrogram->isChecked());
     connect(ui->pbSpectrogramSTFTUpdate, SIGNAL(clicked()), m_gvSpectrogram, SLOT(updateSTFTSettings()));
+    connect(ui->actionShowSpectrogram, SIGNAL(toggled(bool)), this, SLOT(viewsSpectrogramToggled(bool)));
 
     m_gvAmplitudeSpectrum->updateScrollBars();
     connect(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow, SIGNAL(toggled(bool)), m_gvAmplitudeSpectrum, SLOT(updateScrollBars()));
@@ -549,6 +550,12 @@ void WMainWindow::viewsDisplayedChanged() {
     m_gvAmplitudeSpectrum->updateScrollBars();
 
     gMW->m_gvAmplitudeSpectrum->selectionSetTextInForm();
+}
+
+void WMainWindow::viewsSpectrogramToggled(bool show)
+{
+    if(show && gFL->ftsnds.size()>0)
+            m_gvSpectrogram->updateSTFTSettings(); // This will update the window computation AND trigger the STFT computation
 }
 
 void WMainWindow::keyPressEvent(QKeyEvent* event){
