@@ -746,7 +746,7 @@ void QGVSpectrumGroupDelay::drawBackground(QPainter* painter, const QRectF& rect
                 painter->setPen(outlinePen);
                 painter->setBrush(QBrush(gFL->ftsnds[fi]->getColor()));
 
-                draw_spectrum(painter, gFL->ftsnds[fi]->m_gd, gFL->getFs(), (gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.winlen-1)/2.0, rect);
+                draw_spectrum(painter, gFL->ftsnds[fi]->m_gd, gFL->getFs(), rect);
             }
         }
     }
@@ -758,14 +758,14 @@ void QGVSpectrumGroupDelay::drawBackground(QPainter* painter, const QRectF& rect
             painter->setPen(outlinePen);
             painter->setBrush(QBrush(currsnd->getColor()));
 
-            draw_spectrum(painter, currsnd->m_gd, gFL->getFs(), (gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.winlen-1)/2.0, rect);
+            draw_spectrum(painter, currsnd->m_gd, gFL->getFs(), rect);
         }
     }
 
 //    cout << "QGVSpectrumGroupDelay::~drawBackground" << endl;
 }
 
-void QGVSpectrumGroupDelay::draw_spectrum(QPainter* painter, std::vector<WAVTYPE> &gd, double fs, double delay, const QRectF& rect) {
+void QGVSpectrumGroupDelay::draw_spectrum(QPainter* painter, std::vector<WAVTYPE> &gd, double fs, const QRectF& rect) {
     int dftlen = (int(gd.size())-1)*2;
     if (dftlen<2)
         return;
