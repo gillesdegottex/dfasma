@@ -150,6 +150,18 @@ void QGVPhaseSpectrum::viewSet(QRectF viewrect, bool sync) {
         if(viewrect==QRectF())
             viewrect = currentviewrect;
 
+        QPointF center = viewrect.center();
+        double hzeps = 1e-10;
+        if(viewrect.width()<hzeps){
+            viewrect.setLeft(center.x()-0.5*hzeps);
+            viewrect.setRight(center.x()+0.5*hzeps);
+        }
+        double radeps = 1e-10;
+        if(viewrect.height()<radeps){
+            viewrect.setTop(center.x()-0.5*radeps);
+            viewrect.setBottom(center.x()+0.5*radeps);
+        }
+
         if(viewrect.top()<=m_scene->sceneRect().top())
             viewrect.setTop(m_scene->sceneRect().top()-0.1);
         if(viewrect.bottom()>=m_scene->sceneRect().bottom())

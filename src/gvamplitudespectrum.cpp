@@ -604,6 +604,18 @@ void QGVAmplitudeSpectrum::viewSet(QRectF viewrect, bool sync) {
         if(viewrect==QRectF())
             viewrect = currentviewrect;
 
+        QPointF center = viewrect.center();
+        double hzeps = 1e-10;
+        if(viewrect.width()<hzeps){
+            viewrect.setLeft(center.x()-0.5*hzeps);
+            viewrect.setRight(center.x()+0.5*hzeps);
+        }
+        double dbeps = 1e-10;
+        if(viewrect.height()<dbeps){
+            viewrect.setTop(center.x()-0.5*dbeps);
+            viewrect.setBottom(center.x()+0.5*dbeps);
+        }
+
         if(viewrect.top()<=m_scene->sceneRect().top())
             viewrect.setTop(m_scene->sceneRect().top());
         if(viewrect.bottom()>=m_scene->sceneRect().bottom())
@@ -703,34 +715,19 @@ void QGVAmplitudeSpectrum::wheelEvent(QWheelEvent* event) {
     if(numDegrees>90) numDegrees = 90;
     if(numDegrees<-90) numDegrees = -90;
 
-//    cout << "QGVAmplitudeSpectrum::wheelEvent " << numDegrees << endl;
+    QTransform trans = transform();
+    qreal h11 = trans.m11();
+    qreal h22 = trans.m22();
+    h11 += 0.01*h11*numDegrees;
+    h22 += 0.01*h22*numDegrees;
+    setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+    setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
+    viewSet();
 
-    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-
-    if((viewrect.width()>10.0/gFL->getFs() && numDegrees>0) || (viewrect.height()>10.0/gFL->getFs() && numDegrees<0)) {
-        double gx = double(mapToScene(event->pos()).x()-viewrect.left())/viewrect.width();
-        double gy = double(mapToScene(event->pos()).y()-viewrect.top())/viewrect.height();
-        QRectF newrect = mapToScene(viewport()->rect()).boundingRect();
-        newrect.setLeft(newrect.left()+gx*0.01*viewrect.width()*numDegrees);
-        newrect.setRight(newrect.right()-(1-gx)*0.01*viewrect.width()*numDegrees);
-        if(newrect.width()<10.0/gFL->getFs()){
-           newrect.setLeft(newrect.center().x()-5.0/gFL->getFs());
-           newrect.setRight(newrect.center().x()+5.0/gFL->getFs());
-        }
-        newrect.setTop(newrect.top()+gy*0.01*viewrect.height()*numDegrees);
-        newrect.setBottom(newrect.bottom()-(1-gy)*0.01*viewrect.height()*numDegrees);
-        if(newrect.height()<10.0/gFL->getFs()){
-           newrect.setTop(newrect.center().y()-5.0/gFL->getFs());
-           newrect.setBottom(newrect.center().y()+5.0/gFL->getFs());
-        }
-
-        viewSet(newrect);
-
-        m_aZoomOnSelection->setEnabled(!m_selection.isEmpty());
-        m_aZoomOut->setEnabled(true);
-        m_aZoomIn->setEnabled(true);
-//        m_aUnZoom->setEnabled(true);
-    }
+    m_aZoomOnSelection->setEnabled(!m_selection.isEmpty());
+    m_aZoomOut->setEnabled(true);
+    m_aZoomIn->setEnabled(true);
+//    m_aUnZoom->setEnabled(true);
 }
 
 void QGVAmplitudeSpectrum::mousePressEvent(QMouseEvent* event){

@@ -633,9 +633,9 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
             // It seems the filtering went well, we can use the filtered sound
             wavtoplay = &wavfiltered;
 
-//            gMW->m_gvWaveform->m_scene->invalidate();
+//            gMW->m_gvWaveform->m_scene->update();
             gMW->m_gvAmplitudeSpectrum->updateDFTs();
-            gMW->m_gvAmplitudeSpectrum->m_scene->invalidate();
+            gMW->m_gvAmplitudeSpectrum->m_scene->update();
         }
         catch(QString err){
             m_isplaying = false;

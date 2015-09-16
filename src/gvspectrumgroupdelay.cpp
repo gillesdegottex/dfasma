@@ -152,6 +152,18 @@ void QGVSpectrumGroupDelay::viewSet(QRectF viewrect, bool sync) {
         if(viewrect==QRectF())
             viewrect = currentviewrect;
 
+        QPointF center = viewrect.center();
+        double hzeps = 1e-10;
+        if(viewrect.width()<hzeps){
+            viewrect.setLeft(center.x()-0.5*hzeps);
+            viewrect.setRight(center.x()+0.5*hzeps);
+        }
+        double seps = 0.1*1.0/gFL->getFs();
+        if(viewrect.height()<seps){
+            viewrect.setTop(center.x()-0.5*seps);
+            viewrect.setBottom(center.x()+0.5*seps);
+        }
+
         if(viewrect.top()<=m_scene->sceneRect().top())
             viewrect.setTop(m_scene->sceneRect().top());
         if(viewrect.bottom()>=m_scene->sceneRect().bottom())

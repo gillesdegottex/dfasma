@@ -334,8 +334,6 @@ void QGVWaveform::sldAmplitudeChanged(int value){
     QTransform m;
     m.scale(1.0, m_ampzoom);
     m_giWindow->setTransform(m);
-
-    m_scene->update();
 }
 
 void QGVWaveform::azoomin(){
@@ -1196,7 +1194,6 @@ void QGVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
             outlinePen.setStyle(Qt::DashLine);
             outlinePen.setWidth(0);
             painter->setPen(outlinePen);
-//            painter->setBrush(QBrush(gMW->ftlabels[fi]->color));
 
             for(size_t wci=0; wci<cursnd->m_stftts.size(); wci++)
                 painter->drawLine(QLineF(cursnd->m_stftts[wci], -1.0, cursnd->m_stftts[wci], 1.0));
