@@ -230,6 +230,8 @@ public:
     virtual bool isModified();
     virtual void setStatus();
     virtual void setDrawIcon(QPixmap& pm);
+    virtual void zposReset();
+    virtual void zposBringForward();
 
     double setPlay(const QAudioFormat& format, double tstart=0.0, double tstop=0.0, double fstart=0.0, double fstop=0.0);
     bool isPlaying() const {return m_isplaying;}

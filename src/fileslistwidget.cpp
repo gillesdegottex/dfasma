@@ -26,7 +26,8 @@ FilesListWidget* gFL = NULL;
 
 FilesListWidget::FilesListWidget(QMainWindow *parent)
     : QListWidget(parent)
-    , m_lastSelectedSound(NULL)
+    , m_prevSelectedFile(NULL)
+    , m_prevSelectedSound(NULL)
     , m_prgdlg(NULL)
 {
     gFL = this;
@@ -271,8 +272,8 @@ FTSound* FilesListWidget::getCurrentFTSound(bool forceselect) {
         return (FTSound*)currenItem;
 
     if(forceselect){
-        if(m_lastSelectedSound)
-            return m_lastSelectedSound;
+        if(m_prevSelectedSound)
+            return m_prevSelectedSound;
         else
             return ftsnds[0];
     }
@@ -350,11 +351,19 @@ void FilesListWidget::fileSelectionChanged() {
     m_nb_labels_in_selection = 0;
     m_nb_fzeros_in_selection = 0;
 
+    FileType* currfile = currentFile();
+    if(currfile!=m_prevSelectedFile){
+        if(m_prevSelectedFile)
+            m_prevSelectedFile->zposReset();
+        currfile->zposBringForward();
+        m_prevSelectedFile = currfile;
+    }
+
     for(int i=0; i<list.size(); i++) {
         FileType* ft = ((FileType*)list.at(i));
         if(ft->is(FileType::FTSOUND)){
             m_nb_snds_in_selection++;
-            m_lastSelectedSound = (FTSound*)ft;
+            m_prevSelectedSound = (FTSound*)ft;
         }
 
         if(ft->is(FileType::FTLABELS))
@@ -449,7 +458,7 @@ void FilesListWidget::selectedFilesToggleShown() {
     QList<QListWidgetItem*> list = selectedItems();
     for(int i=0; i<list.size(); i++){
         ((FileType*)list.at(i))->setVisible(!((FileType*)list.at(i))->m_actionShow->isChecked());
-        if(((FileType*)list.at(i))==m_lastSelectedSound)
+        if(((FileType*)list.at(i))==m_prevSelectedSound)
             gMW->m_gvSpectrogram->updateSTFTPlot();
     }
     gMW->m_gvWaveform->m_scene->update();
@@ -476,9 +485,12 @@ void FilesListWidget::selectedFilesClose() {
 
         FileType* ft = (FileType*)l.at(i);
 
-        if(ft==m_lastSelectedSound){
+        if(ft==m_prevSelectedSound){
             removeSelectedSound = true;
-            m_lastSelectedSound = NULL;
+            m_prevSelectedSound = NULL;
+        }
+        if(ft==m_prevSelectedFile){
+            m_prevSelectedFile = NULL;
         }
 
 //        cout << "INFO: Closing file: \"" << ft->fileFullPath.toLocal8Bit().constData() << "\"" << endl;
@@ -523,7 +535,7 @@ void FilesListWidget::selectedFilesReload() {
         if(ft->reload())
             didanysucceed = true;
 
-        if(ft==m_lastSelectedSound)
+        if(ft==m_prevSelectedSound)
             reloadSelectedSound = true;
     }
 

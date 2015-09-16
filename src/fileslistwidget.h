@@ -23,7 +23,8 @@ class FilesListWidget : public QListWidget
     // I cannot find a way to do it already from the Qt5 library.
     // (FilesListWidget::hasItem returns NULL)
     std::map<FileType*,bool> m_present_files;
-    FTSound* m_lastSelectedSound;
+    FileType* m_prevSelectedFile;
+    FTSound* m_prevSelectedSound;
     void addExistingFilesRecursive(const QStringList& files, FileType::FType type=FileType::FTUNSET);
 
     std::deque<FileType*> m_current_sourced;

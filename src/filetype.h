@@ -101,6 +101,9 @@ public:
     enum CHECKFILESTATUSMGT {CFSMQUIET, CFSMMESSAGEBOX, CFSMEXCEPTION};
     bool checkFileStatus(CHECKFILESTATUSMGT cfsmgt=CFSMQUIET);
     virtual void setStatus();
+
+    virtual void zposReset(){}
+    virtual void zposBringForward(){}
 };
 
 #endif // FILETYPE_H

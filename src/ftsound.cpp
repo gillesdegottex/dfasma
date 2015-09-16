@@ -273,6 +273,13 @@ void FTSound::setDrawIcon(QPixmap& pm){
     }
 }
 
+void FTSound::zposReset(){
+    m_giWaveform->setZValue(0.0);
+}
+void FTSound::zposBringForward(){
+    m_giWaveform->setZValue(1.0);
+}
+
 bool FTSound::reload() {
 //    COUTD << "FTSound::reload" << endl;
 
