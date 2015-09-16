@@ -255,7 +255,7 @@ void FTSound::load_finalize() {
 void FTSound::setVisible(bool shown){
     FileType::setVisible(shown);
     if(!shown)
-        m_wavparams.clear();
+        m_giWaveform->m_wavparams.clear();
 }
 
 void FTSound::setDrawIcon(QPixmap& pm){
@@ -959,20 +959,20 @@ void FTSound::GraphicItemWaveform::paint(QPainter * painter, const QStyleOptionG
         int snddelay = m_snd->m_delay;
 
         FTSound::WavParameters reqparams(fullpixrect, viewrect, winpixdelay, m_snd);
-        if(m_snd->wavtoplay==&(m_snd->wav) && reqparams==m_snd->m_wavparams){
+        if(m_snd->wavtoplay==&(m_snd->wav) && reqparams==m_wavparams){
 //             COUTD << "Using existing buffer " << pixrect << endl;
             for(int i=pixrect.left(); i<=pixrect.right(); i++){
 //            for(int i=0; i<=snd->m_wavpx_min.size(); i++)
-                if(m_snd->m_wavpx_min[i]<1e10) // TODO Clean this dirty fix
-                    painter->drawLine(QLineF(i, yzero+m_snd->m_wavpx_min[i], i, yzero+m_snd->m_wavpx_max[i]));
+                if(m_wavpx_min[i]<1e10) // TODO Clean this dirty fix
+                    painter->drawLine(QLineF(i, yzero+m_wavpx_min[i], i, yzero+m_wavpx_max[i]));
             }
         }
         else {
 //            COUTD << "Re compute buffer and draw " << pixrect << endl;
-            if(int(m_snd->m_wavpx_min.size())!=reqparams.fullpixrect.width()){
+            if(int(m_wavpx_min.size())!=reqparams.fullpixrect.width()){
 //                COUTD << "Resize" << endl;
-                m_snd->m_wavpx_min.resize(reqparams.fullpixrect.width());
-                m_snd->m_wavpx_max.resize(reqparams.fullpixrect.width());
+                m_wavpx_min.resize(reqparams.fullpixrect.width());
+                m_wavpx_max.resize(reqparams.fullpixrect.width());
                 pixrect = reqparams.fullpixrect;
             }
             int ns = int((pixrect.left()+winpixdelay)*p2n)-snddelay;
@@ -1001,19 +1001,19 @@ void FTSound::GraphicItemWaveform::paint(QPainter * painter, const QStyleOptionG
                     ymax *= s2p;
                     ymin = int(ymin-2);
                     ymax = int(ymax-2);
-                    m_snd->m_wavpx_min[i] = ymin;
-                    m_snd->m_wavpx_max[i] = ymax;
+                    m_wavpx_min[i] = ymin;
+                    m_wavpx_max[i] = ymax;
                     painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
                 }
                 else {
-                    m_snd->m_wavpx_min[i] = 1e20; // TODO Clean this dirty fix
-                    m_snd->m_wavpx_max[i] = 1e20; // TODO Clean this dirty fix
+                    m_wavpx_min[i] = 1e20; // TODO Clean this dirty fix
+                    m_wavpx_max[i] = 1e20; // TODO Clean this dirty fix
                 }
 
                 ns = ne;
             }
         }
-        m_snd->m_wavparams = reqparams;
+        m_wavparams = reqparams;
 
         painter->setWorldMatrixEnabled(true); // Go back to scene coordinates
     }

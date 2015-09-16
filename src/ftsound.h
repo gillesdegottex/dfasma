@@ -87,16 +87,6 @@ public:
     WAVTYPE m_ampscale; // [linear]
     qint64 m_delay;   // [sample index]
 
-    // Waveform view
-    class GraphicItemWaveform : public QGraphicsItem {
-        FTSound* m_snd;
-    public:
-        GraphicItemWaveform(FTSound* snd);
-        virtual QRectF boundingRect() const;
-        virtual void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget = 0);
-    };
-    GraphicItemWaveform* m_giWaveform;
-
     // Waveform
     class WavParameters{
     public:
@@ -135,9 +125,20 @@ public:
 
         inline bool isEmpty() const {return fullpixrect.isNull() || viewrect.isNull();}
     };
-    std::deque<WAVTYPE> m_wavpx_min;
-    std::deque<WAVTYPE> m_wavpx_max;
-    WavParameters m_wavparams;
+
+    // Waveform view
+    class GraphicItemWaveform : public QGraphicsItem {
+        FTSound* m_snd;
+    public:
+        WavParameters m_wavparams;
+        std::deque<WAVTYPE> m_wavpx_min;
+        std::deque<WAVTYPE> m_wavpx_max;
+
+        GraphicItemWaveform(FTSound* snd);
+        virtual QRectF boundingRect() const;
+        virtual void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget = 0);
+    };
+    GraphicItemWaveform* m_giWaveform;
 
     // Spectra
     class DFTParameters{

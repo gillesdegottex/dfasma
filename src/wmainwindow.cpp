@@ -757,7 +757,7 @@ void WMainWindow::focusWindowChanged(QWindow* win){
 
 void WMainWindow::allSoundsChanged(){
 //    COUTD << "WMainWindow::allSoundsChanged" << endl;
-//    m_gvWaveform->m_scene->update(); // Can be also very heavy if updating multiple files
+//    m_gvWaveform->m_scene->update(); // TODO delete ?
     m_gvAmplitudeSpectrum->updateDFTs(); // Can be also very heavy if updating multiple files
     m_gvAmplitudeSpectrum->m_scene->update();
     m_gvPhaseSpectrum->m_scene->update();
