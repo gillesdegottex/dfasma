@@ -42,6 +42,7 @@ public slots:
     void setSBAvoidClicksWindowDuration(double halfduration);
     void setSBButterworthOrderChangeValue(int order);
     void changeFont();
+    void setCacheLimit(int limitmega);
 
     void settingsSave();
     void settingsClear();

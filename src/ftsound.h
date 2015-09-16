@@ -29,6 +29,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QColor>
 #include <QAudioFormat>
 #include <QAction>
+#include <QGraphicsItem>
 
 #include "filetype.h"
 #include "stftcomputethread.h"
@@ -57,13 +58,12 @@ private:
     void load_finalize();             // Independent of the used file lib.
 
     QAudioFormat m_fileaudioformat;   // Format of the audio data
-
-    QAudioFormat m_outputaudioformat; // Temporary copy for readData
-
     void setSamplingRate(double _fs); // Used by implementations of load
-
     int m_channelid;  //-2:channels merged; -1:error; 0:no channel; >0:id
     bool m_isclipped;
+
+    // Playback
+    QAudioFormat m_outputaudioformat; // Temporary copy for readData
     bool m_isfiltered;
     bool m_isplaying;
 
@@ -86,6 +86,16 @@ public:
 
     WAVTYPE m_ampscale; // [linear]
     qint64 m_delay;   // [sample index]
+
+    // Waveform view
+    class GraphicItemWaveform : public QGraphicsItem {
+        FTSound* m_snd;
+    public:
+        GraphicItemWaveform(FTSound* snd);
+        virtual QRectF boundingRect() const;
+        virtual void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget = 0);
+    };
+    GraphicItemWaveform* m_giWaveform;
 
     // Waveform
     class WavParameters{
@@ -220,7 +230,6 @@ public:
     virtual bool isModified();
     virtual void setStatus();
     virtual void setDrawIcon(QPixmap& pm);
-
 
     double setPlay(const QAudioFormat& format, double tstart=0.0, double tstop=0.0, double fstart=0.0, double fstop=0.0);
     bool isPlaying() const {return m_isplaying;}

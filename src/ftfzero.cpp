@@ -69,6 +69,8 @@ QString FTFZero::createFileNameFromSound(const QString& sndfilename){
     else if(gMW->m_dlgSettings->ui->cbF0DefaultFormat->currentIndex()+FFAsciiTimeValue==FFAsciiAutoDetect
             || gMW->m_dlgSettings->ui->cbF0DefaultFormat->currentIndex()+FFAsciiTimeValue==FFAsciiTimeValue)
         return fileName+".f0.txt";
+
+    return fileName+".f0.txt";
 }
 
 

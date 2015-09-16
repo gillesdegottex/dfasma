@@ -26,6 +26,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QMessageBox>
 #include <QTextCodec>
 #include <QFontDialog>
+#include <QPixmapCache>
 #include "../external/libqxt/qxtspanslider.h"
 
 #include "ftsound.h"
@@ -44,6 +45,8 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     ui->setupUi(this);
     ui->btnSettingsSave->setIcon(style()->standardIcon(QStyle::SP_DialogSaveButton));
     ui->btnSettingsClear->setIcon(style()->standardIcon(QStyle::SP_DialogResetButton));
+    ui->lblViewsCacheLimit->hide();
+    ui->sbViewsCacheLimit->hide();
 
     // Fill the comboboxes
     QList<QByteArray> avcodecs = QTextCodec::availableCodecs();
@@ -76,6 +79,7 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     connect(ui->sbPlaybackAvoidClicksWindowDuration, SIGNAL(valueChanged(double)), this, SLOT(setSBAvoidClicksWindowDuration(double)));
     connect(ui->btnSettingsSave, SIGNAL(clicked()), this, SLOT(settingsSave()));
     connect(ui->btnSettingsClear, SIGNAL(clicked()), this, SLOT(settingsClear()));  
+    connect(ui->sbViewsCacheLimit, SIGNAL(valueChanged(int)), this, SLOT(setCacheLimit(int)));
 
     gMW->m_settings.add(ui->sbPlaybackButterworthOrder);
     gMW->m_settings.add(ui->cbPlaybackFilteringCompensateEnergy);
@@ -90,6 +94,7 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     gMW->m_settings.add(ui->cbViewsShowMusicNoteNames);
     gMW->m_settings.add(ui->cbViewsAddMarginsOnSelection);
     gMW->m_settings.add(ui->cbViewsScrollBarsShow);
+    gMW->m_settings.add(ui->sbViewsCacheLimit);
     gMW->m_settings.addFont(ui->lblGridFontSample);
     gMW->m_settings.add(ui->dsbEstimationF0Min);
     gMW->m_settings.add(ui->dsbEstimationF0Max);
@@ -180,6 +185,10 @@ void WDialogSettings::changeFont() {
         ui->lblGridFontSample->setFont(dlg.selectedFont());
         gMW->m_gvAmplitudeSpectrum->m_grid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
     }
+}
+
+void WDialogSettings::setCacheLimit(int limitmega) {
+    QPixmapCache::setCacheLimit(limitmega*1024);
 }
 
 WDialogSettings::~WDialogSettings() {

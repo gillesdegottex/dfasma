@@ -555,7 +555,7 @@ void WMainWindow::viewsDisplayedChanged() {
 void WMainWindow::viewsSpectrogramToggled(bool show)
 {
     if(show && gFL->ftsnds.size()>0)
-            m_gvSpectrogram->updateSTFTSettings(); // This will update the window computation AND trigger the STFT computation
+        m_gvSpectrogram->updateSTFTSettings(); // This will update the window computation AND trigger the STFT computation
 }
 
 void WMainWindow::keyPressEvent(QKeyEvent* event){
@@ -757,7 +757,7 @@ void WMainWindow::focusWindowChanged(QWindow* win){
 
 void WMainWindow::allSoundsChanged(){
 //    COUTD << "WMainWindow::allSoundsChanged" << endl;
-    m_gvWaveform->m_scene->update(); // Can be also very heavy if updating multiple files
+//    m_gvWaveform->m_scene->update(); // Can be also very heavy if updating multiple files
     m_gvAmplitudeSpectrum->updateDFTs(); // Can be also very heavy if updating multiple files
     m_gvAmplitudeSpectrum->m_scene->update();
     m_gvPhaseSpectrum->m_scene->update();

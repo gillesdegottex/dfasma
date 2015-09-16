@@ -42,12 +42,12 @@ class QGVWaveform : public QGraphicsView
 
     int m_ftlabel_current_index;
 
-    QGraphicsLineItem* m_giMouseCursorLine;
     QGraphicsSimpleTextItem* m_giMouseCursorTxt;
 
-    int m_scrolledx;
+//    int m_scrolledx; // For #419 ?
 
 public:
+    QGraphicsLineItem* m_giMouseCursorLine;
 
     QToolBar* m_toolBar;
 
@@ -68,12 +68,11 @@ public:
     QGraphicsLineItem* m_giPlayCursor;
     QGraphicsRectItem* m_giFilteredSelection;
 
-    QGraphicsScene* m_scene;
-    qreal m_ampzoom;
-
     // Graphic items
+    QGraphicsScene* m_scene;
     QAEGraphicsItemGrid* m_grid;
     QGraphicsPathItem* m_giWindow;
+    qreal m_ampzoom;
 
     QAction* m_aWaveformShowGrid;
     QAction* m_aWaveformShowWindow;
@@ -102,14 +101,12 @@ public:
     void drawBackground(QPainter* painter, const QRectF& rect);
 
 //    void cursorUpdate(float x);
-    void draw_allwaveforms(QPainter* painter, const QRectF& rect);
-    void draw_waveform(QPainter* painter, const QRectF& rect, FTSound *snd);
 
     void selectSegmentFindStartEnd(double x, FTLabels* ftl, double& start, double& end);
     void selectSegment(double x, bool add);
     void selectRemoveSegment(double x);
     bool hasSelection(){return m_selection.width()>0.0;}
-    double getPlayCursorPosition();
+    double getPlayCursorPosition() const;
 
     void viewSet(QRectF viewrect, bool sync=true);
 
