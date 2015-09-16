@@ -182,6 +182,16 @@ public:
 
         inline bool isEmpty() const {return winlen==0 || dftlen==0 || wintype==-1 || normtype==-1;}
     };
+//    // Amplitude Spectrum view
+//    class GraphicItemSpectrumAmplitude : public QGraphicsItem {
+//        FTSound* m_snd;
+//    public:
+//        GraphicItemSpectrumAmplitude(FTSound* snd);
+//        virtual QRectF boundingRect() const;
+//        virtual void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget = 0);
+//    };
+//    GraphicItemSpectrumAmplitude* m_giWaveform;
+
 
     std::vector<std::complex<FFTTYPE> > m_dft; // Store the _log_ of the DFT
 //    std::vector<std::complex<FFTTYPE> > m_dft; // Store the _log_ of the DFT

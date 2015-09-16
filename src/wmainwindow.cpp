@@ -31,8 +31,8 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "fileslistwidget.h"
 #include "gvwaveform.h"
-#include "gvamplitudespectrum.h"
-#include "gvphasespectrum.h"
+#include "gvspectrumamplitude.h"
+#include "gvspectrumphase.h"
 #include "gvspectrumgroupdelay.h"
 #include "gvspectrogram.h"
 #include "gvspectrogramwdialogsettings.h"
@@ -190,12 +190,12 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     ui->lWaveformGraphicsView->addWidget(m_gvWaveform);
 
     // Spectra
-    m_gvAmplitudeSpectrum = new QGVAmplitudeSpectrum(this);
+    m_gvAmplitudeSpectrum = new QGVSpectrumAmplitude(this);
     ui->lSpectrumAmplitudeGraphicsView->addWidget(m_gvAmplitudeSpectrum);
     m_settings.add(ui->actionShowAmplitudeSpectrum);
     ui->wSpectrumAmplitude->setVisible(ui->actionShowAmplitudeSpectrum->isChecked());
 
-    m_gvPhaseSpectrum = new QGVPhaseSpectrum(this);
+    m_gvPhaseSpectrum = new QGVSpectrumPhase(this);
     ui->lSpectrumPhaseGraphicsView->addWidget(m_gvPhaseSpectrum);
     m_settings.add(ui->actionShowPhaseSpectrum);
     ui->wSpectrumPhase->setVisible(ui->actionShowPhaseSpectrum->isChecked());

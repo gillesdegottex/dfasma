@@ -33,8 +33,8 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "gvwaveform.h"
-#include "gvamplitudespectrum.h"
-#include "gvphasespectrum.h"
+#include "gvspectrumamplitude.h"
+#include "gvspectrumphase.h"
 #include "gvspectrogramwdialogsettings.h"
 #include "ftlabels.h"
 

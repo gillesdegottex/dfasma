@@ -44,8 +44,8 @@ class FTFZero;
 class FTLabels;
 class AudioEngine;
 class QGVWaveform;
-class QGVAmplitudeSpectrum;
-class QGVPhaseSpectrum;
+class QGVSpectrumAmplitude;
+class QGVSpectrumPhase;
 class QGVSpectrumGroupDelay;
 class QGVSpectrogram;
 class QHBoxLayout;
@@ -135,8 +135,8 @@ public:
 
     // Views
     QGVWaveform* m_gvWaveform;
-    QGVAmplitudeSpectrum* m_gvAmplitudeSpectrum;
-    QGVPhaseSpectrum* m_gvPhaseSpectrum;
+    QGVSpectrumAmplitude* m_gvAmplitudeSpectrum;
+    QGVSpectrumPhase* m_gvPhaseSpectrum;
     QGVSpectrumGroupDelay* m_gvSpectrumGroupDelay;
     QGVSpectrogram* m_gvSpectrogram;
     QxtSpanSlider* m_qxtSpectrogramSpanSlider;

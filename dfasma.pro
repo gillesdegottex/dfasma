@@ -222,7 +222,7 @@ RESOURCES += ressources.qrc
 FORMS     += src/wmainwindow.ui \
              src/wdialogselectchannel.ui \
              src/wdialogsettings.ui \
-             src/gvamplitudespectrumwdialogsettings.ui \
+             src/gvspectrumamplitudewdialogsettings.ui \
              src/gvspectrogramwdialogsettings.ui \
              src/aboutbox.ui
 
@@ -231,23 +231,23 @@ INCLUDEPATH += external/libqaudioextra/include
 
 SOURCES   += src/main.cpp\
              src/wmainwindow.cpp \
-             src/wdialogselectchannel.cpp \
+             src/wdialogsettings.cpp \
+             src/fileslistwidget.cpp \
+             src/aboutbox.cpp \
              src/filetype.cpp \
              src/ftsound.cpp \
+             src/wdialogselectchannel.cpp \
              src/ftfzero.cpp \
              src/ftlabels.cpp \
              src/gvwaveform.cpp \
-             src/gvamplitudespectrum.cpp \
-             src/gvamplitudespectrumwdialogsettings.cpp \
+             src/gvspectrumamplitude.cpp \
              src/fftresizethread.cpp \
-             src/gvphasespectrum.cpp \
+             src/gvspectrumamplitudewdialogsettings.cpp \
+             src/gvspectrumphase.cpp \
              src/gvspectrumgroupdelay.cpp \
-             src/wdialogsettings.cpp \
              src/gvspectrogram.cpp \
              src/stftcomputethread.cpp \
              src/gvspectrogramwdialogsettings.cpp \
-             src/aboutbox.cpp \
-             src/fileslistwidget.cpp \
              external/libqxt/qxtspanslider.cpp \
              external/audioengine/audioengine.cpp \
              external/libqaudioextra/src/qaesigproc.cpp \
@@ -261,23 +261,23 @@ SOURCES   += src/main.cpp\
              external/REAPER/epoch_tracker/lpc_analyzer.cc
 
 HEADERS   += src/wmainwindow.h \
-             src/wdialogselectchannel.h \
+             src/wdialogsettings.h \
+             src/fileslistwidget.h \
+             src/aboutbox.h \
              src/filetype.h \
              src/ftsound.h \
+             src/wdialogselectchannel.h \
              src/ftfzero.h \
              src/ftlabels.h \
              src/gvwaveform.h \
-             src/gvamplitudespectrum.h \
-             src/gvamplitudespectrumwdialogsettings.h \
-             src/gvphasespectrum.h \
+             src/gvspectrumamplitude.h \
+             src/fftresizethread.h \
+             src/gvspectrumamplitudewdialogsettings.h \
+             src/gvspectrumphase.h \
              src/gvspectrumgroupdelay.h \
-             src/wdialogsettings.h \
              src/gvspectrogram.h \
              src/stftcomputethread.h \
              src/gvspectrogramwdialogsettings.h \
-             src/fftresizethread.h \
-             src/aboutbox.h \
-             src/fileslistwidget.h \
              external/libqxt/qxtglobal.h \
              external/libqxt/qxtnamespace.h \
              external/libqxt/qxtspanslider.h \

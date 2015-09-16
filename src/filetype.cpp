@@ -30,9 +30,10 @@ using namespace std;
 #include <QColorDialog>
 #include <QMessageBox>
 #include <QSvgRenderer>
+
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
-#include "gvamplitudespectrum.h"
+#include "gvspectrumamplitude.h"
 
 #ifdef SUPPORT_SDIF
 #include <easdif/easdif.h>

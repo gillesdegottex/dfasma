@@ -43,7 +43,7 @@ using namespace Easdif;
 #include "ui_wmainwindow.h"
 #include "ui_wdialogsettings.h"
 #include "gvwaveform.h"
-#include "gvamplitudespectrum.h"
+#include "gvspectrumamplitude.h"
 
 #include "qaehelpers.h"
 

@@ -19,25 +19,24 @@ file provided in the source code of DFasma. Another copy can be found at
 */
 
 #include "gvspectrogram.h"
+#include "gvspectrogramwdialogsettings.h"
+#include "ui_gvspectrogramwdialogsettings.h"
+#include "stftcomputethread.h"
 
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "wdialogsettings.h"
 #include "ui_wdialogsettings.h"
-#include "gvamplitudespectrumwdialogsettings.h"
-#include "ui_gvamplitudespectrumwdialogsettings.h"
 
-#include "gvspectrogramwdialogsettings.h"
-#include "ui_gvspectrogramwdialogsettings.h"
 #include "gvwaveform.h"
-#include "stftcomputethread.h"
-#include "gvamplitudespectrum.h"
-#include "gvphasespectrum.h"
+#include "gvspectrumamplitude.h"
+#include "gvspectrumamplitudewdialogsettings.h"
+#include "ui_gvspectrumamplitudewdialogsettings.h"
+#include "gvspectrumphase.h"
 #include "gvspectrumgroupdelay.h"
 #include "ftsound.h"
 #include "ftlabels.h"
 #include "ftfzero.h"
-#include "qaesigproc.h"
 
 #include <iostream>
 #include <algorithm>
@@ -57,6 +56,7 @@ using namespace std;
 #include <QScrollBar>
 #include "../external/libqxt/qxtspanslider.h"
 
+#include "qaesigproc.h"
 #include "qaehelpers.h"
 
 QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)

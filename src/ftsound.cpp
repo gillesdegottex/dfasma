@@ -34,7 +34,7 @@ using namespace std;
 #include <QProgressDialog>
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
-#include "gvamplitudespectrum.h"
+#include "gvspectrumamplitude.h"
 #include "gvwaveform.h"
 #include "qaesigproc.h"
 #include "qaehelpers.h"
@@ -853,6 +853,7 @@ QRectF FTSound::GraphicItemWaveform::boundingRect() const {
 }
 
 void FTSound::GraphicItemWaveform::paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget) {
+    Q_UNUSED(widget)
 //    COUTD << "FTSound::GraphicItemWaveform::paint update_rect=" << option->exposedRect << endl;
 
 //    void QGVWaveform::draw_waveform(QPainter* painter, const QRectF& rect, FTSound* snd){
