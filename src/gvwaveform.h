@@ -28,13 +28,11 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "qaegraphicsitemgrid.h"
 
-#include "ftsound.h"
-
-class WMainWindow;
 class QToolBar;
+class WMainWindow;
 class FTLabels;
 
-class QGVWaveform : public QGraphicsView
+class GVWaveform : public QGraphicsView
 {
     Q_OBJECT
 
@@ -87,7 +85,7 @@ public:
     QAction* m_aWaveformShowSelectedWaveformOnTop;
     QMenu m_contextmenu;
 
-    explicit QGVWaveform(WMainWindow* parent);
+    explicit GVWaveform(WMainWindow* parent);
 
     void scrollContentsBy(int dx, int dy);
     void wheelEvent(QWheelEvent* event);

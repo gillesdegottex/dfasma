@@ -18,17 +18,14 @@ file provided in the source code of DFasma. Another copy can be found at
 <http://www.gnu.org/licenses/>.
 */
 
-#ifndef QGVSPECTRUMPHASE_H
-#define QGVSPECTRUMPHASE_H
+#ifndef GVSPECTRUMPHASE_H
+#define GVSPECTRUMPHASE_H
 
 #include <vector>
 #include <deque>
 
 #include <QGraphicsView>
 #include <QMenu>
-#include <QToolBar>
-
-//#include "wmainwindow.h"
 
 #include "qaesigproc.h"
 #include "qaegraphicsitemgrid.h"
@@ -37,12 +34,12 @@ file provided in the source code of DFasma. Another copy can be found at
 class WMainWindow;
 class QSpinBox;
 
-class QGVSpectrumPhase : public QGraphicsView
+class GVSpectrumPhase : public QGraphicsView
 {
     Q_OBJECT
 
 public:
-    explicit QGVSpectrumPhase(WMainWindow* parent);
+    explicit GVSpectrumPhase(WMainWindow* parent);
 
     QMenu m_contextmenu;
 
@@ -87,7 +84,7 @@ public:
     QAction* m_aPhaseSpectrumShowGrid;
 //    QAction* m_aPhaseSpectrumGridUsePiFraction;
 
-    ~QGVSpectrumPhase();
+    ~GVSpectrumPhase();
 
 signals:
     
@@ -99,4 +96,4 @@ public slots:
     void azoomout();
 };
 
-#endif // QGVSPECTRUMPHASE_H
+#endif // GVSPECTRUMPHASE_H

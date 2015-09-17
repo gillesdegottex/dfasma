@@ -38,6 +38,7 @@ file provided in the source code of DFasma. Another copy can be found at
 using namespace std;
 
 #include <QtGlobal>
+#include <QMenu>
 #include <QToolBar>
 #include <QGraphicsItem>
 #include <QGraphicsRectItem>
@@ -56,7 +57,7 @@ using namespace std;
 
 #include "qaehelpers.h"
 
-QGVWaveform::QGVWaveform(WMainWindow* parent)
+GVWaveform::GVWaveform(WMainWindow* parent)
     : QGraphicsView(parent)
     , m_ftlabel_current_index(-1)
 //    , m_scrolledx(0)  // For #419 ?
@@ -252,7 +253,7 @@ QGVWaveform::QGVWaveform(WMainWindow* parent)
     setMouseCursorPosition(-1, false);
 }
 
-void QGVWaveform::showScrollBars(bool show) {
+void GVWaveform::showScrollBars(bool show) {
     if(show) {
         setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
         verticalScrollBar()->setEnabled(false);
@@ -264,7 +265,7 @@ void QGVWaveform::showScrollBars(bool show) {
     }
 }
 
-void QGVWaveform::fitViewToSoundsAmplitude(){
+void GVWaveform::fitViewToSoundsAmplitude(){
     if(gFL->ftsnds.size()>0){
         WAVTYPE maxwavmaxamp = 0.0;
         for(unsigned int si=0; si<gFL->ftsnds.size(); si++)
@@ -281,19 +282,27 @@ void QGVWaveform::fitViewToSoundsAmplitude(){
     }
 }
 
-void QGVWaveform::updateSceneRect() {
+void GVWaveform::updateSceneRect() {
     m_scene->setSceneRect(-1.0/gFL->getFs(), -1.05*m_ampzoom, gFL->getMaxDuration()+1.0/gFL->getFs(), 2.1*m_ampzoom);
 //    updateTextsGeometry();
 }
 
-void QGVWaveform::viewSet(QRectF viewrect, bool sync) {
+void GVWaveform::viewSet(QRectF viewrect, bool sync) {
 
     QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
 
-//    cout << "QGVWaveform::viewSet: viewrect=" << viewrect << endl;
-//    cout << "QGVWaveform::viewSet: currentviewrect=" << currentviewrect << endl;
+//    cout << "GVWaveform::viewSet: viewrect=" << viewrect << endl;
+//    cout << "GVWaveform::viewSet: currentviewrect=" << currentviewrect << endl;
 
     if(viewrect!=currentviewrect) {
+
+        QPointF center = viewrect.center();
+
+        if(viewrect.width()<10.0/gFL->getFs()){
+           viewrect.setLeft(center.x()-5.0/gFL->getFs());
+           viewrect.setRight(center.x()+5.0/gFL->getFs());
+        }
+
         if(viewrect.top()<m_scene->sceneRect().top())
             viewrect.setTop(m_scene->sceneRect().top()-0.01);
         if(viewrect.bottom()>m_scene->sceneRect().bottom())
@@ -319,7 +328,7 @@ void QGVWaveform::viewSet(QRectF viewrect, bool sync) {
     }
 }
 
-void QGVWaveform::sldAmplitudeChanged(int value){
+void GVWaveform::sldAmplitudeChanged(int value){
 
     m_ampzoom = (100-value)/100.0;
 
@@ -336,7 +345,7 @@ void QGVWaveform::sldAmplitudeChanged(int value){
     m_giWindow->setTransform(m);
 }
 
-void QGVWaveform::azoomin(){
+void GVWaveform::azoomin(){
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
     viewrect.setLeft(viewrect.left()+viewrect.width()/4);
@@ -351,7 +360,7 @@ void QGVWaveform::azoomin(){
     m_aZoomOnSelection->setEnabled(m_selection.width()>0);
 }
 
-void QGVWaveform::azoomout(){
+void GVWaveform::azoomout(){
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
     viewrect.setLeft(viewrect.left()-viewrect.width()/4);
@@ -366,7 +375,7 @@ void QGVWaveform::azoomout(){
     m_aZoomOnSelection->setEnabled(m_selection.width()>0);
 }
 
-void QGVWaveform::aunzoom(){
+void GVWaveform::aunzoom(){
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
     viewrect.setLeft(m_scene->sceneRect().left());
@@ -381,7 +390,7 @@ void QGVWaveform::aunzoom(){
     m_aZoomOnSelection->setEnabled(m_selection.width()>0);
 }
 
-void QGVWaveform::setMouseCursorPosition(double position, bool forwardsync) {
+void GVWaveform::setMouseCursorPosition(double position, bool forwardsync) {
     if(position==-1){
         m_giMouseCursorLine->hide();
         m_giMouseCursorTxt->hide();
@@ -415,8 +424,8 @@ void QGVWaveform::setMouseCursorPosition(double position, bool forwardsync) {
     }
 }
 
-void QGVWaveform::resizeEvent(QResizeEvent* event){
-//    COUTD << "QGVWaveform::resizeEvent oldSize: " << event->oldSize().isEmpty() << endl;
+void GVWaveform::resizeEvent(QResizeEvent* event){
+//    COUTD << "GVWaveform::resizeEvent oldSize: " << event->oldSize().isEmpty() << endl;
 
     if(event->oldSize().isEmpty() && !event->size().isEmpty()) {
         // The view didn't exist (or was hidden?) and it becomes visible.
@@ -445,37 +454,34 @@ void QGVWaveform::resizeEvent(QResizeEvent* event){
     setMouseCursorPosition(-1, false);
 }
 
-void QGVWaveform::scrollContentsBy(int dx, int dy){
-//    COUTD << "QGVWaveform::scrollContentsBy " << dx << "," << dy << endl;
+void GVWaveform::scrollContentsBy(int dx, int dy){
+//    COUTD << "GVWaveform::scrollContentsBy " << dx << "," << dy << endl;
 
 //    m_scrolledx += dx;  // For #419 ?
 
     QGraphicsView::scrollContentsBy(dx, dy);
 }
 
-void QGVWaveform::wheelEvent(QWheelEvent* event){
+void GVWaveform::wheelEvent(QWheelEvent* event){
 
     QPoint numDegrees = event->angleDelta() / 8;
 
-//    std::cout << "QGVWaveform::wheelEvent " << numDegrees.y() << endl;
+//    std::cout << "GVWaveform::wheelEvent " << numDegrees.y() << endl;
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
-//    cout << "QGVWaveform::wheelEvent: " << viewrect << endl;
+//    cout << "GVWaveform::wheelEvent: " << viewrect << endl;
 
     if(event->modifiers().testFlag(Qt::ShiftModifier)){
         QScrollBar* sb = horizontalScrollBar();
         sb->setValue(sb->value()-numDegrees.y());
+        m_grid->updateLines();
     }
     else if((viewrect.width()>10.0/gFL->getFs() && numDegrees.y()>0) || numDegrees.y()<0) {
         double g = double(mapToScene(event->pos()).x()-viewrect.left())/viewrect.width();
         QRectF newrect = mapToScene(viewport()->rect()).boundingRect();
         newrect.setLeft(newrect.left()+g*0.01*viewrect.width()*numDegrees.y());
         newrect.setRight(newrect.right()-(1-g)*0.01*viewrect.width()*numDegrees.y());
-        if(newrect.width()<10.0/gFL->getFs()){
-           newrect.setLeft(newrect.center().x()-5.0/gFL->getFs());
-           newrect.setRight(newrect.center().x()+5.0/gFL->getFs());
-        }
 
         viewSet(newrect);
 
@@ -487,11 +493,11 @@ void QGVWaveform::wheelEvent(QWheelEvent* event){
 //        m_aUnZoom->setEnabled(true);
     }
 
-//    std::cout << "~QGVWaveform::wheelEvent" << endl;
+//    std::cout << "~GVWaveform::wheelEvent" << endl;
 }
 
-void QGVWaveform::mousePressEvent(QMouseEvent* event){
-    // std::cout << "QGVWaveform::mousePressEvent" << endl;
+void GVWaveform::mousePressEvent(QMouseEvent* event){
+    // std::cout << "GVWaveform::mousePressEvent" << endl;
 
     QPointF p = mapToScene(event->pos());
     QRect selview = mapFromScene(m_giSelection->boundingRect()).boundingRect();
@@ -608,11 +614,11 @@ void QGVWaveform::mousePressEvent(QMouseEvent* event){
     }
 
     QGraphicsView::mousePressEvent(event);
-    // std::cout << "~QGVWaveform::mousePressEvent " << p.x() << endl;
+    // std::cout << "~GVWaveform::mousePressEvent " << p.x() << endl;
 }
 
-void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
-//    std::cout << "QGVWaveform::mouseMoveEvent" << m_selection.width() << endl;
+void GVWaveform::mouseMoveEvent(QMouseEvent* event){
+//    std::cout << "GVWaveform::mouseMoveEvent" << m_selection.width() << endl;
 
     QPointF p = mapToScene(event->pos());
 
@@ -628,10 +634,6 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
         double dx = -(event->pos()-m_pressed_mouseinviewport).x()/100.0;
 
         QRectF newrect = m_pressed_scenerect;
-
-        if(newrect.width()*exp(dx)<(10*1.0/gFL->getFs()))
-            dx = log((10*1.0/gFL->getFs())/newrect.width());
-
         newrect.setLeft(m_selection_pressedx-(m_selection_pressedx-m_pressed_scenerect.left())*exp(dx));
         newrect.setRight(m_selection_pressedx+(m_pressed_scenerect.right()-m_selection_pressedx)*exp(dx));
         viewSet(newrect);
@@ -797,11 +799,11 @@ void QGVWaveform::mouseMoveEvent(QMouseEvent* event){
         QGraphicsView::mouseMoveEvent(event);
     }
 
-//    std::cout << "~QGVWaveform::mouseMoveEvent" << endl;
+//    std::cout << "~GVWaveform::mouseMoveEvent" << endl;
 }
 
-void QGVWaveform::mouseReleaseEvent(QMouseEvent* event){
-//    std::cout << "QGVWaveform::mouseReleaseEvent " << m_selection.width() << endl;
+void GVWaveform::mouseReleaseEvent(QMouseEvent* event){
+//    std::cout << "GVWaveform::mouseReleaseEvent " << m_selection.width() << endl;
 
     // Order the mouse selection to avoid negative width
     if(m_mouseSelection.right()<m_mouseSelection.left()){
@@ -841,10 +843,10 @@ void QGVWaveform::mouseReleaseEvent(QMouseEvent* event){
     }
 
     QGraphicsView::mouseReleaseEvent(event);
-//    std::cout << "~QGVWaveform::mouseReleaseEvent " << endl;
+//    std::cout << "~GVWaveform::mouseReleaseEvent " << endl;
 }
 
-void QGVWaveform::mouseDoubleClickEvent(QMouseEvent* event){
+void GVWaveform::mouseDoubleClickEvent(QMouseEvent* event){
 
     QPointF p = mapToScene(event->pos());
 
@@ -866,7 +868,7 @@ void QGVWaveform::mouseDoubleClickEvent(QMouseEvent* event){
 
 }
 
-void QGVWaveform::selectSegmentFindStartEnd(double x, FTLabels* ftl, double& start, double& end){
+void GVWaveform::selectSegmentFindStartEnd(double x, FTLabels* ftl, double& start, double& end){
     start = -1;
     end = -1;
     if(ftl && ftl->getNbLabels()>0) {
@@ -889,7 +891,7 @@ void QGVWaveform::selectSegmentFindStartEnd(double x, FTLabels* ftl, double& sta
     }
 }
 
-void QGVWaveform::selectSegment(double x, bool add){
+void GVWaveform::selectSegment(double x, bool add){
     // Check if a marker is close and show the horiz split cursor if true
     FTLabels* ftl = gFL->getCurrentFTLabels(true);
     if(ftl && ftl->getNbLabels()>0) {
@@ -906,7 +908,7 @@ void QGVWaveform::selectSegment(double x, bool add){
     }
 }
 
-void QGVWaveform::selectRemoveSegment(double x){
+void GVWaveform::selectRemoveSegment(double x){
     FTLabels* ftl = gFL->getCurrentFTLabels(true);
     if(ftl && ftl->getNbLabels()>0) {
         if(m_selection.width()>0 && m_selection.left()<=x && x<=m_selection.right()){
@@ -939,9 +941,9 @@ void QGVWaveform::selectRemoveSegment(double x){
 }
 
 
-void QGVWaveform::keyPressEvent(QKeyEvent* event){
+void GVWaveform::keyPressEvent(QKeyEvent* event){
 
-//    COUTD << "QGVWaveform::keyPressEvent " << endl;
+//    COUTD << "GVWaveform::keyPressEvent " << endl;
 
     if(event->key()==Qt::Key_Delete) {
         if(m_currentAction==CALabelModifPosition) {
@@ -988,7 +990,7 @@ void QGVWaveform::keyPressEvent(QKeyEvent* event){
     QGraphicsView::keyPressEvent(event);
 }
 
-void QGVWaveform::selectionClear(bool forwardsync){
+void GVWaveform::selectionClear(bool forwardsync){
     m_giSelection->hide();
     m_selection = QRectF(0, -1, 0, 2);
     m_giSelection->setRect(m_selection.left(), -1, m_selection.width(), 2);
@@ -1020,7 +1022,7 @@ void QGVWaveform::selectionClear(bool forwardsync){
     }
 }
 
-void QGVWaveform::fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseSelection, int action) {
+void GVWaveform::fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseSelection, int action) {
     double fs = gFL->getFs();
 
     // Clip selection on exact sample times
@@ -1076,8 +1078,8 @@ void QGVWaveform::fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseS
     }
 }
 
-void QGVWaveform::selectionSet(QRectF selection, bool forwardsync){
-//    COUTD << "QGVWaveform::selectionSet " << selection << endl;
+void GVWaveform::selectionSet(QRectF selection, bool forwardsync){
+//    COUTD << "GVWaveform::selectionSet " << selection << endl;
 
     double fs = gFL->getFs();
 
@@ -1137,7 +1139,7 @@ void QGVWaveform::selectionSet(QRectF selection, bool forwardsync){
     m_giWindow->show();
 }
 
-void QGVWaveform::updateSelectionText(){
+void GVWaveform::updateSelectionText(){
     // gMW->ui->lblSelectionTxt->setText(QString("[%1").arg(m_selection.left()).append(",%1] ").arg(m_selection.right()).append("%1 s").arg(m_selection.width())); // start, end and duration
 
     if(gMW->m_gvWaveform->m_aWaveformShowWindow->isChecked() && gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.win.size()>0)
@@ -1147,7 +1149,7 @@ void QGVWaveform::updateSelectionText(){
 //    gMW->ui->lblSelectionTxt->setText(QString("%1s selection ").arg(m_selection.width(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()).append(" starting at %1s").arg(m_selection.left(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value())); // duration and start
 }
 
-void QGVWaveform::selectionZoomOn(){
+void GVWaveform::selectionZoomOn(){
     if(m_selection.width()>0){
 
         QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
@@ -1170,7 +1172,7 @@ void QGVWaveform::selectionZoomOn(){
     }
 }
 
-void QGVWaveform::updateTextsGeometry(){
+void GVWaveform::updateTextsGeometry(){
     QTransform trans = transform();
     QTransform cursortrans = QTransform::fromScale(1.0/trans.m11(), 1.0);
     m_giMouseCursorTxt->setTransform(cursortrans);
@@ -1180,8 +1182,8 @@ void QGVWaveform::updateTextsGeometry(){
         gFL->ftlabels[fi]->updateTextsGeometry();
 }
 
-void QGVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
-    // COUTD << "QGVWaveform::drawBackground rect:" << rect << endl;
+void GVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
+    // COUTD << "GVWaveform::drawBackground rect:" << rect << endl;
 
     m_giWindow->setVisible(m_aWaveformShowWindow->isChecked() && m_selection.width()>0.0); // TODO Put elsewhere?
 
@@ -1201,7 +1203,7 @@ void QGVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
     }
 }
 
-void QGVWaveform::playCursorSet(double t, bool forwardsync){
+void GVWaveform::playCursorSet(double t, bool forwardsync){
     if(t==-1){
         if(m_selection.width()>0)
             playCursorSet(m_selection.left(), forwardsync);
@@ -1231,6 +1233,6 @@ void QGVWaveform::playCursorSet(double t, bool forwardsync){
         gMW->m_gvSpectrogram->playCursorSet(t, false);
 }
 
-double QGVWaveform::getPlayCursorPosition() const{
+double GVWaveform::getPlayCursorPosition() const{
     return m_giPlayCursor->pos().x();
 }

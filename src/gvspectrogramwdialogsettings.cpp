@@ -7,7 +7,7 @@
 
 #include "qaehelpers.h"
 
-GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(QGVSpectrogram* parent) :
+GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(GVSpectrogram *parent) :
     QDialog((QWidget*)parent),
     ui(new Ui::GVSpectrogramWDialogSettings)
 {

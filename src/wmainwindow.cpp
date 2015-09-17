@@ -186,21 +186,21 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     ui->mainToolBar->insertWidget(ui->actionSettings, m_pbVolume);
     ui->mainToolBar->insertSeparator(ui->actionSettings);
 
-    m_gvWaveform = new QGVWaveform(this);
+    m_gvWaveform = new GVWaveform(this);
     ui->lWaveformGraphicsView->addWidget(m_gvWaveform);
 
     // Spectra
-    m_gvAmplitudeSpectrum = new QGVSpectrumAmplitude(this);
+    m_gvAmplitudeSpectrum = new GVSpectrumAmplitude(this);
     ui->lSpectrumAmplitudeGraphicsView->addWidget(m_gvAmplitudeSpectrum);
     m_settings.add(ui->actionShowAmplitudeSpectrum);
     ui->wSpectrumAmplitude->setVisible(ui->actionShowAmplitudeSpectrum->isChecked());
 
-    m_gvPhaseSpectrum = new QGVSpectrumPhase(this);
+    m_gvPhaseSpectrum = new GVSpectrumPhase(this);
     ui->lSpectrumPhaseGraphicsView->addWidget(m_gvPhaseSpectrum);
     m_settings.add(ui->actionShowPhaseSpectrum);
     ui->wSpectrumPhase->setVisible(ui->actionShowPhaseSpectrum->isChecked());
 
-    m_gvSpectrumGroupDelay = new QGVSpectrumGroupDelay(this);
+    m_gvSpectrumGroupDelay = new GVSpectrumGroupDelay(this);
     ui->lSpectrumGroupDelayGraphicsView->addWidget(m_gvSpectrumGroupDelay);
     m_settings.add(ui->actionShowGroupDelaySpectrum);
     ui->wSpectrumGroupDelay->setVisible(ui->actionShowGroupDelaySpectrum->isChecked());
@@ -210,7 +210,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
                              || ui->actionShowGroupDelaySpectrum->isChecked());
 
     // Spectrogram
-    m_gvSpectrogram = new QGVSpectrogram(this);
+    m_gvSpectrogram = new GVSpectrogram(this);
     ui->lSpectrogramGraphicsView->addWidget(m_gvSpectrogram);
     m_settings.add(ui->actionShowSpectrogram);
     ui->wSpectrogram->setVisible(ui->actionShowSpectrogram->isChecked());
@@ -530,7 +530,8 @@ void WMainWindow::updateViewsAfterAddFile(bool isfirsts) {
         if(isfirsts){
             m_gvWaveform->viewSet(m_gvWaveform->m_scene->sceneRect(), false);
             m_gvSpectrogram->viewSet(m_gvSpectrogram->m_scene->sceneRect(), false);
-            m_gvAmplitudeSpectrum->viewSet(m_gvAmplitudeSpectrum->m_scene->sceneRect(), false);
+            m_gvAmplitudeSpectrum->amplitudeMinChanged();
+//            m_gvAmplitudeSpectrum->viewSet(m_gvAmplitudeSpectrum->m_scene->sceneRect(), false);
             m_gvPhaseSpectrum->viewSet(m_gvPhaseSpectrum->m_scene->sceneRect(), false);
             m_gvSpectrumGroupDelay->viewSet(m_gvSpectrumGroupDelay->m_scene->sceneRect(), false);
             ui->actionFileNew->setEnabled(true);
@@ -786,6 +787,8 @@ void WMainWindow::setInWaitingForFileState(){
 // Audio management ============================================================
 
 void WMainWindow::initializeSoundSystem(double fs) {
+
+    m_gvAmplitudeSpectrum->setSamplingRate(fs);
 
     m_audioengine->initialize(fs);
     if(m_audioengine->isInitialized()) {

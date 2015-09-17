@@ -43,11 +43,11 @@ class FTSound;
 class FTFZero;
 class FTLabels;
 class AudioEngine;
-class QGVWaveform;
-class QGVSpectrumAmplitude;
-class QGVSpectrumPhase;
-class QGVSpectrumGroupDelay;
-class QGVSpectrogram;
+class GVWaveform;
+class GVSpectrumAmplitude;
+class GVSpectrumPhase;
+class GVSpectrumGroupDelay;
+class GVSpectrogram;
 class QHBoxLayout;
 class QProgressBar;
 class QProgressDialog;
@@ -134,11 +134,11 @@ public:
     void globalWaitingBarClear();
 
     // Views
-    QGVWaveform* m_gvWaveform;
-    QGVSpectrumAmplitude* m_gvAmplitudeSpectrum;
-    QGVSpectrumPhase* m_gvPhaseSpectrum;
-    QGVSpectrumGroupDelay* m_gvSpectrumGroupDelay;
-    QGVSpectrogram* m_gvSpectrogram;
+    GVWaveform* m_gvWaveform;
+    GVSpectrumAmplitude* m_gvAmplitudeSpectrum;
+    GVSpectrumPhase* m_gvPhaseSpectrum;
+    GVSpectrumGroupDelay* m_gvSpectrumGroupDelay;
+    GVSpectrogram* m_gvSpectrogram;
     QxtSpanSlider* m_qxtSpectrogramSpanSlider;
 
     // Audio

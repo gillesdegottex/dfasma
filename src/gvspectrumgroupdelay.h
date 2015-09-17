@@ -36,12 +36,12 @@ file provided in the source code of DFasma. Another copy can be found at
 class WMainWindow;
 class QSpinBox;
 
-class QGVSpectrumGroupDelay : public QGraphicsView
+class GVSpectrumGroupDelay : public QGraphicsView
 {
     Q_OBJECT
 
 public:
-    explicit QGVSpectrumGroupDelay(WMainWindow* parent);
+    explicit GVSpectrumGroupDelay(WMainWindow* parent);
 
 //    GVPhaseSpectrumWDialogSettings* m_dlgSettings;
 
@@ -85,7 +85,7 @@ public:
     void drawBackground(QPainter* painter, const QRectF& rect);
     void draw_spectrum(QPainter* painter, std::vector<WAVTYPE> &gd, double fs, const QRectF& rect);
 
-    ~QGVSpectrumGroupDelay();
+    ~GVSpectrumGroupDelay();
 
     QAction* m_aSpectrumGroupDelayShowGrid;
 

@@ -6,7 +6,7 @@
 #include <iostream>
 using namespace std;
 
-GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(QGVSpectrumAmplitude* parent)
+GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(GVSpectrumAmplitude* parent)
     : QDialog((QWidget*)parent)
     , ui(new Ui::GVAmplitudeSpectrumWDialogSettings)
 {

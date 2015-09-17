@@ -45,7 +45,7 @@ using namespace std;
 
 #include "qaehelpers.h"
 
-QGVSpectrumGroupDelay::QGVSpectrumGroupDelay(WMainWindow* parent)
+GVSpectrumGroupDelay::GVSpectrumGroupDelay(WMainWindow* parent)
     : QGraphicsView(parent)
     , m_scene(NULL)
 {
@@ -126,7 +126,7 @@ QGVSpectrumGroupDelay::QGVSpectrumGroupDelay(WMainWindow* parent)
     connect(gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop, SIGNAL(triggered()), m_scene, SLOT(update()));
 }
 
-void QGVSpectrumGroupDelay::updateSceneRect() {
+void GVSpectrumGroupDelay::updateSceneRect() {
 
     double maxdelay = gFL->getMaxDuration()/2;
 
@@ -143,7 +143,7 @@ void QGVSpectrumGroupDelay::updateSceneRect() {
     }
 }
 
-void QGVSpectrumGroupDelay::viewSet(QRectF viewrect, bool sync) {
+void GVSpectrumGroupDelay::viewSet(QRectF viewrect, bool sync) {
 //    COUTD << "QGVSpectrumGroupDelay::viewSet" << endl;
 
     QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
@@ -196,7 +196,7 @@ void QGVSpectrumGroupDelay::viewSet(QRectF viewrect, bool sync) {
 //    cout << "QGVSpectrumGroupDelay::~viewSet" << endl;
 }
 
-void QGVSpectrumGroupDelay::resizeEvent(QResizeEvent* event) {
+void GVSpectrumGroupDelay::resizeEvent(QResizeEvent* event) {
 //    COUTD << "QGVSpectrumGroupDelay::resizeEvent" << endl;
 
     QRectF oldviewrect = mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect();
@@ -236,7 +236,7 @@ void QGVSpectrumGroupDelay::resizeEvent(QResizeEvent* event) {
 //    COUTD << "QGVSpectrumGroupDelay::~resizeEvent" << endl;
 }
 
-void QGVSpectrumGroupDelay::scrollContentsBy(int dx, int dy){
+void GVSpectrumGroupDelay::scrollContentsBy(int dx, int dy){
 
     // Invalidate the necessary parts
     // Ensure the y ticks labels will be redrawn
@@ -255,7 +255,7 @@ void QGVSpectrumGroupDelay::scrollContentsBy(int dx, int dy){
     QGraphicsView::scrollContentsBy(dx, dy);
 }
 
-void QGVSpectrumGroupDelay::wheelEvent(QWheelEvent* event) {
+void GVSpectrumGroupDelay::wheelEvent(QWheelEvent* event) {
 //    cout << "QGVSpectrumGroupDelay::wheelEvent" << endl;
 
     qreal numDegrees = (event->angleDelta() / 8).y();
@@ -277,7 +277,7 @@ void QGVSpectrumGroupDelay::wheelEvent(QWheelEvent* event) {
 //    cout << "QGVSpectrumGroupDelay::~wheelEvent" << endl;
 }
 
-void QGVSpectrumGroupDelay::mousePressEvent(QMouseEvent* event){
+void GVSpectrumGroupDelay::mousePressEvent(QMouseEvent* event){
 //    std::cout << "QGVWaveform::mousePressEvent" << endl;
 
     QPointF p = mapToScene(event->pos());
@@ -364,7 +364,7 @@ void QGVSpectrumGroupDelay::mousePressEvent(QMouseEvent* event){
 //    std::cout << "~QGVWaveform::mousePressEvent " << p.x() << endl;
 }
 
-void QGVSpectrumGroupDelay::mouseMoveEvent(QMouseEvent* event){
+void GVSpectrumGroupDelay::mouseMoveEvent(QMouseEvent* event){
 //    std::cout << "QGVWaveform::mouseMoveEvent" << selection.width() << endl;
 
     QPointF p = mapToScene(event->pos());
@@ -478,7 +478,7 @@ void QGVSpectrumGroupDelay::mouseMoveEvent(QMouseEvent* event){
     QGraphicsView::mouseMoveEvent(event);
 }
 
-void QGVSpectrumGroupDelay::mouseReleaseEvent(QMouseEvent* event){
+void GVSpectrumGroupDelay::mouseReleaseEvent(QMouseEvent* event){
 //    std::cout << "QGVWaveform::mouseReleaseEvent " << selection.width() << endl;
 
     QPointF p = mapToScene(event->pos());
@@ -516,7 +516,7 @@ void QGVSpectrumGroupDelay::mouseReleaseEvent(QMouseEvent* event){
 //    std::cout << "~QGVWaveform::mouseReleaseEvent " << endl;
 }
 
-void QGVSpectrumGroupDelay::keyPressEvent(QKeyEvent* event){
+void GVSpectrumGroupDelay::keyPressEvent(QKeyEvent* event){
     if(event->key()==Qt::Key_Escape){
         if(!gMW->m_gvAmplitudeSpectrum->hasSelection()) {
             if(!gMW->m_gvSpectrogram->hasSelection()
@@ -533,7 +533,7 @@ void QGVSpectrumGroupDelay::keyPressEvent(QKeyEvent* event){
     QGraphicsView::keyPressEvent(event);
 }
 
-void QGVSpectrumGroupDelay::selectionClear(bool forwardsync){
+void GVSpectrumGroupDelay::selectionClear(bool forwardsync){
     Q_UNUSED(forwardsync)
     m_selection = QRectF(0, 0, 0, 0);
     m_mouseSelection = QRectF(0, 0, 0, 0);
@@ -543,7 +543,7 @@ void QGVSpectrumGroupDelay::selectionClear(bool forwardsync){
     setCursor(Qt::CrossCursor);
 }
 
-void QGVSpectrumGroupDelay::selectionSet(QRectF selection, bool forwardsync){
+void GVSpectrumGroupDelay::selectionSet(QRectF selection, bool forwardsync){
     // Order the selection to avoid negative width and negative height
     if(selection.right()<selection.left()){
         qreal tmp = selection.left();
@@ -607,7 +607,7 @@ void QGVSpectrumGroupDelay::selectionSet(QRectF selection, bool forwardsync){
 
 }
 
-void QGVSpectrumGroupDelay::viewUpdateTexts(){
+void GVSpectrumGroupDelay::viewUpdateTexts(){
     QTransform trans = transform();
     QTransform txttrans;
     txttrans.scale(1.0/trans.m11(), 1.0/trans.m22());
@@ -622,7 +622,7 @@ void QGVSpectrumGroupDelay::viewUpdateTexts(){
     m_giSelectionTxt->setPos(m_selection.center()-QPointF(0.5*br.width()/trans.m11(), 0.5*br.height()/trans.m22()));
 }
 
-void QGVSpectrumGroupDelay::azoomin(){
+void GVSpectrumGroupDelay::azoomin(){
     QTransform trans = transform();
     qreal h11 = trans.m11();
     qreal h22 = trans.m22();
@@ -634,7 +634,7 @@ void QGVSpectrumGroupDelay::azoomin(){
 
     setMouseCursorPosition(QPointF(-1,0), false);
 }
-void QGVSpectrumGroupDelay::azoomout(){
+void GVSpectrumGroupDelay::azoomout(){
     QTransform trans = transform();
     qreal h11 = trans.m11();
     qreal h22 = trans.m22();
@@ -647,7 +647,7 @@ void QGVSpectrumGroupDelay::azoomout(){
     setMouseCursorPosition(QPointF(-1,0), false);
 }
 
-void QGVSpectrumGroupDelay::setMouseCursorPosition(QPointF p, bool forwardsync) {
+void GVSpectrumGroupDelay::setMouseCursorPosition(QPointF p, bool forwardsync) {
 
     QFontMetrics qfm(gMW->m_dlgSettings->ui->lblGridFontSample->font());
 
@@ -704,7 +704,7 @@ void QGVSpectrumGroupDelay::setMouseCursorPosition(QPointF p, bool forwardsync) 
     }
 }
 
-void QGVSpectrumGroupDelay::drawBackground(QPainter* painter, const QRectF& rect){
+void GVSpectrumGroupDelay::drawBackground(QPainter* painter, const QRectF& rect){
 
 //    COUTD << ": QGVSpectrumGroupDelay::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
@@ -777,7 +777,7 @@ void QGVSpectrumGroupDelay::drawBackground(QPainter* painter, const QRectF& rect
 //    cout << "QGVSpectrumGroupDelay::~drawBackground" << endl;
 }
 
-void QGVSpectrumGroupDelay::draw_spectrum(QPainter* painter, std::vector<WAVTYPE> &gd, double fs, const QRectF& rect) {
+void GVSpectrumGroupDelay::draw_spectrum(QPainter* painter, std::vector<WAVTYPE> &gd, double fs, const QRectF& rect) {
     int dftlen = (int(gd.size())-1)*2;
     if (dftlen<2)
         return;
@@ -840,5 +840,5 @@ void QGVSpectrumGroupDelay::draw_spectrum(QPainter* painter, std::vector<WAVTYPE
     }
 }
 
-QGVSpectrumGroupDelay::~QGVSpectrumGroupDelay() {
+GVSpectrumGroupDelay::~GVSpectrumGroupDelay() {
 }

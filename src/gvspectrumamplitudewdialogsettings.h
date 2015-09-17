@@ -7,16 +7,16 @@ namespace Ui {
 class GVAmplitudeSpectrumWDialogSettings;
 }
 
-class QGVSpectrumAmplitude;
+class GVSpectrumAmplitude;
 
 class GVAmplitudeSpectrumWDialogSettings : public QDialog
 {
     Q_OBJECT
 
-    QGVSpectrumAmplitude* m_ampspec;
+    GVSpectrumAmplitude* m_ampspec;
 
 public:
-    explicit GVAmplitudeSpectrumWDialogSettings(QGVSpectrumAmplitude* parent);
+    explicit GVAmplitudeSpectrumWDialogSettings(GVSpectrumAmplitude* parent);
     ~GVAmplitudeSpectrumWDialogSettings();
 
     Ui::GVAmplitudeSpectrumWDialogSettings *ui;

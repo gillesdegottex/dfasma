@@ -28,18 +28,18 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QMenu>
 #include <QTime>
 
-#include "wmainwindow.h"
-#include "fftresizethread.h"
-
 #include "qaesigproc.h"
 #include "qaegraphicsitemgrid.h"
+
+#include "wmainwindow.h"
+#include "fftresizethread.h"
 #include "ftsound.h"
 
 class GVAmplitudeSpectrumWDialogSettings;
 class MainWindow;
 class QSpinBox;
 
-class QGVSpectrumAmplitude : public QGraphicsView
+class GVSpectrumAmplitude : public QGraphicsView
 {
     Q_OBJECT
 
@@ -47,9 +47,8 @@ class QGVSpectrumAmplitude : public QGraphicsView
 
     std::vector<FFTTYPE> m_win; // Keep one here to limit allocations
 
-
 public:
-    explicit QGVSpectrumAmplitude(WMainWindow* parent);
+    explicit GVSpectrumAmplitude(WMainWindow* parent);
 
     GVAmplitudeSpectrumWDialogSettings* m_dlgSettings;
 
@@ -62,10 +61,14 @@ public:
     QMenu m_contextmenu;
 
     FTSound::DFTParameters m_trgDFTParameters;
-    std::vector<std::complex<FFTTYPE> > m_windft; // Window spectrum
-    std::vector<FFTTYPE> m_filterresponse;
 
-    QAEGraphicsItemGrid* m_grid;
+    QAEGraphicsItemGrid* m_giGrid;
+    std::vector<std::complex<FFTTYPE> > m_windft; // Window spectrum
+    GISpectrumAmplitude* m_giWindow;
+    std::vector<std::complex<FFTTYPE> > m_elc;
+    GISpectrumAmplitude* m_giLoudnessCurve;
+
+    std::vector<FFTTYPE> m_filterresponse;
 
     // Cursor
     QGraphicsLineItem* m_giCursorHoriz;
@@ -103,9 +106,8 @@ public:
     void viewSet(QRectF viewrect=QRectF(), bool sync=true);
     void viewUpdateTexts();
     void drawBackground(QPainter* painter, const QRectF& rect);
-    void draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& ldft, double fs, double ascale, const QRectF& rect);
 
-    ~QGVSpectrumAmplitude();
+    ~GVSpectrumAmplitude();
 
     QAction* m_aAmplitudeSpectrumShowGrid;
     QAction* m_aAmplitudeSpectrumShowWindow;
@@ -119,11 +121,13 @@ public:
     QAction* m_aAutoUpdateDFT;
     QAction* m_aFollowPlayCursor;
 
-signals:
-    
+protected slots:
+    void gridSetVisible(bool visible);
+    void windowSetVisible(bool visible);
+    void elcSetVisible(bool visible);
+
 public slots:
     void updateScrollBars();
-    void gridSetVisible(bool visible){m_grid->setVisible(visible);}
 
     void setWindowRange(double tstart, double tend);
     void updateSceneRect(); // To call when fs has changed and limits in dB
@@ -132,6 +136,8 @@ public slots:
     void settingsModified();
     void updateDFTs();
     void fftResizing(int prevSize, int newSize);
+
+    void setSamplingRate(double fs);
 
     void selectionZoomOn();
     void selectionClear(bool forwardsync=true);

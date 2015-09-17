@@ -18,8 +18,8 @@ file provided in the source code of DFasma. Another copy can be found at
 <http://www.gnu.org/licenses/>.
 */
 
-#ifndef QGVSPECTROGRAM_H
-#define QGVSPECTROGRAM_H
+#ifndef GVSPECTROGRAM_H
+#define GVSPECTROGRAM_H
 
 #include <vector>
 #include <deque>
@@ -40,7 +40,7 @@ class MainWindow;
 class QSpinBox;
 class STFTComputeThread;
 
-class QGVSpectrogram : public QGraphicsView
+class GVSpectrogram : public QGraphicsView
 {
     Q_OBJECT
 
@@ -52,7 +52,7 @@ class QGVSpectrogram : public QGraphicsView
 //    std::deque<QPointF> m_editing_fzero_newvalues; // TODO DELETE
 
 public:
-    explicit QGVSpectrogram(WMainWindow* parent);
+    explicit GVSpectrogram(WMainWindow* parent);
 
     GVSpectrogramWDialogSettings* m_dlgSettings;
 
@@ -105,7 +105,7 @@ public:
     void drawBackground(QPainter* painter, const QRectF& rect);
     void draw_grid(QPainter* painter, const QRectF& rect);
 
-    ~QGVSpectrogram();
+    ~GVSpectrogram();
 
     QAction* m_aSpectrogramShowGrid;
     QAction* m_aSpectrogramShowHarmonics;
@@ -141,4 +141,4 @@ public slots:
     void azoomout();
 };
 
-#endif // QGVSPECTROGRAM_H
+#endif // GVSPECTROGRAM_H

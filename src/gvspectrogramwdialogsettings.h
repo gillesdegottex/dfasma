@@ -9,19 +9,19 @@ namespace Ui {
 class GVSpectrogramWDialogSettings;
 }
 
-class QGVSpectrogram;
+class GVSpectrogram;
 
 class GVSpectrogramWDialogSettings : public QDialog
 {
     Q_OBJECT
 
-    QGVSpectrogram* m_spectrogram;
+    GVSpectrogram* m_spectrogram;
 
     QAEColorMapGray cmapgray;
     QAEColorMapJet cmapjet;
 
 public:
-    explicit GVSpectrogramWDialogSettings(QGVSpectrogram* parent);
+    explicit GVSpectrogramWDialogSettings(GVSpectrogram* parent);
     ~GVSpectrogramWDialogSettings();
 
     Ui::GVSpectrogramWDialogSettings *ui;

@@ -45,7 +45,7 @@ using namespace std;
 
 #include "qaehelpers.h"
 
-QGVSpectrumPhase::QGVSpectrumPhase(WMainWindow* parent)
+GVSpectrumPhase::GVSpectrumPhase(WMainWindow* parent)
     : QGraphicsView(parent)
     , m_scene(NULL)
 {
@@ -137,11 +137,11 @@ QGVSpectrumPhase::QGVSpectrumPhase(WMainWindow* parent)
     connect(gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop, SIGNAL(triggered()), m_scene, SLOT(update()));
 }
 
-void QGVSpectrumPhase::updateSceneRect() {
+void GVSpectrumPhase::updateSceneRect() {
     m_scene->setSceneRect(0.0, -M_PI, gFL->getFs()/2, 2*M_PI);
 }
 
-void QGVSpectrumPhase::viewSet(QRectF viewrect, bool sync) {
+void GVSpectrumPhase::viewSet(QRectF viewrect, bool sync) {
 //    cout << "QGVPhaseSpectrum::viewSet" << endl;
 
     QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
@@ -194,7 +194,7 @@ void QGVSpectrumPhase::viewSet(QRectF viewrect, bool sync) {
 //    cout << "QGVPhaseSpectrum::~viewSet" << endl;
 }
 
-void QGVSpectrumPhase::resizeEvent(QResizeEvent* event) {
+void GVSpectrumPhase::resizeEvent(QResizeEvent* event) {
 //    COUTD << "QGVPhaseSpectrum::resizeEvent" << endl;
 
     QRectF oldviewrect = mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect();
@@ -233,7 +233,7 @@ void QGVSpectrumPhase::resizeEvent(QResizeEvent* event) {
 //    COUTD << "QGVPhaseSpectrum::~resizeEvent" << endl;
 }
 
-void QGVSpectrumPhase::scrollContentsBy(int dx, int dy){
+void GVSpectrumPhase::scrollContentsBy(int dx, int dy){
 
     // Invalidate the necessary parts
     // Ensure the y ticks labels will be redrawn
@@ -252,7 +252,7 @@ void QGVSpectrumPhase::scrollContentsBy(int dx, int dy){
     QGraphicsView::scrollContentsBy(dx, dy);
 }
 
-void QGVSpectrumPhase::wheelEvent(QWheelEvent* event) {
+void GVSpectrumPhase::wheelEvent(QWheelEvent* event) {
 //    cout << "QGVPhaseSpectrum::wheelEvent" << endl;
 
     qreal numDegrees = (event->angleDelta() / 8).y();
@@ -274,7 +274,7 @@ void QGVSpectrumPhase::wheelEvent(QWheelEvent* event) {
 //    cout << "QGVPhaseSpectrum::~wheelEvent" << endl;
 }
 
-void QGVSpectrumPhase::mousePressEvent(QMouseEvent* event){
+void GVSpectrumPhase::mousePressEvent(QMouseEvent* event){
 //    std::cout << "QGVWaveform::mousePressEvent" << endl;
 
     QPointF p = mapToScene(event->pos());
@@ -361,7 +361,7 @@ void QGVSpectrumPhase::mousePressEvent(QMouseEvent* event){
 //    std::cout << "~QGVWaveform::mousePressEvent " << p.x() << endl;
 }
 
-void QGVSpectrumPhase::mouseMoveEvent(QMouseEvent* event){
+void GVSpectrumPhase::mouseMoveEvent(QMouseEvent* event){
 //    std::cout << "QGVWaveform::mouseMoveEvent" << selection.width() << endl;
 
     QPointF p = mapToScene(event->pos());
@@ -477,7 +477,7 @@ void QGVSpectrumPhase::mouseMoveEvent(QMouseEvent* event){
     QGraphicsView::mouseMoveEvent(event);
 }
 
-void QGVSpectrumPhase::mouseReleaseEvent(QMouseEvent* event){
+void GVSpectrumPhase::mouseReleaseEvent(QMouseEvent* event){
 //    std::cout << "QGVWaveform::mouseReleaseEvent " << selection.width() << endl;
 
     QPointF p = mapToScene(event->pos());
@@ -515,7 +515,7 @@ void QGVSpectrumPhase::mouseReleaseEvent(QMouseEvent* event){
 //    std::cout << "~QGVWaveform::mouseReleaseEvent " << endl;
 }
 
-void QGVSpectrumPhase::keyPressEvent(QKeyEvent* event){
+void GVSpectrumPhase::keyPressEvent(QKeyEvent* event){
     if(event->key()==Qt::Key_Escape){
         if(!gMW->m_gvAmplitudeSpectrum->hasSelection()) {
             if(!gMW->m_gvSpectrogram->hasSelection()
@@ -532,7 +532,7 @@ void QGVSpectrumPhase::keyPressEvent(QKeyEvent* event){
     QGraphicsView::keyPressEvent(event);
 }
 
-void QGVSpectrumPhase::selectionClear(bool forwardsync){
+void GVSpectrumPhase::selectionClear(bool forwardsync){
     Q_UNUSED(forwardsync)
     m_selection = QRectF(0, 0, 0, 0);
     m_mouseSelection = QRectF(0, 0, 0, 0);
@@ -542,7 +542,7 @@ void QGVSpectrumPhase::selectionClear(bool forwardsync){
     setCursor(Qt::CrossCursor);
 }
 
-void QGVSpectrumPhase::selectionSet(QRectF selection, bool forwardsync){
+void GVSpectrumPhase::selectionSet(QRectF selection, bool forwardsync){
     // Order the selection to avoid negative width and negative height
     if(selection.right()<selection.left()){
         qreal tmp = selection.left();
@@ -606,7 +606,7 @@ void QGVSpectrumPhase::selectionSet(QRectF selection, bool forwardsync){
 
 }
 
-void QGVSpectrumPhase::viewUpdateTexts(){
+void GVSpectrumPhase::viewUpdateTexts(){
     QTransform trans = transform();
     QTransform txttrans;
     txttrans.scale(1.0/trans.m11(), 1.0/trans.m22());
@@ -621,7 +621,7 @@ void QGVSpectrumPhase::viewUpdateTexts(){
     m_giSelectionTxt->setPos(m_selection.center()-QPointF(0.5*br.width()/trans.m11(), 0.5*br.height()/trans.m22()));
 }
 
-void QGVSpectrumPhase::azoomin(){
+void GVSpectrumPhase::azoomin(){
     QTransform trans = transform();
     qreal h11 = trans.m11();
     qreal h22 = trans.m22();
@@ -633,7 +633,7 @@ void QGVSpectrumPhase::azoomin(){
 
     setMouseCursorPosition(QPointF(-1,0), false);
 }
-void QGVSpectrumPhase::azoomout(){
+void GVSpectrumPhase::azoomout(){
     QTransform trans = transform();
     qreal h11 = trans.m11();
     qreal h22 = trans.m22();
@@ -646,7 +646,7 @@ void QGVSpectrumPhase::azoomout(){
     setMouseCursorPosition(QPointF(-1,0), false);
 }
 
-void QGVSpectrumPhase::setMouseCursorPosition(QPointF p, bool forwardsync) {
+void GVSpectrumPhase::setMouseCursorPosition(QPointF p, bool forwardsync) {
 
     QFontMetrics qfm(gMW->m_dlgSettings->ui->lblGridFontSample->font());
 
@@ -703,7 +703,7 @@ void QGVSpectrumPhase::setMouseCursorPosition(QPointF p, bool forwardsync) {
     }
 }
 
-void QGVSpectrumPhase::drawBackground(QPainter* painter, const QRectF& rect){
+void GVSpectrumPhase::drawBackground(QPainter* painter, const QRectF& rect){
 
 //    COUTD << ": QGVPhaseSpectrum::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
@@ -776,7 +776,7 @@ void QGVSpectrumPhase::drawBackground(QPainter* painter, const QRectF& rect){
 //    cout << "QGVPhaseSpectrum::~drawBackground" << endl;
 }
 
-void QGVSpectrumPhase::draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& ldft, double fs, double delay, const QRectF& rect) {
+void GVSpectrumPhase::draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& ldft, double fs, double delay, const QRectF& rect) {
     int dftlen = (int(ldft.size())-1)*2;
     if (dftlen<2)
         return;
@@ -850,5 +850,5 @@ void QGVSpectrumPhase::draw_spectrum(QPainter* painter, std::vector<std::complex
     }
 }
 
-QGVSpectrumPhase::~QGVSpectrumPhase() {
+GVSpectrumPhase::~GVSpectrumPhase() {
 }

@@ -46,6 +46,9 @@ file provided in the source code of DFasma. Another copy can be found at
 class CFFTW3;
 #include "stftcomputethread.h"
 
+class GIWaveform;
+class GISpectrumAmplitude;
+
 class FTSound : public QIODevice, public FileType
 {
     Q_OBJECT
@@ -126,19 +129,7 @@ public:
         inline bool isEmpty() const {return fullpixrect.isNull() || viewrect.isNull();}
     };
 
-    // Waveform view
-    class GraphicItemWaveform : public QGraphicsItem {
-        FTSound* m_snd;
-    public:
-        WavParameters m_wavparams;
-        std::deque<WAVTYPE> m_wavpx_min;
-        std::deque<WAVTYPE> m_wavpx_max;
-
-        GraphicItemWaveform(FTSound* snd);
-        virtual QRectF boundingRect() const;
-        virtual void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget = 0);
-    };
-    GraphicItemWaveform* m_giWaveform;
+    GIWaveform* m_giWaveform;
 
     // Spectra
     class DFTParameters{
@@ -182,23 +173,15 @@ public:
 
         inline bool isEmpty() const {return winlen==0 || dftlen==0 || wintype==-1 || normtype==-1;}
     };
-//    // Amplitude Spectrum view
-//    class GraphicItemSpectrumAmplitude : public QGraphicsItem {
-//        FTSound* m_snd;
-//    public:
-//        GraphicItemSpectrumAmplitude(FTSound* snd);
-//        virtual QRectF boundingRect() const;
-//        virtual void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget = 0);
-//    };
-//    GraphicItemSpectrumAmplitude* m_giWaveform;
 
+    GISpectrumAmplitude* m_giSpectrumAmplitude;
 
     std::vector<std::complex<FFTTYPE> > m_dft; // Store the _log_ of the DFT
 //    std::vector<std::complex<FFTTYPE> > m_dft; // Store the _log_ of the DFT
     std::vector<FFTTYPE> m_gd; // Store the Group Delay (GD)
     DFTParameters m_dftparams;
-    FFTTYPE m_dft_min;
-    FFTTYPE m_dft_max;
+    FFTTYPE m_dft_min; // [log]
+    FFTTYPE m_dft_max; // [log]
 
     // Spectrogram
     std::deque<std::vector<WAVTYPE> > m_stft;
@@ -241,6 +224,7 @@ public:
     virtual bool isModified();
     virtual void setStatus();
     virtual void setDrawIcon(QPixmap& pm);
+    virtual void setColor(const QColor& _color);
     virtual void zposReset();
     virtual void zposBringForward();
 
