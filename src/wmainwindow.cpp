@@ -377,12 +377,15 @@ QString WMainWindow::version(){
         return m_version;
 
     QString dfasmaversiongit(STR(DFASMAVERSIONGIT));
+    QString dfasmabranchgit(STR(DFASMABRANCHGIT));
 
 //    QTextStream(stdout) << "'" << dfasmaversiongit << "'" << endl;
 
     QString	dfasmaversion;
     if(!dfasmaversiongit.isEmpty()) {
         dfasmaversion = QString("Version ") + dfasmaversiongit;
+        if(dfasmabranchgit!="master")
+            dfasmaversion += "-" + dfasmabranchgit;
     }
     else {
         QFile readmefile(":/README.txt");
