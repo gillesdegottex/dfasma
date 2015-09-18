@@ -46,8 +46,11 @@ message(CONFIG=$$CONFIG)
 # Generate the version number from git
 # (if fail, fall back on the version present in the README.txt file)
 DFASMAVERSIONGITPRO = $$system(git describe --tags --always)
-message(Version from Git: $$DFASMAVERSIONGITPRO)
+message(Git: Version: $$DFASMAVERSIONGITPRO)
+DFASMABRANCHGITPRO = $$system(git rev-parse --abbrev-ref HEAD)
+message(Git: Branch: $$DFASMABRANCHGITPRO)
 DEFINES += DFASMAVERSIONGIT=$$system(git describe --tags --always)
+DEFINES += DFASMABRANCHGIT=$$system(git rev-parse --abbrev-ref HEAD)
 
 # To place the application's files in the proper folder
 isEmpty(PREFIX){
