@@ -8,10 +8,12 @@
 class GIWaveform : public QGraphicsItem
 {
     FTSound* m_snd;
+
+    std::deque<WAVTYPE> m_wavpx_min;    // Cache for min values
+    std::deque<WAVTYPE> m_wavpx_max;    // Cache for max values
+
 public:
     FTSound::WavParameters m_wavparams;
-    std::deque<WAVTYPE> m_wavpx_min;
-    std::deque<WAVTYPE> m_wavpx_max;
 
     GIWaveform(FTSound* snd);
     virtual QRectF boundingRect() const;
