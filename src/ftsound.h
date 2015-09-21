@@ -34,6 +34,9 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "filetype.h"
 #include "stftcomputethread.h"
 
+#include "qaegiuniformsampledsequence.h"
+
+
 #ifdef SIGPROC_FLOAT
 #define WAVTYPE float
 #else
@@ -87,9 +90,6 @@ public:
     WAVTYPE m_wavmaxamp;
     WAVTYPE m_filteredmaxamp;
 
-    WAVTYPE m_ampscale; // [linear]
-    qint64 m_delay;   // [sample index]
-
     // Waveform
     class WavParameters{
     public:
@@ -118,8 +118,8 @@ public:
             viewrect = _viewrect;
             winpixdelay = _winpixdelay;
             wav = snd->wavtoplay;
-            delay = snd->m_delay;
-            gain = snd->m_ampscale*(snd->m_actionInvPolarity->isChecked()?-1:1);
+//            delay = snd->m_delay;
+//            gain = snd->m_ampscale*(snd->m_actionInvPolarity->isChecked()?-1:1);
             lastreadtime = snd->m_lastreadtime;
         }
 
@@ -129,7 +129,7 @@ public:
         inline bool isEmpty() const {return fullpixrect.isNull() || viewrect.isNull();}
     };
 
-    GIWaveform* m_giWaveform;
+    QAEGIUniformSampledSequence* m_giWaveform;
 
     // Spectra
     class DFTParameters{

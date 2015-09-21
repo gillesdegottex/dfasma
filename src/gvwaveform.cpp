@@ -120,6 +120,7 @@ GVWaveform::GVWaveform(WMainWindow* parent)
     m_giSelection->setPen(selectionPen);
     m_giSelection->setBrush(selectionBrush);
     m_giSelection->setOpacity(0.33);
+    m_giSelection->setZValue(100);
     // QPen mouseselectionPen(QColor(255, 0, 0));
     // mouseselectionPen.setWidth(0);
     // m_giMouseSelection = new QGraphicsRectItem();
@@ -180,6 +181,7 @@ GVWaveform::GVWaveform(WMainWindow* parent)
     playCursorPen.setCosmetic(true);
     playCursorPen.setWidth(2);
     m_giPlayCursor->setPen(playCursorPen);
+    m_giPlayCursor->setZValue(100);
     playCursorSet(0.0, false);
     m_scene->addItem(m_giPlayCursor);
 
@@ -270,7 +272,7 @@ void GVWaveform::fitViewToSoundsAmplitude(){
         WAVTYPE maxwavmaxamp = 0.0;
         for(unsigned int si=0; si<gFL->ftsnds.size(); si++)
             if(gFL->ftsnds[si]->isVisible())
-                maxwavmaxamp = std::max(maxwavmaxamp, gFL->ftsnds[si]->m_ampscale*gFL->ftsnds[si]->m_wavmaxamp);
+                maxwavmaxamp = std::max(maxwavmaxamp, gFL->ftsnds[si]->m_giWaveform->gain()*gFL->ftsnds[si]->m_wavmaxamp);
 
         if(maxwavmaxamp==0.0)
             maxwavmaxamp = 1.0;
@@ -577,7 +579,7 @@ void GVWaveform::mousePressEvent(QMouseEvent* event){
                         // cout << "Scaling the waveform" << endl;
                         m_currentAction = CAWaveformDelay;
                         m_selection_pressedx = p.x();
-                        m_tmpdelay = selectedsound->m_delay/gFL->getFs();
+                        m_tmpdelay = selectedsound->m_giWaveform->delay()/gFL->getFs();
                         setCursor(Qt::SizeHorCursor);
                         gMW->setEditing(selectedsound);
                     }
@@ -681,11 +683,13 @@ void GVWaveform::mouseMoveEvent(QMouseEvent* event){
                 m_currentAction = CANothing;
             }
             else {
-                currentftsound->m_ampscale *= pow(10, -10*(p.y()-m_selection_pressedx)/20.0);
+                currentftsound->m_giWaveform->setGain(currentftsound->m_giWaveform->gain()*pow(10, -10*(p.y()-m_selection_pressedx)/20.0));
                 m_selection_pressedx = p.y();
 
-                if(currentftsound->m_ampscale>1e10) currentftsound->m_ampscale = 1e10;
-                else if(currentftsound->m_ampscale<1e-10) currentftsound->m_ampscale = 1e-10;
+                if(currentftsound->m_giWaveform->gain()>1e10)
+                    currentftsound->m_giWaveform->setGain(1e10);
+                else if(currentftsound->m_giWaveform->gain()<1e-10)
+                    currentftsound->m_giWaveform->setGain(1e-10);
 
                 currentftsound->needDFTUpdate();
                 currentftsound->setStatus();
@@ -711,8 +715,9 @@ void GVWaveform::mouseMoveEvent(QMouseEvent* event){
             else {
                 m_tmpdelay += p.x()-m_selection_pressedx;
                 m_selection_pressedx = p.x();
-                currentftsound->m_delay = int(0.5+m_tmpdelay*gFL->getFs());
-                if(m_tmpdelay<0) currentftsound->m_delay--;
+                currentftsound->m_giWaveform->setDelay(int(0.5+m_tmpdelay*gFL->getFs()));
+                if(m_tmpdelay<0)
+                    currentftsound->m_giWaveform->setDelay(currentftsound->m_giWaveform->delay()+1);
 
                 currentftsound->needDFTUpdate();
                 currentftsound->setStatus();

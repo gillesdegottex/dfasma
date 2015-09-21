@@ -2,22 +2,21 @@
 
 #include <QtGlobal>
 
-#include "qaesigproc.h"
-
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "ftsound.h"
-#include "qaehelpers.h"
 #include "../external/libqxt/qxtspanslider.h"
+
 #include "qaecolormap.h"
-#include "ftsound.h"
+#include "qaesigproc.h"
+#include "qaehelpers.h"
 
 STFTComputeThread::STFTParameters::STFTParameters(FTSound* reqnd, const std::vector<FFTTYPE>& reqwin, int reqstepsize, int reqdftlen, int reqcepliftorder, bool reqcepliftpresdc){
     clear();
 
     snd = reqnd;
-    ampscale = reqnd->m_ampscale;
-    delay = reqnd->m_delay;
+    ampscale = reqnd->m_giWaveform->gain();
+    delay = reqnd->m_giWaveform->delay();
     win = reqwin;
     stepsize = reqstepsize;
     dftlen = reqdftlen;
@@ -133,7 +132,7 @@ void STFTComputeThread::run() {
                 int fs = params_running.stftparams.snd->fs;
                 FFTTYPE stftmin = std::numeric_limits<FFTTYPE>::infinity();
                 FFTTYPE stftmax = -std::numeric_limits<FFTTYPE>::infinity();
-                qint64 snddelay = params_running.stftparams.snd->m_delay;
+                qint64 snddelay = params_running.stftparams.snd->m_giWaveform->delay();
                 std::deque<std::vector<WAVTYPE> >& stft = params_running.stftparams.snd->m_stft;
 
                 stft.clear();
@@ -142,7 +141,7 @@ void STFTComputeThread::run() {
     //            COUTD << "INIT: stftmin=" << stftmin << " stftmax=" << stftmax << std::endl;
     //            COUTD << "winlen=" << winlen << " dftlen=" << dftlen << "(plan=" << m_fft->size() << ")" << std::endl;
 
-                int maxsampleindex = int(wav->size())-1 + int(params_running.stftparams.snd->m_delay);
+                int maxsampleindex = int(wav->size())-1 + int(params_running.stftparams.snd->m_giWaveform->delay());
                 WAVTYPE value;
 
     //            QTime starttime = QTime::currentTime();

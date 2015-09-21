@@ -46,7 +46,6 @@ using namespace std;
 #include "gvspectrogramwdialogsettings.h"
 #include "ui_gvspectrogramwdialogsettings.h"
 
-#include "giwaveform.h"
 #include "gispectrumamplitude.h"
 
 bool FTSound::s_playwin_use = false;
@@ -143,14 +142,13 @@ bool FTSound::DFTParameters::operator==(const DFTParameters& param) const {
 void FTSound::constructor_internal() {
     connect(m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setVisible(bool)));
 
+    m_giWaveform = NULL;
     m_channelid = 0;
     m_isclipped = false;
     m_isfiltered = false;
     m_isplaying = false;
     wavtoplay  = &wav;
     m_filteredmaxamp = 0.0;
-    m_ampscale = 1.0;
-    m_delay = 0;
     m_start = 0;
     m_pos = 0;
     m_end = 0;
@@ -190,12 +188,13 @@ void FTSound::constructor_external() {
 
     gFL->ftsnds.push_back(this);
 
-    m_giWaveform = new GIWaveform(this);
+    m_giWaveform = new QAEGIUniformSampledSequence(wavtoplay, fs, gMW->m_gvWaveform);
     gMW->m_gvWaveform->m_scene->addItem(m_giWaveform);
 
     m_giSpectrumAmplitude = new GISpectrumAmplitude(&m_dft, fs, gMW->m_gvAmplitudeSpectrum);
     QPen pen(getColor());
     pen.setWidth(0);
+    m_giWaveform->setPen(pen);
     m_giSpectrumAmplitude->setPen(pen);
     gMW->m_gvAmplitudeSpectrum->m_scene->addItem(m_giSpectrumAmplitude);
 }
@@ -262,8 +261,8 @@ void FTSound::load_finalize() {
 
 void FTSound::setVisible(bool shown){
     FileType::setVisible(shown);
-    if(!shown)
-        m_giWaveform->m_wavparams.clear();
+//    if(!shown)
+//        m_giWaveform->m_wavparams.clear();
 }
 
 void FTSound::setDrawIcon(QPixmap& pm){
@@ -286,6 +285,7 @@ void FTSound::setColor(const QColor &_color){
 
     QPen pen(getColor());
     pen.setWidth(0);
+    m_giWaveform->setPen(pen);
     m_giSpectrumAmplitude->setPen(pen);
 }
 
@@ -309,8 +309,8 @@ bool FTSound::reload() {
 
     // Reset everything ...
     wavtoplay = &wav;
-    m_ampscale = 1.0;
-    m_delay = 0;
+//    m_ampscale = 1.0;
+//    m_delay = 0;
     m_start = 0;
     m_pos = 0;
     m_end = 0;
@@ -386,12 +386,12 @@ QString FTSound::info() const {
 //        }
     }
 
-    if(m_ampscale!=1.0)
-        str += "<b>Scaled: "+QString::number(20*std::log10(m_ampscale), 'f', 4)+"dB ("+QString::number(m_ampscale, 'f', 4)+")</b><br/>";
+    if(m_giWaveform->gain()!=1.0)
+        str += "<b>Scaled: "+QString::number(20*std::log10(m_giWaveform->gain()), 'f', 4)+"dB ("+QString::number(m_giWaveform->gain(), 'f', 4)+")</b><br/>";
     if(isClipped())
         str += "<font color=\"red\"><b>CLIPPED</b></font><br/>";
-    if(m_delay!=0.0)
-        str += "<b>Delayed: "+QString("%1").arg(double(m_delay)/fs, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value())+"s ("+QString::number(m_delay)+")</b><br/>";
+    if(m_giWaveform->delay()!=0.0)
+        str += "<b>Delayed: "+QString("%1").arg(double(m_giWaveform->delay())/fs, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value())+"s ("+QString::number(m_giWaveform->delay())+")</b><br/>";
 
     return str;
 }
@@ -412,11 +412,11 @@ void FTSound::fillContextMenu(QMenu& contextmenu) {
     contextmenu.addAction(gMW->ui->actionPlay);
     contextmenu.addAction(m_actionResetFiltering);
     contextmenu.addAction(m_actionInvPolarity);
-    m_actionResetAmpScale->setText(QString("Reset amplitude scaling (%1dB) to 0dB").arg(20*log10(m_ampscale), 0, 'g', 3));
-    m_actionResetAmpScale->setDisabled(m_ampscale==1.0);
+    m_actionResetAmpScale->setText(QString("Reset amplitude scaling (%1dB) to 0dB").arg(20*log10(m_giWaveform->gain()), 0, 'g', 3));
+    m_actionResetAmpScale->setDisabled(m_giWaveform->gain()==1.0);
     contextmenu.addAction(m_actionResetAmpScale);
-    m_actionResetDelay->setText(QString("Reset delay (%1s) to 0s").arg(m_delay/gFL->getFs(), 0, 'g', gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()));
-    m_actionResetDelay->setDisabled(m_delay==0);
+    m_actionResetDelay->setText(QString("Reset delay (%1s) to 0s").arg(m_giWaveform->delay()/gFL->getFs(), 0, 'g', gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()));
+    m_actionResetDelay->setDisabled(m_giWaveform->delay()==0);
     contextmenu.addAction(m_actionResetDelay);
 
     contextmenu.addSeparator();
@@ -443,8 +443,8 @@ void FTSound::resetFiltering(){
 }
 
 void FTSound::resetAmpScale(){
-    if(m_ampscale!=1.0){
-        m_ampscale = 1.0;
+    if(m_giWaveform->gain()!=1.0){
+        m_giWaveform->setGain(1.0);
 
         setStatus();
 
@@ -456,8 +456,8 @@ void FTSound::resetAmpScale(){
     }
 }
 void FTSound::resetDelay(){
-    if(m_delay!=0.0){
-        m_delay = 0.0;
+    if(m_giWaveform->delay()!=0.0){
+        m_giWaveform->setDelay(0.0);
 
         setStatus();
 
@@ -470,10 +470,13 @@ void FTSound::resetDelay(){
 }
 
 double FTSound::getLastSampleTime() const {
-    return (wav.size()-1+m_delay)/fs;
+    return (wav.size()-1+m_giWaveform->delay())/fs;
 }
 bool FTSound::isModified() {
-    return m_delay!=0.0 || m_ampscale!=1.0;
+    if(m_giWaveform==NULL)
+        return false;
+
+    return m_giWaveform->delay()!=0.0 || m_giWaveform->gain()!=1.0;
 }
 
 void FTSound::setStatus(){
@@ -482,7 +485,11 @@ void FTSound::setStatus(){
     updateClippedState();
 }
 void FTSound::updateClippedState(){
-    m_isclipped = (m_wavmaxamp*m_ampscale>1.0) || (m_isfiltered && (m_filteredmaxamp*m_ampscale>1.0));
+    if(m_giWaveform==NULL)
+        m_isclipped = false;
+    else
+        m_isclipped = (m_wavmaxamp*m_giWaveform->gain()>1.0) || (m_isfiltered && (m_filteredmaxamp*m_giWaveform->gain()>1.0));
+
     if(m_isclipped)
         setBackgroundColor(QColor(255,0,0));
     else if(m_isfiltered)
@@ -543,14 +550,14 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
     }
 
     if(m_start<0) m_start=0;
-    if(m_start>qint64(wav.size()-1)+m_delay) m_start=wav.size()-1+m_delay;
+    if(m_start>qint64(wav.size()-1)+m_giWaveform->delay()) m_start=wav.size()-1+m_giWaveform->delay();
     if(m_end<0) m_end=0;
-    if(m_end>qint64(wav.size()-1)+m_delay) m_end=wav.size()-1+m_delay;
+    if(m_end>qint64(wav.size()-1)+m_giWaveform->delay()) m_end=wav.size()-1+m_giWaveform->delay();
 
-    int delayedstart = m_start-m_delay;
+    int delayedstart = m_start-m_giWaveform->delay();
     if(delayedstart<0) delayedstart=0;
     if(delayedstart>int(wavtoplay->size())-1) delayedstart=int(wavtoplay->size())-1;
-    int delayedend = m_end-m_delay;
+    int delayedend = m_end-m_giWaveform->delay();
     if(delayedend<0) delayedend=0;
     if(delayedend>int(wavtoplay->size())-1) delayedend=int(wavtoplay->size())-1;
 
@@ -705,16 +712,16 @@ qint64 FTSound::readData(char *data, qint64 askedlen)
 
     const int channelBytes = m_outputaudioformat.sampleSize() / 8;
     unsigned char *ptr = reinterpret_cast<unsigned char *>(data);
-    int delayedstart = m_start-m_delay;
+    int delayedstart = m_start-m_giWaveform->delay();
     if(delayedstart<0) delayedstart=0;
     if(delayedstart>int(wavtoplay->size()-1)) delayedstart=int(wavtoplay->size())-1;
-    int delayedend = m_end-m_delay;
+    int delayedend = m_end-m_giWaveform->delay();
     if(delayedend<0) delayedend=0;
     if(delayedend>int(wavtoplay->size()-1)) delayedend=int(wavtoplay->size())-1;
 
     // Polarity apparently matters in very particular cases
     // so take it into account when playing.
-    double gain = m_ampscale;
+    double gain = m_giWaveform->gain();
     if(m_actionInvPolarity->isChecked())
         gain *= -1;
 
@@ -729,7 +736,7 @@ qint64 FTSound::readData(char *data, qint64 askedlen)
             value = qint16((gain*(*wavtoplay)[delayedend]*s_avoidclickswindow[1+m_avoidclickswinpos++])*32767);
         }
         else if (m_pos<=m_end) {
-            int delayedpos = m_pos - m_delay;
+            int delayedpos = m_pos - m_giWaveform->delay();
             if(delayedpos>=0 && delayedpos<int(wavtoplay->size())){
         //        WAVTYPE e = samples[m_pos]*samples[m_pos];
                 WAVTYPE e = abs(gain*(*wavtoplay)[delayedpos]);

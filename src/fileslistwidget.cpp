@@ -436,7 +436,7 @@ void FilesListWidget::colorSelected(const QColor& color) {
 void FilesListWidget::resetAmpScale(){
     FTSound* currentftsound = getCurrentFTSound();
     if(currentftsound) {
-        currentftsound->m_ampscale = 1.0;
+        currentftsound->m_giWaveform->setGain(1.0);
 
         currentftsound->setStatus();
 
@@ -446,7 +446,7 @@ void FilesListWidget::resetAmpScale(){
 void FilesListWidget::resetDelay(){
     FTSound* currentftsound = getCurrentFTSound();
     if(currentftsound) {
-        currentftsound->m_delay = 0.0;
+        currentftsound->m_giWaveform->setDelay(0.0);
 
         currentftsound->setStatus();
 

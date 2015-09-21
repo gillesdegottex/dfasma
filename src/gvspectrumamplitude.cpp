@@ -36,7 +36,6 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "gvspectrogram.h"
 #include "ftsound.h"
 #include "ftfzero.h"
-#include "qaesigproc.h"
 
 #include <iostream>
 #include <algorithm>
@@ -54,6 +53,7 @@ using namespace std;
 #include <QScrollBar>
 #include <QToolTip>
 
+#include "qaesigproc.h"
 #include "qaehelpers.h"
 
 GVSpectrumAmplitude::GVSpectrumAmplitude(WMainWindow* parent)
@@ -521,11 +521,11 @@ void GVSpectrumAmplitude::updateDFTs(){
             if(!snd->m_dftparams.isEmpty()
                && snd->m_dftparams==m_trgDFTParameters
                && snd->m_dftparams.wav==snd->wavtoplay
-               && snd->m_dftparams.ampscale==snd->m_ampscale
-               && snd->m_dftparams.delay==snd->m_delay)
+               && snd->m_dftparams.ampscale==snd->m_giWaveform->gain()
+               && snd->m_dftparams.delay==snd->m_giWaveform->delay())
                 continue;
 
-            WAVTYPE gain = snd->m_ampscale;
+            WAVTYPE gain = snd->m_giWaveform->gain();
 
             snd->m_dft_min = std::numeric_limits<WAVTYPE>::infinity();
             snd->m_dft_max = -std::numeric_limits<WAVTYPE>::infinity();
@@ -535,7 +535,7 @@ void GVSpectrumAmplitude::updateDFTs(){
             int n = 0;
             int wn = 0;
             for(; n<m_trgDFTParameters.winlen; n++){
-                wn = m_trgDFTParameters.nl+n - snd->m_delay;
+                wn = m_trgDFTParameters.nl+n - snd->m_giWaveform->delay();
 
                 if(wn>=0 && wn<int(snd->wavtoplay->size())) {
                     WAVTYPE value = gain*(*(snd->wavtoplay))[wn];
@@ -590,8 +590,8 @@ void GVSpectrumAmplitude::updateDFTs(){
             }
             snd->m_dftparams = m_trgDFTParameters;
             snd->m_dftparams.wav = snd->wavtoplay;
-            snd->m_dftparams.ampscale = snd->m_ampscale;
-            snd->m_dftparams.delay = snd->m_delay;
+            snd->m_dftparams.ampscale = snd->m_giWaveform->gain();
+            snd->m_dftparams.delay = snd->m_giWaveform->delay();
 
             didany = true;
         }
@@ -912,14 +912,14 @@ void GVSpectrumAmplitude::mouseMoveEvent(QMouseEvent* event){
                 m_currentAction = CANothing;
             }
             else {
-                currentftsound->m_ampscale *= std::pow(10, -(p.y()-m_selection_pressedp.y())/20.0);
+                currentftsound->m_giWaveform->setGain(currentftsound->m_giWaveform->gain()*std::pow(10, -(p.y()-m_selection_pressedp.y())/20.0));
 
                 m_selection_pressedp = p;
 
-                if(currentftsound->m_ampscale>1e10)
-                    currentftsound->m_ampscale = 1e10;
-                else if(currentftsound->m_ampscale<1e-10)
-                    currentftsound->m_ampscale = 1e-10;
+                if(currentftsound->m_giWaveform->gain()>1e10)
+                    currentftsound->m_giWaveform->setGain(1e10);
+                else if(currentftsound->m_giWaveform->gain()<1e-10)
+                    currentftsound->m_giWaveform->setGain(1e-10);
 
                 currentftsound->needDFTUpdate();
 

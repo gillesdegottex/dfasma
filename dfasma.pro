@@ -243,7 +243,6 @@ SOURCES   += src/main.cpp\
              src/ftfzero.cpp \
              src/ftlabels.cpp \
              src/gvwaveform.cpp \
-             src/giwaveform.cpp \
              src/gvspectrumamplitude.cpp \
              src/gispectrumamplitude.cpp \
              src/fftresizethread.cpp \
@@ -259,6 +258,7 @@ SOURCES   += src/main.cpp\
              external/libqaudioextra/src/qaecolormap.cpp \
              external/libqaudioextra/src/qaesettingsauto.cpp \
              external/libqaudioextra/src/qaegraphicsitemgrid.cpp \
+             external/libqaudioextra/src/qaegiuniformsampledsequence.cpp \
              external/libqaudioextra/external/mkfilter/mkfilter.cpp \
              external/REAPER/epoch_tracker/epoch_tracker.cc \
              external/REAPER/epoch_tracker/fft.cc \
@@ -275,7 +275,6 @@ HEADERS   += src/wmainwindow.h \
              src/ftfzero.h \
              src/ftlabels.h \
              src/gvwaveform.h \
-             src/giwaveform.h \
              src/gvspectrumamplitude.h \
              src/gispectrumamplitude.h \
              src/fftresizethread.h \
@@ -294,6 +293,7 @@ HEADERS   += src/wmainwindow.h \
              external/libqaudioextra/include/qaecolormap.h \
              external/libqaudioextra/include/qaesettingsauto.h \
              external/libqaudioextra/include/qaegraphicsitemgrid.h \
+             external/libqaudioextra/include/qaegiuniformsampledsequence.h \
              external/libqaudioextra/external/mkfilter/mkfilter.h \
              external/REAPER/epoch_tracker/epoch_tracker.h \
              external/REAPER/epoch_tracker/fft.h \

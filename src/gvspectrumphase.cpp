@@ -28,7 +28,6 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "gvspectrogram.h"
 #include "ftsound.h"
 #include "ftfzero.h"
-#include "qaesigproc.h"
 #include "ui_wdialogsettings.h"
 
 #include <iostream>
@@ -43,6 +42,7 @@ using namespace std;
 #include <QStaticText>
 #include <QDebug>
 
+#include "qaesigproc.h"
 #include "qaehelpers.h"
 
 GVSpectrumPhase::GVSpectrumPhase(WMainWindow* parent)
@@ -339,7 +339,7 @@ void GVSpectrumPhase::mousePressEvent(QMouseEvent* event){
                 m_selection_pressedp = p;
                 FTSound* currentftsound = gFL->getCurrentFTSound();
                 if(currentftsound)
-                    m_pressed_delay = currentftsound->m_delay;
+                    m_pressed_delay = currentftsound->m_giWaveform->delay();
             }
         }
     }
@@ -428,7 +428,7 @@ void GVSpectrumPhase::mouseMoveEvent(QMouseEvent* event){
         double dt = ((gFL->getFs()/m_selection_pressedp.x())*dy/(2*M_PI))/gFL->getFs();
         FTSound* currentftsound = gFL->getCurrentFTSound();
         if(currentftsound){
-            currentftsound->m_delay = m_pressed_delay - dt*gFL->getFs();
+            currentftsound->m_giWaveform->setDelay(m_pressed_delay - dt*gFL->getFs());
 
             currentftsound->needDFTUpdate();
 
