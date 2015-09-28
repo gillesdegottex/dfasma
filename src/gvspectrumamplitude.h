@@ -63,10 +63,10 @@ public:
     FTSound::DFTParameters m_trgDFTParameters;
 
     QAEGraphicsItemGrid* m_giGrid;
-    std::vector<std::complex<FFTTYPE> > m_windft; // Window spectrum
-    GISpectrumAmplitude* m_giWindow;
-    std::vector<std::complex<FFTTYPE> > m_elc;
-    GISpectrumAmplitude* m_giLoudnessCurve;
+    std::vector<FFTTYPE> m_windft; // Window spectrum
+    QAEGIUniformSampledSequence* m_giWindow;
+    std::vector<FFTTYPE> m_elc;
+    QAEGIUniformSampledSequence* m_giLoudnessCurve;
 
     std::vector<FFTTYPE> m_filterresponse;
 

@@ -46,8 +46,6 @@ using namespace std;
 #include "gvspectrogramwdialogsettings.h"
 #include "ui_gvspectrogramwdialogsettings.h"
 
-#include "gispectrumamplitude.h"
-
 bool FTSound::s_playwin_use = false;
 std::vector<WAVTYPE> FTSound::s_avoidclickswindow;
 
@@ -188,13 +186,15 @@ void FTSound::constructor_external() {
 
     gFL->ftsnds.push_back(this);
 
-    m_giWaveform = new QAEGIUniformSampledSequence(wavtoplay, fs, gMW->m_gvWaveform);
-    gMW->m_gvWaveform->m_scene->addItem(m_giWaveform);
-
-    m_giSpectrumAmplitude = new GISpectrumAmplitude(&m_dft, fs, gMW->m_gvAmplitudeSpectrum);
     QPen pen(getColor());
     pen.setWidth(0);
+
+    m_giWaveform = new QAEGIUniformSampledSequence(wavtoplay, fs, gMW->m_gvWaveform);
     m_giWaveform->setPen(pen);
+    m_giWaveform->clip(-1.0, 1.0);
+    gMW->m_gvWaveform->m_scene->addItem(m_giWaveform);
+
+    m_giSpectrumAmplitude = new QAEGIUniformSampledSequence(&m_dftamp, 1.0, gMW->m_gvAmplitudeSpectrum);
     m_giSpectrumAmplitude->setPen(pen);
     gMW->m_gvAmplitudeSpectrum->m_scene->addItem(m_giSpectrumAmplitude);
 }
@@ -261,6 +261,8 @@ void FTSound::load_finalize() {
 
 void FTSound::setVisible(bool shown){
     FileType::setVisible(shown);
+    m_giWaveform->setVisible(shown);
+    m_giSpectrumAmplitude->setVisible(shown);
 //    if(!shown)
 //        m_giWaveform->m_wavparams.clear();
 }
@@ -309,6 +311,7 @@ bool FTSound::reload() {
 
     // Reset everything ...
     wavtoplay = &wav;
+    m_giWaveform->setSequence(wavtoplay);
 //    m_ampscale = 1.0;
 //    m_delay = 0;
     m_start = 0;
@@ -434,6 +437,7 @@ void FTSound::setFiltered(bool filtered){
 
 void FTSound::resetFiltering(){
     wavtoplay = &wav;
+    m_giWaveform->setSequence(wavtoplay);
     gMW->m_gvWaveform->m_giFilteredSelection->hide();
     gMW->m_gvAmplitudeSpectrum->updateDFTs();
     gMW->m_gvAmplitudeSpectrum->m_filterresponse.clear();
@@ -664,8 +668,8 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
 
             // It seems the filtering went well, we can use the filtered sound
             wavtoplay = &wavfiltered;
+            m_giWaveform->setSequence(wavtoplay);
 
-//            gMW->m_gvWaveform->m_scene->update();
             gMW->m_gvAmplitudeSpectrum->updateDFTs();
             gMW->m_gvAmplitudeSpectrum->m_scene->update();
         }
@@ -674,12 +678,14 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
             updateIcon();
             QMessageBox::warning(NULL, "Problem when filtering the sound to be played", QString("The sound cannot be filtered as given by the selection in the spectrum view.\n\nReason:\n")+err);
 //            wavtoplay = &wav;
+//            m_giWaveform->setSequence(&wav);
             throw QString("Problem when filtering the sound to be played");
         }
     }
     else {
         gMW->m_gvAmplitudeSpectrum->m_filterresponse.resize(0);
         wavtoplay = &wav;
+        m_giWaveform->setSequence(wavtoplay);
         gMW->m_gvAmplitudeSpectrum->updateDFTs();
     }
 

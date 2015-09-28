@@ -571,7 +571,7 @@ void GVWaveform::mousePressEvent(QMouseEvent* event){
                         playCursorSet(p.x(), true); // Put the play cursor
                 }
 
-                FTSound* selectedsound = gFL->getCurrentFTSound();
+                FTSound* selectedsound = gFL->getCurrentFTSound(true);
                 if(selectedsound) {
                     if(event->modifiers().testFlag(Qt::ShiftModifier)){
                     }
@@ -675,7 +675,7 @@ void GVWaveform::mouseMoveEvent(QMouseEvent* event){
     }
     else if(m_currentAction==CAWaveformScale){
         // Scale the selected waveform
-        FTSound* currentftsound = gFL->getCurrentFTSound();
+        FTSound* currentftsound = gFL->getCurrentFTSound(true);
         if(currentftsound){
             if(!currentftsound->m_actionShow->isChecked()) {
                 QMessageBox::warning(this, "Editing a hidden file", "<p>The selected file is hidden.<br/><br/>For edition, please select only visible files.</p>");
@@ -1038,8 +1038,10 @@ void GVWaveform::fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseSe
         selection.setRight((int(0.5+selection.right()*fs))/fs);
 
     if(selection.left()<0) selection.setLeft(0.0);
-    if(selection.left()>gFL->getMaxLastSampleTime()-1.0/fs) selection.setLeft(gFL->getMaxLastSampleTime()-1.0/fs);
-    if(selection.right()<1.0/fs) selection.setRight(1.0/fs);
+//    if(selection.left()>gFL->getMaxLastSampleTime()-1.0/fs) selection.setLeft(gFL->getMaxLastSampleTime()-1.0/fs);
+    if(selection.left()>gFL->getMaxLastSampleTime()) selection.setLeft(gFL->getMaxLastSampleTime());
+    //    if(selection.right()<1.0/fs) selection.setRight(1.0/fs);
+    if(selection.right()<0.0) selection.setRight(0.0);
     if(selection.right()>gFL->getMaxLastSampleTime()) selection.setRight(gFL->getMaxLastSampleTime());
 
     double twinend = selection.right();
@@ -1051,7 +1053,7 @@ void GVWaveform::fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseSe
     int nl = std::max(0, int(0.5+selection.left()*fs));
     int nr = int(0.5+std::min(gFL->getMaxLastSampleTime(),twinend)*fs);
     int winlen = nr-nl+1;
-    if(winlen%2==0 && gMW->m_gvAmplitudeSpectrum->m_dlgSettings->ui->cbAmplitudeSpectrumWindowSizeForcedOdd->isChecked()) {
+    if(selection.width()>0 && winlen%2==0 && gMW->m_gvAmplitudeSpectrum->m_dlgSettings->ui->cbAmplitudeSpectrumWindowSizeForcedOdd->isChecked()) {
         if(action==CAModifSelectionLeft)
             selection.setLeft(selection.left()+1.0/fs);
         else if(action==CAModifSelectionRight)
@@ -1209,6 +1211,7 @@ void GVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
 }
 
 void GVWaveform::playCursorSet(double t, bool forwardsync){
+//    COUTD << t << endl;
     if(t==-1){
         if(m_selection.width()>0)
             playCursorSet(m_selection.left(), forwardsync);

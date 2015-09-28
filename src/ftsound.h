@@ -36,7 +36,6 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "qaegiuniformsampledsequence.h"
 
-
 #ifdef SIGPROC_FLOAT
 #define WAVTYPE float
 #else
@@ -174,7 +173,8 @@ public:
         inline bool isEmpty() const {return winlen==0 || dftlen==0 || wintype==-1 || normtype==-1;}
     };
 
-    GISpectrumAmplitude* m_giSpectrumAmplitude;
+    std::vector<FFTTYPE> m_dftamp; // [dB]
+    QAEGIUniformSampledSequence* m_giSpectrumAmplitude;
 
     std::vector<std::complex<FFTTYPE> > m_dft; // Store the _log_ of the DFT
 //    std::vector<std::complex<FFTTYPE> > m_dft; // Store the _log_ of the DFT

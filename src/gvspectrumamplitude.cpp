@@ -30,7 +30,6 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "ui_gvspectrumamplitudewdialogsettings.h"
 
 #include "gvwaveform.h"
-#include "gispectrumamplitude.h"
 #include "gvspectrumphase.h"
 #include "gvspectrumgroupdelay.h"
 #include "gvspectrogram.h"
@@ -95,7 +94,7 @@ GVSpectrumAmplitude::GVSpectrumAmplitude(WMainWindow* parent)
     m_aAmplitudeSpectrumShowWindow->setCheckable(true);
     m_aAmplitudeSpectrumShowWindow->setIcon(QIcon(":/icons/window.svg"));
     gMW->m_settings.add(m_aAmplitudeSpectrumShowWindow);
-    m_giWindow = new GISpectrumAmplitude(&m_windft, gFL->getFs(), this);
+    m_giWindow = new QAEGIUniformSampledSequence(&m_windft, 1.0, this);
     QPen windowpen(QColor(192, 192, 192));
     windowpen.setWidth(0);
     m_giWindow->setPen(windowpen);
@@ -111,7 +110,7 @@ GVSpectrumAmplitude::GVSpectrumAmplitude(WMainWindow* parent)
     m_aAmplitudeSpectrumShowLoudnessCurve->setChecked(false);
     m_aAmplitudeSpectrumShowLoudnessCurve->setIcon(QIcon(":/icons/noun_29196_cc.svg"));
     gMW->m_settings.add(m_aAmplitudeSpectrumShowLoudnessCurve);
-    m_giLoudnessCurve = new GISpectrumAmplitude(&m_elc, gFL->getFs(), this);
+    m_giLoudnessCurve = new QAEGIUniformSampledSequence(&m_elc, 1.0, this);
     QPen elcpen(QColor(192, 192, 255));
     elcpen.setWidth(0);
     m_giLoudnessCurve->setPen(elcpen);
@@ -351,12 +350,12 @@ void GVSpectrumAmplitude::setSamplingRate(double fs)
 {
     m_giWindow->setSamplingRate(fs);
 
-    int dftlen = 4096; // TODO
+    int dftlen = 2*4096; // TODO
+    m_giLoudnessCurve->setSamplingRate(1.0/(fs/dftlen));
     m_elc.resize(dftlen/2, 0.0);
-    for(size_t u=0; u<m_elc.size(); ++u){
-        m_elc[u] = qae::equalloudnesscurvesISO226(fs*double(u)/dftlen, 0);
-        m_elc[u] = -m_elc[u]/qae::log2db;
-    }
+    for(size_t u=0; u<m_elc.size(); ++u)
+        m_elc[u] = -qae::equalloudnesscurvesISO226(fs*double(u)/dftlen, 0);
+    m_giLoudnessCurve->updateMinMaxValues();
 }
 
 void GVSpectrumAmplitude::setWindowRange(qreal tstart, qreal tend){
@@ -559,6 +558,11 @@ void GVSpectrumAmplitude::updateDFTs(){
             snd->m_dft.resize(dftlen/2+1);
             for(n=0; n<dftlen/2+1; n++)
                 (*pdft)[n] = m_fft->out[n];
+            snd->m_dftamp.resize(dftlen/2+1);
+            for(n=0; n<dftlen/2+1; n++)
+                snd->m_dftamp[n] = 20*std::log10(std::abs(m_fft->out[n]));
+            snd->m_giSpectrumAmplitude->setSamplingRate(1.0/double(gFL->getFs()/dftlen));
+            snd->m_giSpectrumAmplitude->updateMinMaxValues();
 
             // If the group delay is requested, update its data
             if(gMW->ui->actionShowGroupDelaySpectrum->isChecked()){
@@ -598,6 +602,7 @@ void GVSpectrumAmplitude::updateDFTs(){
 
         // Compute the window's DFT
         if (m_aAmplitudeSpectrumShowWindow->isChecked()) {
+
             int n = 0;
             for(; n<m_trgDFTParameters.winlen; n++)
                 m_fft->in[n] = m_trgDFTParameters.win[n];
@@ -605,9 +610,13 @@ void GVSpectrumAmplitude::updateDFTs(){
                 m_fft->in[n] = 0.0;
 
             m_fft->execute();
+
             m_windft.resize(dftlen/2+1);
             for(n=0; n<dftlen/2+1; n++)
-                m_windft[n] = std::complex<WAVTYPE>(std::log(std::abs(m_fft->out[n])),std::arg(m_fft->out[n]));
+                m_windft[n] = qae::mag2db(m_fft->out[n]);
+
+            m_giWindow->setSamplingRate(1.0/double(gFL->getFs()/dftlen));
+            m_giWindow->updateMinMaxValues();
 
             didany = true;
         }
@@ -819,7 +828,7 @@ void GVSpectrumAmplitude::mousePressEvent(QMouseEvent* event){
                 // When scaling the waveform
                 m_currentAction = CAWaveformScale;
                 m_selection_pressedp = p;
-                gMW->setEditing(gFL->getCurrentFTSound());
+                gMW->setEditing(gFL->getCurrentFTSound(true));
                 setCursor(Qt::SizeVerCursor);
             }
         }
@@ -904,7 +913,7 @@ void GVSpectrumAmplitude::mouseMoveEvent(QMouseEvent* event){
     }
     else if(m_currentAction==CAWaveformScale){
         // When scaling the waveform
-        FTSound* currentftsound = gFL->getCurrentFTSound();
+        FTSound* currentftsound = gFL->getCurrentFTSound(true);
         if(currentftsound){
             if(!currentftsound->m_actionShow->isChecked()) {
                 QMessageBox::warning(this, "Editing a hidden file", "<p>The selected file is hidden.<br/><br/>For edition, please select only visible files.</p>");
@@ -966,7 +975,7 @@ void GVSpectrumAmplitude::mouseMoveEvent(QMouseEvent* event){
         }
     }
 
-//    std::cout << "~QGVWaveform::mouseMoveEvent" << endl;
+//    std::cout << "~GVSpectrumAmplitude::mouseMoveEvent" << endl;
     QGraphicsView::mouseMoveEvent(event);
 }
 
@@ -1282,7 +1291,6 @@ void GVSpectrumAmplitude::aunzoom(){
 }
 
 void GVSpectrumAmplitude::setMouseCursorPosition(QPointF p, bool forwardsync) {
-
     QFontMetrics qfm(gMW->m_dlgSettings->ui->lblGridFontSample->font());
 
     QLineF line;
@@ -1321,7 +1329,7 @@ void GVSpectrumAmplitude::setMouseCursorPosition(QPointF p, bool forwardsync) {
         x = min(x, viewrect.right()-br.width()/trans.m11());
 
         QString freqstr = QString("%1Hz").arg(m_giCursorVert->line().x1());
-        if(gMW->m_dlgSettings->ui->cbViewsShowMusicNoteNames->isChecked())
+        if(m_giCursorVert->line().x1()>0 && gMW->m_dlgSettings->ui->cbViewsShowMusicNoteNames->isChecked())
             freqstr += "("+qae::h2n(qae::f2h(m_giCursorVert->line().x1()))+")";
         m_giCursorPositionXTxt->setText(freqstr);
         m_giCursorPositionXTxt->setPos(x, viewrect.top()-2/trans.m22());

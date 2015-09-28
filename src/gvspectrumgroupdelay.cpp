@@ -340,7 +340,7 @@ void GVSpectrumGroupDelay::mousePressEvent(QMouseEvent* event){
             if(kctrl && kshift) {
                 m_currentAction = CAWaveformDelay;
                 m_selection_pressedp = p;
-                FTSound* currentftsound = gFL->getCurrentFTSound();
+                FTSound* currentftsound = gFL->getCurrentFTSound(true);
                 if(currentftsound)
                     m_pressed_delay = currentftsound->m_giWaveform->delay();
             }
@@ -427,7 +427,7 @@ void GVSpectrumGroupDelay::mouseMoveEvent(QMouseEvent* event){
         double dy = -(p.y()-m_selection_pressedp.y());
         // cout << "CAWaveformDelay at " << m_selection_pressedp.x() << " " << dy << "s" << endl;
         double dt = ((gFL->getFs()/m_selection_pressedp.x())*dy/(sceneRect().height()))/gFL->getFs();
-        FTSound* currentftsound = gFL->getCurrentFTSound();
+        FTSound* currentftsound = gFL->getCurrentFTSound(true);
         if(currentftsound){
             currentftsound->m_giWaveform->setDelay(m_pressed_delay + dt*gFL->getFs());
 
