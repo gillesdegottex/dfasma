@@ -244,7 +244,6 @@ SOURCES   += src/main.cpp\
              src/ftlabels.cpp \
              src/gvwaveform.cpp \
              src/gvspectrumamplitude.cpp \
-             src/gispectrumamplitude.cpp \
              src/fftresizethread.cpp \
              src/gvspectrumamplitudewdialogsettings.cpp \
              src/gvspectrumphase.cpp \
@@ -276,7 +275,6 @@ HEADERS   += src/wmainwindow.h \
              src/ftlabels.h \
              src/gvwaveform.h \
              src/gvspectrumamplitude.h \
-             src/gispectrumamplitude.h \
              src/fftresizethread.h \
              src/gvspectrumamplitudewdialogsettings.h \
              src/gvspectrumphase.h \
