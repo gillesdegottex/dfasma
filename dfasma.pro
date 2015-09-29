@@ -256,7 +256,7 @@ SOURCES   += src/main.cpp\
              external/libqaudioextra/src/qaesigproc.cpp \
              external/libqaudioextra/src/qaecolormap.cpp \
              external/libqaudioextra/src/qaesettingsauto.cpp \
-             external/libqaudioextra/src/qaegraphicsitemgrid.cpp \
+             external/libqaudioextra/src/qaegigrid.cpp \
              external/libqaudioextra/src/qaegiuniformlysampledsignal.cpp \
              external/libqaudioextra/external/mkfilter/mkfilter.cpp \
              external/REAPER/epoch_tracker/epoch_tracker.cc \
@@ -290,7 +290,7 @@ HEADERS   += src/wmainwindow.h \
              external/libqaudioextra/include/qaesigproc.h \
              external/libqaudioextra/include/qaecolormap.h \
              external/libqaudioextra/include/qaesettingsauto.h \
-             external/libqaudioextra/include/qaegraphicsitemgrid.h \
+             external/libqaudioextra/include/qaegigrid.h \
              external/libqaudioextra/include/qaegiuniformlysampledsignal.h \
              external/libqaudioextra/external/mkfilter/mkfilter.h \
              external/REAPER/epoch_tracker/epoch_tracker.h \
