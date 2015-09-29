@@ -86,7 +86,6 @@ public:
     std::vector<WAVTYPE> wav;
     std::vector<WAVTYPE> wavfiltered;
     std::vector<WAVTYPE>* wavtoplay;
-    WAVTYPE m_wavmaxamp;
     WAVTYPE m_filteredmaxamp;
 
     // Waveform

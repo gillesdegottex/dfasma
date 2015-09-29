@@ -232,7 +232,6 @@ FTSound::FTSound(const FTSound& ft)
 //    COUTD << fileInfo.fileName().toLatin1().constData() << " (" << text().toLatin1().constData() << ")" << endl;
 
     wav = ft.wav;
-    m_wavmaxamp = ft.m_wavmaxamp;
     fs = ft.fs;
     m_fileaudioformat.setSampleRate(fs);
     m_fileaudioformat.setSampleType(QAudioFormat::Float);
@@ -245,10 +244,6 @@ FTSound::FTSound(const FTSound& ft)
 }
 
 void FTSound::load_finalize() {
-    m_wavmaxamp = 0.0;
-    for(unsigned int n=0; n<wav.size(); ++n)
-        m_wavmaxamp = std::max(m_wavmaxamp, abs(wav[n]));
-
     if(s_avoidclickswindow.size()==0)
         FTSound::setAvoidClicksWindowDuration(gMW->m_dlgSettings->ui->sbPlaybackAvoidClicksWindowDuration->value());
 
@@ -492,7 +487,7 @@ void FTSound::updateClippedState(){
     if(m_giWaveform==NULL)
         m_isclipped = false;
     else
-        m_isclipped = (m_wavmaxamp*m_giWaveform->gain()>1.0) || (m_isfiltered && (m_filteredmaxamp*m_giWaveform->gain()>1.0));
+        m_isclipped = (m_giWaveform->getMaxAbsoluteValue()>1.0) || (m_isfiltered && (m_filteredmaxamp*m_giWaveform->gain()>1.0));
 
     if(m_isclipped)
         setBackgroundColor(QColor(255,0,0));

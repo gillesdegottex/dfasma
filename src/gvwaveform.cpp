@@ -267,12 +267,13 @@ void GVWaveform::showScrollBars(bool show) {
     }
 }
 
-void GVWaveform::fitViewToSoundsAmplitude(){
+void GVWaveform::fitViewToSoundsAmplitude() {
     if(gFL->ftsnds.size()>0){
         WAVTYPE maxwavmaxamp = 0.0;
         for(unsigned int si=0; si<gFL->ftsnds.size(); si++)
             if(gFL->ftsnds[si]->isVisible())
-                maxwavmaxamp = std::max(maxwavmaxamp, gFL->ftsnds[si]->m_giWaveform->gain()*gFL->ftsnds[si]->m_wavmaxamp);
+                maxwavmaxamp = std::max(maxwavmaxamp, gFL->ftsnds[si]->m_giWaveform->getMaxAbsoluteValue());
+//                maxwavmaxamp = std::max(maxwavmaxamp, gFL->ftsnds[si]->m_giWaveform->gain()*gFL->ftsnds[si]->m_wavmaxamp);
 
         if(maxwavmaxamp==0.0)
             maxwavmaxamp = 1.0;
