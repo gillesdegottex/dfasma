@@ -90,7 +90,12 @@ GVSpectrogram::GVSpectrogram(WMainWindow* parent)
     m_aSpectrogramShowGrid->setChecked(false);
     m_aSpectrogramShowGrid->setIcon(QIcon(":/icons/grid.svg"));
     gMW->m_settings.add(m_aSpectrogramShowGrid);
-    connect(m_aSpectrogramShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
+    m_grid = new QAEGIGrid(this, "s", "Hz");
+    m_grid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
+    m_grid->setVisible(m_aSpectrogramShowGrid->isChecked());
+    m_grid->setHighContrast(true);
+    m_scene->addItem(m_grid);
+    connect(m_aSpectrogramShowGrid, SIGNAL(toggled(bool)), this, SLOT(gridSetVisible(bool)));
 
     m_aSpectrogramShowHarmonics = new QAction(tr("Show &Harmonics"), this);
     m_aSpectrogramShowHarmonics->setObjectName("m_aSpectrogramShowHarmonics"); // For auto settings
@@ -258,6 +263,10 @@ void GVSpectrogram::showScrollBars(bool show) {
         setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     }
+}
+
+void GVSpectrogram::gridSetVisible(bool visible){
+    m_grid->setVisible(visible);
 }
 
 void GVSpectrogram::amplitudeExtentSlidersChanged(){
@@ -486,6 +495,7 @@ void GVSpectrogram::viewSet(QRectF viewrect, bool forwardsync) {
             viewrect.setRight(m_scene->sceneRect().right());
 
         fitInView(removeHiddenMargin(this, viewrect));
+        m_grid->updateLines();
 
         if(forwardsync){
             if(gMW->m_gvWaveform && !gMW->m_gvWaveform->viewport()->size().isEmpty()) { // && gMW->ui->actionShowWaveform->isChecked()
@@ -679,6 +689,7 @@ void GVSpectrogram::mouseMoveEvent(QMouseEvent* event){
 
     if(m_currentAction==CAMoving) {
         // When scrolling the view around the scene
+        m_grid->updateLines();
     }
     else if(m_currentAction==CAZooming) {
         double dx = -(event->pos()-m_pressed_mouseinviewport).x()/100.0;
@@ -1177,9 +1188,9 @@ void GVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
         // but the cursor falls always on the top of the line, not in the middle of it.
         srcrect.setTop((m_imgSTFT.rect().height()-1)*viewrect.top()/m_scene->sceneRect().height());
         srcrect.setBottom((m_imgSTFT.rect().height()-1)*viewrect.bottom()/m_scene->sceneRect().height());
-        QRectF trgrect = viewrect;
         srcrect.setTop(srcrect.top()+0.5);
         srcrect.setBottom(srcrect.bottom()+0.5);
+        QRectF trgrect = viewrect;
 
         // This one is the basic synchronized version,
         // but it creates flickering when zooming
@@ -1201,10 +1212,6 @@ void GVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
             m_stftcomputethread->m_mutex_imageallocation.unlock();
         }
     }
-
-    // Draw the grid above the spectrogram
-    if(m_aSpectrogramShowGrid->isChecked())
-        draw_grid(painter, rect);
 
     // Draw the f0s
     FTFZero* curfzero = gFL->getCurrentFTFZero(true);
@@ -1230,109 +1237,6 @@ void GVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 
 
 //    cout << "GVSpectrogram::~drawBackground" << endl;
-}
-
-void GVSpectrogram::draw_grid(QPainter* painter, const QRectF& rect) {
-    // Prepare the pens and fonts
-    QTransform trans = transform();
-    QPen darkpen(QColor(0,0,0));
-    darkpen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-
-    painter->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
-    QFontMetrics qfm(gMW->m_dlgSettings->ui->lblGridFontSample->font());
-    QFont lightfont = painter->font();
-    QFont darkfont = painter->font();
-    darkfont.setBold(true);
-
-    QPen darkthickpen(QColor(0,0,0));
-    darkthickpen.setCosmetic(true);
-    darkthickpen.setWidth(1);
-    QPen lightpen(QColor(255,255,255));
-    lightpen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-    painter->setPen(darkpen);
-    QPointF shift(1, 1);
-    QStaticText stxt;
-
-    // Horizontal lines
-
-    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-
-    // Adapt the lines ordinates to the viewport
-    double f = log10(float(viewrect.height()));
-    int fi;
-    if(f<0) fi=int(f-1);
-    else fi = int(f);
-    double lstep = pow(10.0, fi);
-    int m=1;
-    while(int(viewrect.height()/lstep)<3){
-        lstep /= 2;
-        m++;
-    }
-    // cout << "lstep=" << lstep << endl;
-
-    // Draw the horizontal lines
-    painter->setPen(lightpen);
-    for(double l=gFL->getFs()/2.0-int((gFL->getFs()/2.0-rect.bottom())/lstep)*lstep; l>=rect.top(); l-=lstep)
-        painter->drawLine(QLineF(rect.left(), l, rect.right(), l));
-    painter->setPen(darkpen);
-    for(double l=gFL->getFs()/2.0-int((gFL->getFs()/2.0-rect.bottom())/lstep)*lstep; l>=rect.top(); l-=lstep)
-        painter->drawLine(QLineF(rect.left(), l-1.0/trans.m22(), rect.right(), l-1.0/trans.m22()));
-
-    // Write the ordinates of the horizontal lines
-    for(double l=gFL->getFs()/2.0-int((gFL->getFs()/2.0-rect.bottom())/lstep)*lstep; l>=rect.top(); l-=lstep){
-        painter->save();
-        painter->translate(QPointF(viewrect.left(), l));
-        painter->scale(1.0/trans.m11(), 1.0/trans.m22());
-
-        stxt = QStaticText(QString("%1Hz").arg(gFL->getFs()/2.0-l));
-        if(l<viewrect.bottom()-0.75*qfm.height()/trans.m22()){
-            painter->setPen(darkthickpen);
-            painter->setFont(darkfont);
-            painter->drawStaticText(QPointF(0, -qfm.height())+shift, stxt);
-            painter->setPen(lightpen);
-            painter->setFont(lightfont);
-            painter->drawStaticText(QPointF(0, -qfm.height()), stxt);
-        }
-        painter->restore();
-    }
-
-    // Vertical lines
-
-    // Adapt the lines absissa to the viewport
-    f = std::log10(float(viewrect.width()));
-    if(f<0) fi=int(f-1);
-    else fi = int(f);
-//    std::cout << viewrect.height() << " " << f << " " << fi << endl;
-    lstep = pow(10.0, fi);
-    m=1;
-    while(int(viewrect.width()/lstep)<6){
-        lstep /= 2;
-        m++;
-    }
-//    std::cout << "lstep=" << lstep << endl;
-
-    // Draw the vertical lines
-    painter->setPen(lightpen);
-    for(double l=int(rect.left()/lstep)*lstep; l<=rect.right(); l+=lstep)
-        painter->drawLine(QLineF(l, rect.top(), l, rect.bottom()));
-    painter->setPen(darkpen);
-    for(double l=int(rect.left()/lstep)*lstep; l<=rect.right(); l+=lstep)
-        painter->drawLine(QLineF(l+1.0/trans.m11(), rect.top(), l+1.0/trans.m11(), rect.bottom()));
-
-    // Write the absissa of the vertical lines
-    for(double l=int(rect.left()/lstep)*lstep; l<=rect.right(); l+=lstep){
-        painter->save();
-        painter->translate(QPointF(l, viewrect.bottom()-(qfm.height()-2)/trans.m22()));
-        painter->scale(1.0/trans.m11(), 1.0/trans.m22());
-        painter->setPen(darkthickpen);
-        painter->setFont(darkfont);
-        stxt = QStaticText(QString("%1s").arg(l, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()));
-        painter->drawStaticText(QPointF(0, 0)+shift, stxt);
-        painter->setPen(lightpen);
-        painter->setFont(lightfont);
-        painter->drawStaticText(QPointF(0, 0), stxt);
-        painter->restore();
-    }
 }
 
 GVSpectrogram::~GVSpectrogram(){

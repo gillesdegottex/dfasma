@@ -65,7 +65,7 @@ GVSpectrumGroupDelay::GVSpectrumGroupDelay(WMainWindow* parent)
     m_aSpectrumGroupDelayShowGrid->setCheckable(true);
     m_aSpectrumGroupDelayShowGrid->setChecked(true);
     gMW->m_settings.add(m_aSpectrumGroupDelayShowGrid);
-    m_grid = new QAEGraphicsItemGrid(this, "Hz", "s");
+    m_grid = new QAEGIGrid(this, "Hz", "s");
     m_grid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
     m_grid->setVisible(m_aSpectrumGroupDelayShowGrid->isChecked());
     m_scene->addItem(m_grid);

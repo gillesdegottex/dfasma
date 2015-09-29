@@ -81,7 +81,7 @@ GVWaveform::GVWaveform(WMainWindow* parent)
     gMW->m_settings.add(m_aWaveformShowGrid);
     connect(m_aWaveformShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
     m_contextmenu.addAction(m_aWaveformShowGrid);
-    m_grid = new QAEGraphicsItemGrid(this, "s", "");
+    m_grid = new QAEGIGrid(this, "s", "");
     m_grid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
     m_grid->setVisible(m_aWaveformShowGrid->isChecked());
     m_scene->addItem(m_grid);

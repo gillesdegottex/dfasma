@@ -29,7 +29,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QToolBar>
 
 #include "qaesigproc.h"
-#include "qaegraphicsitemgrid.h"
+#include "qaegigrid.h"
 #include "ftsound.h"
 
 //class GVPhaseSpectrumWDialogSettings;
@@ -48,7 +48,7 @@ public:
     QGraphicsScene* m_scene;
 
     // Graphic items
-    QAEGraphicsItemGrid* m_grid;
+    QAEGIGrid* m_grid;
 
     QMenu m_contextmenu;
 

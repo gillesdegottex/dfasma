@@ -29,7 +29,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QTime>
 
 #include "qaesigproc.h"
-#include "qaegraphicsitemgrid.h"
+#include "qaegigrid.h"
 
 #include "wmainwindow.h"
 #include "fftresizethread.h"
@@ -62,7 +62,7 @@ public:
 
     FTSound::DFTParameters m_trgDFTParameters;
 
-    QAEGraphicsItemGrid* m_giGrid;
+    QAEGIGrid* m_giGrid;
     std::vector<FFTTYPE> m_windft; // Window spectrum
     QAEGIUniformlySampledSignal* m_giWindow;
     std::vector<FFTTYPE> m_elc;

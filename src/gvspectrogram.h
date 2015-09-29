@@ -30,9 +30,10 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QMenu>
 class QTime;
 
-#include "wmainwindow.h"
-
 #include "qaesigproc.h"
+#include "qaegigrid.h"
+
+#include "wmainwindow.h"
 #include "ftsound.h"
 
 class GVSpectrogramWDialogSettings;
@@ -75,6 +76,8 @@ public:
     QGraphicsSimpleTextItem* m_giMouseCursorTxtTime;
     QGraphicsSimpleTextItem* m_giMouseCursorTxtFreq;
     void setMouseCursorPosition(QPointF p, bool forwardsync);
+
+    QAEGIGrid* m_grid;
 
     QImage m_imgSTFT;
     STFTComputeThread::ImageParameters m_imgSTFTParams; // This is the target parameters for the image
@@ -120,6 +123,7 @@ signals:
 
 public slots:
     void showScrollBars(bool show);
+    void gridSetVisible(bool visible);
 
     void allSoundsChanged();
     void playCursorSet(double t, bool forwardsync);

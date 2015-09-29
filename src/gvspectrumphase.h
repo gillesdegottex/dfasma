@@ -28,7 +28,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QMenu>
 
 #include "qaesigproc.h"
-#include "qaegraphicsitemgrid.h"
+#include "qaegigrid.h"
 #include "ftsound.h"
 
 class WMainWindow;
@@ -46,7 +46,7 @@ public:
     QGraphicsScene* m_scene;
 
     // Graphic items
-    QAEGraphicsItemGrid* m_grid;
+    QAEGIGrid* m_grid;
 
     QGraphicsLineItem* m_giCursorHoriz;
     QGraphicsLineItem* m_giCursorVert;

@@ -81,7 +81,7 @@ GVSpectrumAmplitude::GVSpectrumAmplitude(WMainWindow* parent)
     m_aAmplitudeSpectrumShowGrid->setCheckable(true);
     m_aAmplitudeSpectrumShowGrid->setChecked(true);
     gMW->m_settings.add(m_aAmplitudeSpectrumShowGrid);
-    m_giGrid = new QAEGraphicsItemGrid(this, "Hz", "dB");
+    m_giGrid = new QAEGIGrid(this, "Hz", "dB");
     m_giGrid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
     m_giGrid->setVisible(m_aAmplitudeSpectrumShowGrid->isChecked());
     m_scene->addItem(m_giGrid);

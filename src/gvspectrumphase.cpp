@@ -65,7 +65,7 @@ GVSpectrumPhase::GVSpectrumPhase(WMainWindow* parent)
     m_aPhaseSpectrumShowGrid->setCheckable(true);
     m_aPhaseSpectrumShowGrid->setChecked(true);
     gMW->m_settings.add(m_aPhaseSpectrumShowGrid);
-    m_grid = new QAEGraphicsItemGrid(this, "Hz", "rad");
+    m_grid = new QAEGIGrid(this, "Hz", "rad");
     m_grid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
     m_grid->setVisible(m_aPhaseSpectrumShowGrid->isChecked());
     m_scene->addItem(m_grid);

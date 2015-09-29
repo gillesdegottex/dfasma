@@ -26,7 +26,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QGraphicsView>
 #include <QMenu>
 
-#include "qaegraphicsitemgrid.h"
+#include "qaegigrid.h"
 
 class QToolBar;
 class WMainWindow;
@@ -68,7 +68,7 @@ public:
 
     // Graphic items
     QGraphicsScene* m_scene;
-    QAEGraphicsItemGrid* m_grid;
+    QAEGIGrid* m_grid;
     QGraphicsPathItem* m_giWindow;
     qreal m_ampzoom;
 
