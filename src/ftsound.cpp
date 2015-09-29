@@ -189,12 +189,12 @@ void FTSound::constructor_external() {
     QPen pen(getColor());
     pen.setWidth(0);
 
-    m_giWaveform = new QAEGIUniformSampledSequence(wavtoplay, fs, gMW->m_gvWaveform);
+    m_giWaveform = new QAEGIUniformlySampledSignal(wavtoplay, fs, gMW->m_gvWaveform);
     m_giWaveform->setPen(pen);
-    m_giWaveform->clip(-1.0, 1.0);
+    m_giWaveform->setClip(-1.0, 1.0);
     gMW->m_gvWaveform->m_scene->addItem(m_giWaveform);
 
-    m_giSpectrumAmplitude = new QAEGIUniformSampledSequence(&m_dftamp, 1.0, gMW->m_gvAmplitudeSpectrum);
+    m_giSpectrumAmplitude = new QAEGIUniformlySampledSignal(&m_dftamp, 1.0, gMW->m_gvAmplitudeSpectrum);
     m_giSpectrumAmplitude->setPen(pen);
     gMW->m_gvAmplitudeSpectrum->m_scene->addItem(m_giSpectrumAmplitude);
 }

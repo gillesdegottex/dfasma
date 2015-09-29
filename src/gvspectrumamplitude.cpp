@@ -94,7 +94,7 @@ GVSpectrumAmplitude::GVSpectrumAmplitude(WMainWindow* parent)
     m_aAmplitudeSpectrumShowWindow->setCheckable(true);
     m_aAmplitudeSpectrumShowWindow->setIcon(QIcon(":/icons/window.svg"));
     gMW->m_settings.add(m_aAmplitudeSpectrumShowWindow);
-    m_giWindow = new QAEGIUniformSampledSequence(&m_windft, 1.0, this);
+    m_giWindow = new QAEGIUniformlySampledSignal(&m_windft, 1.0, this);
     QPen windowpen(QColor(192, 192, 192));
     windowpen.setWidth(0);
     m_giWindow->setPen(windowpen);
@@ -110,7 +110,7 @@ GVSpectrumAmplitude::GVSpectrumAmplitude(WMainWindow* parent)
     m_aAmplitudeSpectrumShowLoudnessCurve->setChecked(false);
     m_aAmplitudeSpectrumShowLoudnessCurve->setIcon(QIcon(":/icons/noun_29196_cc.svg"));
     gMW->m_settings.add(m_aAmplitudeSpectrumShowLoudnessCurve);
-    m_giLoudnessCurve = new QAEGIUniformSampledSequence(&m_elc, 1.0, this);
+    m_giLoudnessCurve = new QAEGIUniformlySampledSignal(&m_elc, 1.0, this);
     QPen elcpen(QColor(192, 192, 255));
     elcpen.setWidth(0);
     m_giLoudnessCurve->setPen(elcpen);
@@ -561,8 +561,10 @@ void GVSpectrumAmplitude::updateDFTs(){
             snd->m_dftamp.resize(dftlen/2+1);
             for(n=0; n<dftlen/2+1; n++)
                 snd->m_dftamp[n] = 20*std::log10(std::abs(m_fft->out[n]));
-            snd->m_giSpectrumAmplitude->setSamplingRate(1.0/double(gFL->getFs()/dftlen));
             snd->m_giSpectrumAmplitude->updateMinMaxValues();
+
+            snd->m_giSpectrumAmplitude->setSamplingRate(1.0/double(gFL->getFs()/dftlen));
+            snd->m_giSpectrumAmplitude->clearCache();
 
             // If the group delay is requested, update its data
             if(gMW->ui->actionShowGroupDelaySpectrum->isChecked()){
@@ -614,9 +616,10 @@ void GVSpectrumAmplitude::updateDFTs(){
             m_windft.resize(dftlen/2+1);
             for(n=0; n<dftlen/2+1; n++)
                 m_windft[n] = qae::mag2db(m_fft->out[n]);
+            m_giWindow->updateMinMaxValues();
 
             m_giWindow->setSamplingRate(1.0/double(gFL->getFs()/dftlen));
-            m_giWindow->updateMinMaxValues();
+            m_giWindow->clearCache();
 
             didany = true;
         }
@@ -1354,8 +1357,6 @@ void GVSpectrumAmplitude::drawBackground(QPainter* painter, const QRectF& rect){
 
     double fs = gFL->getFs();
 
-    // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
-
     // Draw the f0 and its harmonics
     FTFZero* curfzero = gFL->getCurrentFTFZero(true);
     for(size_t fi=0; fi<gFL->ftfzeros.size(); fi++)
@@ -1364,7 +1365,7 @@ void GVSpectrumAmplitude::drawBackground(QPainter* painter, const QRectF& rect){
     if(curfzero)
         curfzero->draw_freq_amp(painter, rect);
 
-    // Draw the filter response
+    // Draw the filter response TODO Move to QAEGIUniformlySampledSignal
     if(m_filterresponse.size()>0) {
         QPen outlinePen(QColor(255, 192, 192));
         outlinePen.setWidth(0);

@@ -34,7 +34,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "filetype.h"
 #include "stftcomputethread.h"
 
-#include "qaegiuniformsampledsequence.h"
+#include "qaegiuniformlysampledsignal.h"
 
 #ifdef SIGPROC_FLOAT
 #define WAVTYPE float
@@ -90,7 +90,7 @@ public:
     WAVTYPE m_filteredmaxamp;
 
     // Waveform
-    class WavParameters{
+    class WavParameters{// TODO Still used ?
     public:
         QRect fullpixrect;
         QRectF viewrect;
@@ -128,7 +128,7 @@ public:
         inline bool isEmpty() const {return fullpixrect.isNull() || viewrect.isNull();}
     };
 
-    QAEGIUniformSampledSequence* m_giWaveform;
+    QAEGIUniformlySampledSignal* m_giWaveform;
 
     // Spectra
     class DFTParameters{
@@ -174,7 +174,7 @@ public:
     };
 
     std::vector<FFTTYPE> m_dftamp; // [dB]
-    QAEGIUniformSampledSequence* m_giSpectrumAmplitude;
+    QAEGIUniformlySampledSignal* m_giSpectrumAmplitude;
 
     std::vector<std::complex<FFTTYPE> > m_dft; // Store the _log_ of the DFT
 //    std::vector<std::complex<FFTTYPE> > m_dft; // Store the _log_ of the DFT

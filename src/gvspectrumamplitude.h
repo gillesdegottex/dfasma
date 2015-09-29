@@ -64,9 +64,9 @@ public:
 
     QAEGraphicsItemGrid* m_giGrid;
     std::vector<FFTTYPE> m_windft; // Window spectrum
-    QAEGIUniformSampledSequence* m_giWindow;
+    QAEGIUniformlySampledSignal* m_giWindow;
     std::vector<FFTTYPE> m_elc;
-    QAEGIUniformSampledSequence* m_giLoudnessCurve;
+    QAEGIUniformlySampledSignal* m_giLoudnessCurve;
 
     std::vector<FFTTYPE> m_filterresponse;
 
