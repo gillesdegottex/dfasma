@@ -77,7 +77,7 @@ public:
     QGraphicsSimpleTextItem* m_giMouseCursorTxtFreq;
     void setMouseCursorPosition(QPointF p, bool forwardsync);
 
-    QAEGIGrid* m_grid;
+    QAEGIGrid* m_giGrid;
 
     QImage m_imgSTFT;
     STFTComputeThread::ImageParameters m_imgSTFTParams; // This is the target parameters for the image

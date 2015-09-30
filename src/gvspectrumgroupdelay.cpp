@@ -65,10 +65,11 @@ GVSpectrumGroupDelay::GVSpectrumGroupDelay(WMainWindow* parent)
     m_aSpectrumGroupDelayShowGrid->setCheckable(true);
     m_aSpectrumGroupDelayShowGrid->setChecked(true);
     gMW->m_settings.add(m_aSpectrumGroupDelayShowGrid);
-    m_grid = new QAEGIGrid(this, "Hz", "s");
-    m_grid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
-    m_grid->setVisible(m_aSpectrumGroupDelayShowGrid->isChecked());
-    m_scene->addItem(m_grid);
+    m_giGrid = new QAEGIGrid(this, "Hz", "s");
+    m_giGrid->setMathYAxis(true);
+    m_giGrid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
+    m_giGrid->setVisible(m_aSpectrumGroupDelayShowGrid->isChecked());
+    m_scene->addItem(m_giGrid);
     connect(m_aSpectrumGroupDelayShowGrid, SIGNAL(toggled(bool)), this, SLOT(gridSetVisible(bool)));
 
     // Cursor
@@ -175,7 +176,7 @@ void GVSpectrumGroupDelay::viewSet(QRectF viewrect, bool sync) {
 
         fitInView(removeHiddenMargin(this, viewrect));
 
-        m_grid->updateLines();
+        m_giGrid->updateLines();
 
         if(sync){
             if(gMW->m_gvAmplitudeSpectrum && gMW->ui->actionShowAmplitudeSpectrum->isChecked()) {
@@ -374,7 +375,7 @@ void GVSpectrumGroupDelay::mouseMoveEvent(QMouseEvent* event){
     if(m_currentAction==CAMoving) {
         // When scrolling the view around the scene
 //        setMouseCursorPosition(QPointF(-1,0), true);
-        m_grid->updateLines();
+        m_giGrid->updateLines();
     }
     else if(m_currentAction==CAZooming) {
         double dx = -(event->pos()-m_pressed_mouseinviewport).x()/100.0;

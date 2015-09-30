@@ -48,7 +48,7 @@ public:
     QGraphicsScene* m_scene;
 
     // Graphic items
-    QAEGIGrid* m_grid;
+    QAEGIGrid* m_giGrid;
 
     QMenu m_contextmenu;
 
@@ -93,7 +93,7 @@ signals:
     
 public slots:
     void updateSceneRect();
-    void gridSetVisible(bool visible){m_grid->setVisible(visible);}
+    void gridSetVisible(bool visible){m_giGrid->setVisible(visible);}
 
     void azoomin();
     void azoomout();

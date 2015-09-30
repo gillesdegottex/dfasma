@@ -82,6 +82,7 @@ GVWaveform::GVWaveform(WMainWindow* parent)
     connect(m_aWaveformShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
     m_contextmenu.addAction(m_aWaveformShowGrid);
     m_grid = new QAEGIGrid(this, "s", "");
+    m_grid->setMathYAxis(true);
     m_grid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
     m_grid->setVisible(m_aWaveformShowGrid->isChecked());
     m_scene->addItem(m_grid);
@@ -1123,8 +1124,8 @@ void GVWaveform::selectionSet(QRectF selection, bool forwardsync){
             rect.setRight(m_selection.right());
 
             if(gMW->m_gvAmplitudeSpectrum && gMW->m_gvAmplitudeSpectrum->m_giShownSelection->isVisible()){
-                rect.setTop(gFL->getFs()/2-gMW->m_gvAmplitudeSpectrum->m_selection.right());
-                rect.setBottom(gFL->getFs()/2-gMW->m_gvAmplitudeSpectrum->m_selection.left());
+                rect.setTop(-gMW->m_gvAmplitudeSpectrum->m_selection.right());
+                rect.setBottom(-gMW->m_gvAmplitudeSpectrum->m_selection.left());
             }
             else{
                 rect.setTop(gMW->m_gvSpectrogram->m_scene->sceneRect().top());
@@ -1136,7 +1137,7 @@ void GVWaveform::selectionSet(QRectF selection, bool forwardsync){
 
     // The selection's width can vary up to eps, even when it is only shifted
 
-    // Spectrum
+    // Spectra
     if(gMW->m_gvAmplitudeSpectrum
        && (gMW->m_gvAmplitudeSpectrum->isVisible() || gMW->m_gvPhaseSpectrum->isVisible()))
         gMW->m_gvAmplitudeSpectrum->setWindowRange(m_selection.left(), m_selection.right());

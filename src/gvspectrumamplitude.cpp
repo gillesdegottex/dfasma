@@ -82,6 +82,7 @@ GVSpectrumAmplitude::GVSpectrumAmplitude(WMainWindow* parent)
     m_aAmplitudeSpectrumShowGrid->setChecked(true);
     gMW->m_settings.add(m_aAmplitudeSpectrumShowGrid);
     m_giGrid = new QAEGIGrid(this, "Hz", "dB");
+    m_giGrid->setMathYAxis(true);
     m_giGrid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
     m_giGrid->setVisible(m_aAmplitudeSpectrumShowGrid->isChecked());
     m_scene->addItem(m_giGrid);
@@ -1069,8 +1070,8 @@ void GVSpectrumAmplitude::selectionClear(bool forwardsync) {
                     gMW->m_gvSpectrogram->selectionClear();
                 }
                 else {
-                    rect.setTop(0.0);
-                    rect.setBottom(gFL->getFs()/2);
+                    rect.setTop(-gFL->getFs()/2);
+                    rect.setBottom(0.0);
                     gMW->m_gvSpectrogram->selectionSet(rect, false);
                 }
             }
@@ -1128,11 +1129,13 @@ void GVSpectrumAmplitude::selectionSet(QRectF selection, bool forwardsync) {
         selection.setLeft(selection.right());
         selection.setRight(tmp);
     }
+//    COUTD << selection << " " << selection.width() << "x" << selection.height() << std::endl;
     if(selection.top()>selection.bottom()){
         float tmp = selection.top();
         selection.setTop(selection.bottom());
         selection.setBottom(tmp);
     }
+//    COUTD << selection << " " << selection.width() << "x" << selection.height() << std::endl;
 
     m_selection = m_mouseSelection = selection;
 
@@ -1140,8 +1143,6 @@ void GVSpectrumAmplitude::selectionSet(QRectF selection, bool forwardsync) {
     if(m_selection.right()>gFL->getFs()/2.0) m_selection.setRight(gFL->getFs()/2.0);
     if(m_selection.top()<m_scene->sceneRect().top()) m_selection.setTop(m_scene->sceneRect().top());
     if(m_selection.bottom()>m_scene->sceneRect().bottom()) m_selection.setBottom(m_scene->sceneRect().bottom());
-
-//    DEBUGSTRING << "QGVAmplitudeSpectrum::selectionSet " << m_selection << endl;
 
     m_giShownSelection->setRect(m_selection);
     m_giShownSelection->show();
@@ -1180,8 +1181,8 @@ void GVSpectrumAmplitude::selectionSet(QRectF selection, bool forwardsync) {
 
         if(gMW->m_gvSpectrogram){
             QRectF rect = gMW->m_gvSpectrogram->m_mouseSelection;
-            rect.setTop(gFL->getFs()/2-m_mouseSelection.right());
-            rect.setBottom(gFL->getFs()/2-m_mouseSelection.left());
+            rect.setTop(-m_mouseSelection.right());
+            rect.setBottom(-m_mouseSelection.left());
             if(!gMW->m_gvSpectrogram->m_giShownSelection->isVisible()) {
                 rect.setLeft(gMW->m_gvSpectrogram->m_scene->sceneRect().left());
                 rect.setRight(gMW->m_gvSpectrogram->m_scene->sceneRect().right());

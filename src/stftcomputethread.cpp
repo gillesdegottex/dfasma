@@ -355,10 +355,10 @@ void STFTComputeThread::run() {
                             }
                         }
 
-                        *(pimgb + (halfdftlen-n)*stftlen) = c;
-    //                    *(pimgb + n*stftlen + si) = c;
+//                        *(pimgb + n*stftlen) = c;
+                        *(pimgb + (halfdftlen-n)*stftlen) = c; // This one has reversed y
 
-                        // img->setPixel(si, n, c); // Bit slower, though can take adv. of hardware optim ?
+//                         params_running.imgstft->setPixel(si, n, c); // Bit slower, though can take adv. of hardware optim ?
                     }
     //                std::cout << si << ": " << y << std::endl;
                     emit stftProgressing((100*si)/stftlen);
