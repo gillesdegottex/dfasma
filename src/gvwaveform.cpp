@@ -81,11 +81,11 @@ GVWaveform::GVWaveform(WMainWindow* parent)
     gMW->m_settings.add(m_aWaveformShowGrid);
     connect(m_aWaveformShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
     m_contextmenu.addAction(m_aWaveformShowGrid);
-    m_grid = new QAEGIGrid(this, "s", "");
-    m_grid->setMathYAxis(true);
-    m_grid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
-    m_grid->setVisible(m_aWaveformShowGrid->isChecked());
-    m_scene->addItem(m_grid);
+    m_giGrid = new QAEGIGrid(this, "s", "");
+    m_giGrid->setMathYAxis(true);
+    m_giGrid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
+    m_giGrid->setVisible(m_aWaveformShowGrid->isChecked());
+    m_scene->addItem(m_giGrid);
     connect(m_aWaveformShowGrid, SIGNAL(toggled(bool)), this, SLOT(gridSetVisible(bool)));
 
     m_aWaveformShowSelectedWaveformOnTop = new QAction(tr("Show selected wav on top"), this);
@@ -319,7 +319,7 @@ void GVWaveform::viewSet(QRectF viewrect, bool sync) {
         fitInView(removeHiddenMargin(this, viewrect));
 
         updateTextsGeometry();
-        m_grid->updateLines();
+        m_giGrid->updateLines();
 
         if(sync){
             if(gMW->m_gvSpectrogram && gMW->ui->actionShowSpectrogram->isChecked()) {
@@ -479,7 +479,7 @@ void GVWaveform::wheelEvent(QWheelEvent* event){
     if(event->modifiers().testFlag(Qt::ShiftModifier)){
         QScrollBar* sb = horizontalScrollBar();
         sb->setValue(sb->value()-numDegrees.y());
-        m_grid->updateLines();
+        m_giGrid->updateLines();
     }
     else if((viewrect.width()>10.0/gFL->getFs() && numDegrees.y()>0) || numDegrees.y()<0) {
         double g = double(mapToScene(event->pos()).x()-viewrect.left())/viewrect.width();
@@ -631,7 +631,7 @@ void GVWaveform::mouseMoveEvent(QMouseEvent* event){
     if(m_currentAction==CAMoving) {
         // When scrolling along the waveform
         setMouseCursorPosition(-1, false);
-        m_grid->updateLines();
+        m_giGrid->updateLines();
         QGraphicsView::mouseMoveEvent(event);
     }
     else if(m_currentAction==CAZooming) {

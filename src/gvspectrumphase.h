@@ -79,7 +79,6 @@ public:
     void viewSet(QRectF viewrect=QRectF(), bool forwardsync=true);
     void viewUpdateTexts();
     void drawBackground(QPainter* painter, const QRectF& rect);
-    void draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& ldft, double fs, double delay, const QRectF& rect);
 
     QAction* m_aPhaseSpectrumShowGrid;
 //    QAction* m_aPhaseSpectrumGridUsePiFraction;
@@ -92,6 +91,7 @@ public slots:
     void updateSceneRect();
     void gridSetVisible(bool visible){m_giGrid->setVisible(visible);}
 
+    void selectionZoomOn();
     void azoomin();
     void azoomout();
 };

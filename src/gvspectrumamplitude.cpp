@@ -40,6 +40,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <algorithm>
 using namespace std;
 
+#include <qnumeric.h>
 #include <QWheelEvent>
 #include <QToolBar>
 #include <QAction>
@@ -527,8 +528,6 @@ void GVSpectrumAmplitude::updateDFTs(){
 
             WAVTYPE gain = snd->m_giWaveform->gain();
 
-            snd->m_dft_min = std::numeric_limits<WAVTYPE>::infinity();
-            snd->m_dft_max = -std::numeric_limits<WAVTYPE>::infinity();
             if(gFL->ftsnds[fi]->m_actionInvPolarity->isChecked())
                 gain *= -1;
 
@@ -555,17 +554,29 @@ void GVSpectrumAmplitude::updateDFTs(){
 
             // Store first the complex values of the DFT
             // (so that it can be used to compute the group delay)
-            std::vector<std::complex<WAVTYPE> >* pdft = &(snd->m_dft);
-            snd->m_dft.resize(dftlen/2+1);
+            std::vector<std::complex<WAVTYPE> > dft;
+            dft.resize(dftlen/2+1);
             for(n=0; n<dftlen/2+1; n++)
-                (*pdft)[n] = m_fft->out[n];
+                dft[n] = m_fft->out[n];
+
             snd->m_dftamp.resize(dftlen/2+1);
             for(n=0; n<dftlen/2+1; n++)
                 snd->m_dftamp[n] = 20*std::log10(std::abs(m_fft->out[n]));
             snd->m_giSpectrumAmplitude->updateMinMaxValues();
-
             snd->m_giSpectrumAmplitude->setSamplingRate(1.0/double(gFL->getFs()/dftlen));
             snd->m_giSpectrumAmplitude->clearCache();
+
+            snd->m_dftphase.resize(dftlen/2+1);
+            double delay = (2.0*M_PI*(win.size()-1)/2.0)/dftlen;
+            for(n=0; n<dftlen/2+1; n++){
+                if(qIsInf(snd->m_dftamp[n]))
+                    snd->m_dftphase[n] = std::numeric_limits<WAVTYPE>::infinity();
+                else
+                    snd->m_dftphase[n] = qae::wrap(std::arg(m_fft->out[n])+delay*n);
+            }
+            snd->m_giSpectrumPhase->updateMinMaxValues();
+            snd->m_giSpectrumPhase->setSamplingRate(1.0/double(gFL->getFs()/dftlen));
+            snd->m_giSpectrumPhase->clearCache();
 
             // If the group delay is requested, update its data
             if(gMW->ui->actionShowGroupDelaySpectrum->isChecked()){
@@ -576,25 +587,23 @@ void GVSpectrumAmplitude::updateDFTs(){
                 m_fft->execute(); // Compute the DFT of y
 
                 // (Xr*Yr+Xi*Yi) / |X|^2
-                snd->m_gd.resize(dftlen/2+1);
+                snd->m_dftgd.resize(dftlen/2+1);
                 WAVTYPE fs = gFL->getFs();
                 for(int n=0; n<dftlen/2+1; n++) {
-                    WAVTYPE xp2 = std::real(snd->m_dft[n])*std::real(snd->m_dft[n]) + std::imag(snd->m_dft[n])*std::imag(snd->m_dft[n]);
-                    snd->m_gd[n] = (std::real(snd->m_dft[n])*std::real(m_fft->out[n]) + std::imag(snd->m_dft[n])*std::imag(m_fft->out[n]))/xp2;
-                    snd->m_gd[n] -= (m_trgDFTParameters.winlen-1)/2; // Remove the window's delay
+                    WAVTYPE xp2 = std::real(dft[n])*std::real(dft[n]) + std::imag(dft[n])*std::imag(dft[n]);
+                    snd->m_dftgd[n] = (std::real(dft[n])*std::real(m_fft->out[n]) + std::imag(dft[n])*std::imag(m_fft->out[n]))/xp2;
 
-                    snd->m_gd[n] /= fs; // measure it in [second]
+                    snd->m_dftgd[n] -= (m_trgDFTParameters.winlen-1)/2; // Remove the window's delay
+
+                    snd->m_dftgd[n] /= fs; // measure it in [second]
                 }
+                snd->m_giSpectrumGroupDelay->updateMinMaxValues();
+                snd->m_giSpectrumGroupDelay->setSamplingRate(1.0/double(gFL->getFs()/dftlen));
+                snd->m_giSpectrumGroupDelay->clearCache();
             }
+
 
             // Convert the spectrum values to log values
-            pdft = &(snd->m_dft);
-            for(n=0; n<dftlen/2+1; n++) {
-                (*pdft)[n] = std::complex<WAVTYPE>(std::log(std::abs((*pdft)[n])),std::arg((*pdft)[n]));
-                WAVTYPE y = (*pdft)[n].real();
-                snd->m_dft_min = std::min(snd->m_dft_min, y);
-                snd->m_dft_max = std::max(snd->m_dft_max, y);
-            }
             snd->m_dftparams = m_trgDFTParameters;
             snd->m_dftparams.wav = snd->wavtoplay;
             snd->m_dftparams.ampscale = snd->m_giWaveform->gain();
@@ -1267,18 +1276,18 @@ void GVSpectrumAmplitude::aunzoom(){
         if(!gFL->ftsnds[fi]->isVisible())
             continue;
 
-        ymin = std::min(ymin, gFL->ftsnds[fi]->m_dft_min);
-        ymax = std::max(ymax, gFL->ftsnds[fi]->m_dft_max);
+        ymin = std::min(ymin, gFL->ftsnds[fi]->m_giSpectrumAmplitude->getMinValue());
+        ymax = std::max(ymax, gFL->ftsnds[fi]->m_giSpectrumAmplitude->getMaxValue());
     }
-    ymin = qae::log2db*ymin-3;
-    ymax = qae::log2db*ymax+3;
+    ymin = ymin-3;
+    ymax = ymax+3;
 
     QRectF rect = QRectF(0.0, -ymax, gFL->getFs()/2, (ymax-ymin));
 
     if(rect.bottom()>(-gMW->ui->sldAmplitudeSpectrumMin->value()))
         rect.setBottom(-gMW->ui->sldAmplitudeSpectrumMin->value());
     if(rect.top()<-ymax)
-        rect.setTop(-10);
+        rect.setTop(m_scene->sceneRect().top());
 
     viewSet(rect, false);
 

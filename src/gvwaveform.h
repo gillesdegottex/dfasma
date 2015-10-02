@@ -68,7 +68,7 @@ public:
 
     // Graphic items
     QGraphicsScene* m_scene;
-    QAEGIGrid* m_grid;
+    QAEGIGrid* m_giGrid;
     QGraphicsPathItem* m_giWindow;
     qreal m_ampzoom;
 
@@ -114,7 +114,7 @@ signals:
 
 public slots:
     void showScrollBars(bool show);
-    void gridSetVisible(bool visible){m_grid->setVisible(visible);}
+    void gridSetVisible(bool visible){m_giGrid->setVisible(visible);}
 
     void updateSceneRect();
     void updateTextsGeometry();

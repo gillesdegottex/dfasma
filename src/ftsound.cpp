@@ -35,6 +35,8 @@ using namespace std;
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "gvspectrumamplitude.h"
+#include "gvspectrumphase.h"
+#include "gvspectrumgroupdelay.h"
 #include "gvwaveform.h"
 #include "qaesigproc.h"
 #include "qaehelpers.h"
@@ -52,26 +54,6 @@ std::vector<WAVTYPE> FTSound::s_avoidclickswindow;
 double FTSound::s_fs_common = 0; // Initially, fs is undefined
 WAVTYPE FTSound::s_play_power = 0;
 std::deque<WAVTYPE> FTSound::s_play_power_values;
-
-
-bool FTSound::WavParameters::operator==(const WavParameters& param) const {
-    if(winpixdelay!=param.winpixdelay)
-        return false;
-    if(delay!=param.delay)
-        return false;
-    if(gain!=param.gain)
-        return false;
-    if(wav!=param.wav)
-        return false;
-    if(fullpixrect!=param.fullpixrect)
-        return false;
-    if(viewrect!=param.viewrect)
-        return false;
-    if(lastreadtime!=param.lastreadtime)
-        return false;
-
-    return true;
-}
 
 FTSound::DFTParameters::DFTParameters(unsigned int _nl, unsigned int _nr, int _winlen, int _wintype, int _normtype, const std::vector<FFTTYPE>& _win, int _dftlen, std::vector<FFTTYPE>*_wav, qreal _ampscale, qint64 _delay){
     clear();
@@ -197,6 +179,14 @@ void FTSound::constructor_external() {
     m_giSpectrumAmplitude = new QAEGIUniformlySampledSignal(&m_dftamp, 1.0, gMW->m_gvAmplitudeSpectrum);
     m_giSpectrumAmplitude->setPen(pen);
     gMW->m_gvAmplitudeSpectrum->m_scene->addItem(m_giSpectrumAmplitude);
+
+    m_giSpectrumPhase = new QAEGIUniformlySampledSignal(&m_dftphase, 1.0, gMW->m_gvPhaseSpectrum);
+    m_giSpectrumPhase->setPen(pen);
+    gMW->m_gvPhaseSpectrum->m_scene->addItem(m_giSpectrumPhase);
+
+    m_giSpectrumGroupDelay = new QAEGIUniformlySampledSignal(&m_dftgd, 1.0, gMW->m_gvSpectrumGroupDelay);
+    m_giSpectrumGroupDelay->setPen(pen);
+    gMW->m_gvSpectrumGroupDelay->m_scene->addItem(m_giSpectrumGroupDelay);
 }
 
 FTSound::FTSound(const QString& _fileName, QObject *parent, int channelid)
@@ -258,6 +248,8 @@ void FTSound::setVisible(bool shown){
     FileType::setVisible(shown);
     m_giWaveform->setVisible(shown);
     m_giSpectrumAmplitude->setVisible(shown);
+    m_giSpectrumPhase->setVisible(shown);
+    m_giSpectrumGroupDelay->setVisible(shown);
 //    if(!shown)
 //        m_giWaveform->m_wavparams.clear();
 }

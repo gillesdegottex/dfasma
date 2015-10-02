@@ -87,46 +87,6 @@ public:
     std::vector<WAVTYPE> wavfiltered;
     std::vector<WAVTYPE>* wavtoplay;
     WAVTYPE m_filteredmaxamp;
-
-    // Waveform
-    class WavParameters{// TODO Still used ?
-    public:
-        QRect fullpixrect;
-        QRectF viewrect;
-        int winpixdelay;
-
-        std::vector<WAVTYPE>* wav; // The used wav to compute the DFT on.
-        qint64 delay;
-        WAVTYPE gain; // snd->m_ampscale*polarity
-
-        QDateTime lastreadtime;
-
-        void clear(){
-            fullpixrect = QRect();
-            viewrect = QRectF();
-            winpixdelay = 0;
-            wav = NULL;
-            delay = 0;
-            gain = 1.0;
-        }
-
-        WavParameters(){clear();}
-        WavParameters(const QRect& _fullpixrect, const QRectF& _viewrect, int _winpixdelay, FTSound* snd){
-            fullpixrect = _fullpixrect;
-            viewrect = _viewrect;
-            winpixdelay = _winpixdelay;
-            wav = snd->wavtoplay;
-//            delay = snd->m_delay;
-//            gain = snd->m_ampscale*(snd->m_actionInvPolarity->isChecked()?-1:1);
-            lastreadtime = snd->m_lastreadtime;
-        }
-
-        bool operator==(const WavParameters& param) const;
-        bool operator!=(const WavParameters& param) const {return !((*this)==param);}
-
-        inline bool isEmpty() const {return fullpixrect.isNull() || viewrect.isNull();}
-    };
-
     QAEGIUniformlySampledSignal* m_giWaveform;
 
     // Spectra
@@ -175,12 +135,13 @@ public:
     std::vector<FFTTYPE> m_dftamp; // [dB]
     QAEGIUniformlySampledSignal* m_giSpectrumAmplitude;
 
-    std::vector<std::complex<FFTTYPE> > m_dft; // Store the _log_ of the DFT
-//    std::vector<std::complex<FFTTYPE> > m_dft; // Store the _log_ of the DFT
-    std::vector<FFTTYPE> m_gd; // Store the Group Delay (GD)
+    std::vector<FFTTYPE> m_dftphase; // [rad]
+    QAEGIUniformlySampledSignal* m_giSpectrumPhase;
+
+    std::vector<FFTTYPE> m_dftgd; // [s]
+    QAEGIUniformlySampledSignal* m_giSpectrumGroupDelay;
+
     DFTParameters m_dftparams;
-    FFTTYPE m_dft_min; // [log]
-    FFTTYPE m_dft_max; // [log]
 
     // Spectrogram
     std::deque<std::vector<WAVTYPE> > m_stft;
@@ -189,7 +150,7 @@ public:
     FFTTYPE m_stft_min;
     FFTTYPE m_stft_max;
 
-    // QIODevice
+    // Play (from QIODevice)
     qint64 readData(char *data, qint64 maxlen);
     qint64 writeData(const char *data, qint64 len);
 //    qint64 bytesAvailable() const;

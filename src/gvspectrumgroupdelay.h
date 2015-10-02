@@ -95,6 +95,7 @@ public slots:
     void updateSceneRect();
     void gridSetVisible(bool visible){m_giGrid->setVisible(visible);}
 
+    void selectionZoomOn();
     void azoomin();
     void azoomout();
 };

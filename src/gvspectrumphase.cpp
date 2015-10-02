@@ -222,12 +222,6 @@ void GVSpectrumPhase::resizeEvent(QResizeEvent* event) {
         viewSet(oldviewrect, false);
     }
 
-//    // Set the scroll bars in the amplitude and phase views
-//    if(event->size().height()==0)
-//        gMW->m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-//    else
-//        gMW->m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
     viewUpdateTexts();
     setMouseCursorPosition(QPointF(-1,0), false);
 
@@ -235,17 +229,6 @@ void GVSpectrumPhase::resizeEvent(QResizeEvent* event) {
 }
 
 void GVSpectrumPhase::scrollContentsBy(int dx, int dy){
-
-    // Invalidate the necessary parts
-    // Ensure the y ticks labels will be redrawn
-    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-    QTransform trans = transform();
-
-    QRectF r = QRectF(viewrect.left(), viewrect.top(), 5*14.0/trans.m11(), viewrect.height());
-    m_scene->invalidate(r);
-
-    r = QRectF(viewrect.left(), viewrect.bottom()-14/trans.m22(), viewrect.width(), 14/trans.m22());
-    m_scene->invalidate(r);
 
     viewUpdateTexts();
     setMouseCursorPosition(QPointF(-1,0), false);
@@ -527,8 +510,8 @@ void GVSpectrumPhase::keyPressEvent(QKeyEvent* event){
         }
         gMW->m_gvAmplitudeSpectrum->selectionClear();
     }
-    //if(event->key()==Qt::Key_S)
-    //    selectionZoomOn(); // Doesn't exist for the phase spectrum
+    if(event->key()==Qt::Key_S)
+        selectionZoomOn();
 
     QGraphicsView::keyPressEvent(event);
 }
@@ -620,6 +603,29 @@ void GVSpectrumPhase::viewUpdateTexts(){
     QRectF br = m_giSelectionTxt->boundingRect();
     m_giSelectionTxt->setTransform(txttrans);
     m_giSelectionTxt->setPos(m_selection.center()-QPointF(0.5*br.width()/trans.m11(), 0.5*br.height()/trans.m22()));
+}
+
+void GVSpectrumPhase::selectionZoomOn(){
+    if(m_selection.width()>0 && m_selection.height()>0){
+        QRectF zoomonrect = m_selection;
+        if(gMW->m_dlgSettings->ui->cbViewsAddMarginsOnSelection->isChecked()) {
+            zoomonrect.setTop(zoomonrect.top()-0.1*zoomonrect.height());
+            zoomonrect.setBottom(zoomonrect.bottom()+0.1*zoomonrect.height());
+            zoomonrect.setLeft(zoomonrect.left()-0.1*zoomonrect.width());
+            zoomonrect.setRight(zoomonrect.right()+0.1*zoomonrect.width());
+        }
+        viewSet(zoomonrect);
+
+        viewUpdateTexts();
+
+        if(gMW->m_gvAmplitudeSpectrum)
+            gMW->m_gvAmplitudeSpectrum->viewUpdateTexts();
+        if(gMW->m_gvSpectrumGroupDelay)
+            gMW->m_gvSpectrumGroupDelay->viewUpdateTexts();
+
+        setMouseCursorPosition(QPointF(-1,0), false);
+//        m_aZoomOnSelection->setEnabled(false);
+    }
 }
 
 void GVSpectrumPhase::azoomin(){
@@ -746,109 +752,7 @@ void GVSpectrumPhase::drawBackground(QPainter* painter, const QRectF& rect){
     if (gMW->m_gvWaveform->m_selection.width()==0)
         return;
 
-    // Draw the phase spectra
-
-    FTSound* currsnd = gFL->getCurrentFTSound(true);
-
-    for(size_t fi=0; fi<gFL->ftsnds.size(); fi++){
-        if(!gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop->isChecked() || gFL->ftsnds[fi]!=currsnd){
-            if(gFL->ftsnds[fi]->m_actionShow->isChecked()){
-                QPen outlinePen(gFL->ftsnds[fi]->getColor());
-                outlinePen.setWidth(0);
-                painter->setPen(outlinePen);
-                painter->setBrush(QBrush(gFL->ftsnds[fi]->getColor()));
-
-                draw_spectrum(painter, gFL->ftsnds[fi]->m_dft, gFL->getFs(), (gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.winlen-1)/2.0, rect);
-            }
-        }
-    }
-
-    if(gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop->isChecked()){
-        if(currsnd->m_actionShow->isChecked()){
-            QPen outlinePen(currsnd->getColor());
-            outlinePen.setWidth(0);
-            painter->setPen(outlinePen);
-            painter->setBrush(QBrush(currsnd->getColor()));
-
-            draw_spectrum(painter, currsnd->m_dft, gFL->getFs(), (gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.winlen-1)/2.0, rect);
-        }
-    }
-
 //    cout << "QGVPhaseSpectrum::~drawBackground" << endl;
-}
-
-void GVSpectrumPhase::draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& ldft, double fs, double delay, const QRectF& rect) {
-    int dftlen = (int(ldft.size())-1)*2;
-    if (dftlen<2)
-        return;
-
-    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-
-    int kmin = std::max(0, int(dftlen*rect.left()/fs));
-    int kmax = std::min(dftlen/2, int(1+dftlen*rect.right()/fs));
-
-    // Draw the sound's spectra
-    double samppixdensity = (dftlen*(viewrect.right()-viewrect.left())/fs)/viewport()->rect().width();
-
-    if(samppixdensity<=1.0) {
-//         COUTD << "Spec: Draw lines between each bin" << endl;
-
-        double prevx = fs*kmin/dftlen;
-        double dp = delay*2.0*M_PI*kmin/dftlen;
-        dp += ldft[kmin].imag();
-        double prevy = std::arg(std::complex<WAVTYPE>(cos(dp),sin(dp)));
-        std::complex<WAVTYPE>* data = ldft.data();
-        for(int k=kmin+1; k<=kmax; ++k){
-            double x = fs*k/dftlen;
-            dp = delay*2.0*M_PI*k/dftlen;
-            dp += (*(data+k)).imag();
-            double y = std::arg(std::complex<WAVTYPE>(cos(dp),sin(dp))); // TODO Use wrap instead
-            painter->drawLine(QLineF(prevx, -prevy, x, -y));
-            prevx = x;
-            prevy = y;
-        }
-    }
-    else {
-//         COUTD << "Spec: Plot only one line per pixel, in order to reduce computation time" << endl;
-
-        painter->setWorldMatrixEnabled(false); // Work in pixel coordinates
-
-        QRect pixrect = mapFromScene(rect).boundingRect();
-        QRect fullpixrect = mapFromScene(viewrect).boundingRect();
-
-        double s2p = -(fullpixrect.height()-1)/viewrect.height(); // Scene to pixel
-        double p2s = viewrect.width()/fullpixrect.width(); // Pixel to scene
-        double yzero = mapFromScene(QPointF(0,0)).y();
-
-        std::complex<WAVTYPE>* yp = ldft.data();
-
-        for(int i=pixrect.left(); i<=pixrect.right(); i++) {
-            int ns = int(dftlen*(viewrect.left()+i*p2s)/fs);
-            int ne = int(dftlen*(viewrect.left()+(i+1)*p2s)/fs);
-
-            if(ns>=0 && ne<int(ldft.size())) {
-                WAVTYPE ymin = std::numeric_limits<WAVTYPE>::infinity();
-                WAVTYPE ymax = -std::numeric_limits<WAVTYPE>::infinity();
-                std::complex<WAVTYPE>* ypp = yp+ns;
-                WAVTYPE y;
-                for(int n=ns; n<=ne; n++) {
-                    double dp = delay*2.0*M_PI*n/dftlen;
-                    dp += (*ypp).imag();
-                    y = std::arg(std::complex<WAVTYPE>(cos(dp),sin(dp))); // TODO Use wrap instead
-                    ymin = std::min(ymin, y);
-                    ymax = std::max(ymax, y);
-                    ypp++;
-                }
-                ymin *= s2p;
-                ymax *= s2p;
-                ymin = int(ymin-1);
-                ymax = int(ymax);
-                painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
-            }
-        }
-
-        painter->setWorldMatrixEnabled(true); // Go back to scene coordinates
-    }
 }
 
 GVSpectrumPhase::~GVSpectrumPhase() {
