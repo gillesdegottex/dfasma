@@ -590,12 +590,16 @@ void GVSpectrumAmplitude::updateDFTs(){
                 snd->m_dftgd.resize(dftlen/2+1);
                 WAVTYPE fs = gFL->getFs();
                 for(int n=0; n<dftlen/2+1; n++) {
-                    WAVTYPE xp2 = std::real(dft[n])*std::real(dft[n]) + std::imag(dft[n])*std::imag(dft[n]);
-                    snd->m_dftgd[n] = (std::real(dft[n])*std::real(m_fft->out[n]) + std::imag(dft[n])*std::imag(m_fft->out[n]))/xp2;
+                    if(qIsInf(snd->m_dftamp[n]))
+                        snd->m_dftgd[n] = std::numeric_limits<WAVTYPE>::infinity();
+                    else {
+                        WAVTYPE xp2 = std::real(dft[n])*std::real(dft[n]) + std::imag(dft[n])*std::imag(dft[n]);
+                        snd->m_dftgd[n] = (std::real(dft[n])*std::real(m_fft->out[n]) + std::imag(dft[n])*std::imag(m_fft->out[n]))/xp2;
 
-                    snd->m_dftgd[n] -= (m_trgDFTParameters.winlen-1)/2; // Remove the window's delay
+                        snd->m_dftgd[n] -= (m_trgDFTParameters.winlen-1)/2; // Remove the window's delay
 
-                    snd->m_dftgd[n] /= fs; // measure it in [second]
+                        snd->m_dftgd[n] /= fs; // measure it in [second]
+                    }
                 }
                 snd->m_giSpectrumGroupDelay->updateMinMaxValues();
                 snd->m_giSpectrumGroupDelay->setSamplingRate(1.0/double(gFL->getFs()/dftlen));
