@@ -1220,34 +1220,33 @@ void GVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
 }
 
 void GVWaveform::playCursorSet(double t, bool forwardsync){
-////    COUTD << t << endl;
-//    if(t==-1){
-//        if(m_selection.width()>0)
-//            playCursorSet(m_selection.left(), forwardsync);
-//        else
-//            m_giPlayCursor->setPos(QPointF(m_initialPlayPosition, 0));
+    if(t==-1){
+        if(m_selection.width()>0)
+            playCursorSet(m_selection.left(), forwardsync);
+        else
+            m_giPlayCursor->setPos(QPointF(m_initialPlayPosition, 0));
 
-//        // Put back the DFT window at selection times
-//        if(gMW->m_gvAmplitudeSpectrum && gMW->m_gvPhaseSpectrum
-//           && (gMW->m_gvAmplitudeSpectrum->isVisible() || gMW->m_gvPhaseSpectrum->isVisible()))
-//            gMW->m_gvAmplitudeSpectrum->setWindowRange(m_selection.left(), m_selection.right());
-//    }
-//    else{
-//        m_giPlayCursor->setPos(QPointF(t, 0));
+        // Put back the DFT window at selection times
+        if(gMW->m_gvSpectrumAmplitude && gMW->m_gvSpectrumPhase
+           && (gMW->m_gvSpectrumAmplitude->isVisible() || gMW->m_gvSpectrumPhase->isVisible()))
+            gMW->m_gvSpectrumAmplitude->setWindowRange(m_selection.left(), m_selection.right());
+    }
+    else{
+        m_giPlayCursor->setPos(QPointF(t, 0));
 
-//        // Move the DFT window according to play cursor
-//        if(gMW->m_gvAmplitudeSpectrum && gMW->m_gvPhaseSpectrum
-//            && gMW->m_gvAmplitudeSpectrum->m_aFollowPlayCursor->isChecked()
-//            && gMW->m_audioengine->state()==QAudio::ActiveState // TODO Means that audio is necessary for this
-//            && gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.winlen>1
-//            && (gMW->m_gvAmplitudeSpectrum->isVisible() || gMW->m_gvPhaseSpectrum->isVisible())) {
-//            double halfwin = ((gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.winlen-1)/2.0)/gFL->getFs();
-//            gMW->m_gvAmplitudeSpectrum->setWindowRange(t-halfwin, t+halfwin);
-//        }
-//    }
+        // Move the DFT window according to play cursor
+        if(gMW->m_gvSpectrumAmplitude && gMW->m_gvSpectrumPhase
+            && gMW->m_gvSpectrumAmplitude->m_aFollowPlayCursor->isChecked()
+            && gMW->m_audioengine->state()==QAudio::ActiveState // TODO Means that audio is necessary for this
+            && gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.winlen>1
+            && (gMW->m_gvSpectrumAmplitude->isVisible() || gMW->m_gvSpectrumPhase->isVisible())) {
+            double halfwin = ((gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.winlen-1)/2.0)/gFL->getFs();
+            gMW->m_gvSpectrumAmplitude->setWindowRange(t-halfwin, t+halfwin);
+        }
+    }
 
-//    if(forwardsync && gMW->m_gvSpectrogram)
-//        gMW->m_gvSpectrogram->playCursorSet(t, false);
+    if(forwardsync && gMW->m_gvSpectrogram)
+        gMW->m_gvSpectrogram->playCursorSet(t, false);
 }
 
 double GVWaveform::getPlayCursorPosition() const{
