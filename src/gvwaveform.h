@@ -82,6 +82,7 @@ public:
     QAction* m_aZoomOnSelection;
     QAction* m_aSelectionClear;
     QAction* m_aZoomIn;
+    QAction* m_aZoomXOnly;
     QAction* m_aZoomOut;
     QAction* m_aUnZoom;
     QAction* m_aFitViewToSoundsAmplitude;

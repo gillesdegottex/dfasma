@@ -198,6 +198,13 @@ GVWaveform::GVWaveform(WMainWindow* parent)
     QIcon zoominicon(":/icons/zoomin.svg");
     m_aZoomIn->setIcon(zoominicon);
     connect(m_aZoomIn, SIGNAL(triggered()), this, SLOT(azoomin()));
+
+    m_aZoomXOnly = new QAction(tr("Zoom x-axis only"), this);
+    m_aZoomXOnly->setObjectName("m_aZoomXOnly");
+    m_aZoomXOnly->setStatusTip(tr("Zoom only on the x-axis, keep the y-axis unchanged."));
+    m_aZoomXOnly->setCheckable(true);
+    m_aZoomXOnly->setChecked(true);
+    gMW->m_settings.add(m_aZoomXOnly);
     m_aZoomOut = new QAction(tr("Zoom Out"), this);
     m_aZoomOut->setStatusTip(tr("Zoom Out"));
     m_aZoomOut->setShortcut(Qt::Key_Minus);
@@ -231,6 +238,7 @@ GVWaveform::GVWaveform(WMainWindow* parent)
     connect(gMW->ui->btnFitViewToSoundsAmplitude, SIGNAL(clicked()), m_aFitViewToSoundsAmplitude, SLOT(trigger()));
     gMW->ui->btnFitViewToSoundsAmplitude->setIcon(QIcon(":/icons/unzoomy.svg"));
     connect(m_aFitViewToSoundsAmplitude, SIGNAL(triggered()), this, SLOT(fitViewToSoundsAmplitude()));
+    m_contextmenu.addAction(m_aZoomXOnly);
 
     connect(gMW->ui->sldWaveformAmplitude, SIGNAL(valueChanged(int)), this, SLOT(sldAmplitudeChanged(int)));
 
@@ -484,11 +492,15 @@ void GVWaveform::wheelEvent(QWheelEvent* event){
         m_giGrid->updateLines();
     }
     else if((viewrect.width()>10.0/gFL->getFs() && numDegrees.y()>0) || numDegrees.y()<0) {
-        double g = double(mapToScene(event->pos()).x()-viewrect.left())/viewrect.width();
+        double gx = double(mapToScene(event->pos()).x()-viewrect.left())/viewrect.width();
+        double gy = double(mapToScene(event->pos()).x()-viewrect.left())/viewrect.width();
         QRectF newrect = mapToScene(viewport()->rect()).boundingRect();
-        newrect.setLeft(newrect.left()+g*0.01*viewrect.width()*numDegrees.y());
-        newrect.setRight(newrect.right()-(1-g)*0.01*viewrect.width()*numDegrees.y());
-
+        newrect.setLeft(newrect.left()+gx*0.01*viewrect.width()*numDegrees.y());
+        newrect.setRight(newrect.right()-(1-gx)*0.01*viewrect.width()*numDegrees.y());
+        if(!m_aZoomXOnly->isChecked()){
+            newrect.setTop(newrect.top()+gy*0.01*viewrect.height()*numDegrees.y());
+            newrect.setBottom(newrect.bottom()-(1-gy)*0.01*viewrect.height()*numDegrees.y());
+        }
         viewSet(newrect);
 
 //        QPointF p = mapToScene(QPoint(event->x(),0));
@@ -634,10 +646,15 @@ void GVWaveform::mouseMoveEvent(QMouseEvent* event){
     }
     else if(m_currentAction==CAZooming) {
         double dx = -(event->pos()-m_pressed_mouseinviewport).x()/100.0;
+        double dy = (event->pos()-m_pressed_mouseinviewport).y()/100.0;
 
         QRectF newrect = m_pressed_scenerect;
         newrect.setLeft(m_selection_pressedp.x()-(m_selection_pressedp.x()-m_pressed_scenerect.left())*exp(dx));
         newrect.setRight(m_selection_pressedp.x()+(m_pressed_scenerect.right()-m_selection_pressedp.x())*exp(dx));
+        if(!m_aZoomXOnly->isChecked()){
+            newrect.setTop(m_selection_pressedp.y()-(m_selection_pressedp.y()-m_pressed_scenerect.top())*exp(dy));
+            newrect.setBottom(m_selection_pressedp.y()+(m_pressed_scenerect.bottom()-m_selection_pressedp.y())*exp(dy));
+        }
         viewSet(newrect);
 
         QPointF p = mapToScene(event->pos());
