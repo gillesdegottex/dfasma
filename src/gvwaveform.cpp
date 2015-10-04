@@ -464,6 +464,8 @@ void GVWaveform::scrollContentsBy(int dx, int dy){
 //    m_scrolledx += dx;  // For #419 ?
 
     QGraphicsView::scrollContentsBy(dx, dy);
+
+    m_giGrid->updateLines();
 }
 
 void GVWaveform::wheelEvent(QWheelEvent* event){

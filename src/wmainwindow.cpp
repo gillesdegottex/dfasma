@@ -947,12 +947,14 @@ void WMainWindow::audioStateChanged(QAudio::State state){
 }
 
 void WMainWindow::resetFiltering(){
-    gMW->m_lastFilteredSound->setFiltered(false);
-    m_lastFilteredSound = NULL;
-    m_gvWaveform->m_giFilteredSelection->hide();
-    m_gvSpectrumAmplitude->m_filterresponse.clear();
-    m_gvSpectrumAmplitude->update();
-    m_gvSpectrumAmplitude->updateDFTs();
+    if(m_lastFilteredSound){
+        gMW->m_lastFilteredSound->setFiltered(false);
+        m_lastFilteredSound = NULL;
+        m_gvWaveform->m_giFilteredSelection->hide();
+        m_gvSpectrumAmplitude->m_filterresponse.clear();
+        m_gvSpectrumAmplitude->update();
+        m_gvSpectrumAmplitude->updateDFTs();
+    }
 }
 
 void WMainWindow::localEnergyChanged(double e){

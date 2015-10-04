@@ -131,9 +131,13 @@ void GVSpectrumGroupDelay::updateSceneRect() {
 
     QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
 
+//    double maxdelay = 0.1;
+
     double maxdelay = gFL->getMaxDuration()/2;
     if(gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.winlen>0)
         maxdelay = ((gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.winlen-1)/2)/gFL->getFs();
+
+//    COUTD << maxdelay << endl;
 
     m_scene->setSceneRect(0.0, -maxdelay, gFL->getFs()/2, 2*maxdelay);
 
@@ -235,10 +239,12 @@ void GVSpectrumGroupDelay::resizeEvent(QResizeEvent* event) {
 
 void GVSpectrumGroupDelay::scrollContentsBy(int dx, int dy){
 
-    viewUpdateTexts();
     setMouseCursorPosition(QPointF(-1,0), false);
+    viewUpdateTexts();
 
     QGraphicsView::scrollContentsBy(dx, dy);
+
+    m_giGrid->updateLines();
 }
 
 void GVSpectrumGroupDelay::wheelEvent(QWheelEvent* event) {

@@ -759,10 +759,12 @@ void GVSpectrumAmplitude::resizeEvent(QResizeEvent* event){
 void GVSpectrumAmplitude::scrollContentsBy(int dx, int dy) {
 //    cout << "QGVAmplitudeSpectrum::scrollContentsBy" << endl;
 
-    viewUpdateTexts();
     setMouseCursorPosition(QPointF(-1,0), false);
+    viewUpdateTexts();
 
     QGraphicsView::scrollContentsBy(dx, dy);
+
+    m_giGrid->updateLines();
 }
 
 void GVSpectrumAmplitude::wheelEvent(QWheelEvent* event) {

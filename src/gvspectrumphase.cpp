@@ -230,10 +230,12 @@ void GVSpectrumPhase::resizeEvent(QResizeEvent* event) {
 
 void GVSpectrumPhase::scrollContentsBy(int dx, int dy){
 
-    viewUpdateTexts();
     setMouseCursorPosition(QPointF(-1,0), false);
+    viewUpdateTexts();
 
     QGraphicsView::scrollContentsBy(dx, dy);
+
+    m_giGrid->updateLines();
 }
 
 void GVSpectrumPhase::wheelEvent(QWheelEvent* event) {
