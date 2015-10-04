@@ -377,15 +377,15 @@ void FilesListWidget::fileSelectionChanged() {
     if(m_nb_snds_in_selection>0){
         if(gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop){
             gMW->m_gvWaveform->m_scene->update();
-            gMW->m_gvAmplitudeSpectrum->m_scene->update();
-            gMW->m_gvPhaseSpectrum->m_scene->update();
+            gMW->m_gvSpectrumAmplitude->m_scene->update();
+            gMW->m_gvSpectrumPhase->m_scene->update();
             gMW->m_gvSpectrumGroupDelay->m_scene->update();
         }
         gMW->m_gvSpectrogram->updateSTFTPlot();
         gMW->m_gvSpectrogram->m_scene->update();
     }
     if(m_nb_fzeros_in_selection>0){
-        gMW->m_gvAmplitudeSpectrum->m_scene->update();
+        gMW->m_gvSpectrumAmplitude->m_scene->update();
         gMW->m_gvSpectrogram->m_scene->update();
     }
 
@@ -463,9 +463,9 @@ void FilesListWidget::selectedFilesToggleShown() {
     }
     gMW->m_gvWaveform->m_scene->update();
     gMW->m_gvSpectrogram->m_scene->update();
-    gMW->m_gvAmplitudeSpectrum->updateDFTs();
-    gMW->m_gvAmplitudeSpectrum->m_scene->update();
-    gMW->m_gvPhaseSpectrum->m_scene->update();
+    gMW->m_gvSpectrumAmplitude->updateDFTs();
+    gMW->m_gvSpectrumAmplitude->m_scene->update();
+    gMW->m_gvSpectrumPhase->m_scene->update();
     gMW->m_gvSpectrumGroupDelay->m_scene->update();
 }
 
@@ -543,7 +543,7 @@ void FilesListWidget::selectedFilesReload() {
 
     if(didanysucceed && reloadSelectedSound) {
         gMW->m_gvWaveform->m_scene->update();
-        gMW->m_gvAmplitudeSpectrum->updateDFTs();
+        gMW->m_gvSpectrumAmplitude->updateDFTs();
         gMW->m_gvSpectrogram->updateSTFTPlot(true); // Force the STFT computation
     }
 
@@ -589,9 +589,9 @@ void FilesListWidget::selectedFilesEstimateF0() {
     // Get the f0 estimation range ...
     double f0min = gMW->m_dlgSettings->ui->dsbEstimationF0Min->value();
     double f0max = gMW->m_dlgSettings->ui->dsbEstimationF0Max->value();
-    if(gMW->m_gvAmplitudeSpectrum->m_selection.width()>0.0){
-        f0min = gMW->m_gvAmplitudeSpectrum->m_selection.left();
-        f0max = gMW->m_gvAmplitudeSpectrum->m_selection.right();
+    if(gMW->m_gvSpectrumAmplitude->m_selection.width()>0.0){
+        f0min = gMW->m_gvSpectrumAmplitude->m_selection.left();
+        f0max = gMW->m_gvSpectrumAmplitude->m_selection.right();
     }
     double tstart = -1;
     double tend = -1;
@@ -620,7 +620,7 @@ void FilesListWidget::selectedFilesEstimateF0() {
                 ((FTFZero*)currentfile)->estimate(NULL, f0min, f0max, tstart, tend, force);
 
             gMW->m_gvSpectrogram->m_scene->update();
-            gMW->m_gvAmplitudeSpectrum->m_scene->update();
+            gMW->m_gvSpectrumAmplitude->m_scene->update();
 
             m_prgdlg->setValue(i);
         }

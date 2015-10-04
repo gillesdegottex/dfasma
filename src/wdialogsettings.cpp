@@ -183,7 +183,7 @@ void WDialogSettings::changeFont() {
     QFontDialog dlg(ui->lblGridFontSample->font(), this);
     if(dlg.exec()==QDialog::Accepted){
         ui->lblGridFontSample->setFont(dlg.selectedFont());
-        gMW->m_gvAmplitudeSpectrum->m_giGrid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
+        gMW->m_gvSpectrumAmplitude->m_giGrid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
     }
 }
 

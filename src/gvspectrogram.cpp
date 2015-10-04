@@ -282,18 +282,18 @@ void GVSpectrogram::amplitudeExtentSlidersChanged(){
             FFTTYPE ymin = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0; // Min of color range [dB]
             FFTTYPE ymax = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0; // Max of color range [dB]
 
-            gMW->m_gvAmplitudeSpectrum->m_giSpectrogramMin->setPos(0, -ymin);
-            gMW->m_gvAmplitudeSpectrum->m_giSpectrogramMin->show();
-            gMW->m_gvAmplitudeSpectrum->m_giSpectrogramMax->setPos(0, -ymax);
-            gMW->m_gvAmplitudeSpectrum->m_giSpectrogramMax->show();
+            gMW->m_gvSpectrumAmplitude->m_giSpectrogramMin->setPos(0, -ymin);
+            gMW->m_gvSpectrumAmplitude->m_giSpectrogramMin->show();
+            gMW->m_gvSpectrumAmplitude->m_giSpectrogramMax->setPos(0, -ymax);
+            gMW->m_gvSpectrumAmplitude->m_giSpectrogramMax->show();
         }
     }
 
     updateSTFTPlot();
 }
 void GVSpectrogram::amplitudeExtentSlidersChangesEnded() {
-    gMW->m_gvAmplitudeSpectrum->m_giSpectrogramMin->hide();
-    gMW->m_gvAmplitudeSpectrum->m_giSpectrogramMax->hide();
+    gMW->m_gvSpectrumAmplitude->m_giSpectrogramMin->hide();
+    gMW->m_gvSpectrumAmplitude->m_giSpectrogramMax->hide();
 }
 
 
@@ -872,8 +872,8 @@ void GVSpectrogram::selectionClear(bool forwardsync) {
     if(forwardsync){
         if(gMW->m_gvWaveform)
             gMW->m_gvWaveform->selectionClear(false);
-        if(gMW->m_gvAmplitudeSpectrum)
-            gMW->m_gvAmplitudeSpectrum->selectionClear(false);
+        if(gMW->m_gvSpectrumAmplitude)
+            gMW->m_gvSpectrumAmplitude->selectionClear(false);
         if(gMW->m_gvSpectrumGroupDelay)
             gMW->m_gvSpectrumGroupDelay->selectionClear(false);
     }
@@ -898,8 +898,8 @@ void GVSpectrogram::selectionSetTextInForm() {
             right = m_selection.right();
         }
         else {
-            left = gMW->m_gvPhaseSpectrum->m_selection.left();
-            right = gMW->m_gvPhaseSpectrum->m_selection.right();
+            left = gMW->m_gvSpectrumPhase->m_selection.left();
+            right = gMW->m_gvSpectrumPhase->m_selection.right();
         }
         str += QString("[%1,%2]%3s").arg(left, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()).arg(right, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()).arg(right-left, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value());
 
@@ -959,34 +959,34 @@ void GVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
             }
         }
 
-        if(gMW->m_gvAmplitudeSpectrum){
+        if(gMW->m_gvSpectrumAmplitude){
             if(m_selection.height()>=gFL->getFs()/2){
-                gMW->m_gvAmplitudeSpectrum->selectionClear();
+                gMW->m_gvSpectrumAmplitude->selectionClear();
             }
             else{
-                QRectF rect = gMW->m_gvAmplitudeSpectrum->m_mouseSelection;
+                QRectF rect = gMW->m_gvSpectrumAmplitude->m_mouseSelection;
                 rect.setLeft(-m_selection.bottom());
                 rect.setRight(-m_selection.top());
                 if(rect.height()==0){
-                    rect.setTop(gMW->m_gvAmplitudeSpectrum->m_scene->sceneRect().top());
-                    rect.setBottom(gMW->m_gvAmplitudeSpectrum->m_scene->sceneRect().bottom());
+                    rect.setTop(gMW->m_gvSpectrumAmplitude->m_scene->sceneRect().top());
+                    rect.setBottom(gMW->m_gvSpectrumAmplitude->m_scene->sceneRect().bottom());
                 }
-                gMW->m_gvAmplitudeSpectrum->selectionSet(rect, false);
+                gMW->m_gvSpectrumAmplitude->selectionSet(rect, false);
             }
         }
-        if(gMW->m_gvPhaseSpectrum){
+        if(gMW->m_gvSpectrumPhase){
             if(m_selection.height()>=gFL->getFs()/2){
-                gMW->m_gvPhaseSpectrum->selectionClear();
+                gMW->m_gvSpectrumPhase->selectionClear();
             }
             else{
-                QRectF rect = gMW->m_gvPhaseSpectrum->m_mouseSelection;
+                QRectF rect = gMW->m_gvSpectrumPhase->m_mouseSelection;
                 rect.setLeft(-m_selection.bottom());
                 rect.setRight(-m_selection.top());
                 if(rect.height()==0){
-                    rect.setTop(gMW->m_gvPhaseSpectrum->m_scene->sceneRect().top());
-                    rect.setBottom(gMW->m_gvPhaseSpectrum->m_scene->sceneRect().bottom());
+                    rect.setTop(gMW->m_gvSpectrumPhase->m_scene->sceneRect().top());
+                    rect.setBottom(gMW->m_gvSpectrumPhase->m_scene->sceneRect().bottom());
                 }
-                gMW->m_gvPhaseSpectrum->selectionSet(rect, false);
+                gMW->m_gvSpectrumPhase->selectionSet(rect, false);
             }
         }
         if(gMW->m_gvSpectrumGroupDelay){
@@ -1144,10 +1144,10 @@ void GVSpectrogram::setMouseCursorPosition(QPointF p, bool forwardsync) {
         if(forwardsync){
             if(gMW->m_gvWaveform)
                 gMW->m_gvWaveform->setMouseCursorPosition(p.x(), false);
-            if(gMW->m_gvAmplitudeSpectrum)
-                gMW->m_gvAmplitudeSpectrum->setMouseCursorPosition(QPointF(p.y(), 0.0), false);
-            if(gMW->m_gvPhaseSpectrum)
-                gMW->m_gvPhaseSpectrum->setMouseCursorPosition(QPointF(p.y(), 0.0), false);
+            if(gMW->m_gvSpectrumAmplitude)
+                gMW->m_gvSpectrumAmplitude->setMouseCursorPosition(QPointF(p.y(), 0.0), false);
+            if(gMW->m_gvSpectrumPhase)
+                gMW->m_gvSpectrumPhase->setMouseCursorPosition(QPointF(p.y(), 0.0), false);
             if(gMW->m_gvSpectrumGroupDelay)
                 gMW->m_gvSpectrumGroupDelay->setMouseCursorPosition(QPointF(p.y(), 0.0), false);
         }

@@ -74,7 +74,6 @@ class WMainWindow : public QMainWindow
     void connectModes();
     void disconnectModes();
 
-    FTSound* m_lastFilteredSound;
     QProgressBar* m_pbVolume;
 
     // Global waiting bar for operations blocking the main window
@@ -90,7 +89,8 @@ private slots:
     void newFile();
     void openFile();
 
-    void play();
+    void play(bool filtered=false);
+    void playFiltered();
     void audioStateChanged(QAudio::State state);
     void audioOutputFormatChanged(const QAudioFormat& format);
     void enablePlay();
@@ -112,6 +112,7 @@ public slots:
     void selectAudioOutputDevice(int di);
     void selectAudioOutputDevice(const QString& devicename);
     void audioEngineError(const QString &heading, const QString &detail);
+    void resetFiltering();
 
     void setInWaitingForFileState();
     void updateViewsAfterAddFile(bool isfirsts);
@@ -135,8 +136,8 @@ public:
 
     // Views
     GVWaveform* m_gvWaveform;
-    GVSpectrumAmplitude* m_gvAmplitudeSpectrum;
-    GVSpectrumPhase* m_gvPhaseSpectrum;
+    GVSpectrumAmplitude* m_gvSpectrumAmplitude;
+    GVSpectrumPhase* m_gvSpectrumPhase;
     GVSpectrumGroupDelay* m_gvSpectrumGroupDelay;
     GVSpectrogram* m_gvSpectrogram;
     QxtSpanSlider* m_qxtSpectrogramSpanSlider;
@@ -144,6 +145,7 @@ public:
     // Audio
     AudioEngine* m_audioengine;
     FTSound* m_playingftsound;
+    FTSound* m_lastFilteredSound;
     void initializeSoundSystem(double fs);
 };
 

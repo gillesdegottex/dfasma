@@ -697,7 +697,7 @@ void GVWaveform::mouseMoveEvent(QMouseEvent* event){
                 currentftsound->setStatus();
 
                 m_scene->update();
-                gMW->m_gvAmplitudeSpectrum->updateDFTs();
+                gMW->m_gvSpectrumAmplitude->updateDFTs();
                 gFL->fileInfoUpdate();
                 gMW->ui->pbSpectrogramSTFTUpdate->show();
                 if(gMW->m_gvSpectrogram->m_aAutoUpdate->isChecked())
@@ -725,7 +725,7 @@ void GVWaveform::mouseMoveEvent(QMouseEvent* event){
                 currentftsound->setStatus();
 
                 m_scene->update();
-                gMW->m_gvAmplitudeSpectrum->updateDFTs();
+                gMW->m_gvSpectrumAmplitude->updateDFTs();
                 gFL->fileInfoUpdate();
                 gMW->ui->pbSpectrogramSTFTUpdate->show();
                 if(gMW->m_gvSpectrogram->m_aAutoUpdate->isChecked())
@@ -967,10 +967,10 @@ void GVWaveform::keyPressEvent(QKeyEvent* event){
     else if(event->key()==Qt::Key_Escape) {
         if(!hasSelection()) {
             if(!gMW->m_gvSpectrogram->hasSelection()
-                && !gMW->m_gvAmplitudeSpectrum->hasSelection())
+                && !gMW->m_gvSpectrumAmplitude->hasSelection())
                 playCursorSet(0.0, true);
 
-            gMW->m_gvAmplitudeSpectrum->selectionClear();
+            gMW->m_gvSpectrumAmplitude->selectionClear();
         }
         selectionClear(true);
     }
@@ -1002,8 +1002,8 @@ void GVWaveform::selectionClear(bool forwardsync){
     m_selection = QRectF(0, -1, 0, 2);
     m_giSelection->setRect(m_selection.left(), -1, m_selection.width(), 2);
     gMW->ui->lblSelectionTxt->setText("No selection");
-    gMW->m_gvAmplitudeSpectrum->m_scene->update();
-    gMW->m_gvPhaseSpectrum->m_scene->update();
+    gMW->m_gvSpectrumAmplitude->m_scene->update();
+    gMW->m_gvSpectrumPhase->m_scene->update();
 
     m_aZoomOnSelection->setEnabled(false);
     m_aSelectionClear->setEnabled(false);
@@ -1047,15 +1047,15 @@ void GVWaveform::fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseSe
     if(selection.right()>gFL->getMaxLastSampleTime()) selection.setRight(gFL->getMaxLastSampleTime());
 
     double twinend = selection.right();
-    if(gMW->m_gvAmplitudeSpectrum->m_dlgSettings->ui->cbAmplitudeSpectrumLimitWindowDuration->isChecked()
-       && (twinend-selection.left())>gMW->m_gvAmplitudeSpectrum->m_dlgSettings->ui->sbAmplitudeSpectrumWindowDurationLimit->value())
-        twinend = selection.left()+gMW->m_gvAmplitudeSpectrum->m_dlgSettings->ui->sbAmplitudeSpectrumWindowDurationLimit->value();
+    if(gMW->m_gvSpectrumAmplitude->m_dlgSettings->ui->cbAmplitudeSpectrumLimitWindowDuration->isChecked()
+       && (twinend-selection.left())>gMW->m_gvSpectrumAmplitude->m_dlgSettings->ui->sbAmplitudeSpectrumWindowDurationLimit->value())
+        twinend = selection.left()+gMW->m_gvSpectrumAmplitude->m_dlgSettings->ui->sbAmplitudeSpectrumWindowDurationLimit->value();
 
     // Adjust parity of the window size according to option
     int nl = std::max(0, int(0.5+selection.left()*fs));
     int nr = int(0.5+std::min(gFL->getMaxLastSampleTime(),twinend)*fs);
     int winlen = nr-nl+1;
-    if(selection.width()>0 && winlen%2==0 && gMW->m_gvAmplitudeSpectrum->m_dlgSettings->ui->cbAmplitudeSpectrumWindowSizeForcedOdd->isChecked()) {
+    if(selection.width()>0 && winlen%2==0 && gMW->m_gvSpectrumAmplitude->m_dlgSettings->ui->cbAmplitudeSpectrumWindowSizeForcedOdd->isChecked()) {
         if(action==CAModifSelectionLeft)
             selection.setLeft(selection.left()+1.0/fs);
         else if(action==CAModifSelectionRight)
@@ -1123,9 +1123,9 @@ void GVWaveform::selectionSet(QRectF selection, bool forwardsync){
             rect.setLeft(m_selection.left());
             rect.setRight(m_selection.right());
 
-            if(gMW->m_gvAmplitudeSpectrum && gMW->m_gvAmplitudeSpectrum->m_giShownSelection->isVisible()){
-                rect.setTop(-gMW->m_gvAmplitudeSpectrum->m_selection.right());
-                rect.setBottom(-gMW->m_gvAmplitudeSpectrum->m_selection.left());
+            if(gMW->m_gvSpectrumAmplitude && gMW->m_gvSpectrumAmplitude->m_giShownSelection->isVisible()){
+                rect.setTop(-gMW->m_gvSpectrumAmplitude->m_selection.right());
+                rect.setBottom(-gMW->m_gvSpectrumAmplitude->m_selection.left());
             }
             else{
                 rect.setTop(gMW->m_gvSpectrogram->m_scene->sceneRect().top());
@@ -1138,9 +1138,9 @@ void GVWaveform::selectionSet(QRectF selection, bool forwardsync){
     // The selection's width can vary up to eps, even when it is only shifted
 
     // Spectra
-    if(gMW->m_gvAmplitudeSpectrum
-       && (gMW->m_gvAmplitudeSpectrum->isVisible() || gMW->m_gvPhaseSpectrum->isVisible()))
-        gMW->m_gvAmplitudeSpectrum->setWindowRange(m_selection.left(), m_selection.right());
+    if(gMW->m_gvSpectrumAmplitude
+       && (gMW->m_gvSpectrumAmplitude->isVisible() || gMW->m_gvSpectrumPhase->isVisible()))
+        gMW->m_gvSpectrumAmplitude->setWindowRange(m_selection.left(), m_selection.right());
 
     updateSelectionText();
 
@@ -1151,8 +1151,8 @@ void GVWaveform::selectionSet(QRectF selection, bool forwardsync){
 void GVWaveform::updateSelectionText(){
     // gMW->ui->lblSelectionTxt->setText(QString("[%1").arg(m_selection.left()).append(",%1] ").arg(m_selection.right()).append("%1 s").arg(m_selection.width())); // start, end and duration
 
-    if(gMW->m_gvWaveform->m_aWaveformShowWindow->isChecked() && gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.win.size()>0)
-        gMW->ui->lblSelectionTxt->setText(QString("%1s window centered at %2").arg(gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.win.size()/gFL->getFs(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()).arg(m_selection.left()+((gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.win.size()-1)/2.0)/gFL->getFs(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value())); // duration and center
+    if(gMW->m_gvWaveform->m_aWaveformShowWindow->isChecked() && gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.win.size()>0)
+        gMW->ui->lblSelectionTxt->setText(QString("%1s window centered at %2").arg(gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.win.size()/gFL->getFs(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()).arg(m_selection.left()+((gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.win.size()-1)/2.0)/gFL->getFs(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value())); // duration and center
     else
         gMW->ui->lblSelectionTxt->setText(QString("[%1,%2]%3s").arg(m_selection.left(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()).arg(m_selection.right(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()).arg(m_selection.width(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value())); // duration and start
 //    gMW->ui->lblSelectionTxt->setText(QString("%1s selection ").arg(m_selection.width(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()).append(" starting at %1s").arg(m_selection.left(), 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value())); // duration and start
@@ -1213,34 +1213,34 @@ void GVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
 }
 
 void GVWaveform::playCursorSet(double t, bool forwardsync){
-//    COUTD << t << endl;
-    if(t==-1){
-        if(m_selection.width()>0)
-            playCursorSet(m_selection.left(), forwardsync);
-        else
-            m_giPlayCursor->setPos(QPointF(m_initialPlayPosition, 0));
+////    COUTD << t << endl;
+//    if(t==-1){
+//        if(m_selection.width()>0)
+//            playCursorSet(m_selection.left(), forwardsync);
+//        else
+//            m_giPlayCursor->setPos(QPointF(m_initialPlayPosition, 0));
 
-        // Put back the DFT window at selection times
-        if(gMW->m_gvAmplitudeSpectrum && gMW->m_gvPhaseSpectrum
-           && (gMW->m_gvAmplitudeSpectrum->isVisible() || gMW->m_gvPhaseSpectrum->isVisible()))
-            gMW->m_gvAmplitudeSpectrum->setWindowRange(m_selection.left(), m_selection.right());
-    }
-    else{
-        m_giPlayCursor->setPos(QPointF(t, 0));
+//        // Put back the DFT window at selection times
+//        if(gMW->m_gvAmplitudeSpectrum && gMW->m_gvPhaseSpectrum
+//           && (gMW->m_gvAmplitudeSpectrum->isVisible() || gMW->m_gvPhaseSpectrum->isVisible()))
+//            gMW->m_gvAmplitudeSpectrum->setWindowRange(m_selection.left(), m_selection.right());
+//    }
+//    else{
+//        m_giPlayCursor->setPos(QPointF(t, 0));
 
-        // Move the DFT window according to play cursor
-        if(gMW->m_gvAmplitudeSpectrum && gMW->m_gvPhaseSpectrum
-            && gMW->m_gvAmplitudeSpectrum->m_aFollowPlayCursor->isChecked()
-            && gMW->m_audioengine->state()==QAudio::ActiveState // TODO Means that audio is necessary for this
-            && gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.winlen>1
-            && (gMW->m_gvAmplitudeSpectrum->isVisible() || gMW->m_gvPhaseSpectrum->isVisible())) {
-            double halfwin = ((gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.winlen-1)/2.0)/gFL->getFs();
-            gMW->m_gvAmplitudeSpectrum->setWindowRange(t-halfwin, t+halfwin);
-        }
-    }
+//        // Move the DFT window according to play cursor
+//        if(gMW->m_gvAmplitudeSpectrum && gMW->m_gvPhaseSpectrum
+//            && gMW->m_gvAmplitudeSpectrum->m_aFollowPlayCursor->isChecked()
+//            && gMW->m_audioengine->state()==QAudio::ActiveState // TODO Means that audio is necessary for this
+//            && gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.winlen>1
+//            && (gMW->m_gvAmplitudeSpectrum->isVisible() || gMW->m_gvPhaseSpectrum->isVisible())) {
+//            double halfwin = ((gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.winlen-1)/2.0)/gFL->getFs();
+//            gMW->m_gvAmplitudeSpectrum->setWindowRange(t-halfwin, t+halfwin);
+//        }
+//    }
 
-    if(forwardsync && gMW->m_gvSpectrogram)
-        gMW->m_gvSpectrogram->playCursorSet(t, false);
+//    if(forwardsync && gMW->m_gvSpectrogram)
+//        gMW->m_gvSpectrogram->playCursorSet(t, false);
 }
 
 double GVWaveform::getPlayCursorPosition() const{

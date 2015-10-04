@@ -200,7 +200,6 @@ public:
 public slots:
     bool reload();
     void needDFTUpdate();
-    void resetFiltering();
     void resetAmpScale();
     void resetDelay();
     void setVisible(bool shown);

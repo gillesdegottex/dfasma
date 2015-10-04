@@ -79,7 +79,7 @@ void FTFZero::constructor_internal(){
     m_src_snd = NULL;
 
     m_aspec_txt = new QGraphicsSimpleTextItem("unset");
-    gMW->m_gvAmplitudeSpectrum->m_scene->addItem(m_aspec_txt);
+    gMW->m_gvSpectrumAmplitude->m_scene->addItem(m_aspec_txt);
     setColor(getColor()); // Indirectly set the proper color to the m_aspec_txt
 
     m_actionSave = new QAction("Save", this);
@@ -487,8 +487,8 @@ void FTFZero::updateTextsGeometry(){
     if(!m_actionShow->isChecked())
         return;
 
-    QRectF aspec_viewrect = gMW->m_gvAmplitudeSpectrum->mapToScene(gMW->m_gvAmplitudeSpectrum->viewport()->rect()).boundingRect();
-    QTransform aspec_trans = gMW->m_gvAmplitudeSpectrum->transform();
+    QRectF aspec_viewrect = gMW->m_gvSpectrumAmplitude->mapToScene(gMW->m_gvSpectrumAmplitude->viewport()->rect()).boundingRect();
+    QTransform aspec_trans = gMW->m_gvSpectrumAmplitude->transform();
 
     QTransform mat1;
     mat1.translate(1.0/aspec_trans.m11(), aspec_viewrect.top()+10/aspec_trans.m22());
@@ -596,7 +596,7 @@ void FTFZero::draw_freq_amp(QPainter* painter, const QRectF& rect){
 
     double ct = 0.0; // The time where the f0 curve has to be sampled
     if(gMW->m_gvWaveform->hasSelection())
-        ct = 0.5*(gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.nl+gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.nr)/gFL->getFs();
+        ct = 0.5*(gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.nl+gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.nr)/gFL->getFs();
     else
         ct = gMW->m_gvWaveform->getPlayCursorPosition();
     double cf0 = qae::nearest<double>(ts, f0s, ct, -1.0);

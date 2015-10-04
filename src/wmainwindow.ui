@@ -934,7 +934,7 @@
     <string>Play the sound filtered according to the spectral selection</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Space</string>
+    <string>Shift+Space</string>
    </property>
   </action>
   <action name="actionSelectedFilesReload">
