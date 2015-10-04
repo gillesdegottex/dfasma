@@ -492,7 +492,7 @@ void GVWaveform::wheelEvent(QWheelEvent* event){
         viewSet(newrect);
 
 //        QPointF p = mapToScene(QPoint(event->x(),0));
-//        setMouseCursorPosition(p.x(), true);
+        setMouseCursorPosition(-1, true);
         m_aZoomOnSelection->setEnabled(m_selection.width()>0);
         m_aZoomOut->setEnabled(true);
         m_aZoomIn->setEnabled(true);
@@ -521,29 +521,29 @@ void GVWaveform::mousePressEvent(QMouseEvent* event){
                     // Resize left boundary of the selection
                     m_currentAction = CAModifSelectionLeft;
                     m_mouseSelection = m_selection;
-                    m_selection_pressedx = p.x()-m_selection.left();
+                    m_selection_pressedp = p-QPointF(m_selection.left(), 0.0);
                     setCursor(Qt::SplitHCursor);
                 }
                 else if(!event->modifiers().testFlag(Qt::ControlModifier) && m_selection.width()>0 && abs(selview.right()-event->x())<5){
                     // Resize right boundary of the selection
                     m_currentAction = CAModifSelectionRight;
                     m_mouseSelection = m_selection;
-                    m_selection_pressedx = p.x()-m_selection.right();
+                    m_selection_pressedp = p-QPointF(m_selection.right(), 0.0);
                     setCursor(Qt::SplitHCursor);
                 }
                 else if(m_selection.width()>0 && (event->modifiers().testFlag(Qt::ControlModifier) || (event->x()>=selview.left() && event->x()<=selview.right()))){
                     // cout << "Scrolling the selection" << endl;
                     m_currentAction = CAMovingSelection;
-                    m_selection_pressedx = p.x();
+                    m_selection_pressedp = p;
                     m_mouseSelection = m_selection;
                     setCursor(Qt::ClosedHandCursor);
                 }
                 else if(!event->modifiers().testFlag(Qt::ControlModifier)){
                     // When selecting
                     m_currentAction = CASelecting;
-                    m_selection_pressedx = p.x();
-                    m_mouseSelection.setLeft(m_selection_pressedx);
-                    m_mouseSelection.setRight(m_selection_pressedx);
+                    m_selection_pressedp = p;
+                    m_mouseSelection.setLeft(m_selection_pressedp.x());
+                    m_mouseSelection.setRight(m_selection_pressedp.x());
                     selectionSet(m_mouseSelection);
                     m_giSelection->show();
                 }
@@ -564,7 +564,7 @@ void GVWaveform::mousePressEvent(QMouseEvent* event){
                     }
                     if(m_ca_pressed_index==-1) {
                         if(event->modifiers().testFlag(Qt::ControlModifier)){
-                            m_selection_pressedx = p.x();
+                            m_selection_pressedp = p;
                             m_currentAction = CALabelAllModifPosition;
                             setCursor(Qt::SizeHorCursor);
                             gMW->setEditing(selectedlabels);
@@ -582,7 +582,7 @@ void GVWaveform::mousePressEvent(QMouseEvent* event){
                     else if(event->modifiers().testFlag(Qt::ControlModifier)){
                         // cout << "Scaling the waveform" << endl;
                         m_currentAction = CAWaveformDelay;
-                        m_selection_pressedx = p.x();
+                        m_selection_pressedp = p;
                         m_tmpdelay = selectedsound->m_giWaveform->delay()/gFL->getFs();
                         setCursor(Qt::SizeHorCursor);
                         gMW->setEditing(selectedsound);
@@ -590,7 +590,7 @@ void GVWaveform::mousePressEvent(QMouseEvent* event){
                     else{
                         // cout << "Scaling the waveform" << endl;
                         m_currentAction = CAWaveformScale;
-                        m_selection_pressedx = p.y();
+                        m_selection_pressedp = p;
                         setCursor(Qt::SizeVerCursor);
                         gMW->setEditing(selectedsound);
                     }
@@ -601,7 +601,7 @@ void GVWaveform::mousePressEvent(QMouseEvent* event){
     else if(event->buttons()&Qt::RightButton){
         if (event->modifiers().testFlag(Qt::ShiftModifier)) {
             m_currentAction = CAZooming;
-            m_selection_pressedx = p.x();
+            m_selection_pressedp = p;
             m_pressed_mouseinviewport = mapFromScene(p);
             m_pressed_scenerect = mapToScene(viewport()->rect()).boundingRect();
             setCursor(Qt::CrossCursor);
@@ -610,7 +610,7 @@ void GVWaveform::mousePressEvent(QMouseEvent* event){
                  m_selection.width()>0) {
             m_currentAction = CAStretchSelection;
             m_mouseSelection = m_selection;
-            m_selection_pressedx = p.x();
+            m_selection_pressedp = p;
             setCursor(Qt::SplitHCursor);
         }
     }
@@ -636,8 +636,8 @@ void GVWaveform::mouseMoveEvent(QMouseEvent* event){
         double dx = -(event->pos()-m_pressed_mouseinviewport).x()/100.0;
 
         QRectF newrect = m_pressed_scenerect;
-        newrect.setLeft(m_selection_pressedx-(m_selection_pressedx-m_pressed_scenerect.left())*exp(dx));
-        newrect.setRight(m_selection_pressedx+(m_pressed_scenerect.right()-m_selection_pressedx)*exp(dx));
+        newrect.setLeft(m_selection_pressedp.x()-(m_selection_pressedp.x()-m_pressed_scenerect.left())*exp(dx));
+        newrect.setRight(m_selection_pressedp.x()+(m_pressed_scenerect.right()-m_selection_pressedp.x())*exp(dx));
         viewSet(newrect);
 
         QPointF p = mapToScene(event->pos());
@@ -647,31 +647,31 @@ void GVWaveform::mouseMoveEvent(QMouseEvent* event){
         m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
     }
     else if(m_currentAction==CAModifSelectionLeft){
-        m_mouseSelection.setLeft(p.x()-m_selection_pressedx);
+        m_mouseSelection.setLeft(p.x()-m_selection_pressedp.x());
         selectionSet(m_mouseSelection);
     }
     else if(m_currentAction==CAModifSelectionRight){
-        m_mouseSelection.setRight(p.x()-m_selection_pressedx);
+        m_mouseSelection.setRight(p.x()-m_selection_pressedp.x());
         selectionSet(m_mouseSelection);
     }
     else if(m_currentAction==CAMovingSelection){
         // When scroling the selection
-        m_mouseSelection.adjust(p.x()-m_selection_pressedx, 0, p.x()-m_selection_pressedx, 0);
+        m_mouseSelection.adjust(p.x()-m_selection_pressedp.x(), 0, p.x()-m_selection_pressedp.x(), 0);
         selectionSet(m_mouseSelection);
-        m_selection_pressedx = p.x();
+        m_selection_pressedp = p;
     }
     else if(m_currentAction==CASelecting){
         // When selecting
-        m_mouseSelection.setLeft(m_selection_pressedx);
+        m_mouseSelection.setLeft(m_selection_pressedp.x());
         m_mouseSelection.setRight(p.x());
         selectionSet(m_mouseSelection);
     }
     else if(m_currentAction==CAStretchSelection) {
         // Stretch the selection from its center
-        m_mouseSelection.setLeft(m_mouseSelection.left()-(p.x()-m_selection_pressedx));
-        m_mouseSelection.setRight(m_mouseSelection.right()+(p.x()-m_selection_pressedx));
+        m_mouseSelection.setLeft(m_mouseSelection.left()-(p.x()-m_selection_pressedp.x()));
+        m_mouseSelection.setRight(m_mouseSelection.right()+(p.x()-m_selection_pressedp.x()));
         selectionSet(m_mouseSelection);
-        m_selection_pressedx = p.x();
+        m_selection_pressedp = p;
     }
     else if(m_currentAction==CAWaveformScale){
         // Scale the selected waveform
@@ -683,8 +683,8 @@ void GVWaveform::mouseMoveEvent(QMouseEvent* event){
                 m_currentAction = CANothing;
             }
             else {
-                currentftsound->m_giWaveform->setGain(currentftsound->m_giWaveform->gain()*pow(10, -10*(p.y()-m_selection_pressedx)/20.0));
-                m_selection_pressedx = p.y();
+                currentftsound->m_giWaveform->setGain(currentftsound->m_giWaveform->gain()*pow(10, -10*(p.y()-m_selection_pressedp.y())/20.0));
+                m_selection_pressedp = p;
 
                 if(currentftsound->m_giWaveform->gain()>1e10)
                     currentftsound->m_giWaveform->setGain(1e10);
@@ -704,7 +704,7 @@ void GVWaveform::mouseMoveEvent(QMouseEvent* event){
         }
     }
     else if(m_currentAction==CAWaveformDelay){
-        FTSound* currentftsound = gFL->getCurrentFTSound();
+        FTSound* currentftsound = gFL->getCurrentFTSound(true);
         if(currentftsound){
             // Check first if the user is not trying to modify a hidden file
             if(!currentftsound->m_actionShow->isChecked()) {
@@ -713,8 +713,8 @@ void GVWaveform::mouseMoveEvent(QMouseEvent* event){
                 m_currentAction = CANothing;
             }
             else {
-                m_tmpdelay += p.x()-m_selection_pressedx;
-                m_selection_pressedx = p.x();
+                m_tmpdelay += p.x()-m_selection_pressedp.x();
+                m_selection_pressedp = p;
                 currentftsound->m_giWaveform->setDelay(int(0.5+m_tmpdelay*gFL->getFs()));
                 if(m_tmpdelay<0)
                     currentftsound->m_giWaveform->setDelay(currentftsound->m_giWaveform->delay()+1);
@@ -749,8 +749,8 @@ void GVWaveform::mouseMoveEvent(QMouseEvent* event){
 //        COUTD << "CALabelAllModifPosition" << endl;
         FTLabels* ftlabel = gFL->getCurrentFTLabels();
         if(ftlabel) {
-            ftlabel->moveAllLabel(p.x()-m_selection_pressedx);
-            m_selection_pressedx = p.x();
+            ftlabel->moveAllLabel(p.x()-m_selection_pressedp.x());
+            m_selection_pressedp = p;
             m_scene->update();
             updateTextsGeometry();
         }

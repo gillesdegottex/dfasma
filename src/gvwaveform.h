@@ -54,7 +54,7 @@ public:
 
     bool m_first_start;
 
-    float m_selection_pressedx;
+    QPointF m_selection_pressedp;
     QPointF m_pressed_mouseinviewport;
     QRectF m_pressed_scenerect;
     int m_ca_pressed_index;
