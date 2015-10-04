@@ -159,7 +159,7 @@ GVSpectrogram::GVSpectrogram(WMainWindow* parent)
     m_scene->addItem(m_giMouseCursorTxtFreq);
 
     // Play Cursor
-    m_giPlayCursor = new QGraphicsLineItem(0.0, 0.0, 0.0, 100000, NULL);
+    m_giPlayCursor = new QGraphicsLineItem(0.0, 0.0, 0.0, -100000, NULL);
     QPen playCursorPen(QColor(255, 0, 0));
     playCursorPen.setCosmetic(true);
     playCursorPen.setWidth(2);
@@ -644,16 +644,18 @@ void GVSpectrogram::mousePressEvent(QMouseEvent* event){
             }
         }
         if(gMW->ui->actionEditMode->isChecked()){
-            FTFZero* current_fzero = gFL->getCurrentFTFZero(false);
-            if(current_fzero){
-                m_currentAction = CAEditFZero;
-                m_editing_fzero = current_fzero;
-                m_selection_pressedp = p;
-                m_editing_fzero->edit(p.x(), p.y());
-                m_scene->update();
+            if(!event->modifiers().testFlag(Qt::ControlModifier) && !event->modifiers().testFlag(Qt::ShiftModifier)){
+                FTFZero* current_fzero = gFL->getCurrentFTFZero(false);
+                if(current_fzero){
+                    m_currentAction = CAEditFZero;
+                    m_editing_fzero = current_fzero;
+                    m_selection_pressedp = p;
+                    m_editing_fzero->edit(p.x(), -p.y());
+                    m_scene->update();
+                }
+                else
+                    playCursorSet(p.x(), true); // Place the play cursor
             }
-            else
-                playCursorSet(p.x(), true); // Place the play cursor
         }
     }
     else if(event->buttons()&Qt::RightButton) {
@@ -735,7 +737,7 @@ void GVSpectrogram::mouseMoveEvent(QMouseEvent* event){
     else if (m_currentAction==CAEditFZero){
         // Editing an F0 curve
         if(p!=m_selection_pressedp){
-            m_editing_fzero->edit(p.x(), p.y());
+            m_editing_fzero->edit(p.x(), -p.y());
             m_selection_pressedp = p;
             m_scene->update();
         }
@@ -777,6 +779,10 @@ void GVSpectrogram::mouseMoveEvent(QMouseEvent* event){
             else if(event->modifiers().testFlag(Qt::ControlModifier)){
             }
             else{
+                FTFZero* curf0 = gFL->getCurrentFTFZero(false);
+                if(curf0){
+//                    setCursor(Qt::Pen); // TODO Set a pen cursor
+                }
             }
         }
     }
@@ -1231,7 +1237,6 @@ void GVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 //            painter->drawLine(QLineF(m_editing_fzero_newvalues[i], m_editing_fzero_newvalues[i+1]));
 //        }
 //    }
-
 
 //    cout << "GVSpectrogram::~drawBackground" << endl;
 }

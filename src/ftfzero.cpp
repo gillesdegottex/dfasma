@@ -515,7 +515,6 @@ void FTFZero::setColor(const QColor& color) {
     m_aspec_txt->setBrush(brush);
 }
 
-
 double FTFZero::getLastSampleTime() const {
     if(ts.empty())
         return 0.0;
@@ -524,9 +523,18 @@ double FTFZero::getLastSampleTime() const {
 }
 
 void FTFZero::edit(double t, double f0){
+    if(f0<0)
+        f0 = 0.0;
+
 //    COUTD << "FTFZero::edit " << t << " " << f0 << endl;
 
+    double step = qae::median(qae::diff(ts)); // TODO Speed up: Pre-compute
 
+    std::deque<double>::iterator itlb = std::lower_bound(ts.begin(), ts.end(), t+step/2);
+    int ri = itlb-ts.begin()-1;
+
+    if(ri>=0 && ri<int(ts.size()))
+        f0s[ri] = f0;
 }
 
 FTFZero::~FTFZero() {
@@ -544,7 +552,6 @@ void FTFZero::draw_time_freq(QPainter* painter, const QRectF& rect, bool draw_ha
        || ts.size()<2)
         return;
 
-    double ny = gFL->getFs()/2;
 
     QColor c = getColor();
     c.setAlphaF(1.0);
@@ -552,14 +559,14 @@ void FTFZero::draw_time_freq(QPainter* painter, const QRectF& rect, bool draw_ha
     outlinePen.setCosmetic(true);
     outlinePen.setWidth(3);
     painter->setPen(outlinePen);
-    double f0min = ny;
+    double f0min = 0.5*gFL->getFs();
     for(int ti=0; ti<int(ts.size())-1; ++ti){
         if(f0s[ti]>0.0)
             f0min = std::min(f0min, f0s[ti]);
         double lf0 = f0s[ti];
         double rf0 = f0s[ti+1];
         if(lf0>0 && rf0>0)
-            painter->drawLine(QLineF(ts[ti], ny-lf0, ts[ti+1], ny-rf0));
+            painter->drawLine(QLineF(ts[ti], -lf0, ts[ti+1], -rf0));
     }
     if(f0s.back()>0.0)
         f0min = std::min(f0min, f0s.back());
@@ -569,12 +576,12 @@ void FTFZero::draw_time_freq(QPainter* painter, const QRectF& rect, bool draw_ha
         c.setAlphaF(0.5);
         outlinePen.setColor(c);
         painter->setPen(outlinePen);
-        for(int h=2; h<int(ny/f0min)+1; h++){
+        for(int h=2; h<int(0.5*gFL->getFs()/f0min)+1; h++){
             for(int ti=0; ti<int(ts.size())-1; ++ti){
                 double lf0 = f0s[ti];
                 double rf0 = f0s[ti+1];
                 if(lf0>0 && rf0>0)
-                    painter->drawLine(QLineF(ts[ti], ny-h*f0s[ti], ts[ti+1], ny-h*f0s[ti+1]));
+                    painter->drawLine(QLineF(ts[ti], -h*lf0, ts[ti+1], -h*rf0));
             }
         }
     }

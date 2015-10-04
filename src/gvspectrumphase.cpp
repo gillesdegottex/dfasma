@@ -757,9 +757,6 @@ void GVSpectrumPhase::drawBackground(QPainter* painter, const QRectF& rect){
         }
     }
 
-    if (gMW->m_gvWaveform->m_selection.width()==0)
-        return;
-
 //    cout << "QGVPhaseSpectrum::~drawBackground" << endl;
 }
 

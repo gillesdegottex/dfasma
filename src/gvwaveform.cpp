@@ -1221,7 +1221,6 @@ void GVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
     m_giWindow->setVisible(m_aWaveformShowWindow->isChecked() && m_selection.width()>0.0); // TODO Put elsewhere?
 
     // Plot STFT's window centers
-    // TODO Move in a GraphicsItem ?
     if(m_aWaveformShowSTFTWindowCenters->isChecked()){
         FTSound* cursnd = gFL->getCurrentFTSound(true);
         if(cursnd && cursnd->m_actionShow->isChecked()){
