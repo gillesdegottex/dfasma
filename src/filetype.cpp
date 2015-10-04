@@ -257,11 +257,13 @@ void FileType::constructor_external(){
     gFL->m_present_files.insert(make_pair(this,true));
 }
 
-FileType::FileType(FType _type, const QString& _fileName, QObject * parent, const QColor& _color)
+FileType::FileType(FType _type, const QString& _fileName, QObject *parent, const QColor& _color)
     : m_type(_type)
     , m_color(_color)
     , fileFullPath(_fileName)
 {
+    Q_UNUSED(parent)
+
     FileType::constructor_internal();
 //    cout << "FileType::FileType: " << _fileName.toLocal8Bit().constData() << endl;
 

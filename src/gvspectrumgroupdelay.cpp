@@ -725,6 +725,7 @@ void GVSpectrumGroupDelay::setMouseCursorPosition(QPointF p, bool forwardsync) {
 }
 
 void GVSpectrumGroupDelay::drawBackground(QPainter* painter, const QRectF& rect){
+    Q_UNUSED(rect)
 
 //    COUTD << ": QGVSpectrumGroupDelay::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 

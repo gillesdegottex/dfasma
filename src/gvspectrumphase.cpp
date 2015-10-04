@@ -719,7 +719,7 @@ void GVSpectrumPhase::setMouseCursorPosition(QPointF p, bool forwardsync) {
 }
 
 void GVSpectrumPhase::drawBackground(QPainter* painter, const QRectF& rect){
-
+    Q_UNUSED(rect)
 //    COUTD << ": QGVPhaseSpectrum::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
     // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??

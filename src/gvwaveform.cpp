@@ -1215,6 +1215,7 @@ void GVWaveform::updateTextsGeometry(){
 }
 
 void GVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
+    Q_UNUSED(rect)
     // COUTD << "GVWaveform::drawBackground rect:" << rect << endl;
 
     m_giWindow->setVisible(m_aWaveformShowWindow->isChecked() && m_selection.width()>0.0); // TODO Put elsewhere?
