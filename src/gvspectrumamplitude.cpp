@@ -719,6 +719,15 @@ void GVSpectrumAmplitude::viewSet(QRectF viewrect, bool sync) {
 //    cout << "QGVAmplitudeSpectrum::~viewSet" << endl;
 }
 
+void GVSpectrumAmplitude::contextMenuEvent(QContextMenuEvent *event){
+    if (event->modifiers().testFlag(Qt::ShiftModifier)
+        || event->modifiers().testFlag(Qt::ControlModifier))
+        return;
+
+    QPoint posglobal = mapToGlobal(event->pos()+QPoint(0,0));
+    m_contextmenu.exec(posglobal);
+}
+
 void GVSpectrumAmplitude::resizeEvent(QResizeEvent* event){
 //    COUTD << "QGVAmplitudeSpectrum::resizeEvent" << endl;
 
@@ -859,10 +868,6 @@ void GVSpectrumAmplitude::mousePressEvent(QMouseEvent* event){
             m_selection_pressedp = p;
             m_pressed_mouseinviewport = mapFromScene(p);
             m_pressed_viewrect = mapToScene(viewport()->rect()).boundingRect();
-        }
-        else {
-            QPoint posglobal = mapToGlobal(mapFromScene(p)+QPoint(0,0));
-            m_contextmenu.exec(posglobal);
         }
     }
 

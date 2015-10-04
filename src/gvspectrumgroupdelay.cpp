@@ -346,10 +346,6 @@ void GVSpectrumGroupDelay::mousePressEvent(QMouseEvent* event){
             m_pressed_mouseinviewport = mapFromScene(p);
             m_pressed_viewrect = mapToScene(viewport()->rect()).boundingRect();
         }
-        else {
-            QPoint posglobal = mapToGlobal(mapFromScene(p)+QPoint(0,0));
-            m_contextmenu.exec(posglobal);
-        }
     }
 
     QGraphicsView::mousePressEvent(event);
@@ -523,6 +519,15 @@ void GVSpectrumGroupDelay::keyPressEvent(QKeyEvent* event){
         selectionZoomOn();
 
     QGraphicsView::keyPressEvent(event);
+}
+
+void GVSpectrumGroupDelay::contextMenuEvent(QContextMenuEvent *event){
+    if (event->modifiers().testFlag(Qt::ShiftModifier)
+        || event->modifiers().testFlag(Qt::ControlModifier))
+        return;
+
+    QPoint posglobal = mapToGlobal(event->pos()+QPoint(0,0));
+    m_contextmenu.exec(posglobal);
 }
 
 void GVSpectrumGroupDelay::selectionClear(bool forwardsync){

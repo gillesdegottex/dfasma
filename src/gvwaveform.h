@@ -44,6 +44,9 @@ class GVWaveform : public QGraphicsView
 
 //    int m_scrolledx; // For #419 ?
 
+protected:
+    void contextMenuEvent(QContextMenuEvent * event);
+
 public:
     QGraphicsLineItem* m_giMouseCursorLine;
 
@@ -109,8 +112,6 @@ public:
     void viewSet(QRectF viewrect, bool sync=true);
 
     void fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseSelection, int action);
-
-signals:
 
 public slots:
     void showScrollBars(bool show);

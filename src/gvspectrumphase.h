@@ -38,6 +38,9 @@ class GVSpectrumPhase : public QGraphicsView
 {
     Q_OBJECT
 
+protected:
+    void contextMenuEvent(QContextMenuEvent *event);
+
 public:
     explicit GVSpectrumPhase(WMainWindow* parent);
 

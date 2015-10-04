@@ -613,10 +613,6 @@ void GVWaveform::mousePressEvent(QMouseEvent* event){
             m_selection_pressedx = p.x();
             setCursor(Qt::SplitHCursor);
         }
-        else {
-            QPoint posglobal = mapToGlobal(event->pos()+QPoint(0,0));
-            m_contextmenu.exec(posglobal);
-        }
     }
 
     QGraphicsView::mousePressEvent(event);
@@ -1087,6 +1083,15 @@ void GVWaveform::fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseSe
             selection.setRight((si*cursnd->m_stftparams.stepsize + cursnd->m_stftparams.win.size()-1)/gFL->getFs());
         }
     }
+}
+
+void GVWaveform::contextMenuEvent(QContextMenuEvent *event){
+    if (event->modifiers().testFlag(Qt::ShiftModifier)
+        || event->modifiers().testFlag(Qt::ControlModifier))
+        return;
+
+    QPoint posglobal = mapToGlobal(event->pos()+QPoint(0,0));
+    m_contextmenu.exec(posglobal);
 }
 
 void GVWaveform::selectionSet(QRectF selection, bool forwardsync){

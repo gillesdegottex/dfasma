@@ -47,6 +47,9 @@ class GVSpectrumAmplitude : public QGraphicsView
 
     std::vector<FFTTYPE> m_win; // Keep one here to limit allocations
 
+protected:
+    void contextMenuEvent(QContextMenuEvent * event);
+
 public:
     explicit GVSpectrumAmplitude(WMainWindow* parent);
 

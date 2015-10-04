@@ -52,6 +52,9 @@ class GVSpectrogram : public QGraphicsView
     FTFZero* m_editing_fzero;
 //    std::deque<QPointF> m_editing_fzero_newvalues; // TODO DELETE
 
+protected:
+    void contextMenuEvent(QContextMenuEvent * event);
+
 public:
     explicit GVSpectrogram(WMainWindow* parent);
 
