@@ -141,7 +141,7 @@ bool AudioEngine::isInitialized(){
 
 void AudioEngine::startPlayback(FTSound* dssound, double tstart, double tstop, double fstart, double fstop)
 {
-//    DEBUGSTRING << "AudioEngine::startPlayback" << endl;
+//    std::cout << "AudioEngine::startPlayback" << endl;
 
     if (m_audioOutput) {
         if (m_state==QAudio::SuspendedState) {
@@ -169,7 +169,7 @@ void AudioEngine::startPlayback(FTSound* dssound, double tstart, double tstop, d
         }
     }
 
-//    DEBUGSTRING << "~AudioEngine::startPlayback" << endl;
+//    std::cout << "~AudioEngine::startPlayback" << endl;
 }
 
 void AudioEngine::stopPlayback()
