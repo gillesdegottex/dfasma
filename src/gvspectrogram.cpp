@@ -698,6 +698,8 @@ void GVSpectrogram::mouseMoveEvent(QMouseEvent* event){
 
         updateTextsGeometry();
 
+        setMouseCursorPosition(m_selection_pressedp, true);
+
         m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
     }
     else if(m_currentAction==CAModifSelectionLeft){

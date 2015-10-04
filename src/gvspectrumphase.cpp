@@ -348,6 +348,8 @@ void GVSpectrumPhase::mouseMoveEvent(QMouseEvent* event){
 
     QPointF p = mapToScene(event->pos());
 
+    setMouseCursorPosition(p, true);
+
 //    std::cout << "QGVWaveform::mouseMoveEvent action=" << m_currentAction << " x=" << p.x() << " y=" << p.y() << endl;
 
     if(m_currentAction==CAMoving) {
@@ -360,12 +362,13 @@ void GVSpectrumPhase::mouseMoveEvent(QMouseEvent* event){
         double dy = (event->pos()-m_pressed_mouseinviewport).y()/100.0;
 
         QRectF newrect = m_pressed_viewrect;
-
         newrect.setLeft(m_selection_pressedp.x()-(m_selection_pressedp.x()-m_pressed_viewrect.left())*exp(dx));
         newrect.setRight(m_selection_pressedp.x()+(m_pressed_viewrect.right()-m_selection_pressedp.x())*exp(dx));
         newrect.setTop(m_selection_pressedp.y()-(m_selection_pressedp.y()-m_pressed_viewrect.top())*exp(dy));
         newrect.setBottom(m_selection_pressedp.y()+(m_pressed_viewrect.bottom()-m_selection_pressedp.y())*exp(dy));
         viewSet(newrect);
+
+        setMouseCursorPosition(m_selection_pressedp, true);
     }
     else if(m_currentAction==CAModifSelectionLeft){
         m_mouseSelection.setLeft(p.x()-m_selection_pressedp.x());
@@ -452,8 +455,6 @@ void GVSpectrumPhase::mouseMoveEvent(QMouseEvent* event){
             }
         }
     }
-
-    setMouseCursorPosition(p, true);
 
 //    std::cout << "~QGVWaveform::mouseMoveEvent" << endl;
     QGraphicsView::mouseMoveEvent(event);

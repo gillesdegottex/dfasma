@@ -657,8 +657,7 @@ void GVWaveform::mouseMoveEvent(QMouseEvent* event){
         }
         viewSet(newrect);
 
-        QPointF p = mapToScene(event->pos());
-        setMouseCursorPosition(p.x(), true);
+        setMouseCursorPosition(m_selection_pressedp.x(), true);
 
 //        m_aUnZoom->setEnabled(true);
         m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);

@@ -903,7 +903,7 @@ void GVSpectrumAmplitude::mouseMoveEvent(QMouseEvent* event){
         viewSet(newrect);
 
         viewUpdateTexts();
-        setMouseCursorPosition(mapToScene(event->pos()), true);
+        setMouseCursorPosition(m_selection_pressedp, true);
 
         m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
     }
