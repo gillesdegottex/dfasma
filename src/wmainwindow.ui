@@ -965,9 +965,6 @@
    <property name="toolTip">
     <string>Show/hide the amplitude spectrum</string>
    </property>
-   <property name="shortcut">
-    <string>F6</string>
-   </property>
   </action>
   <action name="actionShowPhaseSpectrum">
    <property name="checkable">
@@ -985,9 +982,6 @@
    </property>
    <property name="toolTip">
     <string>Show/hide the phase spectrum</string>
-   </property>
-   <property name="shortcut">
-    <string>F7</string>
    </property>
   </action>
   <action name="actionShowSpectrogram">
@@ -1009,9 +1003,6 @@
    </property>
    <property name="toolTip">
     <string>Show/hide the spectrogram</string>
-   </property>
-   <property name="shortcut">
-    <string>F9</string>
    </property>
   </action>
   <action name="actionFileNew">
@@ -1085,9 +1076,6 @@
    </property>
    <property name="toolTip">
     <string>Show/hide the group delay</string>
-   </property>
-   <property name="shortcut">
-    <string>F8</string>
    </property>
   </action>
  </widget>
