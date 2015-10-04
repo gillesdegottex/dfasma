@@ -918,7 +918,6 @@ void WMainWindow::play(bool filtered){
         else if(m_audioengine->state()==QAudio::ActiveState){
             // If playing, just stop it
             m_audioengine->stopPlayback();
-            m_gvWaveform->m_giPlayCursor->hide();
         }
     }
     else
