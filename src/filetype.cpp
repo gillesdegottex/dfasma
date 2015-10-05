@@ -304,7 +304,7 @@ QString FileType::info() const {
         else{
             datestr = m_modifiedtime.toString("HH:mm:ss ddMMM");
             if(m_modifiedtime>m_lastreadtime) datestr = "<b>"+datestr+"</b>";
-            str += "Last file modification at "+datestr;
+            str += "Modified at "+datestr;
         }
     }
 
