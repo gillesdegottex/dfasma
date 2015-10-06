@@ -652,6 +652,7 @@ void GVSpectrogram::mousePressEvent(QMouseEvent* event){
                     m_selection_pressedp = p;
                     m_editing_fzero->edit(p.x(), -p.y());
                     m_scene->update();
+                    gMW->m_gvSpectrumAmplitude->update();
                 }
                 else
                     playCursorSet(p.x(), true); // Place the play cursor
@@ -740,6 +741,7 @@ void GVSpectrogram::mouseMoveEvent(QMouseEvent* event){
             m_editing_fzero->edit(p.x(), -p.y());
             m_selection_pressedp = p;
             m_scene->update();
+            gMW->m_gvSpectrumAmplitude->update();
         }
     }
     else{
@@ -1216,28 +1218,6 @@ void GVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
         }
     }
 
-    // Draw the f0s
-    FTFZero* curfzero = gFL->getCurrentFTFZero(true);
-    for(size_t fi=0; fi<gFL->ftfzeros.size(); ++fi)
-        if(gFL->ftfzeros[fi]!=curfzero)
-            gFL->ftfzeros[fi]->draw_time_freq(painter, rect, m_aSpectrogramShowHarmonics->isChecked());
-    if(curfzero)
-        curfzero->draw_time_freq(painter, rect, m_aSpectrogramShowHarmonics->isChecked());
-
-    // TODO DELETE
-//    // Draw the F0 edition
-//    // TODO Use GraphicItem
-//    if(m_editing_fzero){
-//        QColor c = m_editing_fzero->getColor();
-//        c.setAlphaF(1.0);
-//        QPen outlinePen(c);
-//        outlinePen.setWidth(0);
-//        painter->setPen(outlinePen);
-//        for(size_t i=0; i<m_editing_fzero_newvalues.size()-1; ++i){
-//            painter->drawLine(QLineF(m_editing_fzero_newvalues[i], m_editing_fzero_newvalues[i+1]));
-//        }
-//    }
-
 //    cout << "GVSpectrogram::~drawBackground" << endl;
 }
 
@@ -1258,4 +1238,3 @@ GVSpectrogram::~GVSpectrogram(){
     delete m_stftcomputethread;
     delete m_dlgSettings;
 }
-

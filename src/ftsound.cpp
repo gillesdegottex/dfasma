@@ -276,15 +276,21 @@ void FTSound::setColor(const QColor &_color){
     pen.setWidth(0);
     m_giWaveform->setPen(pen);
     m_giSpectrumAmplitude->setPen(pen);
+    m_giSpectrumPhase->setPen(pen);
+    m_giSpectrumGroupDelay->setPen(pen);
 }
 
 void FTSound::zposReset(){
     m_giWaveform->setZValue(0.0);
     m_giSpectrumAmplitude->setZValue(0.0);
+    m_giSpectrumPhase->setZValue(0.0);
+    m_giSpectrumGroupDelay->setZValue(0.0);
 }
 void FTSound::zposBringForward(){
     m_giWaveform->setZValue(1.0);
     m_giSpectrumAmplitude->setZValue(1.0);
+    m_giSpectrumPhase->setZValue(1.0);
+    m_giSpectrumGroupDelay->setZValue(1.0);
 }
 
 bool FTSound::reload() {

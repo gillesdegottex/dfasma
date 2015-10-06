@@ -44,7 +44,9 @@ using namespace Easdif;
 #include "ui_wdialogsettings.h"
 #include "gvwaveform.h"
 #include "gvspectrumamplitude.h"
+#include "gvspectrogram.h"
 
+#include "qaegisampledsignal.h"
 #include "qaehelpers.h"
 
 std::deque<QString> FTFZero::s_formatstrings;
@@ -95,6 +97,17 @@ void FTFZero::constructor_external(){
     FileType::constructor_external();
 
     gFL->ftfzeros.push_back(this);
+
+    QPen pen(getColor());
+    pen.setWidth(0);
+
+    m_giSpectrogram = new QAEGISampledSignal(&ts, &f0s, gMW->m_gvSpectrogram);
+    m_giSpectrogram->setShowZeroValues(false);
+    QPen spectro_pen(getColor());
+    spectro_pen.setCosmetic(true);
+    spectro_pen.setWidth(3);
+    m_giSpectrogram->setPen(spectro_pen);
+    gMW->m_gvSpectrogram->m_scene->addItem(m_giSpectrogram);
 }
 
 FTFZero::FTFZero(const QString& _fileName, QObject* parent, FileType::FileContainer container, FileFormat fileformat)
@@ -504,7 +517,10 @@ void FTFZero::setVisible(bool shown){
     m_aspec_txt->setVisible(shown);
 }
 
-void FTFZero::setColor(const QColor& color) {
+void FTFZero::setColor(const QColor& color){
+    if(color==getColor())
+        return;
+
     FileType::setColor(color);
 
     QPen pen(getColor());
@@ -513,6 +529,18 @@ void FTFZero::setColor(const QColor& color) {
 
     m_aspec_txt->setPen(pen);
     m_aspec_txt->setBrush(brush);
+
+    pen = m_giSpectrogram->getPen();
+    pen.setColor(color);
+    m_giSpectrogram->setPen(pen);
+}
+
+void FTFZero::zposReset(){
+    m_giSpectrogram->setZValue(0.0);
+}
+
+void FTFZero::zposBringForward(){
+    m_giSpectrogram->setZValue(1.0);
 }
 
 double FTFZero::getLastSampleTime() const {
@@ -530,11 +558,14 @@ void FTFZero::edit(double t, double f0){
 
     double step = qae::median(qae::diff(ts)); // TODO Speed up: Pre-compute
 
-    std::deque<double>::iterator itlb = std::lower_bound(ts.begin(), ts.end(), t+step/2);
+    std::vector<double>::iterator itlb = std::lower_bound(ts.begin(), ts.end(), t+step/2);
     int ri = itlb-ts.begin()-1;
 
     if(ri>=0 && ri<int(ts.size()))
         f0s[ri] = f0;
+
+    m_is_edited = true;
+    setStatus();
 }
 
 FTFZero::~FTFZero() {
@@ -551,7 +582,6 @@ void FTFZero::draw_time_freq(QPainter* painter, const QRectF& rect, bool draw_ha
     if(!m_actionShow->isChecked()
        || ts.size()<2)
         return;
-
 
     QColor c = getColor();
     c.setAlphaF(1.0);
@@ -763,8 +793,8 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
     else{
         // Find where the former values are
         // (using log-time search)
-        std::deque<double>::iterator itlb = std::lower_bound(ts.begin(), ts.end(), tstart);
-        std::deque<double>::iterator ithb = std::upper_bound(ts.begin(), ts.end(), tend);
+        std::vector<double>::iterator itlb = std::lower_bound(ts.begin(), ts.end(), tstart);
+        std::vector<double>::iterator ithb = std::upper_bound(ts.begin(), ts.end(), tend);
         int erasefirst = itlb-ts.begin();
         int eraselast = ithb-ts.begin()-1;
 
@@ -774,8 +804,8 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
 //            f0s[i] = 0.0;
 
         // Erase the former values
-        std::deque<double>::iterator tsl = ts.erase(ts.begin()+erasefirst, ts.begin()+eraselast+1);
-        std::deque<double>::iterator f0sl = f0s.erase(f0s.begin()+erasefirst, f0s.begin()+eraselast+1);
+        std::vector<double>::iterator tsl = ts.erase(ts.begin()+erasefirst, ts.begin()+eraselast+1);
+        std::vector<double>::iterator f0sl = f0s.erase(f0s.begin()+erasefirst, f0s.begin()+eraselast+1);
 
         // And insert the new values
 

@@ -29,6 +29,8 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QAction>
 class QGraphicsSimpleTextItem;
 
+class QAEGISampledSignal;
+
 #include "filetype.h"
 class FTSound;
 
@@ -57,13 +59,16 @@ public:
     FTFZero(const FTFZero& ft);  // Duplicate
     ~FTFZero();
 
-    std::deque<double> ts;
-    std::deque<double> f0s;
+    std::vector<double> ts;
+    std::vector<double> f0s;
+    QAEGISampledSignal* m_giSpectrogram;
 
     QGraphicsSimpleTextItem* m_aspec_txt;
     virtual void fillContextMenu(QMenu& contextmenu);
     void updateTextsGeometry();
     void setColor(const QColor& _color);
+    virtual void zposReset();
+    virtual void zposBringForward();
 
     virtual QString info() const;
     virtual double getLastSampleTime() const;
