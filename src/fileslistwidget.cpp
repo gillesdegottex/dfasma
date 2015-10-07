@@ -627,7 +627,51 @@ void FilesListWidget::selectedFilesEstimateF0() {
         catch(QString err){
             gMW->globalWaitingBarDone();
             stopFileProgressDialog();
-            QMessageBox::StandardButton ret=QMessageBox::warning(gMW, "Error during F) estimation", "Estimation of the F0 of "+currentfile->visibleName+" failed for the following reason:\n"+err, QMessageBox::Ok | QMessageBox::Abort, QMessageBox::Ok);
+            QMessageBox::StandardButton ret=QMessageBox::warning(gMW, "Error during F0 estimation", "Estimation of the F0 of "+currentfile->visibleName+" failed for the following reason:\n"+err, QMessageBox::Ok | QMessageBox::Abort, QMessageBox::Ok);
+            if(ret==QMessageBox::Abort)
+                if(m_prgdlg)
+                    m_prgdlg->cancel();
+        }
+    }
+
+    stopFileProgressDialog();
+    m_prgdlg = NULL;
+
+    gMW->updateWindowTitle();
+}
+
+void FilesListWidget::selectedFilesEstimateVoicedUnvoicedMarkers() {
+    QList<QListWidgetItem*> l = selectedItems();
+
+    // Get the f0 estimation range ...
+    double tstart = -1;
+    double tend = -1;
+    if(gMW->m_gvWaveform->m_selection.width()>0.0){
+        tstart = gMW->m_gvWaveform->m_selection.left();
+        tend = gMW->m_gvWaveform->m_selection.right();
+    }
+
+    // These progress dialogs HAVE to be built on the stack otherwise ghost dialogs appear.
+    QProgressDialog prgdlg("Estimating Voiced/Unvoiced markers...", "Abort", 0, l.size(), this);
+    prgdlg.setMinimumDuration(500);
+    m_prgdlg = &prgdlg;
+
+    for(int i=0; i<l.size() && !m_prgdlg->wasCanceled(); i++) {
+        FileType* currentfile = (FileType*)l.at(i);
+
+        try {
+            // If from a sound, generate a new F0 file
+            if(currentfile->is(FileType::FTFZERO))
+                gFL->addItem(new FTLabels(gFL, (FTFZero*)currentfile, tstart, tend));
+
+//            gMW->m_gvSpectrogram->m_scene->update();
+
+            m_prgdlg->setValue(i);
+        }
+        catch(QString err){
+            gMW->globalWaitingBarDone();
+            stopFileProgressDialog();
+            QMessageBox::StandardButton ret=QMessageBox::warning(gMW, "Error during Voiced/Unvoiced estimation", "Estimation of the Voiced/Unvoiced markers of "+currentfile->visibleName+" failed for the following reason:\n"+err, QMessageBox::Ok | QMessageBox::Abort, QMessageBox::Ok);
             if(ret==QMessageBox::Abort)
                 if(m_prgdlg)
                     m_prgdlg->cancel();

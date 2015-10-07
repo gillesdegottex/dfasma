@@ -73,18 +73,16 @@ public:
     virtual QString info() const;
     virtual double getLastSampleTime() const;
 
+    // Edition
+    void edit(double t, double f0);
+
     // Drawing
-    void draw_time_freq(QPainter* painter, const QRectF& rect, bool draw_harmonics);
     void draw_freq_amp(QPainter* painter, const QRectF& rect);
 
     // Estimation
     FTFZero(QObject* parent, FTSound *ftsnd, double f0min, double f0max, double tstart=-1.0, double tend=-1.0, bool force=false);
     void estimate(FTSound *ftsnd, double f0min, double f0max, double tstart=-1.0, double tend=-1.0, bool force=false);
-
     static QString createFileNameFromSound(const QString& sndfilename);
-
-    void edit(double t, double f0);
-
     FTSound* m_src_snd;
 
 public slots:

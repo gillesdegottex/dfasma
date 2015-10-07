@@ -78,6 +78,7 @@ public slots:
     void selectedFilesSave();
 
     void selectedFilesEstimateF0();
+    void selectedFilesEstimateVoicedUnvoicedMarkers();
 };
 
 #endif // FILESLISTWIDGET_H

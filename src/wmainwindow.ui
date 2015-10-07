@@ -1078,6 +1078,17 @@
     <string>Show/hide the group delay</string>
    </property>
   </action>
+  <action name="actionEstimationVoicedUnvoicedMarkers">
+   <property name="text">
+    <string>Estimate Voiced/Unvoiced</string>
+   </property>
+   <property name="toolTip">
+    <string>Estimate the voiced and unvoiced markers from the selected fundamental frequency file.</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>

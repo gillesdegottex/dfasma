@@ -494,6 +494,7 @@ void FTFZero::fillContextMenu(QMenu& contextmenu) {
     contextmenu.addAction(m_actionSaveAs);
     contextmenu.addSeparator();
     contextmenu.addAction(gMW->ui->actionEstimationF0);
+    contextmenu.addAction(gMW->ui->actionEstimationVoicedUnvoicedMarkers);
 }
 
 void FTFZero::updateTextsGeometry(){
@@ -576,47 +577,6 @@ FTFZero::~FTFZero() {
 
 // Drawing ---------------------------------------------------------------------
 
-void FTFZero::draw_time_freq(QPainter* painter, const QRectF& rect, bool draw_harmonics){
-    Q_UNUSED(rect)
-
-    if(!m_actionShow->isChecked()
-       || ts.size()<2)
-        return;
-
-    QColor c = getColor();
-    c.setAlphaF(1.0);
-    QPen outlinePen(c);
-    outlinePen.setCosmetic(true);
-    outlinePen.setWidth(3);
-    painter->setPen(outlinePen);
-    double f0min = 0.5*gFL->getFs();
-    for(int ti=0; ti<int(ts.size())-1; ++ti){
-        if(f0s[ti]>0.0)
-            f0min = std::min(f0min, f0s[ti]);
-        double lf0 = f0s[ti];
-        double rf0 = f0s[ti+1];
-        if(lf0>0 && rf0>0)
-            painter->drawLine(QLineF(ts[ti], -lf0, ts[ti+1], -rf0));
-    }
-    if(f0s.back()>0.0)
-        f0min = std::min(f0min, f0s.back());
-
-    if(draw_harmonics){
-        // Draw harmonics up to Nyquist
-        c.setAlphaF(0.5);
-        outlinePen.setColor(c);
-        painter->setPen(outlinePen);
-        for(int h=2; h<int(0.5*gFL->getFs()/f0min)+1; h++){
-            for(int ti=0; ti<int(ts.size())-1; ++ti){
-                double lf0 = f0s[ti];
-                double rf0 = f0s[ti+1];
-                if(lf0>0 && rf0>0)
-                    painter->drawLine(QLineF(ts[ti], -h*lf0, ts[ti+1], -h*rf0));
-            }
-        }
-    }
-}
-
 void FTFZero::draw_freq_amp(QPainter* painter, const QRectF& rect){
     Q_UNUSED(rect)
 
@@ -689,7 +649,7 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
         m_src_snd = ftsnd;
 
     if(!gFL->hasFile(m_src_snd)){
-        QMessageBox::warning(gMW, "Missing Source file", "The source file used for updating the F0 is not present in DFasma anymore.");
+        QMessageBox::warning(gMW, "Missing Source file", "The source file used for updating the F0 is not listed in the application anymore.");
         return;
     }
 
