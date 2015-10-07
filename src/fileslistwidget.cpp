@@ -664,8 +664,6 @@ void FilesListWidget::selectedFilesEstimateVoicedUnvoicedMarkers() {
             if(currentfile->is(FileType::FTFZERO))
                 gFL->addItem(new FTLabels(gFL, (FTFZero*)currentfile, tstart, tend));
 
-//            gMW->m_gvSpectrogram->m_scene->update();
-
             m_prgdlg->setValue(i);
         }
         catch(QString err){
