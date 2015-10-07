@@ -103,6 +103,7 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     QFile docfile(":/doc_content.html");
     docfile.open(QFile::ReadOnly | QFile::Text);
     QString style = "<style>li { margin-bottom: 0.5em; }\n h4 { margin-top: 1.5em; margin-bottom: 0em; }</style>";
+    ui->textBrowser->clear();
     ui->textBrowser->insertHtml(style+QTextStream(&docfile).readAll());
     QTextCursor txtcursor;
     txtcursor.movePosition(QTextCursor::Start);
