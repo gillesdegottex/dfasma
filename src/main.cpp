@@ -89,6 +89,7 @@ int main(int argc, char *argv[])
     delete w;
 
 //    COUTD << ret << std::endl;
+    QCoreApplication::processEvents(); // Process all events before exit
     exit(ret); // WORKAROUND?: won't quit otherwise on some platform (e.g. bouzouki) TODO This is surely related to some seg fault on exit #179
 
     return ret;
