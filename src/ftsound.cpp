@@ -827,6 +827,11 @@ FTSound::~FTSound(){
     if(gMW->m_gvSpectrogram) gMW->m_gvSpectrogram->m_stftcomputethread->cancelComputation(this);
     QIODevice::close();
 
+    delete m_giWavForWaveform;
+    delete m_giWavForSpectrumAmplitude;
+    delete m_giWavForSpectrumPhase;
+    delete m_giWavForSpectrumGroupDelay;
+
     gFL->ftsnds.erase(std::find(gFL->ftsnds.begin(), gFL->ftsnds.end(), this));
 }
 

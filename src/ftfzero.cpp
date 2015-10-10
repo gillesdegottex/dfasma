@@ -585,6 +585,8 @@ void FTFZero::edit(double t, double f0){
 }
 
 FTFZero::~FTFZero() {
+    delete m_giF0ForSpectrogram;
+    delete m_giHarmonicForSpectrogram;
     delete m_aspec_txt;
 
     gFL->ftfzeros.erase(std::find(gFL->ftfzeros.begin(), gFL->ftfzeros.end(), this));

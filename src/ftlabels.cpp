@@ -994,6 +994,15 @@ void FTLabels::sort(){
 FTLabels::~FTLabels() {
     clear();
 
+    for(size_t li=0; li<waveform_labels.size(); ++li)
+        delete waveform_labels[li];
+    for(size_t li=0; li<spectrogram_labels.size(); ++li)
+        delete spectrogram_labels[li];
+    for(size_t li=0; li<waveform_lines.size(); ++li)
+        delete waveform_lines[li];
+    for(size_t li=0; li<spectrogram_lines.size(); ++li)
+        delete spectrogram_lines[li];
+
     gFL->ftlabels.erase(std::find(gFL->ftlabels.begin(), gFL->ftlabels.end(), this));
 }
 
