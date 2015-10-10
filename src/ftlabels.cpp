@@ -856,8 +856,6 @@ void FTLabels::moveLabel(int index, double position){
     spectrogram_lines[index]->setPos(position, 0);
     spectrogram_labels[index]->setPos(position, 0);
 
-    sort();
-
     m_is_edited = true;
     setStatus();
 }

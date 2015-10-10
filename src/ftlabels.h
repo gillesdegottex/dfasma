@@ -23,6 +23,7 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include <deque>
 #include <vector>
+#include <iostream>
 
 #include <QString>
 #include <QColor>
@@ -93,9 +94,10 @@ public:
     virtual void fillContextMenu(QMenu& contextmenu);
     void updateTextsGeometry();
 
-    int getNbLabels() const {return int(starts.size());}
+    int getNbLabels() const                      {return int(starts.size());}
     void moveLabel(int index, double position);
     void moveAllLabel(double delay);
+    void finishEditing()                         {sort();}
     void changeText(int index, const QString& text);
     void setColor(const QColor& _color);
 

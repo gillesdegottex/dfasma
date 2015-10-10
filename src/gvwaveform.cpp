@@ -756,24 +756,24 @@ void GVWaveform::mouseMoveEvent(QMouseEvent* event){
             }
         }
     }
-    else if(m_currentAction==CALabelWritting) {
+    else if(m_currentAction==CALabelWritting){
         FTLabels* ftlabel = gFL->getCurrentFTLabels();
         if(ftlabel) {
             m_ftlabel_current_index = -1;
             m_currentAction = CANothing;
         }
     }
-    else if(m_currentAction==CALabelModifPosition) {
+    else if(m_currentAction==CALabelModifPosition){
         FTLabels* ftlabel = gFL->getCurrentFTLabels();
         if(ftlabel) {
             ftlabel->moveLabel(m_ca_pressed_index, p.x());
             updateTextsGeometry();
         }
     }
-    else if(m_currentAction==CALabelAllModifPosition) {
+    else if(m_currentAction==CALabelAllModifPosition){
 //        COUTD << "CALabelAllModifPosition" << endl;
         FTLabels* ftlabel = gFL->getCurrentFTLabels();
-        if(ftlabel) {
+        if(ftlabel){
             ftlabel->moveAllLabel(p.x()-m_selection_pressedp.x());
             m_selection_pressedp = p;
             m_scene->update();
@@ -804,15 +804,17 @@ void GVWaveform::mouseMoveEvent(QMouseEvent* event){
             // Check if a marker is close and show the horiz split cursor if true
             bool foundclosemarker = false;
             FTLabels* ftl = gFL->getCurrentFTLabels();
-            if(ftl) {
+            if(ftl){
                 for(int lli=0; !foundclosemarker && lli<ftl->getNbLabels(); lli++) {
                     // cout << ftl->labels[lli].toLatin1().data() << ": " << ftl->starts[lli] << endl;
                     QPoint slp = mapFromScene(QPointF(ftl->starts[lli],0));
                     foundclosemarker = std::abs(slp.x()-event->x())<5;
                 }
             }
-            if(foundclosemarker)     setCursor(Qt::SplitHCursor);
-            else                     setCursor(Qt::CrossCursor);
+            if(foundclosemarker)
+                setCursor(Qt::SplitHCursor);
+            else
+                setCursor(Qt::CrossCursor);
 
             if(event->modifiers().testFlag(Qt::ShiftModifier)){
             }
@@ -840,6 +842,12 @@ void GVWaveform::mouseReleaseEvent(QMouseEvent* event){
         float tmp = m_mouseSelection.left();
         m_mouseSelection.setLeft(m_mouseSelection.right());
         m_mouseSelection.setRight(tmp);
+    }
+
+    if(m_currentAction==CALabelModifPosition){
+        FTLabels* ftlabel = gFL->getCurrentFTLabels();
+        if(ftlabel)
+            ftlabel->finishEditing();
     }
 
     if(gMW->ui->actionSelectionMode->isChecked()){
