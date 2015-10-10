@@ -405,6 +405,13 @@ void FilesListWidget::fileSelectionChanged() {
                 m_current_sourced.push_back(ftsnd);
             }
         }
+        if(ft->is(FileType::FTLABELS)){
+            FTFZero* ftfzero = ((FTLabels*)ft)->m_src_fzero;
+            if(hasFile(ftfzero)){
+                ftfzero->setIsSource(true);
+                m_current_sourced.push_back(ftfzero);
+            }
+        }
     }
 
     gMW->ui->actionSelectedFilesSave->setEnabled(m_nb_labels_in_selection>0 || m_nb_fzeros_in_selection>0);
