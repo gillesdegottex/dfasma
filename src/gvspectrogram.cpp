@@ -660,6 +660,7 @@ void GVSpectrogram::mousePressEvent(QMouseEvent* event){
                     m_editing_fzero->edit(p.x(), -p.y());
                     m_scene->update();
                     gMW->m_gvSpectrumAmplitude->update();
+                    current_fzero->setEditing(true);
                 }
                 else
                     playCursorSet(p.x(), true); // Place the play cursor
@@ -828,17 +829,9 @@ void GVSpectrogram::mouseReleaseEvent(QMouseEvent* event) {
 
     QPointF p = mapToScene(event->pos());
 
-//    if(gMW->ui->actionEditMode->isChecked()){
-//        if(m_currentAction==CAEditFZero){
-//            if(m_editing_fzero_newvalues.size()>1){
-//                COUTD << "Update using the " << m_editing_fzero_newvalues.size() << " new values" << endl;
-
-//            }
-//            m_editing_fzero_newvalues.clear();
-//        }
-//    }
-
-
+    if(gMW->ui->actionEditMode->isChecked())
+        if(m_currentAction==CAEditFZero)
+            m_editing_fzero->setEditing(false);
 
     m_currentAction = CANothing;
 

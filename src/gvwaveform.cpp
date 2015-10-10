@@ -587,8 +587,11 @@ void GVWaveform::mousePressEvent(QMouseEvent* event){
                         playCursorSet(p.x(), true); // Put the play cursor
                 }
 
+                // Force this one so that there is no need to select a
+                // file if there is just one waveform
+                // (TODO could be replaced by selecting the first file autom.)
                 FTSound* selectedsound = gFL->getCurrentFTSound(true);
-                if(selectedsound) {
+                if(!selectedlabels && selectedsound) {
                     if(event->modifiers().testFlag(Qt::ShiftModifier)){
                     }
                     else if(event->modifiers().testFlag(Qt::ControlModifier)){
