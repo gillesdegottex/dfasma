@@ -329,6 +329,8 @@ bool FTSound::reload() {
         throw QString("Memory cannot hold this file!");
     }
 
+    m_giWavForWaveform->clearCache();
+
 //    COUTD << "FTSound::~reload" << endl;
     return true;
 }
