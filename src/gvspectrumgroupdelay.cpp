@@ -344,12 +344,6 @@ void GVSpectrumGroupDelay::mousePressEvent(QMouseEvent* event){
             m_selection_pressedp = p;
             m_pressed_mouseinviewport = mapFromScene(p);
             m_pressed_viewrect = mapToScene(viewport()->rect()).boundingRect();
-
-            // If the mouse is close enough to a border, set to it
-            if(std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().left())<20)
-                m_selection_pressedp.setX(m_scene->sceneRect().left());
-            if(std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().right())<20)
-                m_selection_pressedp.setX(m_scene->sceneRect().right());
         }
     }
 

@@ -549,6 +549,7 @@ void FTFZero::setColor(const QColor& color){
     pen = m_giF0ForSpectrogram->getPen();
     pen.setColor(color);
     m_giF0ForSpectrogram->setPen(pen);
+    m_giHarmonicForSpectrogram->setPen(pen);
 }
 
 void FTFZero::zposReset(){

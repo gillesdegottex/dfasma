@@ -296,15 +296,13 @@ void GVWaveform::fitViewToSoundsAmplitude() {
 
 void GVWaveform::updateSceneRect() {
     m_scene->setSceneRect(-1.0/gFL->getFs(), -1.05*m_ampzoom, gFL->getMaxDuration()+1.0/gFL->getFs(), 2.1*m_ampzoom);
-//    updateTextsGeometry();
 }
 
 void GVWaveform::viewSet(QRectF viewrect, bool sync) {
 
     QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
 
-//    cout << "GVWaveform::viewSet: viewrect=" << viewrect << endl;
-//    cout << "GVWaveform::viewSet: currentviewrect=" << currentviewrect << endl;
+//    COUTD << "GVWaveform::viewSet: viewrect=" << viewrect << endl;
 
     if(viewrect!=currentviewrect) {
 
@@ -316,9 +314,9 @@ void GVWaveform::viewSet(QRectF viewrect, bool sync) {
         }
 
         if(viewrect.top()<m_scene->sceneRect().top())
-            viewrect.setTop(m_scene->sceneRect().top()-0.01);
+            viewrect.setTop(m_scene->sceneRect().top()-0.02);
         if(viewrect.bottom()>m_scene->sceneRect().bottom())
-            viewrect.setBottom(m_scene->sceneRect().bottom()+0.01);
+            viewrect.setBottom(m_scene->sceneRect().bottom()+0.02);
         if(viewrect.left()<m_scene->sceneRect().left())
             viewrect.setLeft(m_scene->sceneRect().left());
         if(viewrect.right()>m_scene->sceneRect().right())
@@ -480,7 +478,7 @@ void GVWaveform::wheelEvent(QWheelEvent* event){
 
     QPoint numDegrees = event->angleDelta() / 8;
 
-//    std::cout << "GVWaveform::wheelEvent " << numDegrees.y() << endl;
+//    COUTD << "GVWaveform::wheelEvent " << numDegrees.y() << endl;
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
@@ -621,10 +619,15 @@ void GVWaveform::mousePressEvent(QMouseEvent* event){
             m_pressed_scenerect = mapToScene(viewport()->rect()).boundingRect();
             setCursor(Qt::CrossCursor);
 
+            QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+//            COUTD << viewrect << " " << m_scene->sceneRect() << std::endl;
             // If the mouse is close enough to a border, set to it
-            if(std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().left())<20)
+//            COUTD << std::abs(viewrect.right()-1.0/gFL->getFs()-m_scene->sceneRect().right()) << " " << std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().right()) << std::endl;
+            if(std::abs(viewrect.left()-1.0/gFL->getFs()-m_scene->sceneRect().left())<std::numeric_limits<float>::epsilon()
+               && std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().left())<20)
                 m_selection_pressedp.setX(m_scene->sceneRect().left());
-            if(std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().right())<20)
+            if(std::abs(viewrect.right()-1.0/gFL->getFs()-m_scene->sceneRect().right())<std::numeric_limits<float>::epsilon()
+               && std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().right())<20)
                 m_selection_pressedp.setX(m_scene->sceneRect().right());
         }
         else if (event->modifiers().testFlag(Qt::ControlModifier) &&
@@ -641,7 +644,7 @@ void GVWaveform::mousePressEvent(QMouseEvent* event){
 }
 
 void GVWaveform::mouseMoveEvent(QMouseEvent* event){
-//    std::cout << "GVWaveform::mouseMoveEvent" << m_selection.width() << endl;
+//    COUTD << "GVWaveform::mouseMoveEvent" << m_selection.width() << endl;
 
     QPointF p = mapToScene(event->pos());
 

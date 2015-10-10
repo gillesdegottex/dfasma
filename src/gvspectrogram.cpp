@@ -480,7 +480,6 @@ void GVSpectrogram::updateSTFTPlot(bool force){
 void GVSpectrogram::updateSceneRect() {
     m_scene->setSceneRect(-1.0/gFL->getFs(), -gFL->getFs()/2.0, gFL->getMaxDuration()+1.0/gFL->getFs(), gFL->getFs()/2.0);
     m_scene->update();
-//    updateTextsGeometry();
 }
 
 void GVSpectrogram::allSoundsChanged(){
@@ -497,9 +496,9 @@ void GVSpectrogram::viewSet(QRectF viewrect, bool forwardsync) {
             viewrect = currentviewrect;
 
         if(viewrect.top()<=m_scene->sceneRect().top())
-            viewrect.setTop(m_scene->sceneRect().top()-2);
+            viewrect.setTop(m_scene->sceneRect().top());
         if(viewrect.bottom()>=m_scene->sceneRect().bottom())
-            viewrect.setBottom(m_scene->sceneRect().bottom()+2);
+            viewrect.setBottom(m_scene->sceneRect().bottom());
         if(viewrect.left()<m_scene->sceneRect().left())
             viewrect.setLeft(m_scene->sceneRect().left());
         if(viewrect.right()>m_scene->sceneRect().right())
@@ -567,7 +566,6 @@ void GVSpectrogram::wheelEvent(QWheelEvent* event) {
     // Clip to avoid flipping (workaround of a Qt bug ?)
     if(numDegrees>90) numDegrees = 90;
     if(numDegrees<-90) numDegrees = -90;
-
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
@@ -675,14 +673,22 @@ void GVSpectrogram::mousePressEvent(QMouseEvent* event){
             m_pressed_mouseinviewport = mapFromScene(p);
             m_pressed_viewrect = mapToScene(viewport()->rect()).boundingRect();
 
+            QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+//            COUTD << viewrect << std::endl;
             // If the mouse is close enough to a border, set to it
-            if(std::abs(m_pressed_mouseinviewport.y()-viewport()->rect().bottom())<20)
+//            COUTD << std::abs(viewrect.top()-m_scene->sceneRect().top()) << " " << std::abs(m_pressed_mouseinviewport.y()-viewport()->rect().top()) << std::endl;
+//            COUTD << std::numeric_limits<float>::epsilon() << std::endl;
+            if(std::abs(viewrect.bottom()-m_scene->sceneRect().bottom())<std::numeric_limits<float>::epsilon()
+               && std::abs(m_pressed_mouseinviewport.y()-viewport()->rect().bottom())<20)
                 m_selection_pressedp.setY(m_scene->sceneRect().bottom());
-            if(std::abs(m_pressed_mouseinviewport.y()-viewport()->rect().top())<20)
+            if(std::abs(viewrect.top()-m_scene->sceneRect().top())<std::numeric_limits<float>::epsilon()
+               && std::abs(m_pressed_mouseinviewport.y()-viewport()->rect().top())<20)
                 m_selection_pressedp.setY(m_scene->sceneRect().top());
-            if(std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().left())<20)
+            if(std::abs(viewrect.left()-m_scene->sceneRect().left())==0
+               && std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().left())<20)
                 m_selection_pressedp.setX(m_scene->sceneRect().left());
-            if(std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().right())<20)
+            if(std::abs(viewrect.right()-m_scene->sceneRect().right())==0
+               && std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().right())<20)
                 m_selection_pressedp.setX(m_scene->sceneRect().right());
         }
     }
