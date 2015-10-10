@@ -522,11 +522,11 @@ void GVSpectrumAmplitude::updateDFTs(){
             if(!snd->m_dftparams.isEmpty()
                && snd->m_dftparams==m_trgDFTParameters
                && snd->m_dftparams.wav==snd->wavtoplay
-               && snd->m_dftparams.ampscale==snd->m_giWaveform->gain()
-               && snd->m_dftparams.delay==snd->m_giWaveform->delay())
+               && snd->m_dftparams.ampscale==snd->m_giWavForWaveform->gain()
+               && snd->m_dftparams.delay==snd->m_giWavForWaveform->delay())
                 continue;
 
-            WAVTYPE gain = snd->m_giWaveform->gain();
+            WAVTYPE gain = snd->m_giWavForWaveform->gain();
 
             if(gFL->ftsnds[fi]->m_actionInvPolarity->isChecked())
                 gain *= -1;
@@ -534,7 +534,7 @@ void GVSpectrumAmplitude::updateDFTs(){
             int n = 0;
             int wn = 0;
             for(; n<m_trgDFTParameters.winlen; n++){
-                wn = m_trgDFTParameters.nl+n - snd->m_giWaveform->delay();
+                wn = m_trgDFTParameters.nl+n - snd->m_giWavForWaveform->delay();
 
                 if(wn>=0 && wn<int(snd->wavtoplay->size())) {
                     WAVTYPE value = gain*(*(snd->wavtoplay))[wn];
@@ -562,9 +562,9 @@ void GVSpectrumAmplitude::updateDFTs(){
             snd->m_dftamp.resize(dftlen/2+1);
             for(n=0; n<dftlen/2+1; n++)
                 snd->m_dftamp[n] = 20*std::log10(std::abs(m_fft->out[n]));
-            snd->m_giSpectrumAmplitude->updateMinMaxValues();
-            snd->m_giSpectrumAmplitude->setSamplingRate(1.0/double(gFL->getFs()/dftlen));
-            snd->m_giSpectrumAmplitude->clearCache();
+            snd->m_giWavForSpectrumAmplitude->updateMinMaxValues();
+            snd->m_giWavForSpectrumAmplitude->setSamplingRate(1.0/double(gFL->getFs()/dftlen));
+            snd->m_giWavForSpectrumAmplitude->clearCache();
 
             snd->m_dftphase.resize(dftlen/2+1);
             double delay = (2.0*M_PI*(win.size()-1)/2.0)/dftlen;
@@ -574,9 +574,9 @@ void GVSpectrumAmplitude::updateDFTs(){
                 else
                     snd->m_dftphase[n] = qae::wrap(std::arg(m_fft->out[n])+delay*n);
             }
-            snd->m_giSpectrumPhase->updateMinMaxValues();
-            snd->m_giSpectrumPhase->setSamplingRate(1.0/double(gFL->getFs()/dftlen));
-            snd->m_giSpectrumPhase->clearCache();
+            snd->m_giWavForSpectrumPhase->updateMinMaxValues();
+            snd->m_giWavForSpectrumPhase->setSamplingRate(1.0/double(gFL->getFs()/dftlen));
+            snd->m_giWavForSpectrumPhase->clearCache();
 
             // If the group delay is requested, update its data
             if(gMW->ui->actionShowGroupDelaySpectrum->isChecked()){
@@ -602,16 +602,16 @@ void GVSpectrumAmplitude::updateDFTs(){
                         snd->m_dftgd[n] -= delay; // Remove the window's delay
                     }
                 }
-                snd->m_giSpectrumGroupDelay->updateMinMaxValues();
-                snd->m_giSpectrumGroupDelay->setSamplingRate(1.0/double(gFL->getFs()/dftlen));
-                snd->m_giSpectrumGroupDelay->clearCache();
+                snd->m_giWavForSpectrumGroupDelay->updateMinMaxValues();
+                snd->m_giWavForSpectrumGroupDelay->setSamplingRate(1.0/double(gFL->getFs()/dftlen));
+                snd->m_giWavForSpectrumGroupDelay->clearCache();
             }
 
             // Convert the spectrum values to log values
             snd->m_dftparams = m_trgDFTParameters;
             snd->m_dftparams.wav = snd->wavtoplay;
-            snd->m_dftparams.ampscale = snd->m_giWaveform->gain();
-            snd->m_dftparams.delay = snd->m_giWaveform->delay();
+            snd->m_dftparams.ampscale = snd->m_giWavForWaveform->gain();
+            snd->m_dftparams.delay = snd->m_giWavForWaveform->delay();
 
             didany = true;
         }
@@ -868,6 +868,12 @@ void GVSpectrumAmplitude::mousePressEvent(QMouseEvent* event){
             m_selection_pressedp = p;
             m_pressed_mouseinviewport = mapFromScene(p);
             m_pressed_viewrect = mapToScene(viewport()->rect()).boundingRect();
+
+            // If the mouse is close enough to a border, set to it
+            if(std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().left())<20)
+                m_selection_pressedp.setX(m_scene->sceneRect().left());
+            if(std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().right())<20)
+                m_selection_pressedp.setX(m_scene->sceneRect().right());
         }
     }
 
@@ -945,14 +951,14 @@ void GVSpectrumAmplitude::mouseMoveEvent(QMouseEvent* event){
                 m_currentAction = CANothing;
             }
             else {
-                currentftsound->m_giWaveform->setGain(currentftsound->m_giWaveform->gain()*std::pow(10, -(p.y()-m_selection_pressedp.y())/20.0));
+                currentftsound->m_giWavForWaveform->setGain(currentftsound->m_giWavForWaveform->gain()*std::pow(10, -(p.y()-m_selection_pressedp.y())/20.0));
 
                 m_selection_pressedp = p;
 
-                if(currentftsound->m_giWaveform->gain()>1e10)
-                    currentftsound->m_giWaveform->setGain(1e10);
-                else if(currentftsound->m_giWaveform->gain()<1e-10)
-                    currentftsound->m_giWaveform->setGain(1e-10);
+                if(currentftsound->m_giWavForWaveform->gain()>1e10)
+                    currentftsound->m_giWavForWaveform->setGain(1e10);
+                else if(currentftsound->m_giWavForWaveform->gain()<1e-10)
+                    currentftsound->m_giWavForWaveform->setGain(1e-10);
 
                 currentftsound->needDFTUpdate();
 
@@ -1287,8 +1293,8 @@ void GVSpectrumAmplitude::aunzoom(){
         if(!gFL->ftsnds[fi]->isVisible())
             continue;
 
-        ymin = std::min(ymin, gFL->ftsnds[fi]->m_giSpectrumAmplitude->getMinValue());
-        ymax = std::max(ymax, gFL->ftsnds[fi]->m_giSpectrumAmplitude->getMaxValue());
+        ymin = std::min(ymin, gFL->ftsnds[fi]->m_giWavForSpectrumAmplitude->getMinValue());
+        ymax = std::max(ymax, gFL->ftsnds[fi]->m_giWavForSpectrumAmplitude->getMaxValue());
     }
     ymin = ymin-3;
     ymax = ymax+3;

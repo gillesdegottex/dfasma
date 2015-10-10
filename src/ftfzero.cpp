@@ -101,13 +101,26 @@ void FTFZero::constructor_external(){
     QPen pen(getColor());
     pen.setWidth(0);
 
-    m_giSpectrogram = new QAEGISampledSignal(&ts, &f0s, gMW->m_gvSpectrogram);
-    m_giSpectrogram->setShowZeroValues(false);
+    m_giF0ForSpectrogram = new QAEGISampledSignal(&ts, &f0s, gMW->m_gvSpectrogram);
+    m_giF0ForSpectrogram->setShowZeroValues(false);
     QPen spectro_pen(getColor());
     spectro_pen.setCosmetic(true);
     spectro_pen.setWidth(3);
-    m_giSpectrogram->setPen(spectro_pen);
-    gMW->m_gvSpectrogram->m_scene->addItem(m_giSpectrogram);
+    m_giF0ForSpectrogram->setPen(spectro_pen);
+    gMW->m_gvSpectrogram->m_scene->addItem(m_giF0ForSpectrogram);
+
+    m_giHarmonicForSpectrogram = new QAEGISampledSignal(&ts, &f0s, gMW->m_gvSpectrogram);
+    m_giHarmonicForSpectrogram->setShowZeroValues(false);
+    QColor harmcolor = getColor();
+//    harmcolor.setAlphaF(0.5);
+    QPen harmspectro_pen(harmcolor);
+    harmspectro_pen.setCosmetic(true);
+    harmspectro_pen.setWidth(3);
+    m_giHarmonicForSpectrogram->setPen(harmspectro_pen);
+//    m_giHarmonicForSpectrogram->setVisible(true);
+    m_giHarmonicForSpectrogram->setVisible(gMW->m_gvSpectrogram->m_aSpectrogramShowHarmonics->isChecked());
+//    m_giHarmonicForSpectrogram->setGain(1.0);
+    gMW->m_gvSpectrogram->m_scene->addItem(m_giHarmonicForSpectrogram);
 }
 
 FTFZero::FTFZero(const QString& _fileName, QObject* parent, FileType::FileContainer container, FileFormat fileformat)
@@ -516,6 +529,8 @@ void FTFZero::setVisible(bool shown){
         updateTextsGeometry();
 
     m_aspec_txt->setVisible(shown);
+    m_giF0ForSpectrogram->setVisible(shown);
+    m_giHarmonicForSpectrogram->setVisible(shown);
 }
 
 void FTFZero::setColor(const QColor& color){
@@ -531,17 +546,17 @@ void FTFZero::setColor(const QColor& color){
     m_aspec_txt->setPen(pen);
     m_aspec_txt->setBrush(brush);
 
-    pen = m_giSpectrogram->getPen();
+    pen = m_giF0ForSpectrogram->getPen();
     pen.setColor(color);
-    m_giSpectrogram->setPen(pen);
+    m_giF0ForSpectrogram->setPen(pen);
 }
 
 void FTFZero::zposReset(){
-    m_giSpectrogram->setZValue(0.0);
+    m_giF0ForSpectrogram->setZValue(0.0);
 }
 
 void FTFZero::zposBringForward(){
-    m_giSpectrogram->setZValue(1.0);
+    m_giF0ForSpectrogram->setZValue(1.0);
 }
 
 double FTFZero::getLastSampleTime() const {

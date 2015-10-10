@@ -127,6 +127,7 @@ signals:
 public slots:
     void showScrollBars(bool show);
     void gridSetVisible(bool visible);
+    void showHarmonics(bool show);
 
     void allSoundsChanged();
     void playCursorSet(double t, bool forwardsync);

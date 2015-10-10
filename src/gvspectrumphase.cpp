@@ -325,7 +325,7 @@ void GVSpectrumPhase::mousePressEvent(QMouseEvent* event){
                 m_selection_pressedp = p;
                 FTSound* currentftsound = gFL->getCurrentFTSound(true);
                 if(currentftsound)
-                    m_pressed_delay = currentftsound->m_giWaveform->delay();
+                    m_pressed_delay = currentftsound->m_giWavForWaveform->delay();
             }
         }
     }
@@ -336,6 +336,12 @@ void GVSpectrumPhase::mousePressEvent(QMouseEvent* event){
             m_selection_pressedp = p;
             m_pressed_mouseinviewport = mapFromScene(p);
             m_pressed_viewrect = mapToScene(viewport()->rect()).boundingRect();
+
+            // If the mouse is close enough to a border, set to it
+            if(std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().left())<20)
+                m_selection_pressedp.setX(m_scene->sceneRect().left());
+            if(std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().right())<20)
+                m_selection_pressedp.setX(m_scene->sceneRect().right());
         }
     }
 
@@ -413,7 +419,7 @@ void GVSpectrumPhase::mouseMoveEvent(QMouseEvent* event){
         double dt = ((gFL->getFs()/m_selection_pressedp.x())*dy/(2*M_PI))/gFL->getFs();
         FTSound* currentftsound = gFL->getCurrentFTSound(true);
         if(currentftsound){
-            currentftsound->m_giWaveform->setDelay(m_pressed_delay - dt*gFL->getFs());
+            currentftsound->m_giWavForWaveform->setDelay(m_pressed_delay - dt*gFL->getFs());
 
             currentftsound->needDFTUpdate();
 

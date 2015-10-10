@@ -87,7 +87,7 @@ public:
     std::vector<WAVTYPE> wavfiltered;
     std::vector<WAVTYPE>* wavtoplay;
     WAVTYPE m_filteredmaxamp;
-    QAEGIUniformlySampledSignal* m_giWaveform;
+    QAEGIUniformlySampledSignal* m_giWavForWaveform;
 
     // Spectra
     class DFTParameters{
@@ -133,13 +133,13 @@ public:
     };
 
     std::vector<FFTTYPE> m_dftamp; // [dB]
-    QAEGIUniformlySampledSignal* m_giSpectrumAmplitude;
+    QAEGIUniformlySampledSignal* m_giWavForSpectrumAmplitude;
 
     std::vector<FFTTYPE> m_dftphase; // [rad]
-    QAEGIUniformlySampledSignal* m_giSpectrumPhase;
+    QAEGIUniformlySampledSignal* m_giWavForSpectrumPhase;
 
     std::vector<FFTTYPE> m_dftgd; // [s]
-    QAEGIUniformlySampledSignal* m_giSpectrumGroupDelay;
+    QAEGIUniformlySampledSignal* m_giWavForSpectrumGroupDelay;
 
     DFTParameters m_dftparams;
 

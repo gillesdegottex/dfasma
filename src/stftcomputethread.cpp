@@ -15,8 +15,8 @@ STFTComputeThread::STFTParameters::STFTParameters(FTSound* reqnd, const std::vec
     clear();
 
     snd = reqnd;
-    ampscale = reqnd->m_giWaveform->gain();
-    delay = reqnd->m_giWaveform->delay();
+    ampscale = reqnd->m_giWavForWaveform->gain();
+    delay = reqnd->m_giWavForWaveform->delay();
     win = reqwin;
     stepsize = reqstepsize;
     dftlen = reqdftlen;
@@ -132,7 +132,7 @@ void STFTComputeThread::run() {
                 int fs = params_running.stftparams.snd->fs;
                 FFTTYPE stftmin = std::numeric_limits<FFTTYPE>::infinity();
                 FFTTYPE stftmax = -std::numeric_limits<FFTTYPE>::infinity();
-                qint64 snddelay = params_running.stftparams.snd->m_giWaveform->delay();
+                qint64 snddelay = params_running.stftparams.snd->m_giWavForWaveform->delay();
                 std::deque<std::vector<WAVTYPE> >& stft = params_running.stftparams.snd->m_stft;
 
                 stft.clear();
@@ -141,7 +141,7 @@ void STFTComputeThread::run() {
     //            COUTD << "INIT: stftmin=" << stftmin << " stftmax=" << stftmax << std::endl;
     //            COUTD << "winlen=" << winlen << " dftlen=" << dftlen << "(plan=" << m_fft->size() << ")" << std::endl;
 
-                int maxsampleindex = int(wav->size())-1 + int(params_running.stftparams.snd->m_giWaveform->delay());
+                int maxsampleindex = int(wav->size())-1 + int(params_running.stftparams.snd->m_giWavForWaveform->delay());
                 WAVTYPE value;
 
     //            QTime starttime = QTime::currentTime();

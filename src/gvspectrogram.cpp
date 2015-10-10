@@ -58,6 +58,7 @@ using namespace std;
 
 #include "qaesigproc.h"
 #include "qaehelpers.h"
+#include "qaegisampledsignal.h"
 
 GVSpectrogram::GVSpectrogram(WMainWindow* parent)
     : QGraphicsView(parent)
@@ -108,7 +109,7 @@ GVSpectrogram::GVSpectrogram(WMainWindow* parent)
     m_aSpectrogramShowHarmonics->setChecked(false);
 //    m_aSpectrogramShowHarmonics->setIcon(QIcon(":/icons/grid.svg"));
     gMW->m_settings.add(m_aSpectrogramShowHarmonics);
-    connect(m_aSpectrogramShowHarmonics, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
+    connect(m_aSpectrogramShowHarmonics, SIGNAL(toggled(bool)), this, SLOT(showHarmonics(bool)));
 
     m_aAutoUpdate = new QAction(tr("Auto-Update STFT"), this);
     m_aAutoUpdate->setStatusTip(tr("Auto-Update the STFT view when the waveform is modified"));
@@ -271,6 +272,12 @@ void GVSpectrogram::showScrollBars(bool show) {
 
 void GVSpectrogram::gridSetVisible(bool visible){
     m_giGrid->setVisible(visible);
+}
+
+void GVSpectrogram::showHarmonics(bool show){
+    for(size_t fi=0; fi<gFL->ftfzeros.size(); ++fi) // TODO Could do only the prev selected one
+        gFL->ftfzeros[fi]->m_giHarmonicForSpectrogram->setVisible(show);
+    m_scene->update();
 }
 
 void GVSpectrogram::amplitudeExtentSlidersChanged(){
@@ -666,6 +673,16 @@ void GVSpectrogram::mousePressEvent(QMouseEvent* event){
             m_selection_pressedp = p;
             m_pressed_mouseinviewport = mapFromScene(p);
             m_pressed_viewrect = mapToScene(viewport()->rect()).boundingRect();
+
+            // If the mouse is close enough to a border, set to it
+            if(std::abs(m_pressed_mouseinviewport.y()-viewport()->rect().bottom())<20)
+                m_selection_pressedp.setY(m_scene->sceneRect().bottom());
+            if(std::abs(m_pressed_mouseinviewport.y()-viewport()->rect().top())<20)
+                m_selection_pressedp.setY(m_scene->sceneRect().top());
+            if(std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().left())<20)
+                m_selection_pressedp.setX(m_scene->sceneRect().left());
+            if(std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().right())<20)
+                m_selection_pressedp.setX(m_scene->sceneRect().right());
         }
     }
 
@@ -773,6 +790,19 @@ void GVSpectrogram::mouseMoveEvent(QMouseEvent* event){
                     setCursor(Qt::OpenHandCursor);
                 else
                     setCursor(Qt::CrossCursor);
+
+                FTFZero* curfzero = gFL->getCurrentFTFZero();
+                if(curfzero && gMW->m_gvSpectrogram->m_aSpectrogramShowHarmonics->isChecked()){
+                    // Get the clostest harmonic
+                    double ct = p.x();
+                    double cf0 = qae::nearest<double>(curfzero->ts, curfzero->f0s, ct, -1.0);
+                    if(cf0>0){
+                        int h = int(-p.y()/cf0 +0.5);
+                        curfzero->m_giHarmonicForSpectrogram->setGain(h);
+                        curfzero->m_giHarmonicForSpectrogram->show();
+                        m_scene->update(); // Can make it lighter ?
+                    }
+                }
             }
         }
         else if(gMW->ui->actionEditMode->isChecked()){

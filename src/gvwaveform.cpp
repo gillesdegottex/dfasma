@@ -281,7 +281,7 @@ void GVWaveform::fitViewToSoundsAmplitude() {
         WAVTYPE maxwavmaxamp = 0.0;
         for(unsigned int si=0; si<gFL->ftsnds.size(); si++)
             if(gFL->ftsnds[si]->isVisible())
-                maxwavmaxamp = std::max(maxwavmaxamp, gFL->ftsnds[si]->m_giWaveform->getMaxAbsoluteValue());
+                maxwavmaxamp = std::max(maxwavmaxamp, gFL->ftsnds[si]->m_giWavForWaveform->getMaxAbsoluteValue());
 //                maxwavmaxamp = std::max(maxwavmaxamp, gFL->ftsnds[si]->m_giWaveform->gain()*gFL->ftsnds[si]->m_wavmaxamp);
 
         if(maxwavmaxamp==0.0)
@@ -595,7 +595,7 @@ void GVWaveform::mousePressEvent(QMouseEvent* event){
                         // cout << "Scaling the waveform" << endl;
                         m_currentAction = CAWaveformDelay;
                         m_selection_pressedp = p;
-                        m_tmpdelay = selectedsound->m_giWaveform->delay()/gFL->getFs();
+                        m_tmpdelay = selectedsound->m_giWavForWaveform->delay()/gFL->getFs();
                         setCursor(Qt::SizeHorCursor);
                         gMW->setEditing(selectedsound);
                     }
@@ -617,6 +617,12 @@ void GVWaveform::mousePressEvent(QMouseEvent* event){
             m_pressed_mouseinviewport = mapFromScene(p);
             m_pressed_scenerect = mapToScene(viewport()->rect()).boundingRect();
             setCursor(Qt::CrossCursor);
+
+            // If the mouse is close enough to a border, set to it
+            if(std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().left())<20)
+                m_selection_pressedp.setX(m_scene->sceneRect().left());
+            if(std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().right())<20)
+                m_selection_pressedp.setX(m_scene->sceneRect().right());
         }
         else if (event->modifiers().testFlag(Qt::ControlModifier) &&
                  m_selection.width()>0) {
@@ -699,13 +705,13 @@ void GVWaveform::mouseMoveEvent(QMouseEvent* event){
                 m_currentAction = CANothing;
             }
             else {
-                currentftsound->m_giWaveform->setGain(currentftsound->m_giWaveform->gain()*pow(10, -10*(p.y()-m_selection_pressedp.y())/20.0));
+                currentftsound->m_giWavForWaveform->setGain(currentftsound->m_giWavForWaveform->gain()*pow(10, -10*(p.y()-m_selection_pressedp.y())/20.0));
                 m_selection_pressedp = p;
 
-                if(currentftsound->m_giWaveform->gain()>1e10)
-                    currentftsound->m_giWaveform->setGain(1e10);
-                else if(currentftsound->m_giWaveform->gain()<1e-10)
-                    currentftsound->m_giWaveform->setGain(1e-10);
+                if(currentftsound->m_giWavForWaveform->gain()>1e10)
+                    currentftsound->m_giWavForWaveform->setGain(1e10);
+                else if(currentftsound->m_giWavForWaveform->gain()<1e-10)
+                    currentftsound->m_giWavForWaveform->setGain(1e-10);
 
                 currentftsound->needDFTUpdate();
                 currentftsound->setStatus();
@@ -731,9 +737,9 @@ void GVWaveform::mouseMoveEvent(QMouseEvent* event){
             else {
                 m_tmpdelay += p.x()-m_selection_pressedp.x();
                 m_selection_pressedp = p;
-                currentftsound->m_giWaveform->setDelay(int(0.5+m_tmpdelay*gFL->getFs()));
+                currentftsound->m_giWavForWaveform->setDelay(int(0.5+m_tmpdelay*gFL->getFs()));
                 if(m_tmpdelay<0)
-                    currentftsound->m_giWaveform->setDelay(currentftsound->m_giWaveform->delay()+1);
+                    currentftsound->m_giWavForWaveform->setDelay(currentftsound->m_giWavForWaveform->delay()+1);
 
                 currentftsound->needDFTUpdate();
                 currentftsound->setStatus();

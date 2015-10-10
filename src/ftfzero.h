@@ -61,7 +61,8 @@ public:
 
     std::vector<double> ts;
     std::vector<double> f0s;
-    QAEGISampledSignal* m_giSpectrogram;
+    QAEGISampledSignal* m_giF0ForSpectrogram;
+    QAEGISampledSignal* m_giHarmonicForSpectrogram;
 
     QGraphicsSimpleTextItem* m_aspec_txt;
     virtual void fillContextMenu(QMenu& contextmenu);
