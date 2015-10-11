@@ -139,15 +139,16 @@ void STFTComputeThread::run() {
                 params_running.stftparams.snd->m_stftts.clear();
 
     //            COUTD << "INIT: stftmin=" << stftmin << " stftmax=" << stftmax << std::endl;
-    //            COUTD << "winlen=" << winlen << " dftlen=" << dftlen << "(plan=" << m_fft->size() << ")" << std::endl;
+//                COUTD << "winlen=" << winlen << " dftlen=" << dftlen << "(plan=" << m_fft->size() << ")" << std::endl;
 
                 int maxsampleindex = int(wav->size())-1 + int(params_running.stftparams.snd->m_giWavForWaveform->delay());
                 WAVTYPE value;
 
     //            QTime starttime = QTime::currentTime();
 
+//                COUTD << " maxsampleindex=" << maxsampleindex << std::endl;
                 for(int si=0; !gMW->ui->pbSTFTComputingCancel->isChecked(); si++){
-                    if(int(si*stepsize+winlen)-1 > maxsampleindex)
+                    if(int(si*stepsize) > maxsampleindex)
                         break;
 
                     // Add a new frame to the STFT
@@ -293,6 +294,7 @@ void STFTComputeThread::run() {
     //            QTime starttime = QTime::currentTime();
 
                 m_mutex_imageallocation.lock();
+//                COUTD << params_running.stftparams.snd->m_stft.size() << " " << params_running.stftparams.snd->m_stft[0].size() << std::endl;
                 *(params_running.imgstft) = QImage(int(params_running.stftparams.snd->m_stft.size()), int(params_running.stftparams.snd->m_stft[0].size()), QImage::Format_RGB32);
                 m_mutex_imageallocation.unlock();
                 if(params_running.imgstft->isNull())
@@ -331,6 +333,7 @@ void STFTComputeThread::run() {
 
 //                COUTD << '"' << elc.size() << " " << dftsize << '"' << endl;
 //                COUTD << "ymin=" << ymin << " ymax=" << ymax << " divmaxmmin=" << divmaxmmin << std::endl;
+//                COUTD << "dftlen=" << params_running.stftparams.dftlen << " stftlen=" << stftlen << std::endl;
                 for(int si=0; si<stftlen && !gMW->ui->pbSTFTComputingCancel->isChecked(); si++, pimgb++){
                     pstft = params_running.stftparams.snd->m_stft[si].begin();
                     for(int n=0; n<dftsize; n++, pstft++) {

@@ -325,7 +325,7 @@ bool FTSound::reload() {
         load_finalize();
     }
     catch(std::bad_alloc err){
-        QMessageBox::critical(NULL, "Memory full!", "There is not enough free memory for computing this STFT");
+        QMessageBox::critical(NULL, "Memory full!", "There is not enough free memory for re-loading this file.");
 
         throw QString("Memory cannot hold this file!");
     }
