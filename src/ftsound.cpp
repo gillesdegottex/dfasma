@@ -186,6 +186,7 @@ void FTSound::constructor_external() {
 
     m_giWavForSpectrumGroupDelay = new QAEGIUniformlySampledSignal(&m_dftgd, 1.0, gMW->m_gvSpectrumGroupDelay);
     m_giWavForSpectrumGroupDelay->setPen(pen);
+//    m_giWavForSpectrumGroupDelay
     gMW->m_gvSpectrumGroupDelay->m_scene->addItem(m_giWavForSpectrumGroupDelay);
 }
 

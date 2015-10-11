@@ -1108,9 +1108,7 @@ void GVSpectrogram::azoomout(){
 }
 
 void GVSpectrogram::aunzoom(){
-
-    QRectF rect = m_scene->sceneRect();
-    viewSet(rect, true);
+    viewSet(m_scene->sceneRect(), true);
 }
 
 void GVSpectrogram::setMouseCursorPosition(QPointF p, bool forwardsync) {

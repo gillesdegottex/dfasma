@@ -74,25 +74,29 @@ GVSpectrumGroupDelay::GVSpectrumGroupDelay(WMainWindow* parent)
 
     // Cursor
     m_giCursorHoriz = new QGraphicsLineItem(0, -100, 0, 100);
+    m_giCursorHoriz->hide();
     QPen cursorPen(QColor(64, 64, 64));
     cursorPen.setWidth(0);
     m_giCursorHoriz->setPen(cursorPen);
-    m_giCursorHoriz->hide();
+    m_giCursorHoriz->setZValue(100);
     m_scene->addItem(m_giCursorHoriz);
     m_giCursorVert = new QGraphicsLineItem(0, 0, gFL->getFs()/2.0, 0);
-    m_giCursorVert->setPen(cursorPen);
     m_giCursorVert->hide();
+    m_giCursorVert->setPen(cursorPen);
+    m_giCursorVert->setZValue(100);
     m_scene->addItem(m_giCursorVert);
     QFont font("Helvetica", 10);
     m_giCursorPositionXTxt = new QGraphicsSimpleTextItem();
+    m_giCursorPositionXTxt->hide();
     m_giCursorPositionXTxt->setBrush(QColor(64, 64, 64));
     m_giCursorPositionXTxt->setFont(font);
-    m_giCursorPositionXTxt->hide();
+    m_giCursorPositionXTxt->setZValue(100);
     m_scene->addItem(m_giCursorPositionXTxt);
     m_giCursorPositionYTxt = new QGraphicsSimpleTextItem();
+    m_giCursorPositionYTxt->hide();
     m_giCursorPositionYTxt->setBrush(QColor(64, 64, 64));
     m_giCursorPositionYTxt->setFont(font);
-    m_giCursorPositionYTxt->hide();
+    m_giCursorPositionYTxt->setZValue(100);
     m_scene->addItem(m_giCursorPositionYTxt);
 
     // Selection
@@ -128,10 +132,9 @@ GVSpectrumGroupDelay::GVSpectrumGroupDelay(WMainWindow* parent)
 }
 
 void GVSpectrumGroupDelay::updateSceneRect() {
+//    COUTD << "GVSpectrumGroupDelay::updateSceneRect" << std::endl;
 
     QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
-
-//    double maxdelay = 0.1;
 
     double maxdelay = gFL->getMaxDuration()/2;
     if(gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.winlen>0)
