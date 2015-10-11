@@ -192,6 +192,10 @@ GVSpectrogram::GVSpectrogram(WMainWindow* parent)
     m_aZoomOut->setShortcut(Qt::Key_Minus);
     m_aZoomOut->setIcon(QIcon(":/icons/zoomout.svg"));
     connect(m_aZoomOut, SIGNAL(triggered()), this, SLOT(azoomout()));
+    m_aUnZoom = new QAction(tr("Un-Zoom"), this);
+    m_aUnZoom->setStatusTip(tr("Un-Zoom"));
+    m_aUnZoom->setIcon(QIcon(":/icons/unzoomxy.svg"));
+    connect(m_aUnZoom, SIGNAL(triggered()), this, SLOT(aunzoom()));
     m_aZoomOnSelection = new QAction(tr("&Zoom on selection"), this);
     m_aZoomOnSelection->setStatusTip(tr("Zoom on selection"));
     m_aZoomOnSelection->setEnabled(false);
@@ -227,6 +231,7 @@ GVSpectrogram::GVSpectrogram(WMainWindow* parent)
 //    m_toolBar->addSeparator();
 //    m_toolBar->addAction(m_aZoomIn);
 //    m_toolBar->addAction(m_aZoomOut);
+    m_toolBar->addAction(m_aUnZoom);
 //    m_toolBar->addSeparator();
     m_toolBar->addAction(m_aZoomOnSelection);
     m_toolBar->addAction(m_aSelectionClear);
@@ -1100,6 +1105,12 @@ void GVSpectrogram::azoomout(){
 
     setMouseCursorPosition(QPointF(-1,0), false);
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
+}
+
+void GVSpectrogram::aunzoom(){
+
+    QRectF rect = m_scene->sceneRect();
+    viewSet(rect, true);
 }
 
 void GVSpectrogram::setMouseCursorPosition(QPointF p, bool forwardsync) {

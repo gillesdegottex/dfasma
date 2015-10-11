@@ -120,6 +120,7 @@ public:
     QAction* m_aSelectionClear;
     QAction* m_aZoomIn;
     QAction* m_aZoomOut;
+    QAction* m_aUnZoom;
     QAction* m_aShowProperties;
 
 signals:
@@ -147,6 +148,7 @@ public slots:
     void selectionClear(bool forwardsync=true);
     void azoomin();
     void azoomout();
+    void aunzoom();
 };
 
 #endif // GVSPECTROGRAM_H
