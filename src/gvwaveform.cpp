@@ -30,6 +30,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "gvspectrumamplitudewdialogsettings.h"
 #include "ui_gvspectrumamplitudewdialogsettings.h"
 #include "gvspectrumphase.h"
+#include "gvspectrumgroupdelay.h"
 #include "gvspectrogram.h"
 #include "ftsound.h"
 #include "ftlabels.h"
@@ -622,6 +623,10 @@ void GVWaveform::mousePressEvent(QMouseEvent* event){
             QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 //            COUTD << viewrect << " " << m_scene->sceneRect() << std::endl;
             // If the mouse is close enough to a border, set to it
+            // TODO There is still some crapy very very small differences and things
+            //      unclear in the scene rect and the viewrect, which is supposely
+            //      set to the scene rect. But it might not be possible to solve
+            //      this issue because of bug 11945 (approx worked around by removeHiddenMargin(.))
 //            COUTD << std::abs(viewrect.right()-1.0/gFL->getFs()-m_scene->sceneRect().right()) << " " << std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().right()) << std::endl;
             if(std::abs(viewrect.left()-1.0/gFL->getFs()-m_scene->sceneRect().left())<std::numeric_limits<float>::epsilon()
                && std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().left())<20)
@@ -1182,7 +1187,9 @@ void GVWaveform::selectionSet(QRectF selection, bool forwardsync){
 
     // Spectra
     if(gMW->m_gvSpectrumAmplitude
-       && (gMW->m_gvSpectrumAmplitude->isVisible() || gMW->m_gvSpectrumPhase->isVisible()))
+       && (gMW->m_gvSpectrumAmplitude->isVisible()
+           || gMW->m_gvSpectrumPhase->isVisible()
+           || gMW->m_gvSpectrumGroupDelay->isVisible()))
         gMW->m_gvSpectrumAmplitude->setWindowRange(m_selection.left(), m_selection.right());
 
     updateSelectionText();

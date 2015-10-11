@@ -361,7 +361,7 @@ void GVSpectrumAmplitude::setSamplingRate(double fs)
 }
 
 void GVSpectrumAmplitude::setWindowRange(qreal tstart, qreal tend){
-//    COUTD << "QGVAmplitudeSpectrum::setWindowRange " << tstart << "," << tend << endl;
+//    COUTD << "GVSpectrumAmplitude::setWindowRange " << tstart << "," << tend << endl;
 
     if(tstart==tend)
         return;
@@ -499,7 +499,7 @@ void GVSpectrumAmplitude::setWindowRange(qreal tstart, qreal tend){
 }
 
 void GVSpectrumAmplitude::updateDFTs(){
-//    COUTD << "QGVAmplitudeSpectrum::updateDFTs " << endl;
+//    COUTD << "GVSpectrumAmplitude::updateDFTs " << endl;
     if(m_trgDFTParameters.win.size()<2) // Avoid the DFT of one sample ...
         return;
 
