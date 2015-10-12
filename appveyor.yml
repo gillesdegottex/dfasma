@@ -85,7 +85,13 @@ install:
   - ps: New-Item -ItemType directory -Name easdif | Out-Null
   - ps: Invoke-WebRequest "http://gillesdegottex.eu/EASDIF_SDIF.zip" -OutFile "EASDIF_SDIF.zip"
   - ps: 7z x "EASDIF_SDIF.zip" -y
-  - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif\EASDIF_SDIF"
+  - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\EASDIF_SDIF"
+  - ps: New-Item -ItemType directory -Name build | Out-Null
+  - ps: cd build
+  - ps: cmake -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX_DEFAULTS_INIT:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=c:\projects\dfasma\external\sdif\easdif ../EASDIF_SDIF
+  - ps: make
+  - ps: make install
+  - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif"
 
 build_script:
 # Compile
