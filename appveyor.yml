@@ -91,8 +91,8 @@ install:
   - ps: cd build
   - ps: cmake -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=c:/projects/dfasma/external/sdif/easdif ../EASDIF_SDIF
   - ps: Get-ChildItem .
-  - ps: msbuild myproject.vcxproj
-  # - ps: make install
+  - ps: msbuild ALL_BUILD.vcxproj
+  - ps: msbuild INSTALL.vcxproj
   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif"
 
 build_script:
