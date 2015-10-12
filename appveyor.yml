@@ -77,6 +77,10 @@ install:
   - git submodule update --init --recursive
 #  - ps: cd ..
 
+# Install SDIF
+  - choco install -y cmake cvs
+# TODO
+
 build_script:
 # Compile
 #  - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\Program Files\Mega-Nerd\libsndfile" "FFT_LIBDIR=C:\projects\dfasma\lib\fftw-3.3.4-dll64" dfasma.pro
