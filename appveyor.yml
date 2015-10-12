@@ -97,7 +97,8 @@ install:
   - ps: Get-ChildItem .
   - ps: msbuild libeasdif_lib.vcxproj
   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\build\bin\Release"
-  - ps: msbuild INSTALL.vcxproj
+  - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\build\bin"
+  # - ps: msbuild INSTALL.vcxproj
   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif"
 
 build_script:
