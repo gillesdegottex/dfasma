@@ -83,7 +83,9 @@ install:
   - ps: New-Item -ItemType directory -Name sdif | Out-Null
   - ps: cd sdif
   - ps: New-Item -ItemType directory -Name easdif | Out-Null
-  - ps: cvs -z3 -d:pserver:anonymous@sdif.cvs.sourceforge.net:/cvsroot/sdif co -P EASDIF_SDIF
+  - ps: Invoke-WebRequest "http://gillesdegottex.eu/EASDIF_SDIF.zip" -OutFile "EASDIF_SDIF.zip"
+  - ps: 7z x "EASDIF_SDIF.zip" -y
+  - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif\EASDIF_SDIF"
 
 build_script:
 # Compile
