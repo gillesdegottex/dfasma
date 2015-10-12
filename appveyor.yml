@@ -78,8 +78,12 @@ install:
 #  - ps: cd ..
 
 # Install SDIF
-  - choco install -y cmake cvs
-# TODO
+  - choco install -y cmake
+  - ps: cd external
+  - ps: New-Item -ItemType directory -Name sdif | Out-Null
+  - ps: cd sdif
+  - ps: New-Item -ItemType directory -Name easdif | Out-Null
+  - ps: cvs -z3 -d:pserver:anonymous@sdif.cvs.sourceforge.net:/cvsroot/sdif co -P EASDIF_SDIF
 
 build_script:
 # Compile
