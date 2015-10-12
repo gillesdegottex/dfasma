@@ -64,6 +64,8 @@ This example has been widely adapted for the purpose of the DFasma software.
 
 #include "../../src/ftsound.h"
 
+#include "qaehelpers.h"
+
 const int    NotifyIntervalMs       = 100;
 
 //-----------------------------------------------------------------------------
@@ -141,7 +143,7 @@ bool AudioEngine::isInitialized(){
 
 void AudioEngine::startPlayback(FTSound* dssound, double tstart, double tstop, double fstart, double fstop)
 {
-//    std::cout << "AudioEngine::startPlayback" << endl;
+    DLOG << "AudioEngine::startPlayback";
 
     if (m_audioOutput) {
         if (m_state==QAudio::SuspendedState) {
@@ -289,6 +291,7 @@ bool AudioEngine::initialize(int fs) {
 
     if (selectFormat()) {
         if (m_format != format) {
+            DLOG << "Format changed";
             if(m_audioOutput){
                 m_audioOutput->disconnect(this);
                 delete m_audioOutput;
@@ -318,6 +321,8 @@ bool AudioEngine::initialize(int fs) {
 
 bool AudioEngine::selectFormat()
 {
+    DLOG << "AudioEngine::selectFormat";
+
     // Force fs and channel count to that of the file
     QAudioFormat format;
     format.setByteOrder(QAudioFormat::LittleEndian);
@@ -327,7 +332,11 @@ bool AudioEngine::selectFormat()
     format.setSampleRate(m_fs);
     format.setChannelCount(1);
 
+    DLOG << "Try format " << format;
+
     const bool outputSupport = m_audioOutputDevice.isFormatSupported(format);
+
+    DLOG << outputSupport;
 
     if (!outputSupport){
         // TODO merge with function initialize and throw an exception
