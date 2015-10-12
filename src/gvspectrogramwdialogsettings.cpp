@@ -79,7 +79,7 @@ void GVSpectrogramWDialogSettings::checkImageSize() {
     ui->lblActualStepSize->setText(QString("%2s(%1)").arg(stepsize).arg(double(stepsize)/gFL->getFs()));
 
     int imgheight = dftlen/2+1;
-    int imgwidth = int(1+double(maxsampleindex+1-winlen)/stepsize);
+    int imgwidth = int(1+double(maxsampleindex+1)/stepsize); // TODO Review this formula
 
     long int size = double(imgwidth)*imgheight*sizeof(QImage::Format_RGB32)/(1024.0*1024.0);
 

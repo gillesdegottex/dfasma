@@ -207,6 +207,8 @@ void STFTComputeThread::run() {
     //                        m_params_current.stftparams.snd->m_stft[si][n] = std::log(std::abs(m_fft->getMidOutput(n)));
 
                         if(params_running.stftparams.cepliftorder>0){
+                            // Prepare the window for cepstral smoothing
+                            std::vector<FFTTYPE> win = qae::hamming(params_running.stftparams.cepliftorder*2+1);
                             std::vector<FFTTYPE> cc;
                             // First, fix possible Inf amplitudes to avoid ending up with NaNs.
                             if(qIsInf(stft[si][0]))
@@ -215,20 +217,48 @@ void STFTComputeThread::run() {
                                 if(qIsInf(stft[si][n]))
                                     stft[si][n] = stft[si][n-1];
                             }
-                            hspec2rcc(stft[si], m_fft, cc);
-                            std::vector<FFTTYPE> win = qae::hamming(params_running.stftparams.cepliftorder*2+1);
-                            for(int n=0; n<params_running.stftparams.cepliftorder && n<int(cc.size())-1; ++n)
-                                cc[n+1] *= win[n];
-                            if(!params_running.stftparams.cepliftpresdc)
-                                cc[0] = 0.0;
-                            rcc2hspec(cc, m_fft, stft[si]);
-    //                        if(si==499) {
-    //                            std::cout << "Liftered:=";
-    //                            for(int n=0; n<dftlen/2+1; n++) {
-    //                                std::cout << stft[si][n] << " ";
-    //                            }
-    //                            std::cout << std::endl;
-    //                        }
+//                            // If we need to compute less coefficients than log(N),
+//                            // don't use the FFT, just compute these coefs.
+//                            // Could do: Optimize threshold according to time
+//                            // This is actually slower than computing all the coefs
+//                            // using the FFTW3 ...
+//                            if(params_running.stftparams.cepliftorder<std::log(dftlen)-1){
+//                                // Compute the Fourier coefs manually
+//                                std::vector<WAVTYPE> &frame = (stft[si]);
+//                                std::vector<double> coses(dftlen/2+1);
+//                                for(int cci=1; cci<1+params_running.stftparams.cepliftorder; ++cci){
+//                                    double cc = frame[0];
+//                                    coses[0] = 1.0;
+//                                    for(int n=1; n<dftlen/2; ++n){
+//                                        coses[n] = cos(2.0*M_PI*cci*n/dftlen);
+//                                        cc += 2*frame[n]*coses[n];
+//                                    }
+//                                    coses[dftlen/2] = cos(M_PI*cci);
+//                                    cc += frame[dftlen/2]*coses[dftlen/2];
+//                                    cc /= dftlen;
+//                                    cc *= 2.0;
+
+//                                    for(int n=0; n<dftlen/2+1; ++n)
+//                                        frame[n] -= (1.0-win[cci-1])*cc*coses[n];
+//                                }
+//                                if(!params_running.stftparams.cepliftpresdc){
+//                                    double ccdc = frame[0];
+//                                    for(int n=1; n<dftlen/2; ++n)
+//                                        ccdc += 2*frame[n];
+//                                    ccdc += frame[dftlen/2];
+//                                    ccdc /= dftlen;
+//                                    for(int n=0; n<dftlen/2+1; ++n)
+//                                        frame[n] -= ccdc;
+//                                }
+//                            }
+//                            else{
+                                hspec2rcc(stft[si], m_fft, cc);
+                                for(int cci=1; cci<1+params_running.stftparams.cepliftorder && cci<int(cc.size()); ++cci)
+                                    cc[cci] *= win[cci-1];
+                                if(!params_running.stftparams.cepliftpresdc)
+                                    cc[0] = 0.0;
+                                rcc2hspec(cc, m_fft, stft[si]);
+//                            }
                         }
 
                         // Convert to [dB] and compute min and max magnitudes[dB]
@@ -286,6 +316,7 @@ void STFTComputeThread::run() {
 
     //            std::cout << "Spent: " << starttime.elapsed() << std::endl;
             }
+//            COUTD << params_running.stftparams.snd->m_stft.size() << std::endl;
 
             // Update the STFT image
             if(!gMW->ui->pbSTFTComputingCancel->isChecked()){
