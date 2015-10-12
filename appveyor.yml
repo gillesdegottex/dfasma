@@ -6,6 +6,10 @@ platform:
 
 configuration:
   - Release
+  
+branches:
+  only:
+    - master
 
 install:
   - echo APPVEYOR_REPO_TAG_NAME %APPVEYOR_REPO_TAG_NAME%
@@ -91,7 +95,7 @@ install:
   - ps: cd build
   - ps: cmake -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=c:/projects/dfasma/external/sdif/easdif ../EASDIF_SDIF
   - ps: Get-ChildItem .
-  - ps: msbuild ALL_BUILD.vcxproj
+  - ps: msbuild libeasdif_lib.vcxproj
   - ps: msbuild INSTALL.vcxproj
   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif"
 
