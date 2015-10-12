@@ -79,6 +79,7 @@ install:
 
 # Install SDIF
   - choco install cmake -version 3.0.2
+  - choco install make
   - ps: cd external
   - ps: New-Item -ItemType directory -Name sdif | Out-Null
   - ps: cd sdif
