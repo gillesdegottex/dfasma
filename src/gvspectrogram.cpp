@@ -1205,7 +1205,7 @@ void GVSpectrogram::playCursorSet(double t, bool forwardsync){
 }
 
 void GVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
-
+    Q_UNUSED(rect)
 //    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": GVSpectrogram::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
     // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
