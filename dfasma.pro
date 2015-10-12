@@ -38,6 +38,9 @@ CONFIG += file_audio_libsndfile
 # Numerical precision. Chose among: precision_double, precision_float
 CONFIG += precision_double
 
+# Activate this line for logging some information into a txt file
+#CONFIG += debug_logfile
+
 # ------------------------------------------------------------------------------
 # (modify the following at your own risks !) -----------------------------------
 
@@ -76,6 +79,13 @@ CONFIG(precision_float, precision_double|precision_float) {
     message(With single precision)
 } else {
     message(With double precision)
+}
+
+CONFIG(debug_logfile) {
+    message(Information will be dropped in a log file)
+    DEFINES += DEBUG_LOGFILE
+} else {
+    release: DEFINES += QT_NO_WARNING_OUTPUT QT_NO_DEBUG_OUTPUT
 }
 
 # SDIF file library ------------------------------------------------------------
