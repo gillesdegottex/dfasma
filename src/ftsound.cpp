@@ -521,6 +521,7 @@ void FTSound::setSamplingRate(double _fs){
 
 double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop, double fstart, double fstop) {
 //    COUTD << "FTSound::setPlay" << endl;
+    DLOG << "FTSound::setPlay";
 
     m_outputaudioformat = format;
 

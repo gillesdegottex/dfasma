@@ -69,6 +69,8 @@ using namespace std;
 #include <QMimeData>
 #include <QScrollBar>
 #include <QProgressDialog>
+#include <QtDebug>
+
 #include "qaehelpers.h"
 
 #ifdef SUPPORT_SDIF
@@ -792,14 +794,18 @@ void WMainWindow::setInWaitingForFileState(){
 // Audio management ============================================================
 
 void WMainWindow::initializeSoundSystem(double fs) {
+    DLOG << "WMainWindow::initializeSoundSystem fs=" << fs;
 
     m_gvSpectrumAmplitude->setSamplingRate(fs);
 
     m_audioengine->initialize(fs);
     if(m_audioengine->isInitialized()) {
+        DLOG << "isInitialized";
         ui->actionPlay->setEnabled(true);
         m_pbVolume->setEnabled(true);
     }
+
+    DLOG << "WMainWindow::~initializeSoundSystem";
 }
 
 void WMainWindow::selectAudioOutputDevice(int di) {
@@ -878,6 +884,7 @@ void WMainWindow::playFiltered(){
 }
 
 void WMainWindow::play(bool filtered){
+    DLOG << "WMainWindow::play";
 
     if(m_audioengine && m_audioengine->isInitialized()){
 
