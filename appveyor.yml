@@ -109,6 +109,7 @@ install:
   - ps: Copy-Item SDIF\sdifconfig\sdif*.h ..\easdif\include
   - ps: Copy-Item easdif\*.hpp ..\easdif\include\easdif
   - ps: Copy-Item ..\EASDIF_SDIF\easdif\*.hpp ..\easdif\include\easdif
+  - ps: Copy-Item ..\EASDIF_SDIF\easdif\easdif.h ..\easdif\include\easdif
   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif"
   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif\bin"
   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif\lib"
