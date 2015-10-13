@@ -309,7 +309,7 @@ bool AudioEngine::initialize(int fs) {
     }
     else {
 //        qDebug() << "AudioEngine::initialize format not supported." << endl;
-        emit errorMessage(tr("Audio output cannot be initialized"), tr("No available audio device or output format not supported."));
+        emit errorMessage(tr("Audio output cannot be initialized"), tr("No available audio device or output format not supported.")); // TODO Split the error with more details
     }
 
     // qDebug() << "AudioEngine::initialize" << "format" << m_format;

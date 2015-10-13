@@ -802,6 +802,7 @@ void WMainWindow::initializeSoundSystem(double fs) {
     if(m_audioengine->isInitialized()) {
         DLOG << "isInitialized";
         ui->actionPlay->setEnabled(true);
+        ui->actionPlay->setToolTip("Play the selected file (presse shift+space for filtering the audio according to a spectral selection).");
         m_pbVolume->setEnabled(true);
         m_pbVolume->show();
         m_gvWaveform->m_giPlayCursor->show();
@@ -809,6 +810,7 @@ void WMainWindow::initializeSoundSystem(double fs) {
     }
     else {
         ui->actionPlay->setEnabled(false);
+        ui->actionPlay->setToolTip("Audio output not available");
         m_pbVolume->setEnabled(false);
         m_pbVolume->hide();
         m_gvWaveform->m_giPlayCursor->hide();
