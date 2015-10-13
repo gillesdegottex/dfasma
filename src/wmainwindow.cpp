@@ -803,6 +803,16 @@ void WMainWindow::initializeSoundSystem(double fs) {
         DLOG << "isInitialized";
         ui->actionPlay->setEnabled(true);
         m_pbVolume->setEnabled(true);
+        m_pbVolume->show();
+        m_gvWaveform->m_giPlayCursor->show();
+        m_gvSpectrogram->m_giPlayCursor->show();
+    }
+    else {
+        ui->actionPlay->setEnabled(false);
+        m_pbVolume->setEnabled(false);
+        m_pbVolume->hide();
+        m_gvWaveform->m_giPlayCursor->hide();
+        m_gvSpectrogram->m_giPlayCursor->hide();
     }
 
     DLOG << "WMainWindow::~initializeSoundSystem";
@@ -863,8 +873,6 @@ void WMainWindow::audioOutputFormatChanged(const QAudioFormat &format) {
 
         m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText("<small>"+str+"</small>");
         m_dlgSettings->ui->lblAudioOutputDeviceFormat->show();
-        ui->actionPlay->setEnabled(true);
-        m_pbVolume->setEnabled(true);
     }
 //    cout << "WMainWindow::~audioOutputFormatChanged" << endl;
 }
