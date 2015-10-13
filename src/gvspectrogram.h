@@ -47,8 +47,6 @@ class GVSpectrogram : public QGraphicsView
 
     QTime m_progresswidgets_lastup;
 
-    QGraphicsLineItem* m_giPlayCursor;
-
     FTFZero* m_editing_fzero;
 //    std::deque<QPointF> m_editing_fzero_newvalues; // TODO DELETE
 
@@ -79,6 +77,8 @@ public:
     QGraphicsSimpleTextItem* m_giMouseCursorTxtTime;
     QGraphicsSimpleTextItem* m_giMouseCursorTxtFreq;
     void setMouseCursorPosition(QPointF p, bool forwardsync);
+
+    QGraphicsLineItem* m_giPlayCursor;
 
     QAEGIGrid* m_giGrid;
 
