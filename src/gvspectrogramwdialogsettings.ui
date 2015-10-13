@@ -36,18 +36,6 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="lblActualWindowLength">
-          <property name="font">
-           <font>
-            <pointsize>8</pointsize>
-           </font>
-          </property>
-          <property name="text">
-           <string>&lt;actual window length&gt;</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QDoubleSpinBox" name="sbSpectrogramWindowSize">
           <property name="suffix">
            <string>s</string>
@@ -419,24 +407,6 @@
           </property>
           <property name="text">
            <string>Time step size</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="lblActualStepSize">
-          <property name="font">
-           <font>
-            <pointsize>8</pointsize>
-           </font>
-          </property>
-          <property name="toolTip">
-           <string>The actual step size might be slightly different since it is always an integer number of samples.</string>
-          </property>
-          <property name="statusTip">
-           <string>The actual step size might be slightly different since it is always an integer number of samples.</string>
-          </property>
-          <property name="text">
-           <string>&lt;actual step size&gt;</string>
           </property>
          </widget>
         </item>

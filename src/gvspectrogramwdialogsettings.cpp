@@ -75,8 +75,8 @@ void GVSpectrogramWDialogSettings::checkImageSize() {
     else if(ui->cbSpectrogramDFTSizeType->currentIndex()==1)
         dftlen = std::pow(2.0, std::ceil(log2(float(winlen)))+ui->sbSpectrogramOversamplingFactor->value());//[samples]
 
-    ui->lblActualWindowLength->setText(QString("%2s(%1)").arg(winlen).arg(double(winlen)/gFL->getFs()));
-    ui->lblActualStepSize->setText(QString("%2s(%1)").arg(stepsize).arg(double(stepsize)/gFL->getFs()));
+    ui->sbSpectrogramWindowSize->setToolTip(QString("Actual value is %2s (%1 samples)").arg(winlen).arg(double(winlen)/gFL->getFs()));
+    ui->sbSpectrogramStepSize->setToolTip(QString("Actual value is  %2s (%1 samples)").arg(stepsize).arg(double(stepsize)/gFL->getFs()));
 
     int imgheight = dftlen/2+1;
     int imgwidth = int(1+double(maxsampleindex+1)/stepsize); // TODO Review this formula
