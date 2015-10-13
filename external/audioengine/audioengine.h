@@ -89,7 +89,6 @@ class AudioEngine : public QObject
     FTSound* m_ftsound; // The selected sound to play
     double m_tobeplayed;
 
-    bool selectFormat();
     void setState(QAudio::State state);
     void setFormat(const QAudioFormat &format);
 
@@ -123,7 +122,6 @@ public slots:
 signals:
     void stateChanged(QAudio::State state);
     void infoMessage(const QString &message, int durationMs);
-    void errorMessage(const QString &heading, const QString &detail);
     void formatChanged(const QAudioFormat &format);
     void audioOutputDeviceChanged(const QAudioDeviceInfo& device);
     void playPositionChanged(double t);

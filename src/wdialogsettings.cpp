@@ -109,7 +109,6 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     txtcursor.movePosition(QTextCursor::Start);
     ui->textBrowser->setTextCursor(txtcursor);
     
-    ui->lblAudioOutputDeviceFormat->hide();
     adjustSize();
 }
 

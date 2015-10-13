@@ -797,6 +797,9 @@
    </property>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
+   <property name="toolTip">
+    <string>Play the selected file (presse shift+space for filtering the audio according to a spectral selection).</string>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>

@@ -75,6 +75,7 @@ class WMainWindow : public QMainWindow
     void disconnectModes();
 
     QProgressBar* m_pbVolume;
+    QAction* m_pbVolumeAction;
 
     // Global waiting bar for operations blocking the main window
     QProgressBar* m_globalWaitingBar;
@@ -111,7 +112,6 @@ public slots:
     void allSoundsChanged(); // TODO Should drop this
     void selectAudioOutputDevice(int di);
     void selectAudioOutputDevice(const QString& devicename);
-    void audioEngineError(const QString &heading, const QString &detail);
     void resetFiltering();
 
     void setInWaitingForFileState();
