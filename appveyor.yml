@@ -96,8 +96,9 @@ install:
   - ps: if ($env:platform -eq 'x86') {cmake -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=c:/projects/dfasma/external/sdif/easdif ../EASDIF_SDIF}
   - ps: if ($env:platform -eq 'x64') {cmake -G"Visual Studio 12 Win64" -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=c:/projects/dfasma/external/sdif/easdif ../EASDIF_SDIF}
   - ps: Get-ChildItem .
-  - ps: if ($env:platform -eq 'x86') {msbuild libs.vcxproj /property:Platform=x86}
-  - ps: if ($env:platform -eq 'x64') {msbuild libs.vcxproj /property:Platform=x64}
+  # - ps: if ($env:platform -eq 'x86') {msbuild libs.vcxproj /property:Platform=x86}
+  # - ps: if ($env:platform -eq 'x64') {msbuild libs.vcxproj /property:Platform=x64}
+  - ps: cmake --build
   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\build\"
   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\build\bin\Release"
   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\build\lib\Release"
