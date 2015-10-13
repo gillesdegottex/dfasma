@@ -8,7 +8,7 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # DFasma is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -28,11 +28,10 @@ CONFIG += fft_fftw3
 
 # For the audio file support
 # Chose among: file_audio_libsndfile, file_audio_libsox, file_audio_builtin
-#              (file_audio_qt, file_audio_libav)
 CONFIG += file_audio_libsndfile
 
 # Additional file format support
-# SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
+# SDIF (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
 #CONFIG += file_sdif
 
 # Numerical precision. Chose among: precision_double, precision_float
