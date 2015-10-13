@@ -95,7 +95,6 @@ install:
   - ps: cd build
   - ps: cmake -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=c:/projects/dfasma/external/sdif/easdif ../EASDIF_SDIF
   - ps: Get-ChildItem .
-  - ps: msbuild sdif.vcxproj
   - ps: msbuild libs.vcxproj
   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\build\"
   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\build\bin\Release"
@@ -104,6 +103,10 @@ install:
   - ps: New-Item -ItemType directory -Name "c:\projects\dfasma\external\sdif\easdif\lib" | Out-Null
   - ps: Copy-Item lib\* ..\easdif\
   - ps: New-Item -ItemType directory -Name "c:\projects\dfasma\external\sdif\easdif\include" | Out-Null
+  - ps: New-Item -ItemType directory -Name "c:\projects\dfasma\external\sdif\easdif\include\easdif" | Out-Null
+  - ps: Copy-Item SDIF\sdifconfig\sdif*.h ..\easdif\include
+  - ps: Copy-Item easdif\easdif*.hpp ..\easdif\include\easdif
+  - ps: Copy-Item ..\EASDIF_SDIF\easdif\*.hpp ..\easdif\include\easdif
   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif"
 
 build_script:
