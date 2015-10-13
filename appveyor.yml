@@ -101,9 +101,9 @@ install:
   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\build\lib\Release"
   # - ps: msbuild INSTALL.vcxproj
   - ps: New-Item -ItemType directory -Name ..\easdif\lib | Out-Null
-  - ps: Copy-Item lib\* ..\easdif\lib
+  - ps: Copy-Item lib\Release\* ..\easdif\lib
   - ps: New-Item -ItemType directory -Name ..\easdif\bin | Out-Null
-  - ps: Copy-Item bin\* ..\easdif\bin
+  - ps: Copy-Item bin\Release\* ..\easdif\bin
   - ps: New-Item -ItemType directory -Name ..\easdif\include | Out-Null
   - ps: New-Item -ItemType directory -Name ..\easdif\include\easdif | Out-Null
   - ps: Copy-Item SDIF\sdifconfig\sdif*.h ..\easdif\include
