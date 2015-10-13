@@ -158,7 +158,7 @@
        <item>
         <widget class="QGroupBox" name="groupBox_3">
          <property name="title">
-          <string>Filtered playback (Ctrl-Space)</string>
+          <string>Filtered playback (Shift-Space)</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_6">
           <item>
