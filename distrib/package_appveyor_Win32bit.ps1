@@ -19,6 +19,7 @@ Copy-Item c:\projects\dfasma\release\dfasma.exe $PACKAGENAME
 # Add libraries
 Copy-Item c:\projects\dfasma\lib\libfftfile\libfftw3-3.dll $PACKAGENAME
 Copy-Item c:\projects\dfasma\lib\libsndfile\bin\libsndfile-1.dll $PACKAGENAME
+Copy-Item c:\projects\dfasma\external\sdif\easdif\bin\Easdif.dll $PACKAGENAME
 
 # Add the Qt related libs
 cd $PACKAGENAME
