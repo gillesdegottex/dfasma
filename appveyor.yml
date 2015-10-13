@@ -95,7 +95,9 @@ install:
   - ps: cd build
   - ps: cmake -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=c:/projects/dfasma/external/sdif/easdif ../EASDIF_SDIF
   - ps: Get-ChildItem .
-  - ps: msbuild libs.vcxproj
+  # - ps: msbuild libs.vcxproj
+  - ps: if ($env:platform -eq 'x64') {msbuild libs.vcxproj /property:Platform=x64}
+  - ps: if ($env:platform -eq 'x86') {msbuild libs.vcxproj}
   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\build\"
   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\build\bin\Release"
   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\build\lib\Release"
