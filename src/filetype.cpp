@@ -388,7 +388,6 @@ void FileType::fillContextMenu(QMenu& contextmenu) {
     QColorDialog* colordialog = new QColorDialog(&contextmenu); // TODO delete this !!!
     QObject::connect(colordialog, SIGNAL(colorSelected(const QColor &)), gFL, SLOT(colorSelected(const QColor &)));
 //    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), gFL, SLOT(colorSelected(const QColor &)));
-//    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), gMW->m_gvSpectrum, SLOT(allSoundsChanged()));
 
     // Add the available Matlab colors to the custom colors
     int ci = 0;

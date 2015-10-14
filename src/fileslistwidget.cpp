@@ -228,7 +228,7 @@ void FilesListWidget::addExistingFile(const QString& filepath, FileType::FType t
             if(ftsnds.size()>0){
                 // The first sound determines the common sampling frequency for the audio output
                 if(isfirsts)
-                    gMW->initializeSoundSystem(ftsnds[0]->fs);
+                    gMW->audioInitialize(ftsnds[0]->fs);
 
                 gMW->m_gvWaveform->fitViewToSoundsAmplitude();
             }

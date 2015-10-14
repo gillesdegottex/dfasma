@@ -187,7 +187,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     m_pbVolume->setMinimum(-50); // Quite arbitrary
     m_pbVolume->setValue(-50);   // Quite arbitrary
     m_pbVolumeAction = ui->mainToolBar->insertWidget(ui->actionSettings, m_pbVolume);
-    ui->mainToolBar->insertSeparator(ui->actionSettings);
+    m_audioSeparatorAction = ui->mainToolBar->insertSeparator(ui->actionSettings);
 
     m_gvWaveform = new GVWaveform(this);
     ui->lWaveformGraphicsView->addWidget(m_gvWaveform);
@@ -297,6 +297,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 
     m_audioengine = new AudioEngine(this);
     if(m_audioengine) {
+        audioEnable(false);
         connect(m_audioengine, SIGNAL(stateChanged(QAudio::State)), this, SLOT(audioStateChanged(QAudio::State)));
         connect(m_audioengine, SIGNAL(formatChanged(const QAudioFormat&)), this, SLOT(audioOutputFormatChanged(const QAudioFormat&)));
         connect(m_audioengine, SIGNAL(playPositionChanged(double)), m_gvWaveform, SLOT(playCursorSet(double)));
@@ -306,12 +307,8 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
         QList<QAudioDeviceInfo> audioDevices = m_audioengine->availableAudioOutputDevices();
         for(int di=0; di<audioDevices.size(); di++)
             m_dlgSettings->ui->cbPlaybackAudioOutputDevices->addItem(audioDevices[di].deviceName());
-        if(m_dlgSettings->ui->cbPlaybackAudioOutputDevices->count()==0){
-            m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText("<small>No audio device available for playing sounds.</small>");
-//            m_dlgSettings->ui->cbPlaybackAudioOutputDevices->hide();
-        }
-        selectAudioOutputDevice(m_settings.value("cbPlaybackAudioOutputDevices", "default").toString());
-        connect(m_dlgSettings->ui->cbPlaybackAudioOutputDevices, SIGNAL(currentIndexChanged(int)), this, SLOT(selectAudioOutputDevice(int)));
+        audioSelectOutputDevice(m_settings.value("cbPlaybackAudioOutputDevices", "default").toString());
+        connect(m_dlgSettings->ui->cbPlaybackAudioOutputDevices, SIGNAL(currentIndexChanged(int)), this, SLOT(audioSelectOutputDevice(int)));
         m_dlgSettings->adjustSize();
     }
 
@@ -789,7 +786,7 @@ void WMainWindow::setInWaitingForFileState(){
 
 // Audio management ============================================================
 
-void WMainWindow::initializeSoundSystem(double fs) {
+void WMainWindow::audioInitialize(double fs) {
     DLOG << "WMainWindow::initializeSoundSystem fs=" << fs;
 
     m_gvSpectrumAmplitude->setSamplingRate(fs);
@@ -797,8 +794,8 @@ void WMainWindow::initializeSoundSystem(double fs) {
     bool audio_available = false;
 
     if(m_dlgSettings->ui->cbPlaybackAudioOutputDevices->count()==0){
-        DLOG << "No audio device available for playing sounds.";
-        m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText("<small>No audio device available for playing sounds.</small>");
+        DLOG << "No audio device available";
+        m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText("<small>No audio device available</small>");
     }
     else{
         try{
@@ -810,10 +807,17 @@ void WMainWindow::initializeSoundSystem(double fs) {
         }
     }
 
-    if(audio_available) {
+    audioEnable(audio_available);
+
+    DLOG << "WMainWindow::~initializeSoundSystem";
+}
+
+void WMainWindow::audioEnable(bool enable){
+    if(enable) {
         DLOG << "Audio Available";
         ui->actionPlay->setEnabled(true);
         ui->actionPlay->setVisible(true);
+        m_audioSeparatorAction->setVisible(true);
         m_pbVolumeAction->setVisible(true);
         m_gvWaveform->m_giPlayCursor->show();
         m_gvSpectrogram->m_giPlayCursor->show();
@@ -822,19 +826,18 @@ void WMainWindow::initializeSoundSystem(double fs) {
         DLOG << "Audio NOT Available";
         ui->actionPlay->setVisible(false);
         m_pbVolumeAction->setVisible(false);
+        m_audioSeparatorAction->setVisible(false);
         m_gvWaveform->m_giPlayCursor->hide();
         m_gvSpectrogram->m_giPlayCursor->hide();
     }
-
-    DLOG << "WMainWindow::~initializeSoundSystem";
 }
 
-void WMainWindow::selectAudioOutputDevice(int di) {
+void WMainWindow::audioSelectOutputDevice(int di) {
     QList<QAudioDeviceInfo> audioDevices = m_audioengine->availableAudioOutputDevices();
     m_audioengine->setAudioOutputDevice(audioDevices[di]);
 }
 
-void WMainWindow::selectAudioOutputDevice(const QString& devicename) {
+void WMainWindow::audioSelectOutputDevice(const QString& devicename) {
     if(devicename=="default") {
         m_audioengine->setAudioOutputDevice(QAudioDeviceInfo::defaultOutputDevice());
     }

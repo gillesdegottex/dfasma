@@ -76,6 +76,7 @@ class WMainWindow : public QMainWindow
 
     QProgressBar* m_pbVolume;
     QAction* m_pbVolumeAction;
+    QAction* m_audioSeparatorAction;
 
     // Global waiting bar for operations blocking the main window
     QProgressBar* m_globalWaitingBar;
@@ -110,8 +111,10 @@ public slots:
     void focusWindowChanged(QWindow*win);
     void updateWindowTitle();
     void allSoundsChanged(); // TODO Should drop this
-    void selectAudioOutputDevice(int di);
-    void selectAudioOutputDevice(const QString& devicename);
+    void audioSelectOutputDevice(int di);
+    void audioSelectOutputDevice(const QString& devicename);
+    void audioEnable(bool enable);
+    void audioInitialize(double fs);
     void resetFiltering();
 
     void setInWaitingForFileState();
@@ -146,7 +149,6 @@ public:
     AudioEngine* m_audioengine;
     FTSound* m_playingftsound;
     FTSound* m_lastFilteredSound;
-    void initializeSoundSystem(double fs);
 };
 
 #endif // WMAINWINDOW_H
