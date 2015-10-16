@@ -637,6 +637,7 @@ void GVSpectrumAmplitude::updateDFTs(){
             m_giWindow->updateMinMaxValues();
 
             m_giWindow->setSamplingRate(1.0/double(gFL->getFs()/dftlen));
+            m_giWindow->updateGeometry();
             m_giWindow->clearCache();
 
             didany = true;
