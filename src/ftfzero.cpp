@@ -79,6 +79,8 @@ QString FTFZero::createFileNameFromSound(const QString& sndfilename){
 void FTFZero::constructor_internal(){
     m_fileformat = FFNotSpecified;
     m_src_snd = NULL;
+    m_giF0ForSpectrogram = NULL;
+    m_giHarmonicForSpectrogram = NULL;
 
     m_aspec_txt = new QGraphicsSimpleTextItem("unset");
     gMW->m_gvSpectrumAmplitude->m_scene->addItem(m_aspec_txt);
@@ -578,8 +580,11 @@ void FTFZero::edit(double t, double f0){
     std::vector<double>::iterator itlb = std::lower_bound(ts.begin(), ts.end(), t+step/2);
     int ri = itlb-ts.begin()-1;
 
-    if(ri>=0 && ri<int(ts.size()))
+    if(ri>=0 && ri<int(ts.size())){
         f0s[ri] = f0;
+        if(m_giF0ForSpectrogram)
+            m_giF0ForSpectrogram->updateGeometry();
+    }
 
     m_is_edited = true;
     setStatus();
@@ -805,6 +810,8 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
 
     gMW->globalWaitingBarDone();
 
+    if(m_giF0ForSpectrogram)
+        m_giF0ForSpectrogram->updateGeometry();
     updateTextsGeometry();
 
     m_is_edited = true;
