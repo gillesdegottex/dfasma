@@ -814,10 +814,10 @@
    <addaction name="actionSelectionMode"/>
    <addaction name="actionEditMode"/>
    <addaction name="separator"/>
+   <addaction name="actionShowSpectrogram"/>
    <addaction name="actionShowAmplitudeSpectrum"/>
    <addaction name="actionShowPhaseSpectrum"/>
    <addaction name="actionShowGroupDelaySpectrum"/>
-   <addaction name="actionShowSpectrogram"/>
    <addaction name="separator"/>
    <addaction name="actionPlay"/>
    <addaction name="actionSettings"/>
