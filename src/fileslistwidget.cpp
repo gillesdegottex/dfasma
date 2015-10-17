@@ -516,7 +516,7 @@ void FilesListWidget::selectedFilesClose() {
 
     gMW->m_gvSpectrogram->m_scene->update();
     if(removeSelectedSound)
-        gMW->m_gvSpectrogram->clearSTFTPlot();
+        gMW->m_gvSpectrogram->m_scene->update();
 
     // If there is no more files, put the interface in a waiting-for-file state.
     if(count()==0)

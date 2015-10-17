@@ -305,9 +305,6 @@ void STFTComputeThread::run() {
                     m_mutex_imageallocation.unlock();
                     if(params_running.imgstft->isNull())
                         throw std::bad_alloc();
-                    params_running.imgstft->fill(Qt::white);
-                    // QImage* img = m_params_current.imgstft;
-                    QRgb* pimgb = (QRgb*)(params_running.imgstft->bits());
                     int halfdftlen = params_running.stftparams.dftlen/2;
                     int dftsize = int(params_running.stftparams.snd->m_stft[0].size());
                     int stftlen = int(params_running.stftparams.snd->m_stft.size());
@@ -315,6 +312,10 @@ void STFTComputeThread::run() {
 
                     QAEColorMap& cmap = QAEColorMap::getAt(params_running.colormap_index);
                     cmap.setColor(params_running.stftparams.snd->getColor());
+
+                    if(cmap.isTransparent())
+                        params_running.imgstft->fill(Qt::white);
+                    QRgb* pimgb = (QRgb*)(params_running.imgstft->bits());
 
                     FFTTYPE ymin = params_running.stftparams.snd->m_stft_min+(params_running.stftparams.snd->m_stft_max-params_running.stftparams.snd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0; // Min of color range [dB]
                     FFTTYPE ymax = params_running.stftparams.snd->m_stft_min+(params_running.stftparams.snd->m_stft_max-params_running.stftparams.snd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0; // Max of color range [dB]

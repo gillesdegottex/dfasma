@@ -63,7 +63,6 @@ using namespace std;
 GVSpectrogram::GVSpectrogram(WMainWindow* parent)
     : QGraphicsView(parent)
     , m_editing_fzero(NULL)
-    , m_imgSTFT(1, 1, QImage::Format_RGB32)
 {
     setStyleSheet("QGraphicsView { border-style: none; }");
     setFrameShape(QFrame::NoFrame);
@@ -80,8 +79,6 @@ GVSpectrogram::GVSpectrogram(WMainWindow* parent)
     m_dlgSettings = new GVSpectrogramWDialogSettings(this);
     gMW->m_qxtSpectrogramSpanSlider->setUpperValue(gMW->m_settings.value("m_qxtSpectrogramSpanSlider_upper", 90).toInt());
     gMW->m_qxtSpectrogramSpanSlider->setLowerValue(gMW->m_settings.value("m_qxtSpectrogramSpanSlider_lower", 10).toInt());
-
-    m_imgSTFT.fill(Qt::white);
 
     m_aShowProperties = new QAction(tr("&Properties"), this);
     m_aShowProperties->setStatusTip(tr("Open the properties configuration panel of the Spectrogram view"));
@@ -398,7 +395,7 @@ void GVSpectrogram::stftComputingStateChanged(int state){
         gMW->ui->pbSTFTComputingCancel->hide();
         gMW->ui->pgbSpectrogramSTFTCompute->hide();
         gMW->ui->wSpectrogramProgressWidgets->hide();
-        m_imgSTFTParams = m_stftcomputethread->m_params_last;
+        m_stftcomputethread->m_params_last.stftparams.snd->m_imgSTFTParams = m_stftcomputethread->m_params_last;
 //        COUTD << m_imgSTFTParams.stftparams.dftlen << endl;
 //        gMW->ui->lblSpectrogramInfoTxt->setText(" ");
 //        gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT: size %1, %2s step").arg(m_imgSTFTParams.stftparams.dftlen).arg(m_imgSTFTParams.stftparams.stepsize/gMW->getFs()));
@@ -412,9 +409,9 @@ void GVSpectrogram::stftComputingStateChanged(int state){
         gMW->ui->pbSTFTComputingCancel->hide();
         gMW->ui->pgbSpectrogramSTFTCompute->hide();
         gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT Canceled"));
-        clearSTFTPlot();
         gMW->ui->pbSpectrogramSTFTUpdate->show();
         gMW->ui->wSpectrogramProgressWidgets->show();
+        gMW->m_gvSpectrogram->m_scene->update();
     }
     else if(state==STFTComputeThread::SCSMemoryFull){
 //        COUTD << "SCSMemoryFull" << endl;
@@ -434,13 +431,6 @@ void GVSpectrogram::autoUpdate(bool autoupdate){
         updateSTFTSettings();
 }
 
-void GVSpectrogram::clearSTFTPlot(){
-//    cout << "GVSpectrogram::clearSTFTPlot" << endl;
-    m_imgSTFTParams.clear();
-    m_imgSTFT.fill(Qt::white);
-    m_scene->update();
-}
-
 void GVSpectrogram::updateSTFTPlot(bool force){
 //    COUTD << "GVSpectrogram::updateSTFTPlot" << endl;
 
@@ -454,7 +444,7 @@ void GVSpectrogram::updateSTFTPlot(bool force){
     //        cout << "GVSpectrogram::updateSTFTPlot " << csnd->fileFullPath.toLatin1().constData() << endl;
 
             if(force)
-                m_imgSTFTParams.clear();
+                csnd->m_imgSTFTParams.clear();
 
             int stepsize = std::floor(0.5+gFL->getFs()*m_dlgSettings->ui->sbSpectrogramStepSize->value());//[samples]
             int dftlen = -1;
@@ -468,9 +458,9 @@ void GVSpectrogram::updateSTFTPlot(bool force){
             bool cepliftpresdc = gMW->m_gvSpectrogram->m_dlgSettings->ui->cbSpectrogramCepstralLifteringPreserveDC->isChecked();
 
             STFTComputeThread::STFTParameters reqSTFTParams(csnd, m_win, stepsize, dftlen, cepliftorder, cepliftpresdc);
-            STFTComputeThread::ImageParameters reqImgSTFTParams(reqSTFTParams, &m_imgSTFT, m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex(), m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked(), gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0, gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0, m_dlgSettings->ui->cbSpectrogramLoudnessWeighting->isChecked());
+            STFTComputeThread::ImageParameters reqImgSTFTParams(reqSTFTParams, &(csnd->m_imgSTFT), m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex(), m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked(), gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0, gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0, m_dlgSettings->ui->cbSpectrogramLoudnessWeighting->isChecked());
 
-            if(m_imgSTFTParams.isEmpty() || reqImgSTFTParams!=m_imgSTFTParams) {
+            if(csnd->m_imgSTFTParams.isEmpty() || reqImgSTFTParams!=csnd->m_imgSTFTParams) {
                 gMW->ui->pbSpectrogramSTFTUpdate->hide();
                 m_stftcomputethread->compute(reqImgSTFTParams);
             }
@@ -1213,30 +1203,51 @@ void GVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
     // Draw the sound's spectrogram
-    FTSound* csnd = gFL->getCurrentFTSound(true);
-    if(csnd && csnd->m_actionShow->isChecked() && csnd->m_stftts.size()>0) {
+    if(QAEColorMap::getAt(m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex()).isTransparent()){
+        // If the color mapping is partly transparent, draw the spectro of all sounds
+        for(size_t fi=0; fi<gFL->ftsnds.size(); ++fi){
+            draw_spectrogram(painter, rect, viewrect, gFL->ftsnds[fi]);
+        }
+    }
+    else{
+        // If the color mapping is opaque, draw only the spectro of the current sound
+        FTSound* csnd = gFL->getCurrentFTSound(true);
+        if(csnd && csnd->m_actionShow->isChecked() && csnd->m_stftts.size()>0) {
+            draw_spectrogram(painter, rect, viewrect, csnd);
+        }
+    }
 
-//        double bin2hz = fs*1/csnd->m_stftparams.dftlen;
+//    cout << "GVSpectrogram::~drawBackground" << endl;
+}
 
-        // Build the piece of STFT which will be drawn in the view
-        QRectF srcrect;
-        double stftwidth = csnd->m_stftts.back()-csnd->m_stftts.front();
-        srcrect.setLeft(0.5+(m_imgSTFT.rect().width()-1)*(viewrect.left()-csnd->m_stftts.front())/stftwidth);
-        srcrect.setRight(0.5+(m_imgSTFT.rect().width()-1)*(viewrect.right()-csnd->m_stftts.front())/stftwidth);
+void GVSpectrogram::draw_spectrogram(QPainter* painter, const QRectF& rect, const QRectF& viewrect, FTSound* snd){
+    //        double bin2hz = fs*1/csnd->m_stftparams.dftlen;
+
+    if(snd==NULL
+      || !snd->m_actionShow->isChecked()
+      || snd->m_imgSTFT.isNull()
+      || snd->m_stftts.empty()) // First need to be computed
+        return;
+
+    // Build the piece of STFT which will be drawn in the view
+    QRectF srcrect;
+    double stftwidth = snd->m_stftts.back()-snd->m_stftts.front();
+    srcrect.setLeft(0.5+(snd->m_imgSTFT.rect().width()-1)*(viewrect.left()-snd->m_stftts.front())/stftwidth);
+    srcrect.setRight(0.5+(snd->m_imgSTFT.rect().width()-1)*(viewrect.right()-snd->m_stftts.front())/stftwidth);
 //        COUTD << "viewrect=" << viewrect << endl;
 //        COUTD << "IMG: " << m_imgSTFT.rect() << endl;
-        // This one is vertically super sync,
-        // but the cursor falls always on the top of the line, not in the middle of it.
+    // This one is vertically super sync,
+    // but the cursor falls always on the top of the line, not in the middle of it.
 //        srcrect.setTop((m_imgSTFT.rect().height()-1)*viewrect.top()/m_scene->sceneRect().height());
 //        srcrect.setBottom((m_imgSTFT.rect().height()-1)*viewrect.bottom()/m_scene->sceneRect().height());
-        srcrect.setTop((m_imgSTFT.rect().height()-1)*-(m_scene->sceneRect().top()-viewrect.top())/m_scene->sceneRect().height());
-        srcrect.setBottom((m_imgSTFT.rect().height()-1)*-(m_scene->sceneRect().top()-viewrect.bottom())/m_scene->sceneRect().height());
-        srcrect.setTop(srcrect.top()+0.5);
-        srcrect.setBottom(srcrect.bottom()+0.5);
-        QRectF trgrect = viewrect;
+    srcrect.setTop((snd->m_imgSTFT.rect().height()-1)*-(m_scene->sceneRect().top()-viewrect.top())/m_scene->sceneRect().height());
+    srcrect.setBottom((snd->m_imgSTFT.rect().height()-1)*-(m_scene->sceneRect().top()-viewrect.bottom())/m_scene->sceneRect().height());
+    srcrect.setTop(srcrect.top()+0.5);
+    srcrect.setBottom(srcrect.bottom()+0.5);
+    QRectF trgrect = viewrect;
 
-        // This one is the basic synchronized version,
-        // but it creates flickering when zooming
+    // This one is the basic synchronized version,
+    // but it creates flickering when zooming
 //        QRectF srcrect = m_imgSTFT.rect();
 //        QRectF trgrect = m_scene->sceneRect();
 //        trgrect.setLeft(csnd->m_stftts.front()-0.5*csnd->m_stftparams.stepsize/csnd->fs);
@@ -1250,13 +1261,10 @@ void GVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 //        COUTD << "TRG: " << trgrect << " " << trgrect.width() << "x" << trgrect.height() << endl;
 
 //        if(!m_stftcomputethread->isComputing())
-        if(!m_imgSTFT.isNull() && m_stftcomputethread->m_mutex_imageallocation.tryLock()) {
-            painter->drawImage(trgrect, m_imgSTFT, srcrect);
-            m_stftcomputethread->m_mutex_imageallocation.unlock();
-        }
+    if(!snd->m_imgSTFT.isNull() && m_stftcomputethread->m_mutex_imageallocation.tryLock()) {
+        painter->drawImage(trgrect, snd->m_imgSTFT, srcrect);
+        m_stftcomputethread->m_mutex_imageallocation.unlock();
     }
-
-//    cout << "GVSpectrogram::~drawBackground" << endl;
 }
 
 void GVSpectrogram::contextMenuEvent(QContextMenuEvent *event){

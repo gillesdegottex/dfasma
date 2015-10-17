@@ -19,7 +19,7 @@ class GVSpectrogramWDialogSettings : public QDialog
 
     QAEColorMapGray cmapgray;
     QAEColorMapJet cmapjet;
-//    QAEColorMapTransparent cmaptrans;
+    QAEColorMapTransparent cmaptrans;
 
 public:
     explicit GVSpectrogramWDialogSettings(GVSpectrogram* parent);

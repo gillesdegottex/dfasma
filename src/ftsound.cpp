@@ -122,6 +122,9 @@ bool FTSound::DFTParameters::operator==(const DFTParameters& param) const {
 void FTSound::constructor_internal() {
     connect(m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setVisible(bool)));
 
+    m_imgSTFT = QImage(1, 1, QImage::Format_ARGB32);
+    m_imgSTFT.fill(Qt::white);
+
     m_giWavForWaveform = NULL;
     m_channelid = 0;
     m_isclipped = false;

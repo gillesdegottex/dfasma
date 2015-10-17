@@ -149,6 +149,10 @@ public:
     STFTComputeThread::STFTParameters m_stftparams;
     FFTTYPE m_stft_min;
     FFTTYPE m_stft_max;
+    QImage m_imgSTFT;
+    STFTComputeThread::ImageParameters m_imgSTFTParams; // This is the target parameters for the image
+                                                        // During STFT update, it doesn't correspond to m_imgSTFT
+
 
     // Play (from QIODevice)
     qint64 readData(char *data, qint64 maxlen);

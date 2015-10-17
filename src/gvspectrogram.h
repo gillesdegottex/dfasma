@@ -82,9 +82,6 @@ public:
 
     QAEGIGrid* m_giGrid;
 
-    QImage m_imgSTFT;
-    STFTComputeThread::ImageParameters m_imgSTFTParams; // This is the target parameters for the image
-                                                        // During STFT update, it doesn't correspond to m_imgSTFT
     QPointF m_selection_pressedp;
     bool m_topismax;
     bool m_bottomismin;
@@ -109,7 +106,7 @@ public:
 
     void viewSet(QRectF viewrect=QRectF(), bool forwardsync=true);
     void drawBackground(QPainter* painter, const QRectF& rect);
-    void draw_grid(QPainter* painter, const QRectF& rect);
+    void draw_spectrogram(QPainter* painter, const QRectF& rect, const QRectF& viewrect, FTSound* snd);
 
     ~GVSpectrogram();
 
@@ -139,7 +136,6 @@ public slots:
     void updateTextsGeometry();
     void updateSTFTSettings();
     void updateSTFTPlot(bool force=false);
-    void clearSTFTPlot();
     void stftComputingStateChanged(int state);
     void showProgressWidgets();
     void autoUpdate(bool autoupdate);
