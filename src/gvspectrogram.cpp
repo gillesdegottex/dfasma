@@ -1229,19 +1229,21 @@ void GVSpectrogram::draw_spectrogram(QPainter* painter, const QRectF& rect, cons
       || snd->m_stftts.empty()) // First need to be computed
         return;
 
+    QRect imgrect = snd->m_imgSTFT.rect();
+
     // Build the piece of STFT which will be drawn in the view
     QRectF srcrect;
     double stftwidth = snd->m_stftts.back()-snd->m_stftts.front();
-    srcrect.setLeft(0.5+(snd->m_imgSTFT.rect().width()-1)*(viewrect.left()-snd->m_stftts.front())/stftwidth);
-    srcrect.setRight(0.5+(snd->m_imgSTFT.rect().width()-1)*(viewrect.right()-snd->m_stftts.front())/stftwidth);
+    srcrect.setLeft(0.5+(imgrect.width()-1)*(viewrect.left()-snd->m_stftts.front())/stftwidth);
+    srcrect.setRight(0.5+(imgrect.width()-1)*(viewrect.right()-snd->m_stftts.front())/stftwidth);
 //        COUTD << "viewrect=" << viewrect << endl;
 //        COUTD << "IMG: " << m_imgSTFT.rect() << endl;
     // This one is vertically super sync,
     // but the cursor falls always on the top of the line, not in the middle of it.
 //        srcrect.setTop((m_imgSTFT.rect().height()-1)*viewrect.top()/m_scene->sceneRect().height());
 //        srcrect.setBottom((m_imgSTFT.rect().height()-1)*viewrect.bottom()/m_scene->sceneRect().height());
-    srcrect.setTop((snd->m_imgSTFT.rect().height()-1)*-(m_scene->sceneRect().top()-viewrect.top())/m_scene->sceneRect().height());
-    srcrect.setBottom((snd->m_imgSTFT.rect().height()-1)*-(m_scene->sceneRect().top()-viewrect.bottom())/m_scene->sceneRect().height());
+    srcrect.setTop((imgrect.height()-1)*-(m_scene->sceneRect().top()-viewrect.top())/m_scene->sceneRect().height());
+    srcrect.setBottom((imgrect.height()-1)*-(m_scene->sceneRect().top()-viewrect.bottom())/m_scene->sceneRect().height());
     srcrect.setTop(srcrect.top()+0.5);
     srcrect.setBottom(srcrect.bottom()+0.5);
     QRectF trgrect = viewrect;
@@ -1261,7 +1263,7 @@ void GVSpectrogram::draw_spectrogram(QPainter* painter, const QRectF& rect, cons
 //        COUTD << "TRG: " << trgrect << " " << trgrect.width() << "x" << trgrect.height() << endl;
 
 //        if(!m_stftcomputethread->isComputing())
-    if(!snd->m_imgSTFT.isNull() && m_stftcomputethread->m_mutex_imageallocation.tryLock()) {
+    if(m_stftcomputethread->m_mutex_imageallocation.tryLock()) {
         painter->drawImage(trgrect, snd->m_imgSTFT, srcrect);
         m_stftcomputethread->m_mutex_imageallocation.unlock();
     }
