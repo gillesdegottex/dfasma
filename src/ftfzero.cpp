@@ -680,11 +680,12 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
 
     f0min = std::max(f0min, gMW->m_dlgSettings->ui->dsbEstimationF0Min->minimum()); // Fix hard-coded minimum for f0
     f0max = std::min(f0max, fs/2.0); // Fix hard-coded minimum for f0
-    if(tstart!=-1) tstart = std::max(tstart, 0.0);
-    if(tend!=-1) tend = std::min(tend, m_src_snd->getLastSampleTime());
+    if(tstart!=-1)
+        tstart = std::max(tstart, 0.0);
+    if(tend!=-1)
+        tend = std::min(tend, m_src_snd->getLastSampleTime());
 
 //    COUTD << "FTFZero::estimate src=" << m_src_snd->visibleName << " [" << f0min << "," << f0max << "]Hz [" << tstart << "," << tend << "]s " << force << endl;
-
 
 //    if(_fileName==""){
 ////        if(gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText==FFSDIF)
@@ -720,13 +721,16 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
         iskiplast = std::min(int64_t(m_src_snd->wav.size()),std::max(int64_t(0),int64_t(fs*(tend+10*timestepsize))));
     else
         iskiplast = m_src_snd->wav.size()-1;
-//    COUTD << iskipfirst << " " << iskiplast << endl;
     double tiskipfirst = iskipfirst/fs; // First index of signal's segment which is analyzed.
-//    double tiskiplast = iskiplast/fs;
-//    COUTD << tiskipfirst << " " << tiskiplast << endl;
     vector<int16_t> data(iskiplast-iskipfirst+1);
-    for(size_t i=0; i<data.size(); ++i)
-        data[i] = 32768*m_src_snd->wav[i+iskipfirst];
+    for(size_t i=0; i<data.size(); ++i){
+        int64_t idx = i+iskipfirst-m_src_snd->m_giWavForWaveform->delay();
+        if(idx>=0 && idx<m_src_snd->wav.size())
+            data[i] = 32768*m_src_snd->wav[idx];
+        else{
+            data[i] = 0.0;
+        }
+    }
 //    COUTD << iskipfirst << " " << data.size() << endl;
     if(fs<6000.0)
         QMessageBox::warning(gMW, "Problem during estimation of F0", "Sampling rate is smaller than 6kHz, which may create substantial estimation errors.");
@@ -766,7 +770,7 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
 
     // Estimation is done, let's fill/replace the f0 curve
     if(tstart==-1 && tend==-1){
-        // If time segment is undefined, clear replace everything
+        // If time segment is undefined, replace everything
         ts.resize(f0.size());
         for (size_t i=0; i<ts.size(); ++i)
             ts[i] = timestepsize*i;
@@ -775,16 +779,11 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
     }
     else{
         // Find where the former values are
-        // (using log-time search)
+        // (using log2-time search)
         std::vector<double>::iterator itlb = std::lower_bound(ts.begin(), ts.end(), tstart);
         std::vector<double>::iterator ithb = std::upper_bound(ts.begin(), ts.end(), tend);
         int erasefirst = itlb-ts.begin();
         int eraselast = ithb-ts.begin()-1;
-
-//        COUTD << last-first+1 << endl;
-
-//        for(size_t i=first; i<=last; ++i)
-//            f0s[i] = 0.0;
 
         // Erase the former values
         std::vector<double>::iterator tsl = ts.erase(ts.begin()+erasefirst, ts.begin()+eraselast+1);
