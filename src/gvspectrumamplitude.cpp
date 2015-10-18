@@ -365,7 +365,7 @@ void GVSpectrumAmplitude::setSamplingRate(double fs)
 }
 
 void GVSpectrumAmplitude::setWindowRange(qreal tstart, qreal tend){
-//    COUTD << "GVSpectrumAmplitude::setWindowRange " << tstart << "," << tend << endl;
+//    DCOUT << "GVSpectrumAmplitude::setWindowRange " << tstart << "," << tend << endl;
 
     if(tstart==tend)
         return;
@@ -753,6 +753,9 @@ void GVSpectrumAmplitude::resizeEvent(QResizeEvent* event){
         }
         else
             viewSet(m_scene->sceneRect(), false);
+
+        if(gMW->m_gvWaveform->m_selection.width()>0)
+            setWindowRange(gMW->m_gvWaveform->m_selection.left(), gMW->m_gvWaveform->m_selection.right());
     }
     else if(!event->oldSize().isEmpty() && !event->size().isEmpty())
     {
@@ -1421,6 +1424,7 @@ GVSpectrumAmplitude::~GVSpectrumAmplitude(){
     m_fftresizethread->m_mutex_resizing.unlock();
     m_fftresizethread->m_mutex_changingsizes.lock();
     m_fftresizethread->m_mutex_changingsizes.unlock();
+    m_fftresizethread->wait();
     delete m_fftresizethread;
     delete m_fft;
     delete m_dlgSettings;
