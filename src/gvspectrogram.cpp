@@ -1221,6 +1221,7 @@ void GVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 }
 
 void GVSpectrogram::draw_spectrogram(QPainter* painter, const QRectF& rect, const QRectF& viewrect, FTSound* snd){
+    Q_UNUSED(rect)
     //        double bin2hz = fs*1/csnd->m_stftparams.dftlen;
 
     if(snd==NULL
