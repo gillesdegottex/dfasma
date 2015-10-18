@@ -395,14 +395,13 @@ QString WMainWindow::version(){
     }
     QString m_version = dfasmaversion;
 
-    m_version += " (compiled by "+QString(COMPILER)+" for ";
+    m_version += "\nCompiled by "+getCompilerVersion()+" for ";
     #ifdef Q_PROCESSOR_X86_32
       m_version += "32bits";
     #endif
     #ifdef Q_PROCESSOR_X86_64
       m_version += "64bits";
     #endif
-    m_version += ")";
 
     return m_version;
 }
