@@ -13,7 +13,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # A copy of the GNU General Public License is available in the LICENSE.txt
 # file provided in the source code of DFasma. Another copy can be found at
 # <http://www.gnu.org/licenses/>.
@@ -227,9 +227,10 @@ QMAKE_CXXFLAGS += -D__STDC_CONSTANT_MACROS
 
 TARGET = dfasma
 TEMPLATE = app
-
 RC_ICONS = icons/dfasma.ico
 RESOURCES += ressources.qrc
+
+win32: msvc: CONFIG += embed_manifest_exe
 
 FORMS     += src/wmainwindow.ui \
              src/wdialogselectchannel.ui \
