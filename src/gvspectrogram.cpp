@@ -1283,6 +1283,7 @@ GVSpectrogram::~GVSpectrogram(){
     m_stftcomputethread->m_mutex_computing.unlock();
     m_stftcomputethread->m_mutex_changingparams.lock();
     m_stftcomputethread->m_mutex_changingparams.unlock();
+    m_stftcomputethread->wait();
     delete m_stftcomputethread;
     delete m_dlgSettings;
 }
