@@ -328,7 +328,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 }
 
 WMainWindow::~WMainWindow() {
-//    COUTD << "WMainWindow::~WMainWindow" << endl;
+//    DCOUT << "WMainWindow::~WMainWindow()" << std::endl;
 
     m_gvSpectrogram->m_stftcomputethread->cancelComputation(true);
     m_gvSpectrumAmplitude->m_fftresizethread->cancelComputation(true);
@@ -351,6 +351,8 @@ WMainWindow::~WMainWindow() {
     delete m_dlgSettings; m_dlgSettings=NULL;
 
     delete ui; ui=NULL; // The GUI
+
+//    DCOUT << "WMainWindow::~WMainWindow~" << std::endl;
 }
 
 // Interface ===================================================================
