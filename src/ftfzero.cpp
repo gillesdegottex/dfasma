@@ -64,7 +64,7 @@ FTFZero::ClassConstructor::ClassConstructor(){
 FTFZero::ClassConstructor FTFZero::s_class_constructor;
 
 QString FTFZero::createFileNameFromSound(const QString& sndfilename){
-    QString fileName = DropFileExtension(sndfilename);
+    QString fileName = dropFileExtension(sndfilename);
 
     if(gMW->m_dlgSettings->ui->cbF0DefaultFormat->currentIndex()+FFAsciiTimeValue==FFSDIF)
         return fileName+".sdif";
