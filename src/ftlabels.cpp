@@ -219,7 +219,7 @@ FileType* FTLabels::duplicate(){
 }
 
 QString FTLabels::createFileNameFromFZero(const QString& fzerofilename){
-    QString fileName = DropFileExtension(fzerofilename);
+    QString fileName = dropFileExtension(fzerofilename);
 
     if(gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText==FFSDIF)
         return fileName+".sdif";
