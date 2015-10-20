@@ -1170,11 +1170,11 @@ void GVSpectrogram::setMouseCursorPosition(QPointF p, bool forwardsync) {
             if(gMW->m_gvWaveform)
                 gMW->m_gvWaveform->setMouseCursorPosition(p.x(), false);
             if(gMW->m_gvSpectrumAmplitude)
-                gMW->m_gvSpectrumAmplitude->setMouseCursorPosition(QPointF(p.y(), 0.0), false);
+                gMW->m_gvSpectrumAmplitude->setMouseCursorPosition(QPointF(-p.y(), 0.0), false);
             if(gMW->m_gvSpectrumPhase)
-                gMW->m_gvSpectrumPhase->setMouseCursorPosition(QPointF(p.y(), 0.0), false);
+                gMW->m_gvSpectrumPhase->setMouseCursorPosition(QPointF(-p.y(), 0.0), false);
             if(gMW->m_gvSpectrumGroupDelay)
-                gMW->m_gvSpectrumGroupDelay->setMouseCursorPosition(QPointF(p.y(), 0.0), false);
+                gMW->m_gvSpectrumGroupDelay->setMouseCursorPosition(QPointF(-p.y(), 0.0), false);
         }
     }
 }

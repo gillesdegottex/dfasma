@@ -1373,7 +1373,7 @@ void GVSpectrumAmplitude::setMouseCursorPosition(QPointF p, bool forwardsync) {
 
     if(forwardsync){
         if(gMW->m_gvSpectrogram)
-            gMW->m_gvSpectrogram->setMouseCursorPosition(QPointF(gMW->m_gvSpectrogram->m_giMouseCursorLineTime->x(), gFL->getFs()/2-p.x()), false);
+            gMW->m_gvSpectrogram->setMouseCursorPosition(QPointF(gMW->m_gvSpectrogram->m_giMouseCursorLineTime->x(), -p.x()), false);
         if(gMW->m_gvSpectrumPhase)
             gMW->m_gvSpectrumPhase->setMouseCursorPosition(QPointF(p.x(), 0.0), false);
         if(gMW->m_gvSpectrumGroupDelay)
