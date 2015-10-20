@@ -82,6 +82,8 @@ void FTFZero::constructor_internal(){
     m_giF0ForSpectrogram = NULL;
     m_giHarmonicForSpectrogram = NULL;
 
+    connect(m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setVisible(bool)));
+
     m_aspec_txt = new QGraphicsSimpleTextItem("unset");
     gMW->m_gvSpectrumAmplitude->m_scene->addItem(m_aspec_txt);
     setColor(getColor()); // Indirectly set the proper color to the m_aspec_txt
@@ -93,6 +95,9 @@ void FTFZero::constructor_internal(){
     m_actionSaveAs = new QAction("Save as...", this);
     m_actionSaveAs->setStatusTip(tr("Save the f0 curve in a given file..."));
     connect(m_actionSaveAs, SIGNAL(triggered()), this, SLOT(saveAs()));
+    m_actionSetSource = new QAction("Set corresponding waveform...", this);
+    m_actionSetSource->setStatusTip(tr("Set the waveform this f0 should correspond to."));
+    connect(m_actionSetSource, SIGNAL(triggered()), this, SLOT(setSource()));
 }
 
 void FTFZero::constructor_external(){
@@ -317,6 +322,9 @@ bool FTFZero::reload() {
     // ... and reload the data from the file
     load();
 
+    m_giF0ForSpectrogram->update();
+    m_giHarmonicForSpectrogram->update();
+
     return true;
 }
 
@@ -510,6 +518,7 @@ void FTFZero::fillContextMenu(QMenu& contextmenu) {
     contextmenu.addSeparator();
     contextmenu.addAction(gMW->ui->actionEstimationF0);
     contextmenu.addAction(gMW->ui->actionEstimationVoicedUnvoicedMarkers);
+    contextmenu.addAction(m_actionSetSource);
 }
 
 void FTFZero::updateTextsGeometry(){
@@ -527,12 +536,18 @@ void FTFZero::updateTextsGeometry(){
 void FTFZero::setVisible(bool shown){
     FileType::setVisible(shown);
 
+    DCOUT << shown << endl;
+
     if(shown)
         updateTextsGeometry();
 
     m_aspec_txt->setVisible(shown);
     m_giF0ForSpectrogram->setVisible(shown);
     m_giHarmonicForSpectrogram->setVisible(shown);
+}
+
+void FTFZero::setSource(){
+    DFLAG
 }
 
 void FTFZero::setColor(const QColor& color){
