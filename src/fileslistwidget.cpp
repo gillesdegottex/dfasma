@@ -62,7 +62,6 @@ void FilesListWidget::changeFileListItemsSize() {
 }
 
 // Check if a file has been modified on the disc
-// TODO Check if this is a distant file and avoid checking if it is ?
 void FilesListWidget::checkFileModifications(){
 //    cout << "GET FOCUS " << QDateTime::currentMSecsSinceEpoch() << endl;
     for(size_t fi=0; fi<ftsnds.size(); fi++)
