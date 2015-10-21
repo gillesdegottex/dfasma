@@ -120,8 +120,6 @@ bool FTSound::DFTParameters::operator==(const DFTParameters& param) const {
 
 
 void FTSound::constructor_internal() {
-    connect(m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setVisible(bool)));
-
     m_imgSTFT = QImage(1, 1, QImage::Format_ARGB32);
     m_imgSTFT.fill(Qt::white);
 
@@ -139,6 +137,8 @@ void FTSound::constructor_internal() {
 
     m_stft_min = std::numeric_limits<FFTTYPE>::infinity();
     m_stft_max = -std::numeric_limits<FFTTYPE>::infinity();
+
+    connect(m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setVisible(bool)));
 
     m_actionInvPolarity = new QAction("Inverse polarity", this);
     m_actionInvPolarity->setStatusTip(tr("Inverse the polarity of the sound"));
