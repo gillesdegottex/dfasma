@@ -50,6 +50,7 @@ private:
 
     QAction* m_actionSave;
     QAction* m_actionSaveAs;
+    QAction* m_actionSetSource;
 
     FileFormat m_fileformat;
 
@@ -91,6 +92,7 @@ public slots:
     void save();
     void saveAs();
     void setVisible(bool shown);
+    void setSource();
 };
 
 #endif // FTFZERO_H

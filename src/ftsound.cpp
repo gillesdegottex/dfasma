@@ -144,7 +144,7 @@ void FTSound::constructor_internal() {
     m_actionInvPolarity->setStatusTip(tr("Inverse the polarity of the sound"));
     m_actionInvPolarity->setCheckable(true);
     m_actionInvPolarity->setChecked(false);
-    connect(m_actionInvPolarity, SIGNAL(triggered()), this, SLOT(needDFTUpdate()));
+    connect(m_actionInvPolarity, SIGNAL(triggered()), this, SLOT(inversePolarity()));
 
     m_actionResetAmpScale = new QAction("Reset amplitude", this);
     m_actionResetAmpScale->setStatusTip(tr("Reset the amplitude scaling to 1"));
@@ -473,6 +473,14 @@ void FTSound::resetDelay(){
         if(gMW->m_gvSpectrogram->m_aAutoUpdate->isChecked())
             gMW->m_gvSpectrogram->updateSTFTSettings();
     }
+}
+
+void FTSound::inversePolarity(){
+    m_giWavForWaveform->setGain(-m_giWavForWaveform->gain());
+    m_giWavForWaveform->clearCache();
+    gMW->m_gvSpectrumAmplitude->updateDFTs();
+    gMW->m_gvSpectrumPhase->m_scene->update();
+    gMW->m_gvSpectrumGroupDelay->m_scene->update();
 }
 
 double FTSound::getLastSampleTime() const {

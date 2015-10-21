@@ -532,9 +532,6 @@ void GVSpectrumAmplitude::updateDFTs(){
 
             WAVTYPE gain = snd->m_giWavForWaveform->gain();
 
-            if(gFL->ftsnds[fi]->m_actionInvPolarity->isChecked())
-                gain *= -1;
-
             int n = 0;
             int wn = 0;
             for(; n<m_trgDFTParameters.winlen; n++){

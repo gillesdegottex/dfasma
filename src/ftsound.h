@@ -206,6 +206,7 @@ public slots:
     void needDFTUpdate();
     void resetAmpScale();
     void resetDelay();
+    void inversePolarity();
     void setVisible(bool shown);
 };
 
