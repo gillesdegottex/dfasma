@@ -33,8 +33,10 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "gvwaveform.h"
+#include "gvspectrogram.h"
 #include "gvspectrumamplitude.h"
 #include "gvspectrumphase.h"
+#include "gvspectrumgroupdelay.h"
 #include "gvspectrogramwdialogsettings.h"
 #include "ftlabels.h"
 
@@ -98,6 +100,7 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     gMW->m_settings.addFont(ui->lblGridFontSample);
     gMW->m_settings.add(ui->dsbEstimationF0Min);
     gMW->m_settings.add(ui->dsbEstimationF0Max);
+    ui->pbGridFontChange->setText(ui->lblGridFontSample->font().family());
 
     // Load the documentation
     QFile docfile(":/doc_content.html");
@@ -183,7 +186,12 @@ void WDialogSettings::changeFont() {
     QFontDialog dlg(ui->lblGridFontSample->font(), this);
     if(dlg.exec()==QDialog::Accepted){
         ui->lblGridFontSample->setFont(dlg.selectedFont());
+        gMW->m_gvWaveform->m_giGrid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
+        gMW->m_gvSpectrogram->m_giGrid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
         gMW->m_gvSpectrumAmplitude->m_giGrid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
+        gMW->m_gvSpectrumPhase->m_giGrid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
+        gMW->m_gvSpectrumGroupDelay->m_giGrid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
+        ui->pbGridFontChange->setText(dlg.selectedFont().family());
     }
 }
 
