@@ -137,6 +137,8 @@ void FTLabels::constructor_internal(){
     m_fileformat = FFNotSpecified;
     m_src_fzero = NULL;
 
+    connect(m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setVisible(bool)));
+
     m_actionSave = new QAction("Save", this);
     m_actionSave->setStatusTip(tr("Save the labels times (overwrite the file !)"));
     m_actionSave->setShortcut(gMW->ui->actionSelectedFilesSave->shortcut());
