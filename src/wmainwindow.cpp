@@ -897,14 +897,16 @@ void WMainWindow::playFiltered(){
 void WMainWindow::play(bool filtered){
     DLOG << "WMainWindow::play";
 
-    if(m_audioengine && m_audioengine->isInitialized()){
+    if(m_audioengine
+       && m_audioengine->isInitialized()){
 
-        if(m_audioengine->state()==QAudio::IdleState || m_audioengine->state()==QAudio::StoppedState){
+        if(m_audioengine->state()==QAudio::IdleState
+           || m_audioengine->state()==QAudio::StoppedState){
         // COUTD << "MainWindow::play QAudio::IdleState || QAudio::StoppedState" << endl;
 
             // If stopped, play the whole signal or its selection
             FTSound* currentftsound = m_fileslist->getCurrentFTSound(true);
-            if(currentftsound) {
+            if(currentftsound){
 
                 double tstart = m_gvWaveform->m_giPlayCursor->pos().x();
                 double tstop = gFL->getMaxLastSampleTime();
@@ -930,7 +932,7 @@ void WMainWindow::play(bool filtered){
                     // to avoid the audio engine to go hysterical and crash.
                     QTimer::singleShot(250, this, SLOT(enablePlay()));
                 }
-                catch(QString err) {
+                catch(QString err){
                     statusBar()->showMessage("Error during playback: "+err);
                 }
             }
@@ -941,7 +943,7 @@ void WMainWindow::play(bool filtered){
         }
     }
     else
-        statusBar()->showMessage("The engine is not ready for playing. Missing available sound device ?");
+        statusBar()->showMessage("The sound cannot be played. Please check settings for details.");
 }
 
 void WMainWindow::enablePlay(){
