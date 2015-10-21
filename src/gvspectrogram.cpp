@@ -284,7 +284,9 @@ void GVSpectrogram::showHarmonics(bool show){
 
 void GVSpectrogram::amplitudeExtentSlidersChanged(){
     if(!gMW->isLoading()) {
-        QToolTip::showText(QCursor::pos(), QString("[%1,%2]\% of amplitude range").arg(gMW->m_qxtSpectrogramSpanSlider->lowerValue()).arg(gMW->m_qxtSpectrogramSpanSlider->upperValue()), this);
+        QString tt = QString("[%1,%2]\% of amplitude range").arg(gMW->m_qxtSpectrogramSpanSlider->lowerValue()).arg(gMW->m_qxtSpectrogramSpanSlider->upperValue());
+        QToolTip::showText(QCursor::pos(), tt, this);
+        gMW->m_qxtSpectrogramSpanSlider->setToolTip(tt);
 
         FTSound* csnd = gFL->getCurrentFTSound(true);
         if(csnd) {
@@ -402,6 +404,8 @@ void GVSpectrogram::stftComputingStateChanged(int state){
         m_scene->update();
         if(gMW->m_gvWaveform->m_aWaveformShowSTFTWindowCenters->isChecked())
             gMW->m_gvWaveform->update();
+        QString tt = QString("[%1,%2]\% of amplitude range").arg(gMW->m_qxtSpectrogramSpanSlider->lowerValue()).arg(gMW->m_qxtSpectrogramSpanSlider->upperValue());
+        gMW->m_qxtSpectrogramSpanSlider->setToolTip(tt);
     }
     else if(state==STFTComputeThread::SCSCanceled){
 //        COUTD << "SCSCanceled" << endl;
