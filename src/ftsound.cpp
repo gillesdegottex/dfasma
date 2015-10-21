@@ -713,6 +713,9 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
         else
             gMW->m_gvWaveform->m_giFilteredSelection->setRect(-0.5/gFL->getFs(), -1.0, getLastSampleTime()+1.0/gFL->getFs(), 2.0);
         gMW->m_gvWaveform->m_giFilteredSelection->show();
+        // SPEEDUP Could clear/update/invalidate only the concerned time selection
+        m_giWavForWaveform->clearCache();
+        gMW->m_gvWaveform->m_scene->update();
         gMW->m_lastFilteredSound = this;
     }
     else {

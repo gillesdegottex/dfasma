@@ -134,15 +134,10 @@ void AudioEngine::startPlayback(FTSound* dssound, double tstart, double tstop, d
 #endif
             m_audioOutput->resume();
         } else {
-//            DEBUGSTRING << "AudioEngine::startPlayback " << 1 << endl;
             stopPlayback();
-//            DEBUGSTRING << "AudioEngine::startPlayback " << 1 << endl;
             m_ftsound = dssound; // Select the new sound to play
-//            DEBUGSTRING << "AudioEngine::startPlayback " << 1 << endl;
 //            connect(m_dssound, SIGNAL(readChannelFinished()), this, SLOT(readChannelFinished()));
-//            DEBUGSTRING << "AudioEngine::startPlayback " << 1 << endl;
             m_tobeplayed = m_ftsound->setPlay(m_format, tstart, tstop, fstart, fstop);
-//            DEBUGSTRING << "AudioEngine::startPlayback " << 1 << endl;
             m_audioOutput->start(m_ftsound);
             m_rtinfo_timer.start();
             m_starttime = QDateTime::currentMSecsSinceEpoch();
