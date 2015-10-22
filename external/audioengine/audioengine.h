@@ -119,7 +119,6 @@ public slots:
 
 signals:
     void stateChanged(QAudio::State state);
-    void infoMessage(const QString &message, int durationMs);
     void formatChanged(const QAudioFormat &format);
     void audioOutputDeviceChanged(const QAudioDeviceInfo& device);
     void playPositionChanged(double t);

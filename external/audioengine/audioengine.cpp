@@ -132,6 +132,8 @@ void AudioEngine::startPlayback(FTSound* dssound, double tstart, double tstop, d
             m_ftsound = dssound; // Select the new sound to play
 //            connect(m_dssound, SIGNAL(readChannelFinished()), this, SLOT(readChannelFinished()));
             m_tobeplayed = m_ftsound->setPlay(m_format, tstart, tstop, fstart, fstop);
+            // TODO Should check that the device is still available before starting it!
+            // 2015-10-22 I cannot find a way to do it with current Qt library (5.2)
             m_audioOutput->start(m_ftsound);
             m_rtinfo_timer.start();
             m_starttime = QDateTime::currentMSecsSinceEpoch();
