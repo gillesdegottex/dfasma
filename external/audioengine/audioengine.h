@@ -82,7 +82,6 @@ class AudioEngine : public QObject
 
     QAudioFormat        m_format; // The format of the audio output
 
-    QList<QAudioDeviceInfo> m_availableAudioOutputDevices;
     QAudioDeviceInfo    m_audioOutputDevice;
     QAudioOutput*       m_audioOutput;
 
@@ -105,14 +104,13 @@ public:
     bool initialize(int fs);
     bool isInitialized();
 
-    const QList<QAudioDeviceInfo> &availableAudioOutputDevices() const
-                                    { return m_availableAudioOutputDevices; }
+    QList<QAudioDeviceInfo> availableAudioOutputDevices() const
+                                    { return QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);}
     const QAudioDeviceInfo& audioOutputDevice() const { return m_audioOutputDevice; }
     const QAudioFormat& format() const { return m_format; }
     QAudio::State state() const { return m_state; }
 
 public slots:
-    void listAudioOutputDevices();
     void selectAudioOutputDevice(const QString& devicename);
     void setAudioOutputDevice(const QAudioDeviceInfo &device);
     void startPlayback(FTSound* sound, double tstart=0.0, double tstop=0.0, double fstart=0.0, double fstop=0.0);

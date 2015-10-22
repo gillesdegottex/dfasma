@@ -82,12 +82,6 @@ AudioEngine::AudioEngine(QObject *parent)
     m_rtinfo_timer.setSingleShot(false);
     m_rtinfo_timer.setInterval(1000*1/12.0);  // Ask for 24 refresh per second
     connect(&m_rtinfo_timer, SIGNAL(timeout()), this, SLOT(sendRealTimeInfo()));
-
-    listAudioOutputDevices();
-}
-
-void AudioEngine::listAudioOutputDevices() {
-    m_availableAudioOutputDevices = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
 }
 
 void AudioEngine::selectAudioOutputDevice(const QString& devicename) {
