@@ -740,7 +740,7 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
     vector<int16_t> data(iskiplast-iskipfirst+1);
     for(size_t i=0; i<data.size(); ++i){
         int64_t idx = i+iskipfirst-m_src_snd->m_giWavForWaveform->delay();
-        if(idx>=0 && idx<m_src_snd->wav.size())
+        if(idx>=0 && idx<int64_t(m_src_snd->wav.size()))
             data[i] = 32768*m_src_snd->wav[idx];
         else{
             data[i] = 0.0;
