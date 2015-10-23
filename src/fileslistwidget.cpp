@@ -17,12 +17,24 @@
 #include <QProgressDialog>
 #include <QDir>
 #include <QMessageBox>
+#include <QItemDelegate>
+#include <QLineEdit>
 
 #include <fstream>
 
 #include "qaehelpers.h"
 
 FilesListWidget* gFL = NULL;
+
+// Create a Delegate for calling the openEditor that is sadly missing from QAbstractItemView
+class FilesListWidgetDelegate : public QItemDelegate {
+    public:
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const {
+        QWidget* editor = QItemDelegate::createEditor(parent, option, index);
+        gFL->openEditor(editor);
+        return editor;
+    }
+};
 
 FilesListWidget::FilesListWidget(QMainWindow *parent)
     : QListWidget(parent)
@@ -39,14 +51,31 @@ FilesListWidget::FilesListWidget(QMainWindow *parent)
     setSelectionMode(QAbstractItemView::ExtendedSelection);
     setDragDropMode(QAbstractItemView::InternalMove);
     setWordWrap(true);
+
+    setItemDelegate(new FilesListWidgetDelegate());
+}
+
+void FilesListWidget::openEditor(QWidget * editor){
+    Q_UNUSED(editor)
+    FileType* currenItem = (FileType*)(currentItem());
+    if(currenItem){
+        QString txt = currenItem->text();
+        if(txt.size()>0 && txt[0]=='!')
+            txt = txt.mid(1);
+        if(txt.size()>0 && txt[0]=='*')
+            txt = txt.mid(1);
+        currenItem->setText(txt);
+    }
 }
 
 void FilesListWidget::closeEditor(QWidget * editor, QAbstractItemDelegate::EndEditHint hint){
     QListWidget::closeEditor(editor, hint);
 
     FileType* currenItem = (FileType*)(currentItem());
-    if(currenItem)
+    if(currenItem){
         currenItem->visibleName = currenItem->text();
+        currenItem->setStatus();
+    }
 }
 
 void FilesListWidget::changeFileListItemsSize() {

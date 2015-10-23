@@ -57,7 +57,8 @@ public:
     double getMaxDuration();
     double getMaxLastSampleTime();
 
-    void closeEditor(QWidget * editor, QAbstractItemDelegate::EndEditHint hint); // Wrong: it belongs to qlistview
+    void openEditor(QWidget * editor);
+    void closeEditor(QWidget * editor, QAbstractItemDelegate::EndEditHint hint);
 
 public slots:
     void changeFileListItemsSize();

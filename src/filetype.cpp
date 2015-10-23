@@ -424,7 +424,6 @@ void FileType::setStatus() {
     QString liststr = visibleName;
     QString tooltipstr = fileInfo.absoluteFilePath();
 
-//    cout << m_lastreadtime.toString().toLatin1().constData() << ":" << m_modifiedtime.toString().toLatin1().constData() << endl;
     if(m_lastreadtime<m_modifiedtime || m_modifiedtime==QDateTime()){
         liststr = '!'+liststr;
         if(m_lastreadtime==QDateTime())
@@ -440,9 +439,7 @@ void FileType::setStatus() {
         // TODO Set plain icon in the square ?
     }
     if(!m_actionShow->isChecked()) {
-        // liststr = '('+liststr+')';
         tooltipstr = "(hidden)"+tooltipstr;
-        // TODO Add diagonal stripes in the icon
     }
 
     setText(liststr);
