@@ -378,6 +378,10 @@ void GVSpectrumAmplitude::setWindowRange(qreal tstart, qreal tend){
     if(winlen<2)
         return;
 
+    if(m_dlgSettings->ui->cbAmplitudeSpectrumDFTSizeType->currentIndex()==0
+       && winlen>m_dlgSettings->ui->sbAmplitudeSpectrumDFTSize->value())
+        winlen = m_dlgSettings->ui->sbAmplitudeSpectrumDFTSize->value();
+
     // The window's shape
     int wintype = m_dlgSettings->ui->cbAmplitudeSpectrumWindowType->currentIndex();
 
@@ -435,7 +439,7 @@ void GVSpectrumAmplitude::setWindowRange(qreal tstart, qreal tend){
 
     // Set the DFT length
     if(m_dlgSettings->ui->cbAmplitudeSpectrumDFTSizeType->currentIndex()==0)
-        newDFTParams.dftlen = std::max(newDFTParams.winlen, m_dlgSettings->ui->sbAmplitudeSpectrumDFTSize->value());
+        newDFTParams.dftlen = m_dlgSettings->ui->sbAmplitudeSpectrumDFTSize->value();
     else if(m_dlgSettings->ui->cbAmplitudeSpectrumDFTSizeType->currentIndex()==1)
         newDFTParams.dftlen = std::pow(2.0, std::ceil(log2(float(newDFTParams.winlen)))+m_dlgSettings->ui->sbAmplitudeSpectrumOversamplingFactor->value());
     else if(m_dlgSettings->ui->cbAmplitudeSpectrumDFTSizeType->currentIndex()==2){
