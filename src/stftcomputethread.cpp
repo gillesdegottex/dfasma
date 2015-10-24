@@ -66,14 +66,14 @@ void STFTComputeThread::compute(ImageParameters reqImgSTFTParams) {
 
     m_mutex_changingparams.lock();
 
-//    COUTD << "STFTComputeThread::compute winlen=" << winlen << " stepsize=" << stepsize << " dftlen=" << dftlen << std::endl;
+//    DCOUT << "STFTComputeThread::compute winlen=" << reqImgSTFTParams.stftparams.win.size() << " stepsize=" << reqImgSTFTParams.stftparams.stepsize << " dftlen=" << reqImgSTFTParams.stftparams.dftlen << std::endl;
 
     // Check if this is necessary to re-compute the STFT.
     // Maybe updating the image is sufficient.
     reqImgSTFTParams.stftparams.computestft = reqImgSTFTParams.stftparams.snd->m_stftparams.isEmpty()
             || (reqImgSTFTParams.stftparams.snd->m_stftparams!=reqImgSTFTParams.stftparams);
 
-//    COUTD << "Compute STFT " << reqImgSTFTParams.stftparams.computestft << std::endl;
+//    DCOUT << "Compute STFT " << reqImgSTFTParams.stftparams.computestft << std::endl;
     if(m_mutex_computing.tryLock()) {
         // Currently not computing, so start it!
 
@@ -93,8 +93,6 @@ void STFTComputeThread::compute(ImageParameters reqImgSTFTParams) {
             gMW->ui->pbSTFTComputingCancel->setChecked(true);
         }
     }
-
-//    std::cout << "~STFTComputeThread::compute" << std::endl;
 
     m_mutex_changingparams.unlock();
 }
@@ -133,7 +131,10 @@ void STFTComputeThread::run() {
                 std::deque<std::vector<WAVTYPE> >& stft = params_running.stftparams.snd->m_stft;
 
                 stft.clear();
+                m_mutex_stftts.lock();
                 params_running.stftparams.snd->m_stftts.clear();
+                m_mutex_stftts.unlock();
+                std::deque<FFTTYPE> stftts;
 
                 int maxsampleindex = int(wav->size())-1 + int(params_running.stftparams.snd->m_giWavForWaveform->delay());
                 maxsampleindex = std::min(maxsampleindex, int(gFL->getFs()*gFL->getMaxLastSampleTime()));
@@ -148,7 +149,7 @@ void STFTComputeThread::run() {
 
                     // Add a new frame to the STFT
                     stft.push_back(std::vector<WAVTYPE>(dftlen/2+1));
-                    params_running.stftparams.snd->m_stftts.push_back((si*stepsize+(winlen-1)/2.0)/fs);
+                    stftts.push_back((si*stepsize+(winlen-1)/2.0)/fs);
 
                     // Set the DFT's input
                     int n = 0;
@@ -289,6 +290,10 @@ void STFTComputeThread::run() {
                     params_running.stftparams.snd->m_stft_max = stftmax;
 
                     m_mutex_changingparams.unlock();
+
+                    m_mutex_stftts.lock();
+                    params_running.stftparams.snd->m_stftts = stftts;
+                    m_mutex_stftts.unlock();
                 }
             }
 
@@ -377,7 +382,9 @@ void STFTComputeThread::run() {
         }
         catch(std::bad_alloc err){
             params_running.stftparams.snd->m_stft.clear();
+            m_mutex_stftts.lock();
             params_running.stftparams.snd->m_stftts.clear();
+            m_mutex_stftts.unlock();
 
             emit stftComputingStateChanged(SCSMemoryFull);
             gMW->ui->pbSTFTComputingCancel->setChecked(true);
@@ -389,7 +396,9 @@ void STFTComputeThread::run() {
             m_params_last.clear();
             if(params_running.stftparams.snd->m_stftparams != params_running.stftparams) {
                 params_running.stftparams.snd->m_stft.clear();
+                m_mutex_stftts.lock();
                 params_running.stftparams.snd->m_stftts.clear();
+                m_mutex_stftts.unlock();
                 params_running.stftparams.snd->m_stftparams.clear();
             }
             m_mutex_changingparams.unlock();

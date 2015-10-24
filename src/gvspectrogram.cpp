@@ -1216,9 +1216,8 @@ void GVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
     else{
         // If the color mapping is opaque, draw only the spectro of the current sound
         FTSound* csnd = gFL->getCurrentFTSound(true);
-        if(csnd && csnd->m_actionShow->isChecked() && csnd->m_stftts.size()>0) {
+        if(csnd && csnd->m_actionShow->isChecked())
             draw_spectrogram(painter, rect, viewrect, csnd);
-        }
     }
 
 //    cout << "GVSpectrogram::~drawBackground" << endl;
@@ -1228,17 +1227,22 @@ void GVSpectrogram::draw_spectrogram(QPainter* painter, const QRectF& rect, cons
     Q_UNUSED(rect)
     //        double bin2hz = fs*1/csnd->m_stftparams.dftlen;
 
+    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.lock();
     if(snd==NULL
       || !snd->m_actionShow->isChecked()
       || snd->m_imgSTFT.isNull()
       || snd->m_stftts.empty()) // First need to be computed
+    {
+        gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.unlock();
         return;
+    }
+
+    double stftwidth = snd->m_stftts.back()-snd->m_stftts.front();
 
     QRect imgrect = snd->m_imgSTFT.rect();
 
     // Build the piece of STFT which will be drawn in the view
     QRectF srcrect;
-    double stftwidth = snd->m_stftts.back()-snd->m_stftts.front();
     srcrect.setLeft(0.5+(imgrect.width()-1)*(viewrect.left()-snd->m_stftts.front())/stftwidth);
     srcrect.setRight(0.5+(imgrect.width()-1)*(viewrect.right()-snd->m_stftts.front())/stftwidth);
 //        COUTD << "viewrect=" << viewrect << endl;
@@ -1267,7 +1271,8 @@ void GVSpectrogram::draw_spectrogram(QPainter* painter, const QRectF& rect, cons
 //        COUTD << "SRC: " << srcrect << " " << srcrect.width() << "x" << srcrect.height() << endl;
 //        COUTD << "TRG: " << trgrect << " " << trgrect.width() << "x" << trgrect.height() << endl;
 
-//        if(!m_stftcomputethread->isComputing())
+    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.unlock();
+
     if(m_stftcomputethread->m_mutex_imageallocation.tryLock()) {
         painter->drawImage(trgrect, snd->m_imgSTFT, srcrect);
         m_stftcomputethread->m_mutex_imageallocation.unlock();

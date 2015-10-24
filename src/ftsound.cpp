@@ -319,7 +319,9 @@ bool FTSound::reload() {
     wavfiltered.clear();
     setFiltered(false);
     m_stft.clear();
+    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.lock();
     m_stftts.clear();
+    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.unlock();
     m_stftparams.clear();
 
     // ... and reload the data from the file
