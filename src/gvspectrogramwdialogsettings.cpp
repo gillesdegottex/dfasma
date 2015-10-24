@@ -1,9 +1,11 @@
 #include "gvspectrogramwdialogsettings.h"
 #include "ui_gvspectrogramwdialogsettings.h"
 
+#include <QSettings>
+
 #include "gvspectrogram.h"
 
-#include <QSettings>
+#include "../external/libqxt/qxtspanslider.h"
 
 #include "qaehelpers.h"
 
@@ -54,13 +56,19 @@ GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(GVSpectrogram *parent
     gMW->m_settings.add(ui->cbSpectrogramColorMapReversed);
     gMW->m_settings.add(ui->cbSpectrogramLoudnessWeighting);
 
+    gMW->m_settings.add(ui->cbSpectrogramColorRangeMode);
+    colorRangeModeCurrentIndexChanged(ui->cbSpectrogramColorRangeMode->currentIndex());
+    gMW->m_qxtSpectrogramSpanSlider->setLowerValue(gMW->m_settings.value("m_qxtSpectrogramSpanSlider_lower", gMW->m_qxtSpectrogramSpanSlider->lowerValue()).toInt());
+    gMW->m_qxtSpectrogramSpanSlider->setUpperValue(gMW->m_settings.value("m_qxtSpectrogramSpanSlider_upper", gMW->m_qxtSpectrogramSpanSlider->upperValue()).toInt());
+
     checkImageSize();
     adjustSize();
 
-    connect(ui->cbSpectrogramWindowType, SIGNAL(currentIndexChanged(QString)), this, SLOT(CBSpectrumWindowTypeCurrentIndexChanged(QString)));
+    connect(ui->cbSpectrogramWindowType, SIGNAL(currentIndexChanged(QString)), this, SLOT(windowTypeCurrentIndexChanged(QString)));
+    connect(ui->cbSpectrogramColorRangeMode, SIGNAL(currentIndexChanged(int)), this, SLOT(colorRangeModeCurrentIndexChanged(int)));
 }
 
-void GVSpectrogramWDialogSettings::checkImageSize() {
+void GVSpectrogramWDialogSettings::checkImageSize(){
 
     int maxsampleindex = int(gFL->getMaxWavSize())-1;
 
@@ -93,7 +101,24 @@ void GVSpectrogramWDialogSettings::checkImageSize() {
     ui->lblImgSizeWarning->setText(text);
 }
 
-void GVSpectrogramWDialogSettings::CBSpectrumWindowTypeCurrentIndexChanged(QString txt) {
+void GVSpectrogramWDialogSettings::colorRangeModeCurrentIndexChanged(int index){
+    if(index==0){
+        // Relative %
+        gMW->m_qxtSpectrogramSpanSlider->setMinimum(0);
+        gMW->m_qxtSpectrogramSpanSlider->setMaximum(100);
+        gMW->m_qxtSpectrogramSpanSlider->setLowerValue(30);
+        gMW->m_qxtSpectrogramSpanSlider->setUpperValue(90);
+    }
+    else if(index==1){
+        // Absolute dB
+        gMW->m_qxtSpectrogramSpanSlider->setMinimum(-3*gFL->getMaxSQNR());
+        gMW->m_qxtSpectrogramSpanSlider->setMaximum(10);
+        gMW->m_qxtSpectrogramSpanSlider->setLowerValue(-gFL->getMaxSQNR());
+        gMW->m_qxtSpectrogramSpanSlider->setUpperValue(10);
+    }
+}
+
+void GVSpectrogramWDialogSettings::windowTypeCurrentIndexChanged(QString txt){
     ui->lblWindowNormSigma->hide();
     ui->spSpectrogramWindowNormSigma->hide();
     ui->lblWindowNormPower->hide();

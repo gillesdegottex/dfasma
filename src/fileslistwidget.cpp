@@ -788,3 +788,14 @@ double FilesListWidget::getMaxLastSampleTime(){
 
     return lst;
 }
+
+WAVTYPE FilesListWidget::getMaxSQNR() const {
+    WAVTYPE maxsqnr = -std::numeric_limits<WAVTYPE>::infinity();
+    for(unsigned int si=0; si<ftsnds.size(); si++){
+        if(ftsnds[si]->format().sampleSize()==-1)
+            maxsqnr = std::max(maxsqnr, 20*std::log10(std::pow(2.0, int(8*sizeof(WAVTYPE)))));
+        else
+            maxsqnr = std::max(maxsqnr, 20*std::log10(std::pow(2.0, ftsnds[si]->format().sampleSize())));
+    }
+    return maxsqnr;
+}

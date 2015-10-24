@@ -62,6 +62,7 @@ public:
     unsigned int getMaxWavSize();
     double getMaxDuration();
     double getMaxLastSampleTime();
+    WAVTYPE getMaxSQNR() const; // Get the maximum QSNR among all sound files
 
     void openEditor(QWidget * editor);
     void closeEditor(QWidget * editor, QAbstractItemDelegate::EndEditHint hint);

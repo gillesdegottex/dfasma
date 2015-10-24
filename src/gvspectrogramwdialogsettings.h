@@ -32,7 +32,8 @@ public:
 private:
 
 private slots:
-    void CBSpectrumWindowTypeCurrentIndexChanged(QString txt);
+    void windowTypeCurrentIndexChanged(QString txt);
+    void colorRangeModeCurrentIndexChanged(int index);
 
 public slots:
     void checkImageSize();

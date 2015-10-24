@@ -302,7 +302,7 @@ void STFTComputeThread::run() {
                 emit stftComputingStateChanged(SCSIMG);
 
                 m_mutex_imageallocation.lock();
-                if(int(params_running.stftparams.snd->m_stft.size())==0){
+                if(int(params_running.stftparams.snd->m_stftts.size())==0){
                     m_mutex_imageallocation.unlock();
                 }
                 else{
@@ -322,8 +322,17 @@ void STFTComputeThread::run() {
                         params_running.imgstft->fill(Qt::white);
                     QRgb* pimgb = (QRgb*)(params_running.imgstft->bits());
 
-                    FFTTYPE ymin = params_running.stftparams.snd->m_stft_min+(params_running.stftparams.snd->m_stft_max-params_running.stftparams.snd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0; // Min of color range [dB]
-                    FFTTYPE ymax = params_running.stftparams.snd->m_stft_min+(params_running.stftparams.snd->m_stft_max-params_running.stftparams.snd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0; // Max of color range [dB]
+                    FFTTYPE ymin = 0.0; // Init shouldn't be used
+                    FFTTYPE ymax = 1.0; // Init shouldn't be used
+                    if(params_running.colorrangemode==0){
+                        ymin = params_running.stftparams.snd->m_stft_min+(params_running.stftparams.snd->m_stft_max-params_running.stftparams.snd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0;
+                        ymax = params_running.stftparams.snd->m_stft_min+(params_running.stftparams.snd->m_stft_max-params_running.stftparams.snd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0;
+                    }
+                    else if(params_running.colorrangemode==1){
+                        ymin = gMW->m_qxtSpectrogramSpanSlider->lowerValue(); // Min of color range [dB]
+                        ymax = gMW->m_qxtSpectrogramSpanSlider->upperValue(); // Max of color range [dB]
+                    }
+
                     bool uselw = params_running.loudnessweighting;
                     FFTTYPE divmaxmmin = 1.0/(ymax-ymin);
         //            QRgb red = qRgb(int(255*1), int(255*0), int(255*0));

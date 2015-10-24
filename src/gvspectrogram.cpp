@@ -77,8 +77,6 @@ GVSpectrogram::GVSpectrogram(WMainWindow* parent)
 //    setTransform(trans);
 
     m_dlgSettings = new GVSpectrogramWDialogSettings(this);
-    gMW->m_qxtSpectrogramSpanSlider->setUpperValue(gMW->m_settings.value("m_qxtSpectrogramSpanSlider_upper", 90).toInt());
-    gMW->m_qxtSpectrogramSpanSlider->setLowerValue(gMW->m_settings.value("m_qxtSpectrogramSpanSlider_lower", 10).toInt());
 
     m_aShowProperties = new QAction(tr("&Properties"), this);
     m_aShowProperties->setStatusTip(tr("Open the properties configuration panel of the Spectrogram view"));
@@ -284,14 +282,26 @@ void GVSpectrogram::showHarmonics(bool show){
 
 void GVSpectrogram::amplitudeExtentSlidersChanged(){
     if(!gMW->isLoading()) {
-        QString tt = QString("[%1,%2]\% of amplitude range").arg(gMW->m_qxtSpectrogramSpanSlider->lowerValue()).arg(gMW->m_qxtSpectrogramSpanSlider->upperValue());
+        QString tt;
+        if(m_dlgSettings->ui->cbSpectrogramColorRangeMode->currentIndex()==0)
+            tt = QString("[%1,%2]\% of amplitude range").arg(gMW->m_qxtSpectrogramSpanSlider->lowerValue()).arg(gMW->m_qxtSpectrogramSpanSlider->upperValue());
+        else if(m_dlgSettings->ui->cbSpectrogramColorRangeMode->currentIndex()==1)
+            tt = QString("[%1,%2]dB of amplitude").arg(gMW->m_qxtSpectrogramSpanSlider->lowerValue()).arg(gMW->m_qxtSpectrogramSpanSlider->upperValue());
         QToolTip::showText(QCursor::pos(), tt, this);
         gMW->m_qxtSpectrogramSpanSlider->setToolTip(tt);
 
         FTSound* csnd = gFL->getCurrentFTSound(true);
         if(csnd) {
-            FFTTYPE ymin = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0; // Min of color range [dB]
-            FFTTYPE ymax = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0; // Max of color range [dB]
+            FFTTYPE ymin = 0.0; // Init shouldn't be used
+            FFTTYPE ymax = 1.0; // Init shouldn't be used
+            if(m_dlgSettings->ui->cbSpectrogramColorRangeMode->currentIndex()==0){
+                ymin = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0; // Min of color range [dB]
+                ymax = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0; // Max of color range [dB]
+            }
+            else if(m_dlgSettings->ui->cbSpectrogramColorRangeMode->currentIndex()==1){
+                ymin = gMW->m_qxtSpectrogramSpanSlider->lowerValue();
+                ymax = gMW->m_qxtSpectrogramSpanSlider->upperValue();
+            }
 
             gMW->m_gvSpectrumAmplitude->m_giSpectrogramMin->setPos(0, -ymin);
             gMW->m_gvSpectrumAmplitude->m_giSpectrogramMin->show();
@@ -404,7 +414,12 @@ void GVSpectrogram::stftComputingStateChanged(int state){
         m_scene->update();
         if(gMW->m_gvWaveform->m_aWaveformShowSTFTWindowCenters->isChecked())
             gMW->m_gvWaveform->update();
-        QString tt = QString("[%1,%2]\% of amplitude range").arg(gMW->m_qxtSpectrogramSpanSlider->lowerValue()).arg(gMW->m_qxtSpectrogramSpanSlider->upperValue());
+
+        QString tt;
+        if(m_dlgSettings->ui->cbSpectrogramColorRangeMode->currentIndex()==0)
+            tt = QString("[%1,%2]\% of amplitude range").arg(gMW->m_qxtSpectrogramSpanSlider->lowerValue()).arg(gMW->m_qxtSpectrogramSpanSlider->upperValue());
+        else if(m_dlgSettings->ui->cbSpectrogramColorRangeMode->currentIndex()==1)
+            tt = QString("[%1,%2]dB of amplitude").arg(gMW->m_qxtSpectrogramSpanSlider->lowerValue()).arg(gMW->m_qxtSpectrogramSpanSlider->upperValue());
         gMW->m_qxtSpectrogramSpanSlider->setToolTip(tt);
     }
     else if(state==STFTComputeThread::SCSCanceled){
@@ -462,7 +477,7 @@ void GVSpectrogram::updateSTFTPlot(bool force){
             bool cepliftpresdc = gMW->m_gvSpectrogram->m_dlgSettings->ui->cbSpectrogramCepstralLifteringPreserveDC->isChecked();
 
             STFTComputeThread::STFTParameters reqSTFTParams(csnd, m_win, stepsize, dftlen, cepliftorder, cepliftpresdc);
-            STFTComputeThread::ImageParameters reqImgSTFTParams(reqSTFTParams, &(csnd->m_imgSTFT), m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex(), m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked(), gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0, gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0, m_dlgSettings->ui->cbSpectrogramLoudnessWeighting->isChecked());
+            STFTComputeThread::ImageParameters reqImgSTFTParams(reqSTFTParams, &(csnd->m_imgSTFT), m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex(), m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked(), gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0, gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0, m_dlgSettings->ui->cbSpectrogramLoudnessWeighting->isChecked(), m_dlgSettings->ui->cbSpectrogramColorRangeMode->currentIndex());
 
             if(csnd->m_imgSTFTParams.isEmpty() || reqImgSTFTParams!=csnd->m_imgSTFTParams) {
                 gMW->ui->pbSpectrogramSTFTUpdate->hide();

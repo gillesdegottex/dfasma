@@ -101,10 +101,6 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     ui->setupUi(this);
     ui->pbSpectrogramSTFTUpdate->hide();
     m_qxtSpectrogramSpanSlider = new QxtSpanSlider(Qt::Vertical, this);
-    m_qxtSpectrogramSpanSlider->setMinimum(0);
-    m_qxtSpectrogramSpanSlider->setMaximum(100);
-    m_qxtSpectrogramSpanSlider->setUpperValue(90);
-    m_qxtSpectrogramSpanSlider->setLowerValue(30);
     m_qxtSpectrogramSpanSlider->setMinimumWidth(18);
     m_qxtSpectrogramSpanSlider->setMaximumWidth(18);
     m_qxtSpectrogramSpanSlider->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
@@ -525,6 +521,8 @@ void WMainWindow::updateViewsAfterAddFile(bool isfirsts) {
         ui->splitterViews->show();
         updateWindowTitle();
         m_gvWaveform->updateSceneRect();
+        if(m_gvSpectrogram->m_dlgSettings->ui->cbSpectrogramColorRangeMode->currentIndex()==1)
+            m_qxtSpectrogramSpanSlider->setMinimum(-3*gFL->getMaxSQNR());
         m_gvSpectrogram->updateSceneRect();
         m_gvSpectrumAmplitude->updateAmplitudeExtent();
         m_gvSpectrumPhase->updateSceneRect();

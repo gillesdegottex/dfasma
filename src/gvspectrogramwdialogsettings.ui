@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>465</width>
-    <height>571</height>
+    <width>441</width>
+    <height>606</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -564,6 +564,31 @@
          <string>Weighting with loudness curve</string>
         </property>
        </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Color range sliders</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="cbSpectrogramColorRangeMode">
+          <item>
+           <property name="text">
+            <string>Percents of min to max values</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Absolute dB values</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
