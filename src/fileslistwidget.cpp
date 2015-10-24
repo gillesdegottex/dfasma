@@ -1,5 +1,12 @@
 #include "fileslistwidget.h"
 
+#include <QFileInfo>
+#include <QProgressDialog>
+#include <QDir>
+#include <QMessageBox>
+#include <QItemDelegate>
+#include <QKeyEvent>
+
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "ui_wdialogsettings.h"
@@ -12,13 +19,9 @@
 #include "gvspectrogram.h"
 #include "filetype.h"
 #include "../external/audioengine/audioengine.h"
-
-#include <QFileInfo>
-#include <QProgressDialog>
-#include <QDir>
-#include <QMessageBox>
-#include <QItemDelegate>
-#include <QKeyEvent>
+#include "gvspectrogramwdialogsettings.h"
+#include "ui_gvspectrogramwdialogsettings.h"
+#include "../external/libqxt/qxtspanslider.h"
 
 #include <fstream>
 
@@ -204,6 +207,7 @@ void FilesListWidget::addExistingFile(const QString& filepath, FileType::FType t
             if(container==FileType::FCTEXT) {
                 // Distinguish between f0, labels and future VUF files (and futur others ...)
                 // Do a grammar check (But this won't help to diff F0 and VUF files)
+                // TODO Switch to QTextStream
                 std::ifstream fin(filepath.toLatin1().constData());
                 if(!fin.is_open())
                     throw QString("Cannot open this file");
@@ -216,7 +220,7 @@ void FilesListWidget::addExistingFile(const QString& filepath, FileType::FType t
                 // Check: <number> <number>
                 std::istringstream iss(line);
                 // Check if first two values are real numbers
-                // TODO This will NOT work to distinguish F0 or VUF !!
+                // TODO This will NOT work to distinguish F0 from VUF !!
                 if((iss >> t >> t) && iss.eof())
                     type = FileType::FTFZERO;
                 else // Otherwise, assume this is a label
@@ -538,9 +542,6 @@ void FilesListWidget::selectedFilesClose() {
 
     QList<QListWidgetItem*> l = selectedItems();
     clearSelection();
-    m_nb_snds_in_selection = 0;
-    m_nb_labels_in_selection = 0;
-    m_nb_fzeros_in_selection = 0;
     gMW->ui->actionSelectedFilesSave->setEnabled(false);
 
     bool removeSelectedSound = false;
@@ -563,6 +564,10 @@ void FilesListWidget::selectedFilesClose() {
     }
 
     gMW->updateWindowTitle();
+
+    if(gMW->m_gvSpectrogram->m_dlgSettings->ui->cbSpectrogramColorRangeMode->currentIndex()==1)
+        gMW->m_qxtSpectrogramSpanSlider->setMinimum(-3*getMaxSQNR());
+    gMW->m_gvSpectrumAmplitude->updateAmplitudeExtent();
 
     if(gMW->m_gvWaveform->m_scene->sceneRect().right()>gFL->getMaxDuration()+1.0/gFL->getFs()) {
         gMW->m_gvWaveform->updateSceneRect();
