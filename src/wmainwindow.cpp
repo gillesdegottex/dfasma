@@ -796,7 +796,12 @@ void WMainWindow::audioInitialize(double fs) {
 
     if(m_dlgSettings->ui->cbPlaybackAudioOutputDevices->count()==0){
         DLOG << "No audio device available";
-        m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText("<small>No audio device available</small>");
+        QString txt = "<small>No audio device available.";
+        #if defined(Q_OS_LINUX) || defined(Q_OS_MAC)
+            txt += "<br/>Are all Qt Multimedia packages installed ? (e.g. libqt5multimedia5-plugins)";
+        #endif
+        txt += "</small>";
+        m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText(txt);
     }
     else{
         try{
