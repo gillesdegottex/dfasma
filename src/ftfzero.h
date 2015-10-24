@@ -92,7 +92,7 @@ public slots:
     void save();
     void saveAs();
     void setVisible(bool shown);
-    void setSource();
+    void setSource(FileType* src);
 };
 
 #endif // FTFZERO_H

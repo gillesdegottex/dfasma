@@ -18,7 +18,7 @@
 #include <QDir>
 #include <QMessageBox>
 #include <QItemDelegate>
-#include <QLineEdit>
+#include <QKeyEvent>
 
 #include <fstream>
 
@@ -374,78 +374,86 @@ void FilesListWidget::showFileContextMenu(const QPoint& pos) {
 void FilesListWidget::fileSelectionChanged() {
 //    COUTD << "WMainWindow::fileSelectionChanged" << endl;
 
-    QList<QListWidgetItem*> list = selectedItems();
-    m_nb_snds_in_selection = 0;
-    m_nb_labels_in_selection = 0;
-    m_nb_fzeros_in_selection = 0;
-
-    FileType* currfile = currentFile();
-    if(currfile!=m_prevSelectedFile){
-        if(m_prevSelectedFile)
-            m_prevSelectedFile->zposReset();
-        currfile->zposBringForward();
-        m_prevSelectedFile = currfile;
+    if(m_currentAction==CASetSource){
+        setSource(currentFile());
+        m_currentAction = CANothing;
+        setCursor(Qt::ArrowCursor);
+        setCurrentItem(m_prevSelectedFile);
     }
+    else{
+        QList<QListWidgetItem*> list = selectedItems();
+        m_nb_snds_in_selection = 0;
+        m_nb_labels_in_selection = 0;
+        m_nb_fzeros_in_selection = 0;
 
-    for(int i=0; i<list.size(); i++) {
-        FileType* ft = ((FileType*)list.at(i));
-        if(ft->is(FileType::FTSOUND)){
-            m_nb_snds_in_selection++;
-            m_prevSelectedSound = (FTSound*)ft;
+        FileType* currfile = currentFile();
+        if(currfile!=m_prevSelectedFile){
+            if(m_prevSelectedFile)
+                m_prevSelectedFile->zposReset();
+            currfile->zposBringForward();
+            m_prevSelectedFile = currfile;
         }
 
-        if(ft->is(FileType::FTLABELS))
-            m_nb_labels_in_selection++;
+        for(int i=0; i<list.size(); i++) {
+            FileType* ft = ((FileType*)list.at(i));
+            if(ft->is(FileType::FTSOUND)){
+                m_nb_snds_in_selection++;
+                m_prevSelectedSound = (FTSound*)ft;
+            }
 
-        if(ft->is(FileType::FTFZERO))
-            m_nb_fzeros_in_selection++;
-    }
+            if(ft->is(FileType::FTLABELS))
+                m_nb_labels_in_selection++;
 
-    // Update the spectrogram to current selected signal
-    if(m_nb_snds_in_selection>0){
-        if(gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop){
-            gMW->m_gvWaveform->m_scene->update();
+            if(ft->is(FileType::FTFZERO))
+                m_nb_fzeros_in_selection++;
+        }
+
+        // Update the spectrogram to current selected signal
+        if(m_nb_snds_in_selection>0){
+            if(gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop){
+                gMW->m_gvWaveform->m_scene->update();
+                gMW->m_gvSpectrumAmplitude->m_scene->update();
+                gMW->m_gvSpectrumPhase->m_scene->update();
+                gMW->m_gvSpectrumGroupDelay->m_scene->update();
+            }
+            gMW->m_gvSpectrogram->updateSTFTPlot();
+            gMW->m_gvSpectrogram->m_scene->update();
+        }
+        if(m_nb_fzeros_in_selection>0){
             gMW->m_gvSpectrumAmplitude->m_scene->update();
-            gMW->m_gvSpectrumPhase->m_scene->update();
-            gMW->m_gvSpectrumGroupDelay->m_scene->update();
+            gMW->m_gvSpectrogram->m_scene->update();
         }
-        gMW->m_gvSpectrogram->updateSTFTPlot();
-        gMW->m_gvSpectrogram->m_scene->update();
-    }
-    if(m_nb_fzeros_in_selection>0){
-        gMW->m_gvSpectrumAmplitude->m_scene->update();
-        gMW->m_gvSpectrogram->m_scene->update();
-    }
 
-    // Update source symbols
-    // First clear
-    for(size_t fi=0; fi<m_current_sourced.size(); ++fi)
-        if(hasFile(m_current_sourced[fi]))
-            m_current_sourced[fi]->setIsSource(false);
-    m_current_sourced.clear();
-    // Then show the source symbol ('S')
-    if(list.size()==1){
-        FileType* ft = ((FileType*)list.at(0));
-        if(ft->is(FileType::FTFZERO)){
-            FTSound* ftsnd = ((FTFZero*)ft)->m_src_snd;
-            if(hasFile(ftsnd)){
-                ftsnd->setIsSource(true);
-                m_current_sourced.push_back(ftsnd);
+        // Update source symbols
+        // First clear
+        for(size_t fi=0; fi<m_current_sourced.size(); ++fi)
+            if(hasFile(m_current_sourced[fi]))
+                m_current_sourced[fi]->setIsSource(false);
+        m_current_sourced.clear();
+        // Then show the source symbol ('S')
+        if(list.size()==1){
+            FileType* ft = ((FileType*)list.at(0));
+            if(ft->is(FileType::FTFZERO)){
+                FTSound* ftsnd = ((FTFZero*)ft)->m_src_snd;
+                if(hasFile(ftsnd)){
+                    ftsnd->setIsSource(true);
+                    m_current_sourced.push_back(ftsnd);
+                }
+            }
+            if(ft->is(FileType::FTLABELS)){
+                FTFZero* ftfzero = ((FTLabels*)ft)->m_src_fzero;
+                if(hasFile(ftfzero)){
+                    ftfzero->setIsSource(true);
+                    m_current_sourced.push_back(ftfzero);
+                }
             }
         }
-        if(ft->is(FileType::FTLABELS)){
-            FTFZero* ftfzero = ((FTLabels*)ft)->m_src_fzero;
-            if(hasFile(ftfzero)){
-                ftfzero->setIsSource(true);
-                m_current_sourced.push_back(ftfzero);
-            }
-        }
+
+        gMW->ui->actionSelectedFilesSave->setEnabled(m_nb_labels_in_selection>0 || m_nb_fzeros_in_selection>0);
+        gMW->ui->actionSelectedFilesClose->setEnabled(list.size()>0);
+
+        fileInfoUpdate();
     }
-
-    gMW->ui->actionSelectedFilesSave->setEnabled(m_nb_labels_in_selection>0 || m_nb_fzeros_in_selection>0);
-    gMW->ui->actionSelectedFilesClose->setEnabled(list.size()>0);
-
-    fileInfoUpdate();
 
 //    COUTD << "WMainWindow::~fileSelectionChanged" << endl;
 }
@@ -463,11 +471,32 @@ void FilesListWidget::fileInfoUpdate() {
 }
 
 // FileType is not an qobject, thus, need to forward the message manually (i.e. without signal system).
-void FilesListWidget::colorSelected(const QColor& color) {
+void FilesListWidget::colorSelected(const QColor& color){
     FileType* currenItem = (FileType*)(currentItem());
     if(currenItem)
         currenItem->setColor(color);
 }
+
+void FilesListWidget::setSource(FileType* file){
+    if(file==NULL){
+        m_currentAction = CASetSource;
+        setCursor(Qt::PointingHandCursor);
+    }
+    else{
+        if(m_prevSelectedFile)
+            m_prevSelectedFile->setSource(file);
+    }
+}
+
+void FilesListWidget::keyPressEvent(QKeyEvent *event){
+    if(event->key()==Qt::Key_Escape) {
+        m_currentAction = CANothing;
+        setCursor(Qt::ArrowCursor);
+    }
+
+    QListWidget::keyPressEvent(event);
+}
+
 void FilesListWidget::resetAmpScale(){
     FTSound* currentftsound = getCurrentFTSound();
     if(currentftsound) {

@@ -87,6 +87,7 @@ public:
     virtual QString info() const;
     void setEditing(bool editing);
     void setIsSource(bool issource);
+    virtual void setSource(FileType* src){Q_UNUSED(src)}
     virtual void setColor(const QColor& _color);
     virtual void updateIcon();
     virtual void setVisible(bool shown);

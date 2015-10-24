@@ -33,6 +33,12 @@ class FilesListWidget : public QListWidget
     QProgressDialog* m_prgdlg;
     void stopFileProgressDialog();
 
+
+    enum CurrentAction {CANothing, CASetSource};
+    CurrentAction m_currentAction;
+
+    virtual void keyPressEvent(QKeyEvent * event);
+
 public:
     explicit FilesListWidget(QMainWindow *parent = 0);
 
@@ -70,6 +76,7 @@ public slots:
     void resetAmpScale();
     void resetDelay();
     void colorSelected(const QColor& color);
+    void setSource(FileType *file=NULL);
 
     void fileSelectionChanged();
     void selectedFilesClose();

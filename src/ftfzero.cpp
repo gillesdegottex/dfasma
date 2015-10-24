@@ -96,8 +96,8 @@ void FTFZero::constructor_internal(){
     m_actionSaveAs->setStatusTip(tr("Save the f0 curve in a given file..."));
     connect(m_actionSaveAs, SIGNAL(triggered()), this, SLOT(saveAs()));
     m_actionSetSource = new QAction("Set corresponding waveform...", this);
-    m_actionSetSource->setStatusTip(tr("Set the waveform this f0 should correspond to."));
-    connect(m_actionSetSource, SIGNAL(triggered()), this, SLOT(setSource()));
+    m_actionSetSource->setStatusTip(tr("Set the waveform this F0 should correspond to."));
+    connect(m_actionSetSource, SIGNAL(triggered()), gFL, SLOT(setSource()));
 }
 
 void FTFZero::constructor_external(){
@@ -546,8 +546,9 @@ void FTFZero::setVisible(bool shown){
     m_giHarmonicForSpectrogram->setVisible(shown);
 }
 
-void FTFZero::setSource(){
-    DFLAG
+void FTFZero::setSource(FileType *src){
+    if(src->is(FTSOUND))
+        m_src_snd = (FTSound*)src;
 }
 
 void FTFZero::setColor(const QColor& color){
