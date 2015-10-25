@@ -36,10 +36,12 @@ GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(GVSpectrogram *parent
     if(ui->cbSpectrogramDFTSizeType->currentIndex()==0){
         ui->sbSpectrogramOversamplingFactor->hide();
         ui->sbSpectrogramDFTSize->show();
+        DFTSizeChanged(ui->sbSpectrogramDFTSize->value());
     }
     else if(ui->cbSpectrogramDFTSizeType->currentIndex()==1){
         ui->sbSpectrogramOversamplingFactor->show();
         ui->sbSpectrogramDFTSize->hide();
+        DFTSizeChanged(ui->sbSpectrogramOversamplingFactor->value());
     }
     connect(ui->cbSpectrogramDFTSizeType, SIGNAL(currentIndexChanged(int)), this, SLOT(DFTSizeTypeChanged(int)));
     connect(ui->sbSpectrogramDFTSize, SIGNAL(valueChanged(int)), this, SLOT(DFTSizeChanged(int)));
@@ -161,6 +163,7 @@ void GVSpectrogramWDialogSettings::DFTSizeTypeChanged(int index) {
         ui->sbSpectrogramDFTSize->setValue(dftlen);
         ui->sbSpectrogramOversamplingFactor->hide();
         ui->sbSpectrogramDFTSize->show();
+        ui->sbSpectrogramOversamplingFactor->setToolTip("<html><head/><body><p>DFT size = <span style=\" font-size:14pt;\">2</span><span style=\" font-size:14pt; vertical-align:super;\">⌈log2(winlen)⌉+X</span>="+QString::number(dftlen)+"</p></body></html>");
     }
     else{
         ui->sbSpectrogramOversamplingFactor->show();
@@ -182,6 +185,7 @@ void GVSpectrogramWDialogSettings::DFTSizeChanged(int value) {
     else if(ui->cbSpectrogramDFTSizeType->currentIndex()==1){
         int dftlen = std::pow(2.0, std::ceil(log2(float(winlen)))+ui->sbSpectrogramOversamplingFactor->value());//[samples]
         ui->sbSpectrogramDFTSize->setValue(dftlen);
+        ui->sbSpectrogramOversamplingFactor->setToolTip("<html><head/><body><p>DFT size = <span style=\" font-size:14pt;\">2</span><span style=\" font-size:14pt; vertical-align:super;\">⌈log2(winlen)⌉+X</span>="+QString::number(dftlen)+"</p></body></html>");
     }
 }
 
