@@ -41,12 +41,9 @@ $env:Path += ";C:\$QTPATH\bin"
 & c:$QTPATH\bin\windeployqt.exe --no-translations dfasma.exe
 cd ..
 
-#"C:/Program Files (x86)/Inno Setup 5/ISCC"
-
-
 # Run Inno setup to create the installer
-If ($arch -eq 'x64') { $INNOSCRIPT = DFasma_MSVC2012_Win64bit.iss }
-Else { $INNOSCRIPT = DFasma_MSVC2012_Win32bit.iss }
+If ($arch -eq 'x64') { $INNOSCRIPT = "DFasma_MSVC2012_Win64bit.iss" }
+Else { $INNOSCRIPT = "DFasma_MSVC2012_Win32bit.iss" }
 
 & "c:\Program Files (x86)\Inno Setup 5\ISCC.exe" /o. /dMyAppVersion=$VERSION c:\projects\dfasma\distrib\$INNOSCRIPT
 
