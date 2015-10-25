@@ -17,7 +17,7 @@ New-Item -ItemType directory -Name $PACKAGENAME | Out-Null
 Copy-Item c:\projects\dfasma\release\dfasma.exe $PACKAGENAME
 
 # Add libraries
-Copy-Item c:\projects\dfasma\lib\libfftfile\libfftw3-3.dll $PACKAGENAME
+Copy-Item c:\projects\dfasma\lib\libfft\libfftw3-3.dll $PACKAGENAME
 Copy-Item c:\projects\dfasma\lib\libsndfile\bin\libsndfile-1.dll $PACKAGENAME
 
 # Add the Qt related libs
