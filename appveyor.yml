@@ -133,7 +133,7 @@ build_script:
   - ps: Get-ChildItem c:\projects\dfasma\lib
   - ps: Get-ChildItem c:\projects\dfasma\lib\libsndfile
   - ps: Get-ChildItem c:\projects\dfasma\lib\libfft
-  - ps: & '.\distrib\package_windows_appveyor.ps1' $env:platform
+  - ps: .\distrib\package_windows_appveyor.ps1 $env:platform
   - ps: Move-Item distrib/DFasma-*-Win*bit.exe .
   - ps: Get-ChildItem .
   #- ps: $GITPROJECTVERSION = (git describe --tags --always) | Out-String
