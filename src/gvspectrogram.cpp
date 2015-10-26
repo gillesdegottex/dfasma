@@ -847,7 +847,8 @@ void GVSpectrogram::mouseMoveEvent(QMouseEvent* event){
 void GVSpectrogram::mouseReleaseEvent(QMouseEvent* event) {
 //    COUTD << "GVSpectrogram::mouseReleaseEvent" << endl;
 
-    QPointF p = mapToScene(event->pos());
+    bool kshift = event->modifiers().testFlag(Qt::ShiftModifier);
+    bool kctrl = event->modifiers().testFlag(Qt::ControlModifier);
 
     if(gMW->ui->actionEditMode->isChecked())
         if(m_currentAction==CAEditFZero)
@@ -855,19 +856,13 @@ void GVSpectrogram::mouseReleaseEvent(QMouseEvent* event) {
 
     m_currentAction = CANothing;
 
+    gMW->updateMouseCursorState(kshift, kctrl);
+
+    QPointF p = mapToScene(event->pos());
     if(gMW->ui->actionSelectionMode->isChecked()) {
-        if(event->modifiers().testFlag(Qt::ShiftModifier)) {
-            setCursor(Qt::OpenHandCursor);
-        }
-        else if(event->modifiers().testFlag(Qt::ControlModifier)) {
-            setCursor(Qt::OpenHandCursor);
-        }
-        else{
+        if(!kshift && !kctrl){
             if(p.x()>=m_selection.left() && p.x()<=m_selection.right() && p.y()>=m_selection.top() && p.y()<=m_selection.bottom())
                 setCursor(Qt::OpenHandCursor);
-            else{
-                setCursor(Qt::CrossCursor);
-            }
         }
     }
 

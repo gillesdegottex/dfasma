@@ -560,88 +560,134 @@ void WMainWindow::viewsSpectrogramToggled(bool show)
 }
 
 void WMainWindow::keyPressEvent(QKeyEvent* event){
-    bool kshift = event->modifiers().testFlag(Qt::ShiftModifier);
-    bool kctrl = event->modifiers().testFlag(Qt::ControlModifier);
-    if(event->key()==Qt::Key_Shift && !kctrl){
-        enterScrollHandDragMode();
+    QMainWindow::keyPressEvent(event);
+
+    updateMouseCursorState(event->modifiers().testFlag(Qt::ShiftModifier) || (event && event->key()==Qt::Key_Shift)
+                         , event->modifiers().testFlag(Qt::ControlModifier) || (event && event->key()==Qt::Key_Control));
+
+    if(event->key()==Qt::Key_Escape){
+        FTSound* currentftsound = gFL->getCurrentFTSound(true);
+        if(currentftsound && currentftsound->isFiltered()) {
+            currentftsound->setFiltered(false);
+            gFL->fileInfoUpdate();
+        }
     }
-    else if(event->key()==Qt::Key_Control && !kshift){
-        if(ui->actionSelectionMode->isChecked()){
-            if(m_gvWaveform->m_selection.width()>0){
-                m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
+}
+
+void WMainWindow::updateMouseCursorState(bool kshift, bool kcontrol){
+//    DCOUT << "WMainWindow::updateMouseCursorState shift=" << kshift << " ctrl=" << kcontrol << std::endl;
+
+    FileType* currentfile = gFL->currentFile();
+
+    if(ui->actionSelectionMode->isChecked()){
+        if(kshift && !kcontrol){
+            m_gvWaveform->setDragMode(QGraphicsView::ScrollHandDrag);
+            m_gvSpectrogram->setDragMode(QGraphicsView::ScrollHandDrag);
+            m_gvSpectrumAmplitude->setDragMode(QGraphicsView::ScrollHandDrag);
+            m_gvSpectrumPhase->setDragMode(QGraphicsView::ScrollHandDrag);
+            m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::ScrollHandDrag);
+        }
+        else if(!kshift && kcontrol){
+            if(m_gvWaveform->m_selection.width()>0)
                 m_gvWaveform->setCursor(Qt::OpenHandCursor);
-            }
-            if(m_gvSpectrumAmplitude->m_selection.width()*m_gvSpectrumAmplitude->m_selection.height()>0){
-                m_gvSpectrumAmplitude->setDragMode(QGraphicsView::NoDrag);
-                m_gvSpectrumAmplitude->setCursor(Qt::OpenHandCursor);
-            }
-            if(m_gvSpectrumPhase->m_selection.width()*m_gvSpectrumPhase->m_selection.height()>0){
-                m_gvSpectrumPhase->setDragMode(QGraphicsView::NoDrag);
-                m_gvSpectrumPhase->setCursor(Qt::OpenHandCursor);
-            }
-            if(m_gvSpectrumGroupDelay->m_selection.width()*m_gvSpectrumGroupDelay->m_selection.height()>0){
-                m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::NoDrag);
-                m_gvSpectrumGroupDelay->setCursor(Qt::OpenHandCursor);
-            }
-            if(m_gvSpectrogram->m_selection.width()*m_gvSpectrogram->m_selection.height()>0){
-                m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
+            if(m_gvSpectrogram->m_selection.width()*m_gvSpectrogram->m_selection.height()>0)
                 m_gvSpectrogram->setCursor(Qt::OpenHandCursor);
-            }
+            if(m_gvSpectrumAmplitude->m_selection.width()*m_gvSpectrumAmplitude->m_selection.height()>0)
+                m_gvSpectrumAmplitude->setCursor(Qt::OpenHandCursor);
+            if(m_gvSpectrumPhase->m_selection.width()*m_gvSpectrumPhase->m_selection.height()>0)
+                m_gvSpectrumPhase->setCursor(Qt::OpenHandCursor);
+            if(m_gvSpectrumGroupDelay->m_selection.width()*m_gvSpectrumGroupDelay->m_selection.height()>0)
+                m_gvSpectrumGroupDelay->setCursor(Qt::OpenHandCursor);
         }
-        else if(ui->actionEditMode->isChecked()){
-            m_gvWaveform->setCursor(Qt::SizeHorCursor);
-        }
-    }
-    else if(event->key()==Qt::Key_Control && kshift){
-        if(ui->actionSelectionMode->isChecked()){
+        else if(kshift && kcontrol){
             m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
             m_gvWaveform->setCursor(Qt::CrossCursor);
+            m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrogram->setCursor(Qt::CrossCursor);
             m_gvSpectrumAmplitude->setDragMode(QGraphicsView::NoDrag);
             m_gvSpectrumAmplitude->setCursor(Qt::CrossCursor);
             m_gvSpectrumPhase->setDragMode(QGraphicsView::NoDrag);
             m_gvSpectrumPhase->setCursor(Qt::OpenHandCursor); // For the window's pos control
             m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::NoDrag);
             m_gvSpectrumGroupDelay->setCursor(Qt::OpenHandCursor); // For the window's pos control
+        }
+        else if(!kshift && !kcontrol){
+            m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
+            m_gvWaveform->setCursor(Qt::CrossCursor);
             m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
             m_gvSpectrogram->setCursor(Qt::CrossCursor);
-        }
-        else if(ui->actionEditMode->isChecked()){
-            m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
-            m_gvWaveform->setCursor(Qt::CrossCursor);
-        }
-    }
-    else{
-        if(event->key()==Qt::Key_Escape){
-            FTSound* currentftsound = m_fileslist->getCurrentFTSound();
-            if(currentftsound && currentftsound->isFiltered()) {
-                currentftsound->setFiltered(false);
-                gFL->fileInfoUpdate();
-            }
-        }
-    }
-}
-
-void WMainWindow::keyReleaseEvent(QKeyEvent* event){
-    if(event->key()==Qt::Key_Shift){
-        leaveScrollHandDragMode();
-    }
-    if(event->key()==Qt::Key_Control){
-        if(ui->actionSelectionMode->isChecked()){
-            m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
-            m_gvWaveform->setCursor(Qt::CrossCursor);
             m_gvSpectrumAmplitude->setDragMode(QGraphicsView::NoDrag);
             m_gvSpectrumAmplitude->setCursor(Qt::CrossCursor);
             m_gvSpectrumPhase->setDragMode(QGraphicsView::NoDrag);
             m_gvSpectrumPhase->setCursor(Qt::CrossCursor);
             m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::NoDrag);
             m_gvSpectrumGroupDelay->setCursor(Qt::CrossCursor);
-            m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
-            m_gvSpectrogram->setCursor(Qt::CrossCursor);
-        }
-        else {
-            m_gvWaveform->setCursor(Qt::SizeVerCursor);
         }
     }
+    else if(ui->actionEditMode->isChecked()){
+        if(kshift && !kcontrol){
+            m_gvWaveform->setDragMode(QGraphicsView::ScrollHandDrag);
+            m_gvSpectrogram->setDragMode(QGraphicsView::ScrollHandDrag);
+            m_gvSpectrumAmplitude->setDragMode(QGraphicsView::ScrollHandDrag);
+            m_gvSpectrumPhase->setDragMode(QGraphicsView::ScrollHandDrag);
+            m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::ScrollHandDrag);
+        }
+        else if(!kshift && kcontrol){
+            m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
+            if(currentfile && currentfile->is(FileType::FTSOUND))
+                m_gvWaveform->setCursor(Qt::SizeHorCursor);
+            m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrumAmplitude->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrumPhase->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::NoDrag);
+        }
+        else if(kshift && kcontrol){
+            m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
+            m_gvWaveform->setCursor(Qt::CrossCursor);
+            m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrogram->setCursor(Qt::CrossCursor);
+            m_gvSpectrumAmplitude->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrumAmplitude->setCursor(Qt::CrossCursor);
+            m_gvSpectrumPhase->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrumPhase->setCursor(Qt::CrossCursor);
+            m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrumGroupDelay->setCursor(Qt::CrossCursor);
+        }
+        else if(!kshift && !kcontrol){
+            m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
+            if(currentfile && currentfile->is(FileType::FTSOUND))
+                m_gvWaveform->setCursor(Qt::SizeVerCursor);
+            else
+                m_gvWaveform->setCursor(Qt::CrossCursor);
+
+            m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrogram->setCursor(Qt::CrossCursor);
+
+            m_gvSpectrumAmplitude->setDragMode(QGraphicsView::NoDrag);
+            if(currentfile && currentfile->is(FileType::FTSOUND))
+                m_gvSpectrumAmplitude->setCursor(Qt::SizeVerCursor);
+            else
+                m_gvSpectrumAmplitude->setCursor(Qt::CrossCursor);
+
+            m_gvSpectrumPhase->setDragMode(QGraphicsView::NoDrag);
+            if(currentfile && currentfile->is(FileType::FTSOUND))
+                m_gvSpectrumPhase->setCursor(Qt::SizeVerCursor);    // For the signal's position control
+            else
+                m_gvSpectrumGroupDelay->setCursor(Qt::CrossCursor);
+
+            m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::NoDrag);
+            if(currentfile && currentfile->is(FileType::FTSOUND))
+                m_gvSpectrumGroupDelay->setCursor(Qt::SizeVerCursor);    // For the signal's position control
+            else
+                m_gvSpectrumGroupDelay->setCursor(Qt::CrossCursor);
+        }
+    }
+}
+
+void WMainWindow::keyReleaseEvent(QKeyEvent* event){
+    QMainWindow::keyReleaseEvent(event);
+
+    updateMouseCursorState(event->modifiers().testFlag(Qt::ShiftModifier), event->modifiers().testFlag(Qt::ControlModifier));
 }
 
 void WMainWindow::connectModes(){
@@ -671,21 +717,19 @@ void WMainWindow::setSelectionMode(bool checked){
         m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::NoDrag);
         m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
 
+        gMW->updateMouseCursorState(QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier), QApplication::keyboardModifiers().testFlag(Qt::ControlModifier));
+
         QPoint cp = QCursor::pos();
 
         // Change waveform's cursor
         QPointF p = m_gvWaveform->mapToScene(m_gvWaveform->mapFromGlobal(cp));
         if(p.x()>=m_gvWaveform->m_selection.left() && p.x()<=m_gvWaveform->m_selection.right())
             m_gvWaveform->setCursor(Qt::OpenHandCursor);
-        else
-            m_gvWaveform->setCursor(Qt::CrossCursor);
 
         // Change spectrum's cursor
         p = m_gvSpectrumAmplitude->mapToScene(m_gvSpectrumAmplitude->mapFromGlobal(cp));
         if(p.x()>=m_gvSpectrumAmplitude->m_selection.left() && p.x()<=m_gvSpectrumAmplitude->m_selection.right() && p.y()>=m_gvSpectrumAmplitude->m_selection.top() && p.y()<=m_gvSpectrumAmplitude->m_selection.bottom())
             m_gvSpectrumAmplitude->setCursor(Qt::OpenHandCursor);
-        else
-            m_gvSpectrumAmplitude->setCursor(Qt::CrossCursor);
     }
     else
         setSelectionMode(true);
@@ -697,12 +741,7 @@ void WMainWindow::setEditMode(bool checked){
         if(!ui->actionEditMode->isChecked()) ui->actionEditMode->setChecked(true);
         connectModes();
 
-        m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
-        m_gvWaveform->setCursor(Qt::SizeVerCursor);
-        m_gvSpectrumAmplitude->setDragMode(QGraphicsView::NoDrag);
-        m_gvSpectrumAmplitude->setCursor(Qt::SizeVerCursor);
-        m_gvSpectrumPhase->setDragMode(QGraphicsView::NoDrag);
-        m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::NoDrag);
+        gMW->updateMouseCursorState(QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier), QApplication::keyboardModifiers().testFlag(Qt::ControlModifier));
     }
     else
         setSelectionMode(true);
@@ -719,38 +758,8 @@ void WMainWindow::setEditing(FileType *ft){
     m_last_file_editing = ft;
 }
 
-void WMainWindow::enterScrollHandDragMode(){
-    m_gvWaveform->setDragMode(QGraphicsView::ScrollHandDrag);
-    m_gvSpectrumAmplitude->setDragMode(QGraphicsView::ScrollHandDrag);
-    m_gvSpectrumPhase->setDragMode(QGraphicsView::ScrollHandDrag);
-    m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::ScrollHandDrag);
-    m_gvSpectrogram->setDragMode(QGraphicsView::ScrollHandDrag);
-}
-
-void WMainWindow::leaveScrollHandDragMode(){
-    m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
-    m_gvSpectrumAmplitude->setDragMode(QGraphicsView::NoDrag);
-    m_gvSpectrumPhase->setDragMode(QGraphicsView::NoDrag);
-    m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::NoDrag);
-    m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
-    if(ui->actionSelectionMode->isChecked()){
-        m_gvWaveform->setCursor(Qt::CrossCursor);
-        m_gvSpectrumAmplitude->setCursor(Qt::CrossCursor);
-        m_gvSpectrogram->setCursor(Qt::CrossCursor);
-    }
-    else if(ui->actionEditMode->isChecked()){
-        m_gvWaveform->setCursor(Qt::SizeVerCursor);
-    }
-}
-
 void WMainWindow::focusWindowChanged(QWindow* win){
     Q_UNUSED(win)
-
-    if(QGuiApplication::keyboardModifiers().testFlag(Qt::ShiftModifier)
-        && !QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
-        enterScrollHandDragMode();
-    else
-        leaveScrollHandDragMode();
 
     m_fileslist->checkFileModifications();
 }
@@ -974,10 +983,6 @@ void WMainWindow::resetFiltering(){
     if(m_lastFilteredSound){
         gMW->m_lastFilteredSound->setFiltered(false);
         m_lastFilteredSound = NULL;
-        m_gvWaveform->m_giFilteredSelection->hide();
-        m_gvSpectrumAmplitude->m_filterresponse.clear();
-        m_gvSpectrumAmplitude->update();
-        m_gvSpectrumAmplitude->updateDFTs();
     }
 }
 

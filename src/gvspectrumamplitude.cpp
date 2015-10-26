@@ -163,6 +163,7 @@ GVSpectrumAmplitude::GVSpectrumAmplitude(WMainWindow* parent)
     m_currentAction = CANothing;
     m_giShownSelection = new QGraphicsRectItem();
     m_giShownSelection->hide();
+    m_giShownSelection->setZValue(100);
     m_scene->addItem(m_giShownSelection);
     m_giSelectionTxt = new QGraphicsSimpleTextItem();
     m_giSelectionTxt->hide();
@@ -801,32 +802,35 @@ void GVSpectrumAmplitude::wheelEvent(QWheelEvent* event) {
 void GVSpectrumAmplitude::mousePressEvent(QMouseEvent* event){
 //    std::cout << "QGVWaveform::mousePressEvent" << endl;
 
+    bool kshift = event->modifiers().testFlag(Qt::ShiftModifier);
+    bool kctrl = event->modifiers().testFlag(Qt::ControlModifier);
+
     QPointF p = mapToScene(event->pos());
     QRect selview = mapFromScene(m_selection).boundingRect();
 
     if(event->buttons()&Qt::LeftButton){
         if(gMW->ui->actionSelectionMode->isChecked()){
-            if(event->modifiers().testFlag(Qt::ShiftModifier)) {
+            if(kshift) {
                 // When moving the spectrum's view
                 m_currentAction = CAMoving;
                 setMouseCursorPosition(QPointF(-1,0), false);
             }
-            else if(!event->modifiers().testFlag(Qt::ControlModifier) && m_selection.width()>0 && m_selection.height()>0 && abs(selview.left()-event->x())<5 && event->y()>=selview.top() && event->y()<=selview.bottom()) {
+            else if(!kctrl && m_selection.width()>0 && m_selection.height()>0 && abs(selview.left()-event->x())<5 && event->y()>=selview.top() && event->y()<=selview.bottom()) {
                 // Resize left boundary of the selection
                 m_currentAction = CAModifSelectionLeft;
                 m_selection_pressedp = QPointF(p.x()-m_selection.left(), 0);
             }
-            else if(!event->modifiers().testFlag(Qt::ControlModifier) && m_selection.width()>0 && m_selection.height()>0 && abs(selview.right()-event->x())<5 && event->y()>=selview.top() && event->y()<=selview.bottom()){
+            else if(!kctrl && m_selection.width()>0 && m_selection.height()>0 && abs(selview.right()-event->x())<5 && event->y()>=selview.top() && event->y()<=selview.bottom()){
                 // Resize right boundary of the selection
                 m_currentAction = CAModifSelectionRight;
                 m_selection_pressedp = QPointF(p.x()-m_selection.right(), 0);
             }
-            else if(!event->modifiers().testFlag(Qt::ControlModifier) && m_selection.width()>0 && m_selection.height()>0 && abs(selview.top()-event->y())<5 && event->x()>=selview.left() && event->x()<=selview.right()){
+            else if(!kctrl && m_selection.width()>0 && m_selection.height()>0 && abs(selview.top()-event->y())<5 && event->x()>=selview.left() && event->x()<=selview.right()){
                 // Resize top boundary of the selection
                 m_currentAction = CAModifSelectionTop;
                 m_selection_pressedp = QPointF(0, p.y()-m_selection.top());
             }
-            else if(!event->modifiers().testFlag(Qt::ControlModifier) && m_selection.width()>0 && m_selection.height()>0 && abs(selview.bottom()-event->y())<5 && event->x()>=selview.left() && event->x()<=selview.right()){
+            else if(!kctrl && m_selection.width()>0 && m_selection.height()>0 && abs(selview.bottom()-event->y())<5 && event->x()>=selview.left() && event->x()<=selview.right()){
                 // Resize bottom boundary of the selection
                 m_currentAction = CAModifSelectionBottom;
                 m_selection_pressedp = QPointF(0, p.y()-m_selection.bottom());
@@ -849,20 +853,20 @@ void GVSpectrumAmplitude::mousePressEvent(QMouseEvent* event){
             }
         }
         else if(gMW->ui->actionEditMode->isChecked()){
-            if(event->modifiers().testFlag(Qt::ShiftModifier)){
-//                 TODO
-            }
-            else{
-                // When scaling the waveform
-                m_currentAction = CAWaveformScale;
-                m_selection_pressedp = p;
-                gMW->setEditing(gFL->getCurrentFTSound(true));
-                setCursor(Qt::SizeVerCursor);
+            if(!kctrl && !kshift) {
+                FTSound* currentftsound = gFL->getCurrentFTSound(false);
+                if(currentftsound){
+                    // Scale the waveform
+                    m_currentAction = CAWaveformScale;
+                    m_selection_pressedp = p;
+                    gMW->setEditing(currentftsound);
+                    setCursor(Qt::SizeVerCursor);
+                }
             }
         }
     }
     else if(event->buttons()&Qt::RightButton) {
-        if (event->modifiers().testFlag(Qt::ShiftModifier)) {
+        if (kshift) {
             setCursor(Qt::CrossCursor);
             m_currentAction = CAZooming;
             m_selection_pressedp = p;
@@ -877,6 +881,9 @@ void GVSpectrumAmplitude::mousePressEvent(QMouseEvent* event){
 
 void GVSpectrumAmplitude::mouseMoveEvent(QMouseEvent* event){
 //    std::cout << "QGVAmplitudeSpectrum::mouseMoveEvent" << endl;
+
+    bool kshift = event->modifiers().testFlag(Qt::ShiftModifier);
+    bool kctrl = event->modifiers().testFlag(Qt::ControlModifier);
 
     QPointF p = mapToScene(event->pos());
 
@@ -970,11 +977,7 @@ void GVSpectrumAmplitude::mouseMoveEvent(QMouseEvent* event){
         QRect selview = mapFromScene(m_selection).boundingRect();
 
         if(gMW->ui->actionSelectionMode->isChecked()){
-            if(event->modifiers().testFlag(Qt::ShiftModifier)){
-            }
-            else if(event->modifiers().testFlag(Qt::ControlModifier)){
-            }
-            else{
+            if(!kshift && !kctrl){
                 if(m_selection.width()>0 && m_selection.height()>0 && abs(selview.left()-event->x())<5 && event->y()>=selview.top() && event->y()<=selview.bottom())
                     setCursor(Qt::SplitHCursor);
                 else if(m_selection.width()>0 && m_selection.height()>0 && abs(selview.right()-event->x())<5 && selview.top()<=event->y() && selview.bottom()>=event->y())
@@ -990,12 +993,6 @@ void GVSpectrumAmplitude::mouseMoveEvent(QMouseEvent* event){
             }
         }
         else if(gMW->ui->actionEditMode->isChecked()){
-            if(event->modifiers().testFlag(Qt::ShiftModifier)){
-            }
-            else if(event->modifiers().testFlag(Qt::ControlModifier)){
-            }
-            else{
-            }
         }
     }
 
@@ -1006,39 +1003,27 @@ void GVSpectrumAmplitude::mouseMoveEvent(QMouseEvent* event){
 void GVSpectrumAmplitude::mouseReleaseEvent(QMouseEvent* event) {
 //    std::cout << "QGVAmplitudeSpectrum::mouseReleaseEvent " << endl;
 
+    bool kshift = event->modifiers().testFlag(Qt::ShiftModifier);
+    bool kctrl = event->modifiers().testFlag(Qt::ControlModifier);
+
     QPointF p = mapToScene(event->pos());
 
     m_currentAction = CANothing;
 
+    gMW->updateMouseCursorState(kshift, kctrl);
+
     if(gMW->ui->actionSelectionMode->isChecked()) {
-        if(event->modifiers().testFlag(Qt::ShiftModifier)) {
-            setCursor(Qt::OpenHandCursor);
+        if(abs(m_selection.width())<=0 || abs(m_selection.height())<=0)
+            selectionClear();
+        else {
+            m_aZoomOnSelection->setEnabled(true);
+            m_aSelectionClear->setEnabled(true);
         }
-        else if(event->modifiers().testFlag(Qt::ControlModifier)) {
-            setCursor(Qt::OpenHandCursor);
-        }
-        else{
+
+        if (!kshift && !kctrl){
             if(p.x()>=m_selection.left() && p.x()<=m_selection.right() && p.y()>=m_selection.top() && p.y()<=m_selection.bottom())
                 setCursor(Qt::OpenHandCursor);
-            else
-                setCursor(Qt::CrossCursor);
         }
-    }
-    else if(gMW->ui->actionEditMode->isChecked()) {
-        if(event->modifiers().testFlag(Qt::ShiftModifier)){
-        }
-        else if(event->modifiers().testFlag(Qt::ControlModifier)) {
-        }
-        else{
-            setCursor(Qt::SizeVerCursor);
-        }
-    }
-
-    if(abs(m_selection.width())<=0 || abs(m_selection.height())<=0)
-        selectionClear();
-    else {
-        m_aZoomOnSelection->setEnabled(true);
-        m_aSelectionClear->setEnabled(true);
     }
 
     QGraphicsView::mouseReleaseEvent(event);

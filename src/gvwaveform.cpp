@@ -589,7 +589,7 @@ void GVWaveform::mousePressEvent(QMouseEvent* event){
                 // Force this one so that there is no need to select a
                 // file if there is just one waveform
                 // (TODO could be replaced by selecting the first file autom.)
-                FTSound* selectedsound = gFL->getCurrentFTSound(true);
+                FTSound* selectedsound = gFL->getCurrentFTSound(false);
                 if(!selectedlabels && selectedsound) {
                     if(event->modifiers().testFlag(Qt::ShiftModifier)){
                     }
@@ -650,6 +650,9 @@ void GVWaveform::mousePressEvent(QMouseEvent* event){
 
 void GVWaveform::mouseMoveEvent(QMouseEvent* event){
 //    COUTD << "GVWaveform::mouseMoveEvent" << m_selection.width() << endl;
+
+    bool kshift = QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
+    bool kctrl = QApplication::keyboardModifiers().testFlag(Qt::ControlModifier);
 
     QPointF p = mapToScene(event->pos());
 
@@ -789,12 +792,13 @@ void GVWaveform::mouseMoveEvent(QMouseEvent* event){
         }
     }
     else{ // There is no action
+
         QRect selview = mapFromScene(m_giSelection->boundingRect()).boundingRect();
 
         if(gMW->ui->actionSelectionMode->isChecked()){
-            if(event->modifiers().testFlag(Qt::ShiftModifier)){
+            if(kshift){
             }
-            else if(event->modifiers().testFlag(Qt::ControlModifier)){
+            else if(kctrl){
             }
             else{
                 if(m_selection.width()>0 && abs(selview.left()-event->x())<5)
@@ -824,14 +828,15 @@ void GVWaveform::mouseMoveEvent(QMouseEvent* event){
             else
                 setCursor(Qt::CrossCursor);
 
-            if(event->modifiers().testFlag(Qt::ShiftModifier)){
+            FileType* ft = gFL->currentFile();
+            if(kshift){
             }
-            else if(event->modifiers().testFlag(Qt::ControlModifier)){
-                if(!foundclosemarker)
+            else if(kctrl){
+                if(!foundclosemarker && ft && ft->is(FileType::FTSOUND))
                     setCursor(Qt::SizeHorCursor);
             }
             else{
-                if(!foundclosemarker)
+                if(!foundclosemarker && ft && ft->is(FileType::FTSOUND))
                     setCursor(Qt::SizeVerCursor);
             }
         }
@@ -844,6 +849,13 @@ void GVWaveform::mouseMoveEvent(QMouseEvent* event){
 
 void GVWaveform::mouseReleaseEvent(QMouseEvent* event){
 //    std::cout << "GVWaveform::mouseReleaseEvent " << m_selection.width() << endl;
+
+    bool kshift = event->modifiers().testFlag(Qt::ShiftModifier);
+    bool kctrl = event->modifiers().testFlag(Qt::ControlModifier);
+
+    m_currentAction = CANothing;
+
+    gMW->updateMouseCursorState(kshift, kctrl);
 
     // Order the mouse selection to avoid negative width
     if(m_mouseSelection.right()<m_mouseSelection.left()){
@@ -858,28 +870,9 @@ void GVWaveform::mouseReleaseEvent(QMouseEvent* event){
             ftlabel->finishEditing();
     }
 
-    if(gMW->ui->actionSelectionMode->isChecked()){
-        if(event->modifiers().testFlag(Qt::ShiftModifier)){
-            setCursor(Qt::OpenHandCursor);
-        }
-        else if(event->modifiers().testFlag(Qt::ControlModifier)){
-            setCursor(Qt::OpenHandCursor);
-        }
-        else{
-            setCursor(Qt::CrossCursor);
-        }
-    }
-    else if(gMW->ui->actionEditMode->isChecked()){
-        if(event->modifiers().testFlag(Qt::ShiftModifier)){
-        }
-        else if(event->modifiers().testFlag(Qt::ControlModifier)){
-        }
-        else{
-        }
+    if(gMW->ui->actionEditMode->isChecked()){
         gMW->setEditing(NULL);
     }
-
-    m_currentAction = CANothing;
 
     if(abs(m_selection.width())==0)
         selectionClear();

@@ -113,6 +113,7 @@ GVSpectrumPhase::GVSpectrumPhase(WMainWindow* parent)
     m_currentAction = CANothing;
     m_giShownSelection = new QGraphicsRectItem();
     m_giShownSelection->hide();
+    m_giShownSelection->setZValue(100.0);
     m_scene->addItem(m_giShownSelection);
     m_giSelectionTxt = new QGraphicsSimpleTextItem();
     m_giSelectionTxt->hide();
@@ -233,7 +234,6 @@ void GVSpectrumPhase::resizeEvent(QResizeEvent* event) {
 }
 
 void GVSpectrumPhase::scrollContentsBy(int dx, int dy){
-
     setMouseCursorPosition(QPointF(-1,0), false);
     viewUpdateTexts();
 
@@ -324,12 +324,14 @@ void GVSpectrumPhase::mousePressEvent(QMouseEvent* event){
             }
         }
         else if(gMW->ui->actionEditMode->isChecked()){
-            if(kctrl && kshift) {
-                m_currentAction = CAWaveformDelay;
-                m_selection_pressedp = p;
-                FTSound* currentftsound = gFL->getCurrentFTSound(true);
-                if(currentftsound)
+            if(!kctrl && !kshift) {
+                FTSound* currentftsound = gFL->getCurrentFTSound(false);
+                if(currentftsound){
+                    m_currentAction = CAWaveformDelay;
+                    m_selection_pressedp = p;
                     m_pressed_delay = currentftsound->m_giWavForWaveform->delay();
+                    gMW->setEditing(currentftsound);
+                }
             }
         }
     }
@@ -467,31 +469,18 @@ void GVSpectrumPhase::mouseMoveEvent(QMouseEvent* event){
 void GVSpectrumPhase::mouseReleaseEvent(QMouseEvent* event){
 //    std::cout << "QGVWaveform::mouseReleaseEvent " << selection.width() << endl;
 
-    QPointF p = mapToScene(event->pos());
+    bool kshift = event->modifiers().testFlag(Qt::ShiftModifier);
+    bool kctrl = event->modifiers().testFlag(Qt::ControlModifier);
 
     m_currentAction = CANothing;
 
+    gMW->updateMouseCursorState(kshift, kctrl);
+
+    QPointF p = mapToScene(event->pos());
     if(gMW->ui->actionSelectionMode->isChecked()){
-        if(event->modifiers().testFlag(Qt::ShiftModifier)){
-            setCursor(Qt::OpenHandCursor);
-        }
-        else if(event->modifiers().testFlag(Qt::ControlModifier)){
-            setCursor(Qt::OpenHandCursor);
-        }
-        else{
+        if(!kshift && !kctrl){
             if(p.x()>=m_selection.left() && p.x()<=m_selection.right() && p.y()>=m_selection.top() && p.y()<=m_selection.bottom())
                 setCursor(Qt::OpenHandCursor);
-            else
-                setCursor(Qt::CrossCursor);
-        }
-    }
-    else if(gMW->ui->actionEditMode->isChecked()){
-        if(event->modifiers().testFlag(Qt::ShiftModifier)){
-        }
-        else if(event->modifiers().testFlag(Qt::ControlModifier)){
-        }
-        else{
-            setCursor(Qt::SizeVerCursor);
         }
     }
 
@@ -513,7 +502,7 @@ void GVSpectrumPhase::keyPressEvent(QKeyEvent* event){
         }
         gMW->m_gvSpectrumAmplitude->selectionClear();
     }
-    if(event->key()==Qt::Key_S)
+    else if(event->key()==Qt::Key_S)
         selectionZoomOn();
 
     QGraphicsView::keyPressEvent(event);

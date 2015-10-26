@@ -457,6 +457,8 @@ void FilesListWidget::fileSelectionChanged() {
         gMW->ui->actionSelectedFilesClose->setEnabled(list.size()>0);
 
         fileInfoUpdate();
+
+        gMW->updateMouseCursorState(QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier), QApplication::keyboardModifiers().testFlag(Qt::ControlModifier));
     }
 
 //    COUTD << "WMainWindow::~fileSelectionChanged" << endl;

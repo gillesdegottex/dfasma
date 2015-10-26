@@ -104,8 +104,6 @@ private slots:
     void viewsDisplayedChanged();
     void viewsSpectrogramToggled(bool show);
     void changeToolBarSizes(int size);
-    void enterScrollHandDragMode();
-    void leaveScrollHandDragMode();
 
 public slots:
     void focusWindowChanged(QWindow*win);
@@ -120,6 +118,7 @@ public slots:
     void setInWaitingForFileState();
     void updateViewsAfterAddFile(bool isfirsts);
     void setEditing(FileType* ft);
+    void updateMouseCursorState(bool kshift, bool kcontrol);
 
 public:
     explicit WMainWindow(QStringList files, QWidget* parent=0);

@@ -441,12 +441,15 @@ void FTSound::setFiltered(bool filtered){
             wavtoplay = &wav;
             m_giWavForWaveform->setSignal(wavtoplay);
             m_filteredmaxamp = 0.0;
+            gMW->m_gvSpectrumAmplitude->m_filterresponse.clear();
+            gMW->m_gvWaveform->m_giFilteredSelection->hide();
+            needDFTUpdate();
+            gMW->m_gvSpectrumAmplitude->updateDFTs();
         }
         m_isfiltered = filtered;
         updateClippedState();
         gFL->fileInfoUpdate();
         setStatus();
-        needDFTUpdate();
     }
 }
 
