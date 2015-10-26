@@ -487,7 +487,7 @@ void GVWaveform::wheelEvent(QWheelEvent* event){
 
     if(event->modifiers().testFlag(Qt::ShiftModifier)){
         QScrollBar* sb = horizontalScrollBar();
-        sb->setValue(sb->value()-numDegrees.y());
+        sb->setValue(sb->value()-3*numDegrees.y());
         m_giGrid->updateLines();
     }
     else if((viewrect.width()>10.0/gFL->getFs() && numDegrees.y()>0) || numDegrees.y()<0) {

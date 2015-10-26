@@ -587,7 +587,7 @@ void GVSpectrogram::wheelEvent(QWheelEvent* event) {
 
     if(event->modifiers().testFlag(Qt::ShiftModifier)){
         QScrollBar* sb = horizontalScrollBar();
-        sb->setValue(sb->value()-numDegrees);
+        sb->setValue(sb->value()-3*numDegrees);
     }
     else if((numDegrees>0 && viewrect.width()>10.0/gFL->getFs()) || numDegrees<0) {
         double gx = double(mapToScene(event->pos()).x()-viewrect.left())/viewrect.width();
