@@ -97,11 +97,12 @@ CONFIG(file_sdif) {
 #        FILE_SDIF_LIBDIR = "$$_PRO_FILE_PWD_/external/sdif"
 #    }
 
-    LIBS += -lEasdif
     !isEmpty(FILE_SDIF_LIBDIR){
+        message(FILE_SDIF_LIBDIR=$$FILE_SDIF_LIBDIR)
         INCLUDEPATH += $$FILE_SDIF_LIBDIR/include
         LIBS += -L$$FILE_SDIF_LIBDIR/lib
     }
+    LIBS += -lEasdif
 }
 
 # Audio file reading libraries -------------------------------------------------
@@ -130,12 +131,12 @@ CONFIG(file_audio_libsndfile, file_audio_libsndfile|file_audio_libsox|file_audio
                 FILE_AUDIO_LIBDIR = "$$_PRO_FILE_PWD_/../lib/libsndfile-1.0.25-w32"
             }
         }
-        message(FILE_AUDIO_LIBDIR=$$FILE_AUDIO_LIBDIR)
         msvc: LIBS += "$$FILE_AUDIO_LIBDIR/lib/libsndfile-1.lib"
         gcc: LIBS += -L$$FILE_AUDIO_LIBDIR/lib -L$$FILE_AUDIO_LIBDIR/bin -lsndfile-1
     }
     unix:LIBS += -lsndfile
     !isEmpty(FILE_AUDIO_LIBDIR){
+        message(FILE_AUDIO_LIBDIR=$$FILE_AUDIO_LIBDIR)
         INCLUDEPATH += $$FILE_AUDIO_LIBDIR/include
         LIBS += -L$$FILE_AUDIO_LIBDIR/lib
     }
@@ -177,8 +178,8 @@ CONFIG(fft_fftw3, fft_fftw3|fft_builtin_fftreal){
                 FFT_LIBDIR = "$$_PRO_FILE_PWD_/../lib/fftw-3.3.4-dll32"
             }
         }
-        message(FFT_LIBDIR=$$FFT_LIBDIR)
         !isEmpty(FFT_LIBDIR){
+            message(FFT_LIBDIR=$$FFT_LIBDIR)
             INCLUDEPATH += $$FFT_LIBDIR
             LIBS += -L$$FFT_LIBDIR
         }
@@ -193,6 +194,7 @@ CONFIG(fft_fftw3, fft_fftw3|fft_builtin_fftreal){
     }
     unix {
         !isEmpty(FFT_LIBDIR){
+            message(FFT_LIBDIR=$$FFT_LIBDIR)
             INCLUDEPATH += $$FFT_LIBDIR/include
             LIBS += -L$$FFT_LIBDIR/lib
         }
