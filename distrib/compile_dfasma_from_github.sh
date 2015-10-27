@@ -48,7 +48,7 @@ cd $DFASMACOMPDIR
 if [[ "$OPTIONS" == *"file_sdif"* ]]; then
     if [[ "$OPTIONS" != *"/u/formes/share"* ]]; then
         bash distrib/compile_sdif.sh
-        OPTIONS="$OPTIONS FILE_SDIF_LIBDIR=external/sdif"
+        OPTIONS="$OPTIONS FILE_SDIF_LIBDIR=external/sdif/easdif"
     fi
 fi
 
