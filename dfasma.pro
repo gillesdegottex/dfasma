@@ -46,21 +46,28 @@ message(CONFIG=$$CONFIG)
 # Generate the version number from git
 # (if fail, fall back on the version present in the README.txt file)
 DFASMAVERSIONGITPRO = $$system(git describe --tags --always)
-message(Git: Version: $$DFASMAVERSIONGITPRO)
+message(Git: DFasma version from Git: $$DFASMAVERSIONGITPRO)
 DFASMABRANCHGITPRO = $$system(git rev-parse --abbrev-ref HEAD)
 message(Git: Branch: $$DFASMABRANCHGITPRO)
 DEFINES += DFASMAVERSIONGIT=$$system(git describe --tags --always)
 DEFINES += DFASMABRANCHGIT=$$system(git rev-parse --abbrev-ref HEAD)
 
 # To place the application's files in the proper folder
+# To place the shortcut in the proper folder
+isEmpty(PREFIXSHORTCUT){
+	isEmpty(PREFIX){
+		PREFIXSHORTCUT = /usr/local
+	}
+	else {
+	    PREFIXSHORTCUT = $$PREFIX
+	}
+}
 isEmpty(PREFIX){
     PREFIX = /usr/local
 }
 unix:DEFINES += PREFIX=$$PREFIX
-# To place the shortcut in the proper folder
-isEmpty(PREFIXSHORTCUT){
-    PREFIXSHORTCUT = /usr
-}
+message(PREFIX=$$PREFIX)
+message(PREFIXSHORTCUT=$$PREFIXSHORTCUT)
 
 # Manage Architecture
 win32:message(For Windows)
@@ -76,23 +83,6 @@ CONFIG(precision_float, precision_double|precision_float) {
     message(With single precision)
 } else {
     message(With double precision)
-}
-
-# SDIF file library ------------------------------------------------------------
-
-CONFIG(file_sdif) {
-    message(Files: with SDIF file support)
-    DEFINES += SUPPORT_SDIF
-
-#    isEmpty(FILE_SDIF_LIBDIR) {
-#        FILE_SDIF_LIBDIR = "$$_PRO_FILE_PWD_/external/sdif"
-#    }
-
-    LIBS += -lEasdif
-    !isEmpty(FILE_SDIF_LIBDIR){
-        INCLUDEPATH += $$FILE_SDIF_LIBDIR/include
-        LIBS += -L$$FILE_SDIF_LIBDIR/lib
-    }
 }
 
 # Audio file reading libraries -------------------------------------------------
@@ -207,6 +197,25 @@ CONFIG(fft_builtin_fftreal, fft_fftw3|fft_builtin_fftreal){
                 external/liqaudioextra/external/FFTReal/OscSinCos.hpp
 }
 
+# SDIF file library ------------------------------------------------------------
+
+CONFIG(file_sdif) {
+    message(Files: SDIF support: YES)
+    DEFINES += SUPPORT_SDIF
+
+#    isEmpty(FILE_SDIF_LIBDIR) {
+#        FILE_SDIF_LIBDIR = "$$_PRO_FILE_PWD_/external/sdif"
+#    }
+
+    LIBS += -lEasdif
+    !isEmpty(FILE_SDIF_LIBDIR){
+        INCLUDEPATH += $$FILE_SDIF_LIBDIR/include
+        LIBS += -L$$FILE_SDIF_LIBDIR/lib
+    }
+}
+else {
+	message(Files: SDIF support: NO)
+}
 
 # Common configurations --------------------------------------------------------
 
