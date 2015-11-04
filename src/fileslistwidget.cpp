@@ -457,8 +457,8 @@ void FilesListWidget::fileSelectionChanged() {
         gMW->ui->actionSelectedFilesClose->setEnabled(list.size()>0);
 
         fileInfoUpdate();
-
         gMW->updateMouseCursorState(QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier), QApplication::keyboardModifiers().testFlag(Qt::ControlModifier));
+        gMW->checkEditHiddenFile();
     }
 
 //    COUTD << "WMainWindow::~fileSelectionChanged" << endl;
@@ -537,6 +537,7 @@ void FilesListWidget::selectedFilesToggleShown() {
     gMW->m_gvSpectrumAmplitude->m_scene->update();
     gMW->m_gvSpectrumPhase->m_scene->update();
     gMW->m_gvSpectrumGroupDelay->m_scene->update();
+    gMW->checkEditHiddenFile();
 }
 
 void FilesListWidget::selectedFilesClose() {

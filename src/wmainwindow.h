@@ -118,6 +118,7 @@ public slots:
     void setInWaitingForFileState();
     void updateViewsAfterAddFile(bool isfirsts);
     void setEditing(FileType* ft);
+    void checkEditHiddenFile();
     void updateMouseCursorState(bool kshift, bool kcontrol);
 
 public:
@@ -135,6 +136,7 @@ public:
     void globalWaitingBarSetValue(int value);
     void globalWaitingBarDone();
     void globalWaitingBarClear();
+    void statusBarSetText(const QString& text, int timeout=0, QColor color=QColor());
 
     // Views
     GVWaveform* m_gvWaveform;

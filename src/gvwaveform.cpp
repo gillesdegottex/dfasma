@@ -559,7 +559,8 @@ void GVWaveform::mousePressEvent(QMouseEvent* event){
                     m_giSelection->show();
                 }
             }
-            else if(gMW->ui->actionEditMode->isChecked()){
+            else if(gMW->ui->actionEditMode->isChecked()
+                    && (gFL->currentFile() && gFL->currentFile()->isVisible())){
 
                 // Look for a nearby marker to modify
                 m_ca_pressed_index=-1;
@@ -589,7 +590,7 @@ void GVWaveform::mousePressEvent(QMouseEvent* event){
                 // Force this one so that there is no need to select a
                 // file if there is just one waveform
                 // (TODO could be replaced by selecting the first file autom.)
-                FTSound* selectedsound = gFL->getCurrentFTSound(false);
+                FTSound* selectedsound = gFL->getCurrentFTSound();
                 if(!selectedlabels && selectedsound) {
                     if(event->modifiers().testFlag(Qt::ShiftModifier)){
                     }

@@ -435,6 +435,20 @@ void WMainWindow::globalWaitingBarClear(){
     QCoreApplication::processEvents(); // To show the progress
 }
 
+void WMainWindow::statusBarSetText(const QString &text, int timeout, QColor color)
+{
+    statusBar()->showMessage(text, timeout);
+    if(color.isValid()){
+        QPalette palette = QMainWindow::statusBar()->palette();
+        palette.setColor(QPalette::Foreground, Qt::red);
+        QMainWindow::statusBar()->setPalette(palette);
+        QMainWindow::statusBar()->setAutoFillBackground(true);
+    }
+    else{
+        QMainWindow::statusBar()->setAutoFillBackground(false);
+    }
+}
+
 // File management =======================================================
 
 void WMainWindow::newFile(){
@@ -730,6 +744,8 @@ void WMainWindow::setSelectionMode(bool checked){
         p = m_gvSpectrumAmplitude->mapToScene(m_gvSpectrumAmplitude->mapFromGlobal(cp));
         if(p.x()>=m_gvSpectrumAmplitude->m_selection.left() && p.x()<=m_gvSpectrumAmplitude->m_selection.right() && p.y()>=m_gvSpectrumAmplitude->m_selection.top() && p.y()<=m_gvSpectrumAmplitude->m_selection.bottom())
             m_gvSpectrumAmplitude->setCursor(Qt::OpenHandCursor);
+
+        checkEditHiddenFile();
     }
     else
         setSelectionMode(true);
@@ -742,6 +758,8 @@ void WMainWindow::setEditMode(bool checked){
         connectModes();
 
         gMW->updateMouseCursorState(QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier), QApplication::keyboardModifiers().testFlag(Qt::ControlModifier));
+
+        checkEditHiddenFile();
     }
     else
         setSelectionMode(true);
@@ -756,6 +774,16 @@ void WMainWindow::setEditing(FileType *ft){
         m_last_file_editing->setEditing(false);
 
     m_last_file_editing = ft;
+}
+
+void WMainWindow::checkEditHiddenFile(){
+    FileType* currfile = gFL->currentFile();
+    if(ui->actionEditMode->isChecked()
+        && currfile && !currfile->isVisible()){
+        statusBarSetText("You cannot edit a hidden file!", 0, Qt::red);
+    }
+    else
+        statusBar()->clearMessage();
 }
 
 void WMainWindow::focusWindowChanged(QWindow* win){

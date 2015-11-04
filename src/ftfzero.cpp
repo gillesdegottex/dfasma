@@ -536,8 +536,6 @@ void FTFZero::updateTextsGeometry(){
 void FTFZero::setVisible(bool shown){
     FileType::setVisible(shown);
 
-    DCOUT << shown << endl;
-
     if(shown)
         updateTextsGeometry();
 

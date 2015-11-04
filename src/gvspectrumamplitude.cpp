@@ -852,7 +852,8 @@ void GVSpectrumAmplitude::mousePressEvent(QMouseEvent* event){
                 selectionSet(m_mouseSelection, true);
             }
         }
-        else if(gMW->ui->actionEditMode->isChecked()){
+        else if(gMW->ui->actionEditMode->isChecked()
+                && (gFL->currentFile() && gFL->currentFile()->isVisible())){
             if(!kctrl && !kshift) {
                 FTSound* currentftsound = gFL->getCurrentFTSound(false);
                 if(currentftsound){
