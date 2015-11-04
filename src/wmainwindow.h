@@ -68,7 +68,6 @@ class WMainWindow : public QMainWindow
     bool m_loading;
     QString m_version;
 
-    FilesListWidget* m_fileslist;
     FileType* m_last_file_editing;
 
     void connectModes();

@@ -110,13 +110,13 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 
     m_dlgSettings = new WDialogSettings(this);
 
-    m_fileslist = new FilesListWidget(this);
-    ui->vlFilesList->addWidget(m_fileslist);
+    gFL = new FilesListWidget(this);
+    ui->vlFilesList->addWidget(gFL);
     ui->lblFileInfo->hide();
 
     ui->mainToolBar->setIconSize(QSize(1.5*m_dlgSettings->ui->sbViewsToolBarSizes->value(),1.5*m_dlgSettings->ui->sbViewsToolBarSizes->value()));
     connect(m_dlgSettings->ui->sbFileListItemSize, SIGNAL(valueChanged(int)), gFL, SLOT(changeFileListItemsSize()));
-    m_fileslist->changeFileListItemsSize();
+    gFL->changeFileListItemsSize();
 
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(execAbout()));
     connect(ui->actionSelectedFilesReload, SIGNAL(triggered()), gFL, SLOT(selectedFilesReload()));
@@ -137,10 +137,10 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     m_globalWaitingBar->hide();
 
     setAcceptDrops(true);
-    m_fileslist->setAcceptDrops(true);
-    m_fileslist->setSelectionRectVisible(false);
-    m_fileslist->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(m_fileslist, SIGNAL(customContextMenuRequested(const QPoint&)), gFL, SLOT(showFileContextMenu(const QPoint&)));
+    gFL->setAcceptDrops(true);
+    gFL->setSelectionRectVisible(false);
+    gFL->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(gFL, SIGNAL(customContextMenuRequested(const QPoint&)), gFL, SLOT(showFileContextMenu(const QPoint&)));
 
     ui->actionAbout->setIcon(QIcon(":/icons/about.svg"));
     ui->actionSettings->setIcon(QIcon(":/icons/settings.svg"));
@@ -157,7 +157,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     connect(ui->actionSettings, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
     ui->actionSelectionMode->setChecked(true);
     connectModes();
-    connect(m_fileslist, SIGNAL(itemSelectionChanged()), gFL, SLOT(fileSelectionChanged()));
+    connect(gFL, SIGNAL(itemSelectionChanged()), gFL, SLOT(fileSelectionChanged()));
     addAction(ui->actionSelectedFilesToggleShown);
     addAction(ui->actionSelectedFilesReload);
     addAction(ui->actionSelectedFilesDuplicate);
@@ -311,7 +311,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     // This one seems able to open distant files because file paths arrive in gvfs format
     // in the main.
     // Doesn't work any more (at least with sftp). The gvfs "miracle" might not be very reliable.
-    m_fileslist->addExistingFiles(files);
+    gFL->addExistingFiles(files);
     updateViewsAfterAddFile(true);
 
     if(files.size()>0)
@@ -329,8 +329,8 @@ WMainWindow::~WMainWindow() {
     m_gvSpectrogram->m_stftcomputethread->cancelComputation(true);
     m_gvSpectrumAmplitude->m_fftresizethread->cancelComputation(true);
 
-    m_fileslist->selectAll();
-    m_fileslist->selectedFilesClose();
+    gFL->selectAll();
+    gFL->selectedFilesClose();
 
     // The audio player
     if(m_audioengine){
@@ -363,7 +363,7 @@ void WMainWindow::changeToolBarSizes(int size) {
 }
 
 void WMainWindow::updateWindowTitle() {
-    int count = m_fileslist->count();
+    int count = gFL->count();
     if(count>0) setWindowTitle("DFasma ("+QString::number(count)+")");
     else        setWindowTitle("DFasma");
 }
@@ -454,7 +454,7 @@ void WMainWindow::statusBarSetText(const QString &text, int timeout, QColor colo
 void WMainWindow::newFile(){
     QMessageBox::StandardButton btn = QMessageBox::question(this, "Create a new file ...", "Do you want to create an empty label file?", QMessageBox::Yes | QMessageBox::No);
     if(btn==QMessageBox::Yes){
-        m_fileslist->addItem(new FTLabels(this));
+        gFL->addItem(new FTLabels(this));
     }
 }
 
@@ -496,8 +496,8 @@ void WMainWindow::openFile() {
 //    QStringList l = dlg.selectedFiles();
 
     if(files.size()>0) {
-        bool isfirsts = m_fileslist->ftsnds.size()==0;
-        m_fileslist->addExistingFiles(files, type);
+        bool isfirsts = gFL->ftsnds.size()==0;
+        gFL->addExistingFiles(files, type);
         updateViewsAfterAddFile(isfirsts);
     }
 }
@@ -514,8 +514,8 @@ void WMainWindow::dropEvent(QDropEvent *event){
         files.append(lurl[lurli].toLocalFile());
 //        files.append(lurl[lurli].url());
 
-    bool isfirsts = m_fileslist->ftsnds.size()==0;
-    m_fileslist->addExistingFiles(files);
+    bool isfirsts = gFL->ftsnds.size()==0;
+    gFL->addExistingFiles(files);
     updateViewsAfterAddFile(isfirsts);
 }
 void WMainWindow::dragEnterEvent(QDragEnterEvent *event){
@@ -525,7 +525,7 @@ void WMainWindow::dragEnterEvent(QDragEnterEvent *event){
 // Views =======================================================================
 
 void WMainWindow::updateViewsAfterAddFile(bool isfirsts) {
-    if(m_fileslist->count()==0)
+    if(gFL->count()==0)
         setInWaitingForFileState();
     else {
         ui->actionSelectedFilesClose->setEnabled(true);
@@ -721,7 +721,7 @@ void WMainWindow::setSelectionMode(bool checked){
         connectModes();
 
         // Clear the icons from the edit mode
-        QList<QListWidgetItem*> list = m_fileslist->selectedItems();
+        QList<QListWidgetItem*> list = gFL->selectedItems();
         for(int i=0; i<list.size(); i++)
             ((FileType*)list[i])->setEditing(false);
 
@@ -789,7 +789,7 @@ void WMainWindow::checkEditHiddenFile(){
 void WMainWindow::focusWindowChanged(QWindow* win){
     Q_UNUSED(win)
 
-    m_fileslist->checkFileModifications();
+    gFL->checkFileModifications();
 }
 
 
@@ -808,7 +808,7 @@ void WMainWindow::allSoundsChanged(){
 // Put the program into a waiting-for-sound-files state
 // (initializeSoundSystem will wake up the necessary functions if a sound file arrived)
 void WMainWindow::setInWaitingForFileState(){
-    if(m_fileslist->count()>0)
+    if(gFL->count()>0)
         return;
 
     ui->splitterViews->hide();
@@ -945,7 +945,7 @@ void WMainWindow::play(bool filtered){
         // COUTD << "MainWindow::play QAudio::IdleState || QAudio::StoppedState" << endl;
 
             // If stopped, play the whole signal or its selection
-            FTSound* currentftsound = m_fileslist->getCurrentFTSound(true);
+            FTSound* currentftsound = gFL->getCurrentFTSound(true);
             if(currentftsound){
 
                 double tstart = m_gvWaveform->m_giPlayCursor->pos().x();
