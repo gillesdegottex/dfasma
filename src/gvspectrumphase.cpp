@@ -525,7 +525,7 @@ void GVSpectrumPhase::selectionClear(bool forwardsync){
     m_giShownSelection->hide();
     m_giShownSelection->setRect(QRectF(0, 0, 0, 0));
     m_giSelectionTxt->hide();
-//    setCursor(Qt::CrossCursor);
+    setCursor(Qt::CrossCursor);
 }
 
 void GVSpectrumPhase::selectionSet(QRectF selection, bool forwardsync){
