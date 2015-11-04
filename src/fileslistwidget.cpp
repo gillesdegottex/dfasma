@@ -367,6 +367,7 @@ void FilesListWidget::showFileContextMenu(const QPoint& pos) {
     else {
         contextmenu.addAction(gMW->ui->actionSelectedFilesToggleShown);
         contextmenu.addAction(gMW->ui->actionSelectedFilesReload);
+        contextmenu.addAction(gMW->ui->actionSelectedFilesDuplicate);
         contextmenu.addAction(gMW->ui->actionSelectedFilesClose);
     }
 
