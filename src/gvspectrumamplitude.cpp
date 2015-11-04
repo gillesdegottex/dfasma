@@ -207,7 +207,7 @@ GVSpectrumAmplitude::GVSpectrumAmplitude(WMainWindow* parent)
     connect(m_aUnZoom, SIGNAL(triggered()), this, SLOT(aunzoom()));
     m_aZoomOnSelection = new QAction(tr("&Zoom on selection"), this);
     m_aZoomOnSelection->setStatusTip(tr("Zoom on selection"));
-    m_aZoomOnSelection->setEnabled(false);
+    m_aZoomOnSelection->setEnabled(true);
     //m_aZoomOnSelection->setShortcut(Qt::Key_S); // This one creates "ambiguous" shortcuts
     m_aZoomOnSelection->setIcon(QIcon(":/icons/zoomselectionxy.svg"));
     connect(m_aZoomOnSelection, SIGNAL(triggered()), this, SLOT(selectionZoomOn()));
@@ -216,7 +216,7 @@ GVSpectrumAmplitude::GVSpectrumAmplitude(WMainWindow* parent)
     m_aSelectionClear->setStatusTip(tr("Clear the current selection"));
     QIcon selectionclearicon(":/icons/selectionclear.svg");
     m_aSelectionClear->setIcon(selectionclearicon);
-    m_aSelectionClear->setEnabled(false);
+    m_aSelectionClear->setEnabled(true);
     connect(m_aSelectionClear, SIGNAL(triggered()), this, SLOT(selectionClear()));
 
     m_aAutoUpdateDFT = new QAction(tr("Auto-Update DFT"), this);;
@@ -793,7 +793,6 @@ void GVSpectrumAmplitude::wheelEvent(QWheelEvent* event) {
     setTransform(QTransform(h11, trans.m12(), trans.m21(), h22, 0, 0));
     viewSet();
 
-    m_aZoomOnSelection->setEnabled(!m_selection.isEmpty());
     m_aZoomOut->setEnabled(true);
     m_aZoomIn->setEnabled(true);
 //    m_aUnZoom->setEnabled(true);
@@ -912,8 +911,6 @@ void GVSpectrumAmplitude::mouseMoveEvent(QMouseEvent* event){
 
         viewUpdateTexts();
         setMouseCursorPosition(m_selection_pressedp, true);
-
-        m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
     }
     else if(m_currentAction==CAModifSelectionLeft){
         m_mouseSelection.setLeft(p.x()-m_selection_pressedp.x());
@@ -1016,10 +1013,6 @@ void GVSpectrumAmplitude::mouseReleaseEvent(QMouseEvent* event) {
     if(gMW->ui->actionSelectionMode->isChecked()) {
         if(abs(m_selection.width())<=0 || abs(m_selection.height())<=0)
             selectionClear();
-        else {
-            m_aZoomOnSelection->setEnabled(true);
-            m_aSelectionClear->setEnabled(true);
-        }
 
         if (!kshift && !kctrl){
             if(p.x()>=m_selection.left() && p.x()<=m_selection.right() && p.y()>=m_selection.top() && p.y()<=m_selection.bottom())
@@ -1058,8 +1051,6 @@ void GVSpectrumAmplitude::selectionClear(bool forwardsync) {
     m_selection = QRectF(0, 0, 0, 0);
     m_mouseSelection = QRectF(0, 0, 0, 0);
     m_giShownSelection->setRect(QRectF(0, 0, 0, 0));
-    m_aZoomOnSelection->setEnabled(false);
-    m_aSelectionClear->setEnabled(false);
     setCursor(Qt::CrossCursor);
 
     if(gMW->m_gvSpectrumPhase)
@@ -1159,9 +1150,6 @@ void GVSpectrumAmplitude::selectionSet(QRectF selection, bool forwardsync) {
 
     selectionSetTextInForm();
 
-    m_aZoomOnSelection->setEnabled(m_selection.width()>0 || m_selection.height());
-    m_aSelectionClear->setEnabled(m_selection.width()>0 || m_selection.height());
-
     if(forwardsync) {
         if(gMW->m_gvSpectrumPhase){
             QRectF rect = gMW->m_gvSpectrumPhase->m_mouseSelection;
@@ -1234,7 +1222,6 @@ void GVSpectrumAmplitude::selectionZoomOn(){
             gMW->m_gvSpectrumGroupDelay->viewUpdateTexts();
 
         setMouseCursorPosition(QPointF(-1,0), false);
-//        m_aZoomOnSelection->setEnabled(false);
     }
 }
 
@@ -1249,7 +1236,6 @@ void GVSpectrumAmplitude::azoomin(){
     viewSet();
 
     setMouseCursorPosition(QPointF(-1,0), false);
-    m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
 }
 void GVSpectrumAmplitude::azoomout(){
     QTransform trans = transform();
@@ -1262,7 +1248,6 @@ void GVSpectrumAmplitude::azoomout(){
     viewSet();
 
     setMouseCursorPosition(QPointF(-1,0), false);
-    m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
 }
 void GVSpectrumAmplitude::aunzoom(){
 
@@ -1297,7 +1282,6 @@ void GVSpectrumAmplitude::aunzoom(){
         gMW->m_gvSpectrumGroupDelay->viewSet(QRectF(0.0, sceneRect().top(), gFL->getFs()/2, sceneRect().height()), false);
 
 //    cursorUpdate(QPointF(-1,0));
-//    m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
 }
 
 void GVSpectrumAmplitude::setMouseCursorPosition(QPointF p, bool forwardsync) {

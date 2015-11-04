@@ -687,7 +687,7 @@ void WMainWindow::updateMouseCursorState(bool kshift, bool kcontrol){
             if(currentfile && currentfile->is(FileType::FTSOUND))
                 m_gvSpectrumPhase->setCursor(Qt::SizeVerCursor);    // For the signal's position control
             else
-                m_gvSpectrumGroupDelay->setCursor(Qt::CrossCursor);
+                m_gvSpectrumPhase->setCursor(Qt::CrossCursor);
 
             m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::NoDrag);
             if(currentfile && currentfile->is(FileType::FTSOUND))
