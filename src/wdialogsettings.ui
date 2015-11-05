@@ -209,7 +209,7 @@
           <item>
            <widget class="QCheckBox" name="cbPlaybackFilteringCompensateEnergy">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When the signal is filtered, the energy in the stop bands is lost. This option compensate for this loss of energy by boosting the pass-band.&lt;br/&gt;This is especially useful for listening to high-frequency content that is often barely noticeable.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When the signal is filtered, the energy in the stop bands is lost. This option compensates for this loss of energy by boosting the pass-band.&lt;br/&gt;This is especially useful for listening to high-frequency content that is often barely noticeable otherwise.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Compensate for the energy loss</string>
