@@ -472,12 +472,17 @@ void FilesListWidget::fileInfoUpdate() {
 
     // If only one file selected
     // Display Basic information of it
-    if(list.size()==1) {
+    if(list.empty()) {
+        gMW->ui->lblFileInfo->hide();
+    }
+    else if(list.size()==1) {
         gMW->ui->lblFileInfo->setText(((FileType*)list.at(0))->info());
         gMW->ui->lblFileInfo->show();
     }
-    else
-        gMW->ui->lblFileInfo->hide();
+    else {
+        gMW->ui->lblFileInfo->setText(QString::number(list.size())+" files selected");
+        gMW->ui->lblFileInfo->show();
+    }
 }
 
 // FileType is not an qobject, thus, need to forward the message manually (i.e. without signal system).

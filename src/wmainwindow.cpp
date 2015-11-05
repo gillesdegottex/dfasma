@@ -327,33 +327,43 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 WMainWindow::~WMainWindow() {
 //    DCOUT << "WMainWindow::~WMainWindow()" << std::endl;
 
+    DFLAG
     m_gvSpectrogram->m_stftcomputethread->cancelComputation(true);
     m_gvSpectrumAmplitude->m_fftresizethread->cancelComputation(true);
 
+    DFLAG
     gFL->selectAll();
     gFL->selectedFilesClose();
 
+    DFLAG
     delete gFL;
 
+    DFLAG
     // The audio player
     if(m_audioengine){
         delete m_audioengine;
         m_audioengine=NULL;
     }
 
+    DFLAG
     // Delete views
     delete m_gvWaveform; m_gvWaveform=NULL;
+    DFLAG
     delete m_gvSpectrumAmplitude; m_gvSpectrumAmplitude=NULL;
+    DFLAG
     delete m_gvSpectrumPhase; m_gvSpectrumPhase=NULL;
+    DFLAG
     delete m_gvSpectrumGroupDelay; m_gvSpectrumGroupDelay=NULL;
+    DFLAG
     delete m_gvSpectrogram; m_gvSpectrogram=NULL;
+    DFLAG
     delete m_dlgSettings; m_dlgSettings=NULL;
-
+    DFLAG
     // The GUI
     delete ui;
     ui = NULL;
 
-//    DCOUT << "WMainWindow::~WMainWindow~" << std::endl;
+    DFLAG
 }
 
 // Interface ===================================================================
