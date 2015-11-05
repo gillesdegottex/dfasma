@@ -601,12 +601,6 @@ void WMainWindow::viewsSpectrogramToggled(bool show)
         m_gvSpectrogram->updateSTFTSettings(); // This will update the window computation AND trigger the STFT computation
 }
 
-void WMainWindow::viewsSpectrogramToggled(bool show)
-{
-    if(show && gFL->ftsnds.size()>0)
-            m_gvSpectrogram->updateSTFTSettings(); // This will update the window computation AND trigger the STFT computation
-}
-
 void WMainWindow::keyPressEvent(QKeyEvent* event){
     QMainWindow::keyPressEvent(event);
 
