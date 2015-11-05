@@ -131,7 +131,7 @@ build_script:
 
 # Build package
   - ps: echo "test inno"
-  - iscc
+  #- iscc
   #- ps: "ISCC.exe"
   #- ps: & "c:\Program Files (x86)\Inno Setup 5\ISCC.exe" /o. /dMyAppVersion=$VERSION c:\projects\dfasma\distrib\$INNOSCRIPT
   - ps: echo "end test inno"
