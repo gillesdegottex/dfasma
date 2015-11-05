@@ -131,8 +131,8 @@ build_script:
 
 # Build package
   - ps: echo "test inno"
-  - ps: & "ISCC.exe"
-  - ps: & "c:\Program Files (x86)\Inno Setup 5\ISCC.exe"
+  - ps: "ISCC.exe"
+  - ps: "c:\Program Files (x86)\Inno Setup 5\ISCC.exe"
   - ps: echo "end test inno"
   - ps: Get-ChildItem c:\projects\dfasma\lib
   - ps: Get-ChildItem c:\projects\dfasma\lib\libsndfile
