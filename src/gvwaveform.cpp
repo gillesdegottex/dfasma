@@ -1122,6 +1122,10 @@ void GVWaveform::fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseSe
     }
 }
 
+GVWaveform::~GVWaveform(){
+    delete m_toolBar;
+}
+
 void GVWaveform::contextMenuEvent(QContextMenuEvent *event){
     if (event->modifiers().testFlag(Qt::ShiftModifier)
         || event->modifiers().testFlag(Qt::ControlModifier))

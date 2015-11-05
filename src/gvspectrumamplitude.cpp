@@ -121,7 +121,7 @@ GVSpectrumAmplitude::GVSpectrumAmplitude(WMainWindow* parent)
     connect(m_aAmplitudeSpectrumShowLoudnessCurve, SIGNAL(toggled(bool)), this, SLOT(elcSetVisible(bool)));
     connect(m_aAmplitudeSpectrumShowLoudnessCurve, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
 
-    m_aFollowPlayCursor = new QAction(tr("Follow the play cursor"), this);;
+    m_aFollowPlayCursor = new QAction(tr("Follow the play cursor"), this);
     m_aFollowPlayCursor->setObjectName("m_aFollowPlayCursor");
     m_aFollowPlayCursor->setStatusTip(tr("Update the DFT view according to the play cursor position"));
     m_aFollowPlayCursor->setCheckable(true);
@@ -1390,4 +1390,5 @@ GVSpectrumAmplitude::~GVSpectrumAmplitude(){
     delete m_fftresizethread;
     delete m_fft;
     delete m_dlgSettings;
+    delete m_toolBar;
 }

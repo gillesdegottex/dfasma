@@ -70,6 +70,7 @@ using namespace std;
 #include <QScrollBar>
 #include <QProgressDialog>
 #include <QtDebug>
+#include <QColorDialog>
 
 #include "qaehelpers.h"
 
@@ -129,7 +130,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     connect(ui->actionEstimationVoicedUnvoicedMarkers, SIGNAL(triggered()), gFL, SLOT(selectedFilesEstimateVoicedUnvoicedMarkers()));
 
     ui->statusBar->setStyleSheet("QStatusBar::item { border: 0px solid black }; ");
-    m_globalWaitingBar = new QProgressBar(ui->statusBar);
+    m_globalWaitingBar = new QProgressBar(this);
     m_globalWaitingBar->setAlignment(Qt::AlignRight);
     m_globalWaitingBar->setMaximumSize(100, 14);
     m_globalWaitingBar->setValue(50);
@@ -332,6 +333,8 @@ WMainWindow::~WMainWindow() {
     gFL->selectAll();
     gFL->selectedFilesClose();
 
+    delete gFL;
+
     // The audio player
     if(m_audioengine){
         delete m_audioengine;
@@ -346,7 +349,9 @@ WMainWindow::~WMainWindow() {
     delete m_gvSpectrogram; m_gvSpectrogram=NULL;
     delete m_dlgSettings; m_dlgSettings=NULL;
 
-    delete ui; ui=NULL; // The GUI
+    // The GUI
+    delete ui;
+    ui = NULL;
 
 //    DCOUT << "WMainWindow::~WMainWindow~" << std::endl;
 }
@@ -520,6 +525,19 @@ void WMainWindow::dropEvent(QDropEvent *event){
 }
 void WMainWindow::dragEnterEvent(QDragEnterEvent *event){
     event->acceptProposedAction();
+}
+
+void WMainWindow::changeColor(){
+    QColorDialog colordialog(this);
+    QObject::connect(&colordialog, SIGNAL(colorSelected(const QColor &)), gFL, SLOT(colorSelected(const QColor &)));
+//    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), gFL, SLOT(colorSelected(const QColor &)));
+    // Add the available Matlab colors to the custom colors
+
+    int ci = 0;
+    for(std::deque<QColor>::const_iterator it=FileType::availableColors().begin(); it!=FileType::availableColors().end(); it++,ci++)
+        QColorDialog::setCustomColor(ci, (*it));
+
+    colordialog.exec();
 }
 
 // Views =======================================================================

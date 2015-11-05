@@ -32,6 +32,9 @@ FilesListWidget* gFL = NULL;
 // Create a Delegate for calling the openEditor that is sadly missing from QAbstractItemView
 class FilesListWidgetDelegate : public QItemDelegate {
     public:
+    FilesListWidgetDelegate(QObject * parent = 0)
+        : QItemDelegate(parent)
+    {}
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const {
         QWidget* editor = QItemDelegate::createEditor(parent, option, index);
         gFL->openEditor(editor);
@@ -55,7 +58,7 @@ FilesListWidget::FilesListWidget(QMainWindow *parent)
     setDragDropMode(QAbstractItemView::InternalMove);
     setWordWrap(true);
 
-    setItemDelegate(new FilesListWidgetDelegate());
+    setItemDelegate(new FilesListWidgetDelegate(this));
 }
 
 void FilesListWidget::openEditor(QWidget * editor){

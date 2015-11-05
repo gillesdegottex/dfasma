@@ -114,6 +114,8 @@ public:
 
     void fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseSelection, int action);
 
+    ~GVWaveform();
+
 public slots:
     void showScrollBars(bool show);
     void gridSetVisible(bool visible){m_giGrid->setVisible(visible);}

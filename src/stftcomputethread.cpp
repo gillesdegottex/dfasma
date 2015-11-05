@@ -97,6 +97,10 @@ void STFTComputeThread::compute(ImageParameters reqImgSTFTParams) {
     m_mutex_changingparams.unlock();
 }
 
+STFTComputeThread::~STFTComputeThread(){
+    delete m_fft;
+}
+
 void STFTComputeThread::run() {
 //    DCOUT << "STFTComputeThread::run" << std::endl;
 

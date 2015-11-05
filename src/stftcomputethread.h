@@ -149,6 +149,8 @@ public:
     ImageParameters m_params_todo;      // The params which has to be done by the thread
     ImageParameters m_params_current;   // The params which is in preparation by the thread
     ImageParameters m_params_last;      // The last params which have been done
+
+    ~STFTComputeThread();
 };
 
 #endif // STFTCOMPUTETHREAD_H

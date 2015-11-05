@@ -96,13 +96,14 @@ private slots:
     void audioOutputFormatChanged(const QAudioFormat& format);
     void enablePlay();
     void localEnergyChanged(double);
+    void changeColor();
 
     void setSelectionMode(bool checked);
     void setEditMode(bool checked);
-    void execAbout();
     void viewsDisplayedChanged();
     void viewsSpectrogramToggled(bool show);
     void changeToolBarSizes(int size);
+    void execAbout();
 
 public slots:
     void focusWindowChanged(QWindow*win);

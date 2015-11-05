@@ -1004,6 +1004,9 @@ FTLabels::~FTLabels() {
         delete spectrogram_lines[li];
 
     gFL->ftlabels.erase(std::find(gFL->ftlabels.begin(), gFL->ftlabels.end(), this));
+
+    delete m_actionSave;
+    delete m_actionSaveAs;
 }
 
 // Analysis --------------------------------------------------------------------

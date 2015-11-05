@@ -27,7 +27,6 @@ using namespace std;
 
 #include <QMenu>
 #include <QFileInfo>
-#include <QColorDialog>
 #include <QMessageBox>
 #include <QSvgRenderer>
 
@@ -62,7 +61,11 @@ FileType::ClassConstructor FileType::s_class_constructor;
 static deque<QColor> s_colors;
 static int s_colors_loaded = 0;
 
-QColor FileType::GetNextColor(){
+const std::deque<QColor>& FileType::availableColors(){
+    return s_colors;
+}
+
+QColor FileType::getNextColor(){
 
     // If empty, initialize the colors
     if(s_colors.empty()){
@@ -380,21 +383,11 @@ void FileType::setIsSource(bool issource){
     }
 }
 
-
 void FileType::fillContextMenu(QMenu& contextmenu) {
     contextmenu.addAction(m_actionShow);
     contextmenu.addAction(gMW->ui->actionSelectedFilesReload);
     contextmenu.addAction(gMW->ui->actionSelectedFilesDuplicate);
-    QColorDialog* colordialog = new QColorDialog(&contextmenu); // TODO delete this !!!
-    QObject::connect(colordialog, SIGNAL(colorSelected(const QColor &)), gFL, SLOT(colorSelected(const QColor &)));
-//    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), gFL, SLOT(colorSelected(const QColor &)));
-
-    // Add the available Matlab colors to the custom colors
-    int ci = 0;
-    for(std::deque<QColor>::iterator it=s_colors.begin(); it!=s_colors.end(); it++,ci++)
-        QColorDialog::setCustomColor(ci, (*it));
-
-    contextmenu.addAction("Color...", colordialog, SLOT(exec()));
+    contextmenu.addAction("Color...", gMW, SLOT(changeColor()));
     contextmenu.addAction(gMW->ui->actionSelectedFilesClose);
     contextmenu.addSeparator();
 }
@@ -450,4 +443,6 @@ FileType::~FileType() {
     gFL->m_present_files.erase(this);
 
     s_colors.push_front(m_color);
+
+    delete m_actionShow;
 }

@@ -1306,4 +1306,9 @@ GVSpectrogram::~GVSpectrogram(){
     m_stftcomputethread->wait();
     delete m_stftcomputethread;
     delete m_dlgSettings;
+
+    delete m_aAutoUpdate;
+    delete m_aSpectrogramShowHarmonics;
+    delete m_aSpectrogramShowGrid;
+    delete m_aShowProperties;
 }

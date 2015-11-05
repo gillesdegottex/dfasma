@@ -93,7 +93,9 @@ int main(int argc, char *argv[])
     QObject::connect(&a, SIGNAL(focusWindowChanged(QWindow*)), w, SLOT(focusWindowChanged(QWindow*)));
     w->show();
 
-    int ret = a.exec();
+    a.exec();
+
+    delete w;
 
     #ifdef SUPPORT_SDIF
         Easdif::EasdifEnd();
@@ -101,8 +103,6 @@ int main(int argc, char *argv[])
     #ifdef FILE_AUDIO_LIBSOX
         sox_quit();
     #endif   
-
-    delete w;
 
     // If asked, drop some log information in a file
     #ifdef DEBUG_LOGFILE
@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
 
     QCoreApplication::processEvents(); // Process all events before exit
 //    DCOUT << "exit(" << ret << ")" << std::endl;
-    exit(ret); // WORKAROUND?: need this to avoid remaining background process on some platform (e.g. bouzouki) TODO This is surely related to some seg fault on exit #179
+    exit(0); // WORKAROUND?: need this to avoid remaining background process on some platform (e.g. bouzouki) TODO This is surely related to some seg fault on exit #179
 
-    return ret;
+    return 0;
 }

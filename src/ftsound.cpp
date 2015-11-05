@@ -856,6 +856,11 @@ FTSound::~FTSound(){
     delete m_giWavForSpectrumGroupDelay;
 
     gFL->ftsnds.erase(std::find(gFL->ftsnds.begin(), gFL->ftsnds.end(), this));
+
+    delete m_actionResetFiltering;
+    delete m_actionResetDelay;
+    delete m_actionResetAmpScale;
+    delete m_actionInvPolarity;
 }
 
 
