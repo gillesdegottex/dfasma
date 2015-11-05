@@ -34,6 +34,9 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whatever the duration of the selection, limit the DFT analysis window to the given duration.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>Limit window's length</string>
           </property>
@@ -44,6 +47,9 @@
         </item>
         <item>
          <widget class="QDoubleSpinBox" name="sbAmplitudeSpectrumWindowDurationLimit">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whatever the duration of the selection, limit the DFT analysis window to the given duration.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="suffix">
            <string>s</string>
           </property>
@@ -68,6 +74,9 @@
       </item>
       <item>
        <widget class="QCheckBox" name="cbAmplitudeSpectrumWindowSizeForcedOdd">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Force the window to have an odd number of samples.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="text">
          <string>Force odd window length</string>
         </property>
@@ -101,6 +110,9 @@
           </item>
           <item>
            <widget class="QComboBox" name="cbAmplitudeSpectrumWindowType">
+            <property name="toolTip">
+             <string>Based on Wikipedia's coefficients (2015)</string>
+            </property>
             <property name="currentIndex">
              <number>3</number>
             </property>
@@ -315,6 +327,9 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Normalization technique for the window.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>Normalisation</string>
           </property>
@@ -322,6 +337,9 @@
         </item>
         <item>
          <widget class="QComboBox" name="cbAmplitudeSpectrumWindowsNormalisation">
+          <property name="toolTip">
+           <string>Normalization technique for the window.</string>
+          </property>
           <item>
            <property name="text">
             <string>Sum</string>
@@ -349,6 +367,9 @@
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
          <widget class="QLabel" name="label">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Length of the DFT.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>Size</string>
           </property>
@@ -397,6 +418,9 @@
         </item>
         <item>
          <widget class="QSpinBox" name="sbAmplitudeSpectrumDFTSize">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Length of the DFT in number of samples.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="minimum">
            <number>2</number>
           </property>
@@ -414,9 +438,6 @@
         <item>
          <widget class="QSpinBox" name="sbAmplitudeSpectrumOversamplingFactor">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DFT size = &lt;span style=&quot; font-size:14pt;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot; font-size:14pt; vertical-align:super;&quot;&gt;⌈log2(winlen)⌉+X&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="statusTip">
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DFT size = &lt;span style=&quot; font-size:14pt;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot; font-size:14pt; vertical-align:super;&quot;&gt;⌈log2(winlen)⌉+X&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="value">

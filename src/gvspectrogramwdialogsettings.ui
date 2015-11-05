@@ -30,6 +30,9 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Duration of the DFT analysis window.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>Window length</string>
           </property>
@@ -37,6 +40,9 @@
         </item>
         <item>
          <widget class="QDoubleSpinBox" name="sbSpectrogramWindowSize">
+          <property name="toolTip">
+           <string>Duration of the DFT analysis window.</string>
+          </property>
           <property name="suffix">
            <string>s</string>
           </property>
@@ -61,6 +67,9 @@
       </item>
       <item>
        <widget class="QCheckBox" name="cbSpectrogramWindowSizeForcedOdd">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Force the window to have an odd number of samples.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="text">
          <string>Force odd window length</string>
         </property>
@@ -97,6 +106,9 @@
           </item>
           <item>
            <widget class="QComboBox" name="cbSpectrogramWindowType">
+            <property name="toolTip">
+             <string>Based on Wikipedia's coefficients (2015)</string>
+            </property>
             <property name="currentIndex">
              <number>3</number>
             </property>
@@ -317,6 +329,9 @@
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
          <widget class="QLabel" name="label_3">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Length of the DFT.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>Size</string>
           </property>
@@ -360,6 +375,9 @@
         </item>
         <item>
          <widget class="QSpinBox" name="sbSpectrogramDFTSize">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Length of the DFT in number of samples.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="minimum">
            <number>2</number>
           </property>
@@ -377,9 +395,6 @@
         <item>
          <widget class="QSpinBox" name="sbSpectrogramOversamplingFactor">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DFT size = &lt;span style=&quot; font-size:14pt;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot; font-size:14pt; vertical-align:super;&quot;&gt;⌈log2(winlen)⌉+X&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="statusTip">
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DFT size = &lt;span style=&quot; font-size:14pt;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot; font-size:14pt; vertical-align:super;&quot;&gt;⌈log2(winlen)⌉+X&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="value">
@@ -400,10 +415,7 @@
            </sizepolicy>
           </property>
           <property name="toolTip">
-           <string>The actual step size might be slightly different since it is always an integer number of samples.</string>
-          </property>
-          <property name="statusTip">
-           <string>The actual step size might be slightly different since it is always an integer number of samples.</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Step size between each analysis frames.&lt;span style=&quot; font-size:9pt;&quot;&gt;&lt;br/&gt;(The actual step size might be slightly different since it is always an integer number of samples)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Time step size</string>
@@ -413,10 +425,8 @@
         <item>
          <widget class="QDoubleSpinBox" name="sbSpectrogramStepSize">
           <property name="toolTip">
-           <string>The actual step size might be slightly different since it is always an integer number of samples.</string>
-          </property>
-          <property name="statusTip">
-           <string>The actual step size might be slightly different since it is always an integer number of samples.</string>
+           <string>Step size between each analysis frames.
+(The actual step size might be slightly different since it is always an integer number of samples)</string>
           </property>
           <property name="suffix">
            <string>s</string>
@@ -448,6 +458,9 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In speech signals, the high frequencies of the spectrum are often a lot weaker than the low frequencies. This is rather annoying for visualisation in a spectrogram since the user will have to chose to saturate the colors in either the low or high frequencies.&lt;br/&gt;This option allows to lifter the spectrum by reducing the importance of the lowest quefrencies, thus, rectifying the natural trend the spectrum can have.&lt;br/&gt;To do so, a half-Hamming window multiplies the first cepstral coefficients, up to the given cutoff.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="title">
          <string>Cepstral high-pass liftering</string>
         </property>
@@ -474,6 +487,11 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
+             <property name="toolTip">
+              <string>In speech signals, the high frequencies of the spectrum are often a lot weaker than the low frequencies. This is rather annoying for visualisation in a spectrogram since the user will have to chose to saturate the colors in either the low or high frequencies.
+This option allows to lifter the spectrum by reducing the importance of the lowest quefrencies, thus, rectifying the natural trend the spectrum can have.
+To do so, a half-Hamming window multiplies the first cepstral coefficients, up to the given cutoff.</string>
+             </property>
              <property name="text">
               <string>Cutoff</string>
              </property>
@@ -481,6 +499,11 @@
            </item>
            <item>
             <widget class="QSpinBox" name="sbSpectrogramCepstralLifteringOrder">
+             <property name="toolTip">
+              <string>In speech signals, the high frequencies of the spectrum are often a lot weaker than the low frequencies. This is rather annoying for visualisation in a spectrogram since the user will have to chose to saturate the colors in either the low or high frequencies.
+This option allows to lifter the spectrum by reducing the importance of the lowest quefrencies, thus, rectifying the natural trend the spectrum can have.
+To do so, a half-Hamming window multiplies the first cepstral coefficients, up to the given cutoff.</string>
+             </property>
              <property name="suffix">
               <string>bins</string>
              </property>
@@ -499,6 +522,9 @@
          </item>
          <item>
           <widget class="QCheckBox" name="cbSpectrogramCepstralLifteringPreserveDC">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;One might want to remove the trend of the spectrum, and, keep the DC of the cepstrum, i.e. the energy of the signal.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
             <string>Preserve cepstrum's DC</string>
            </property>
@@ -572,6 +598,9 @@
        <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
          <widget class="QLabel" name="label_4">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The sliders on the left of the spectrogram control the minimal and maximal amplitude values that correspond to the extrema of the color range.&lt;br/&gt;The minimal and maximal amplitude values can be controlled as percentage of the min and max values of the spectrogram, or, by absolute dB values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>Color range sliders</string>
           </property>
@@ -579,6 +608,10 @@
         </item>
         <item>
          <widget class="QComboBox" name="cbSpectrogramColorRangeMode">
+          <property name="toolTip">
+           <string>The sliders on the left of the spectrogram control the minimal and maximal amplitude values that correspond to the extrema of the color range.
+The minimal and maximal amplitude values can be controlled as percentage of the min and max values of the spectrogram, or, by absolute dB values.</string>
+          </property>
           <item>
            <property name="text">
             <string>Percents of min to max values</string>

@@ -120,6 +120,9 @@
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
+              <property name="toolTip">
+               <string>To avoid clicks at the begining and of the signal, half-windows are added at the boundaries of the signal that is played. This smooths the &quot;jump&quot; from zero to the first value and from the last value to zero, thus, avoiding clicks.</string>
+              </property>
               <property name="text">
                <string>Half-window duration used at beginning and end of the signal</string>
               </property>
@@ -129,6 +132,9 @@
              <widget class="QDoubleSpinBox" name="sbPlaybackAvoidClicksWindowDuration">
               <property name="enabled">
                <bool>false</bool>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To avoid clicks at the begining and of the signal, half-windows are added at the boundaries of the signal that is played. This smooths the &amp;quot;jump&amp;quot; from zero to the first value and from the last value to zero, thus, avoiding clicks.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="suffix">
                <string>s</string>
@@ -171,6 +177,9 @@
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Order of the filter that is used to filter the signal played (when shift-space is used)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Butterworth filter order</string>
               </property>
@@ -178,6 +187,9 @@
             </item>
             <item>
              <widget class="QSpinBox" name="sbPlaybackButterworthOrder">
+              <property name="toolTip">
+               <string>Order of the filter that is used to filter the signal played (when shift-space is used)</string>
+              </property>
               <property name="minimum">
                <number>4</number>
               </property>
@@ -196,6 +208,9 @@
           </item>
           <item>
            <widget class="QCheckBox" name="cbPlaybackFilteringCompensateEnergy">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When the signal is filtered, the energy in the stop bands is lost. This option compensate for this loss of energy by boosting the pass-band.&lt;br/&gt;This is especially useful for listening to high-frequency content that is often barely noticeable.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
             <property name="text">
              <string>Compensate for the energy loss</string>
             </property>
@@ -235,10 +250,7 @@
             </sizepolicy>
            </property>
            <property name="toolTip">
-            <string>The actual step size might be slightly different since it is always an integer number of samples.</string>
-           </property>
-           <property name="statusTip">
-            <string>The actual step size might be slightly different since it is always an integer number of samples.</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The time step between two estimation frames.&lt;br/&gt;(the actual step size might be slightly different since it is always an integer number of samples)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
             <string>Time step size</string>
@@ -248,10 +260,8 @@
          <item>
           <widget class="QDoubleSpinBox" name="sbEstimationStepSize">
            <property name="toolTip">
-            <string>The actual step size might be slightly different since it is always an integer number of samples.</string>
-           </property>
-           <property name="statusTip">
-            <string>The actual step size might be slightly different since it is always an integer number of samples.</string>
+            <string>The time step between two estimation frames.
+(the actual step size might be slightly different since it is always an integer number of samples)</string>
            </property>
            <property name="suffix">
             <string>s</string>
@@ -291,6 +301,9 @@
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Range of possible F0 values.&lt;br/&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;(These values are overriden when a frequency selection is present)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Range of F0 values</string>
               </property>
@@ -298,6 +311,9 @@
             </item>
             <item>
              <widget class="QDoubleSpinBox" name="dsbEstimationF0Min">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Minimal possible F0 value.&lt;br/&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;(This value is overriden when a frequency selection is present)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="suffix">
                <string>Hz</string>
               </property>
@@ -330,6 +346,9 @@
             </item>
             <item>
              <widget class="QDoubleSpinBox" name="dsbEstimationF0Max">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maximal possible F0 value.&lt;br/&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;(This value is overriden when a frequency selection is present)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="suffix">
                <string>Hz</string>
               </property>
@@ -398,13 +417,20 @@
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Default file format used to save label files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Default format</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QComboBox" name="cbLabelsDefaultFormat"/>
+             <widget class="QComboBox" name="cbLabelsDefaultFormat">
+              <property name="toolTip">
+               <string>Default file format used to save label files.</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -418,6 +444,9 @@
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Default text encoding used for writing the label files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Default text encoding</string>
               </property>
@@ -425,6 +454,9 @@
             </item>
             <item>
              <widget class="QComboBox" name="cbLabelsDefaultTextEncoding">
+              <property name="toolTip">
+               <string>Default text encoding used for writing the label files.</string>
+              </property>
               <property name="editable">
                <bool>true</bool>
               </property>
@@ -451,13 +483,20 @@
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Default file format used to save F0 files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Default format</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QComboBox" name="cbF0DefaultFormat"/>
+             <widget class="QComboBox" name="cbF0DefaultFormat">
+              <property name="toolTip">
+               <string>Default file format used to save F0 files.</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -494,6 +533,9 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Size of the toolbars (the main toolbar as well as the views' toolbars).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
             <string>Size of toolbars</string>
            </property>
@@ -501,6 +543,9 @@
          </item>
          <item>
           <widget class="QSpinBox" name="sbViewsToolBarSizes">
+           <property name="toolTip">
+            <string>Size of the toolbars (the main toolbar as well as the views' toolbars).</string>
+           </property>
            <property name="minimum">
             <number>8</number>
            </property>
@@ -518,6 +563,9 @@
         <layout class="QHBoxLayout" name="horizontalLayout_10">
          <item>
           <widget class="QLabel" name="label_13">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The font that is used for drawing the grids' numerical values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
             <string>Grids and cursors font</string>
            </property>
@@ -525,6 +573,9 @@
          </item>
          <item>
           <widget class="QPushButton" name="pbGridFontChange">
+           <property name="toolTip">
+            <string>The font that is used for drawing the grids' numerical values.</string>
+           </property>
            <property name="text">
             <string>Change</string>
            </property>
@@ -536,6 +587,9 @@
             <font>
              <pointsize>9</pointsize>
             </font>
+           </property>
+           <property name="toolTip">
+            <string>The font that is used for drawing the grids' numerical values.</string>
            </property>
            <property name="text">
             <string>E.g. 1.26s, 1000Hz, 24dB, -1.24rad</string>
@@ -554,6 +608,9 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Size of the items in the file list.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
             <string>Size of the items in the file list</string>
            </property>
@@ -561,6 +618,9 @@
          </item>
          <item>
           <widget class="QSpinBox" name="sbFileListItemSize">
+           <property name="toolTip">
+            <string>Size of the items in the file list.</string>
+           </property>
            <property name="minimum">
             <number>4</number>
            </property>
@@ -584,6 +644,9 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="toolTip">
+            <string>Number of decimals for time values.</string>
+           </property>
            <property name="text">
             <string>Number of decimals for time values</string>
            </property>
@@ -591,6 +654,9 @@
          </item>
          <item>
           <widget class="QSpinBox" name="sbViewsTimeDecimals">
+           <property name="toolTip">
+            <string>Number of decimals for time values.</string>
+           </property>
            <property name="maximum">
             <number>18</number>
            </property>
@@ -639,6 +705,9 @@
        </item>
        <item>
         <widget class="QCheckBox" name="cbViewsShowMusicNoteNames">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows the note names (e.g. C D E F G A B) along the frequency in the amplitude spectrum's view.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>Show music note names aside frequencies in Hertz</string>
          </property>
@@ -646,6 +715,9 @@
        </item>
        <item>
         <widget class="QCheckBox" name="cbViewsAddMarginsOnSelection">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When zooming on a selection, add margins around the selection.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>Add margins around zoomed selections</string>
          </property>
@@ -656,6 +728,9 @@
        </item>
        <item>
         <widget class="QCheckBox" name="cbViewsScrollBarsShow">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the scrollbars in all views.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>Show scrollbars in views</string>
          </property>
@@ -704,10 +779,7 @@ p, li { white-space: pre-wrap; }
      <item>
       <widget class="QPushButton" name="btnSettingsSave">
        <property name="toolTip">
-        <string>Save current settings (general settings and all views' settings)</string>
-       </property>
-       <property name="statusTip">
-        <string>Save current settings (general settings and all views' settings)</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save current settings (general settings and all views' settings)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Save settings</string>
@@ -717,9 +789,6 @@ p, li { white-space: pre-wrap; }
      <item>
       <widget class="QPushButton" name="btnSettingsClear">
        <property name="toolTip">
-        <string>Reset settings to factory values (general settings and all views' settings)</string>
-       </property>
-       <property name="statusTip">
         <string>Reset settings to factory values (general settings and all views' settings)</string>
        </property>
        <property name="text">
