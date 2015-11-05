@@ -797,6 +797,9 @@
    </property>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
+   <property name="toolTip">
+    <string>Play the selected file (presse shift+space for filtering the audio according to a spectral selection).</string>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
@@ -811,10 +814,10 @@
    <addaction name="actionSelectionMode"/>
    <addaction name="actionEditMode"/>
    <addaction name="separator"/>
+   <addaction name="actionShowSpectrogram"/>
    <addaction name="actionShowAmplitudeSpectrum"/>
    <addaction name="actionShowPhaseSpectrum"/>
    <addaction name="actionShowGroupDelaySpectrum"/>
-   <addaction name="actionShowSpectrogram"/>
    <addaction name="separator"/>
    <addaction name="actionPlay"/>
    <addaction name="actionSettings"/>
@@ -934,7 +937,7 @@
     <string>Play the sound filtered according to the spectral selection</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Space</string>
+    <string>Shift+Space</string>
    </property>
   </action>
   <action name="actionSelectedFilesReload">
@@ -965,9 +968,6 @@
    <property name="toolTip">
     <string>Show/hide the amplitude spectrum</string>
    </property>
-   <property name="shortcut">
-    <string>F6</string>
-   </property>
   </action>
   <action name="actionShowPhaseSpectrum">
    <property name="checkable">
@@ -985,9 +985,6 @@
    </property>
    <property name="toolTip">
     <string>Show/hide the phase spectrum</string>
-   </property>
-   <property name="shortcut">
-    <string>F7</string>
    </property>
   </action>
   <action name="actionShowSpectrogram">
@@ -1009,9 +1006,6 @@
    </property>
    <property name="toolTip">
     <string>Show/hide the spectrogram</string>
-   </property>
-   <property name="shortcut">
-    <string>F9</string>
    </property>
   </action>
   <action name="actionFileNew">
@@ -1086,8 +1080,16 @@
    <property name="toolTip">
     <string>Show/hide the group delay</string>
    </property>
+  </action>
+  <action name="actionEstimationVoicedUnvoicedMarkers">
+   <property name="text">
+    <string>Estimate Voiced/Unvoiced</string>
+   </property>
+   <property name="toolTip">
+    <string>Estimate the voiced and unvoiced markers from the selected fundamental frequency file.</string>
+   </property>
    <property name="shortcut">
-    <string>F8</string>
+    <string>Ctrl+V</string>
    </property>
   </action>
  </widget>

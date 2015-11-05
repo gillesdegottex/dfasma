@@ -19,25 +19,24 @@ file provided in the source code of DFasma. Another copy can be found at
 */
 
 #include "gvspectrogram.h"
+#include "gvspectrogramwdialogsettings.h"
+#include "ui_gvspectrogramwdialogsettings.h"
+#include "stftcomputethread.h"
 
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "wdialogsettings.h"
 #include "ui_wdialogsettings.h"
-#include "gvamplitudespectrumwdialogsettings.h"
-#include "ui_gvamplitudespectrumwdialogsettings.h"
 
-#include "gvspectrogramwdialogsettings.h"
-#include "ui_gvspectrogramwdialogsettings.h"
 #include "gvwaveform.h"
-#include "stftcomputethread.h"
-#include "gvamplitudespectrum.h"
-#include "gvphasespectrum.h"
+#include "gvspectrumamplitude.h"
+#include "gvspectrumamplitudewdialogsettings.h"
+#include "ui_gvspectrumamplitudewdialogsettings.h"
+#include "gvspectrumphase.h"
 #include "gvspectrumgroupdelay.h"
 #include "ftsound.h"
 #include "ftlabels.h"
 #include "ftfzero.h"
-#include "qaesigproc.h"
 
 #include <iostream>
 #include <algorithm>
@@ -57,12 +56,13 @@ using namespace std;
 #include <QScrollBar>
 #include "../external/libqxt/qxtspanslider.h"
 
+#include "qaesigproc.h"
 #include "qaehelpers.h"
+#include "qaegisampledsignal.h"
 
-QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
+GVSpectrogram::GVSpectrogram(WMainWindow* parent)
     : QGraphicsView(parent)
     , m_editing_fzero(NULL)
-    , m_imgSTFT(1, 1, QImage::Format_RGB32)
 {
     setStyleSheet("QGraphicsView { border-style: none; }");
     setFrameShape(QFrame::NoFrame);
@@ -72,12 +72,11 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
 
     m_scene = new QGraphicsScene(this);
     setScene(m_scene);
+//    QTransform trans;
+//    trans.scale(1.0, -1.0); // Reverse the y-axis
+//    setTransform(trans);
 
     m_dlgSettings = new GVSpectrogramWDialogSettings(this);
-    gMW->m_qxtSpectrogramSpanSlider->setUpperValue(gMW->m_settings.value("m_qxtSpectrogramSpanSlider_upper", 90).toInt());
-    gMW->m_qxtSpectrogramSpanSlider->setLowerValue(gMW->m_settings.value("m_qxtSpectrogramSpanSlider_lower", 10).toInt());
-
-    m_imgSTFT.fill(Qt::white);
 
     m_aShowProperties = new QAction(tr("&Properties"), this);
     m_aShowProperties->setStatusTip(tr("Open the properties configuration panel of the Spectrogram view"));
@@ -90,7 +89,13 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_aSpectrogramShowGrid->setChecked(false);
     m_aSpectrogramShowGrid->setIcon(QIcon(":/icons/grid.svg"));
     gMW->m_settings.add(m_aSpectrogramShowGrid);
-    connect(m_aSpectrogramShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
+    m_giGrid = new QAEGIGrid(this, "s", "Hz");
+    m_giGrid->setMathYAxis(true);
+    m_giGrid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
+    m_giGrid->setVisible(m_aSpectrogramShowGrid->isChecked());
+    m_giGrid->setHighContrast(true);
+    m_scene->addItem(m_giGrid);
+    connect(m_aSpectrogramShowGrid, SIGNAL(toggled(bool)), this, SLOT(gridSetVisible(bool)));
 
     m_aSpectrogramShowHarmonics = new QAction(tr("Show &Harmonics"), this);
     m_aSpectrogramShowHarmonics->setObjectName("m_aSpectrogramShowHarmonics"); // For auto settings
@@ -99,7 +104,7 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_aSpectrogramShowHarmonics->setChecked(false);
 //    m_aSpectrogramShowHarmonics->setIcon(QIcon(":/icons/grid.svg"));
     gMW->m_settings.add(m_aSpectrogramShowHarmonics);
-    connect(m_aSpectrogramShowHarmonics, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
+    connect(m_aSpectrogramShowHarmonics, SIGNAL(toggled(bool)), this, SLOT(showHarmonics(bool)));
 
     m_aAutoUpdate = new QAction(tr("Auto-Update STFT"), this);
     m_aAutoUpdate->setStatusTip(tr("Auto-Update the STFT view when the waveform is modified"));
@@ -150,7 +155,7 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_scene->addItem(m_giMouseCursorTxtFreq);
 
     // Play Cursor
-    m_giPlayCursor = new QGraphicsLineItem(0.0, 0.0, 0.0, 100000, NULL);
+    m_giPlayCursor = new QGraphicsLineItem(0.0, 0.0, 0.0, -100000, NULL);
     QPen playCursorPen(QColor(255, 0, 0));
     playCursorPen.setCosmetic(true);
     playCursorPen.setWidth(2);
@@ -182,6 +187,10 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     m_aZoomOut->setShortcut(Qt::Key_Minus);
     m_aZoomOut->setIcon(QIcon(":/icons/zoomout.svg"));
     connect(m_aZoomOut, SIGNAL(triggered()), this, SLOT(azoomout()));
+    m_aUnZoom = new QAction(tr("Un-Zoom"), this);
+    m_aUnZoom->setStatusTip(tr("Un-Zoom"));
+    m_aUnZoom->setIcon(QIcon(":/icons/unzoomxy.svg"));
+    connect(m_aUnZoom, SIGNAL(triggered()), this, SLOT(aunzoom()));
     m_aZoomOnSelection = new QAction(tr("&Zoom on selection"), this);
     m_aZoomOnSelection->setStatusTip(tr("Zoom on selection"));
     m_aZoomOnSelection->setEnabled(false);
@@ -217,6 +226,7 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
 //    m_toolBar->addSeparator();
 //    m_toolBar->addAction(m_aZoomIn);
 //    m_toolBar->addAction(m_aZoomOut);
+    m_toolBar->addAction(m_aUnZoom);
 //    m_toolBar->addSeparator();
     m_toolBar->addAction(m_aZoomOnSelection);
     m_toolBar->addAction(m_aSelectionClear);
@@ -249,7 +259,7 @@ QGVSpectrogram::QGVSpectrogram(WMainWindow* parent)
     updateSTFTSettings(); // Prepare a window from loaded settings
 }
 
-void QGVSpectrogram::showScrollBars(bool show) {
+void GVSpectrogram::showScrollBars(bool show) {
     if(show) {
         setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
         setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -260,38 +270,62 @@ void QGVSpectrogram::showScrollBars(bool show) {
     }
 }
 
-void QGVSpectrogram::amplitudeExtentSlidersChanged(){
+void GVSpectrogram::gridSetVisible(bool visible){
+    m_giGrid->setVisible(visible);
+}
+
+void GVSpectrogram::showHarmonics(bool show){
+    for(size_t fi=0; fi<gFL->ftfzeros.size(); ++fi) // TODO Could do only the prev selected one
+        gFL->ftfzeros[fi]->m_giHarmonicForSpectrogram->setVisible(show);
+    m_scene->update();
+}
+
+void GVSpectrogram::amplitudeExtentSlidersChanged(){
     if(!gMW->isLoading()) {
-        QToolTip::showText(QCursor::pos(), QString("[%1,%2]\% of amplitude range").arg(gMW->m_qxtSpectrogramSpanSlider->lowerValue()).arg(gMW->m_qxtSpectrogramSpanSlider->upperValue()), this);
+        QString tt;
+        if(m_dlgSettings->ui->cbSpectrogramColorRangeMode->currentIndex()==0)
+            tt = QString("[%1,%2]\% of amplitude range").arg(gMW->m_qxtSpectrogramSpanSlider->lowerValue()).arg(gMW->m_qxtSpectrogramSpanSlider->upperValue());
+        else if(m_dlgSettings->ui->cbSpectrogramColorRangeMode->currentIndex()==1)
+            tt = QString("[%1,%2]dB of amplitude").arg(gMW->m_qxtSpectrogramSpanSlider->lowerValue()).arg(gMW->m_qxtSpectrogramSpanSlider->upperValue());
+        QToolTip::showText(QCursor::pos(), tt, this);
+        gMW->m_qxtSpectrogramSpanSlider->setToolTip(tt);
 
         FTSound* csnd = gFL->getCurrentFTSound(true);
         if(csnd) {
-            FFTTYPE ymin = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0; // Min of color range [dB]
-            FFTTYPE ymax = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0; // Max of color range [dB]
+            FFTTYPE ymin = 0.0; // Init shouldn't be used
+            FFTTYPE ymax = 1.0; // Init shouldn't be used
+            if(m_dlgSettings->ui->cbSpectrogramColorRangeMode->currentIndex()==0){
+                ymin = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0; // Min of color range [dB]
+                ymax = csnd->m_stft_min+(csnd->m_stft_max-csnd->m_stft_min)*gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0; // Max of color range [dB]
+            }
+            else if(m_dlgSettings->ui->cbSpectrogramColorRangeMode->currentIndex()==1){
+                ymin = gMW->m_qxtSpectrogramSpanSlider->lowerValue();
+                ymax = gMW->m_qxtSpectrogramSpanSlider->upperValue();
+            }
 
-            gMW->m_gvAmplitudeSpectrum->m_giSpectrogramMin->setPos(0, -ymin);
-            gMW->m_gvAmplitudeSpectrum->m_giSpectrogramMin->show();
-            gMW->m_gvAmplitudeSpectrum->m_giSpectrogramMax->setPos(0, -ymax);
-            gMW->m_gvAmplitudeSpectrum->m_giSpectrogramMax->show();
+            gMW->m_gvSpectrumAmplitude->m_giSpectrogramMin->setPos(0, -ymin);
+            gMW->m_gvSpectrumAmplitude->m_giSpectrogramMin->show();
+            gMW->m_gvSpectrumAmplitude->m_giSpectrogramMax->setPos(0, -ymax);
+            gMW->m_gvSpectrumAmplitude->m_giSpectrogramMax->show();
         }
     }
 
     updateSTFTPlot();
 }
-void QGVSpectrogram::amplitudeExtentSlidersChangesEnded() {
-    gMW->m_gvAmplitudeSpectrum->m_giSpectrogramMin->hide();
-    gMW->m_gvAmplitudeSpectrum->m_giSpectrogramMax->hide();
+void GVSpectrogram::amplitudeExtentSlidersChangesEnded() {
+    gMW->m_gvSpectrumAmplitude->m_giSpectrogramMin->hide();
+    gMW->m_gvSpectrumAmplitude->m_giSpectrogramMax->hide();
 }
 
 
-void QGVSpectrogram::updateSTFTSettings(){
-//    COUTD << "QGVSpectrogram::updateSTFTSettings fs=" << gMW->getFs() << endl;
+void GVSpectrogram::updateSTFTSettings(){
+//    COUTD << "GVSpectrogram::updateSTFTSettings fs=" << gMW->getFs() << endl;
 
     gMW->ui->pbSpectrogramSTFTUpdate->hide();
     m_dlgSettings->checkImageSize();
 
     int winlen = std::floor(0.5+gFL->getFs()*m_dlgSettings->ui->sbSpectrogramWindowSize->value());
-    //    cout << "QGVSpectrogram::updateSTFTSettings winlen=" << winlen << endl;
+    //    cout << "GVSpectrogram::updateSTFTSettings winlen=" << winlen << endl;
 
     if(winlen%2==0 && m_dlgSettings->ui->cbSpectrogramWindowSizeForcedOdd->isChecked())
         winlen++;
@@ -334,17 +368,17 @@ void QGVSpectrogram::updateSTFTSettings(){
 
     updateSTFTPlot();
 
-//    cout << "QGVSpectrogram::~updateSTFTSettings" << endl;
+//    cout << "GVSpectrogram::~updateSTFTSettings" << endl;
 }
 
 
 //template<typename streamtype>
-//streamtype& operator<<(streamtype& stream, const QGVSpectrogram::ImageParameters& imgparams){
+//streamtype& operator<<(streamtype& stream, const GVSpectrogram::ImageParameters& imgparams){
 //    stream << imgparams.stftparams.snd << " win.size=" << imgparams.stftparams.win.size() << " stepsize=" << imgparams.stftparams.stepsize << " dftlen=" << imgparams.stftparams.dftlen << " amp=[" << imgparams.amplitudeMin << ", " << imgparams.amplitudeMax << "]";
 //}
 
 
-void QGVSpectrogram::stftComputingStateChanged(int state){
+void GVSpectrogram::stftComputingStateChanged(int state){
     if(state==STFTComputeThread::SCSDFT){
 //        COUTD << "SCSDFT" << endl;
         gMW->ui->pgbSpectrogramSTFTCompute->setValue(0);
@@ -373,13 +407,20 @@ void QGVSpectrogram::stftComputingStateChanged(int state){
         gMW->ui->pbSTFTComputingCancel->hide();
         gMW->ui->pgbSpectrogramSTFTCompute->hide();
         gMW->ui->wSpectrogramProgressWidgets->hide();
-        m_imgSTFTParams = m_stftcomputethread->m_params_last;
+        m_stftcomputethread->m_params_last.stftparams.snd->m_imgSTFTParams = m_stftcomputethread->m_params_last;
 //        COUTD << m_imgSTFTParams.stftparams.dftlen << endl;
 //        gMW->ui->lblSpectrogramInfoTxt->setText(" ");
 //        gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT: size %1, %2s step").arg(m_imgSTFTParams.stftparams.dftlen).arg(m_imgSTFTParams.stftparams.stepsize/gMW->getFs()));
         m_scene->update();
         if(gMW->m_gvWaveform->m_aWaveformShowSTFTWindowCenters->isChecked())
             gMW->m_gvWaveform->update();
+
+        QString tt;
+        if(m_dlgSettings->ui->cbSpectrogramColorRangeMode->currentIndex()==0)
+            tt = QString("[%1,%2]\% of amplitude range").arg(gMW->m_qxtSpectrogramSpanSlider->lowerValue()).arg(gMW->m_qxtSpectrogramSpanSlider->upperValue());
+        else if(m_dlgSettings->ui->cbSpectrogramColorRangeMode->currentIndex()==1)
+            tt = QString("[%1,%2]dB of amplitude").arg(gMW->m_qxtSpectrogramSpanSlider->lowerValue()).arg(gMW->m_qxtSpectrogramSpanSlider->upperValue());
+        gMW->m_qxtSpectrogramSpanSlider->setToolTip(tt);
     }
     else if(state==STFTComputeThread::SCSCanceled){
 //        COUTD << "SCSCanceled" << endl;
@@ -387,37 +428,30 @@ void QGVSpectrogram::stftComputingStateChanged(int state){
         gMW->ui->pbSTFTComputingCancel->hide();
         gMW->ui->pgbSpectrogramSTFTCompute->hide();
         gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT Canceled"));
-        clearSTFTPlot();
         gMW->ui->pbSpectrogramSTFTUpdate->show();
         gMW->ui->wSpectrogramProgressWidgets->show();
+        gMW->m_gvSpectrogram->m_scene->update();
     }
     else if(state==STFTComputeThread::SCSMemoryFull){
 //        COUTD << "SCSMemoryFull" << endl;
         QMessageBox::critical(NULL, "Memory full!", "There is not enough free memory for computing this STFT");
     }
-//    COUTD << "QGVSpectrogram::~stftComputingStateChanged" << endl;
+//    COUTD << "GVSpectrogram::~stftComputingStateChanged" << endl;
 }
 
-void QGVSpectrogram::showProgressWidgets() {
-//    COUTD << "QGVSpectrogram::showProgressWidgets " << QTime::currentTime().msecsSinceStartOfDay() << " " << m_progresswidgets_lastup.msecsSinceStartOfDay() << " " << QTime::currentTime().msecsSinceStartOfDay()-m_progresswidgets_lastup.msecsSinceStartOfDay() << endl;
+void GVSpectrogram::showProgressWidgets() {
+//    COUTD << "GVSpectrogram::showProgressWidgets " << QTime::currentTime().msecsSinceStartOfDay() << " " << m_progresswidgets_lastup.msecsSinceStartOfDay() << " " << QTime::currentTime().msecsSinceStartOfDay()-m_progresswidgets_lastup.msecsSinceStartOfDay() << endl;
     if(m_progresswidgets_lastup.msecsTo(QTime::currentTime())>=125 && m_stftcomputethread->isComputing())
         gMW->ui->wSpectrogramProgressWidgets->show();
 }
 
-void QGVSpectrogram::autoUpdate(bool autoupdate){
+void GVSpectrogram::autoUpdate(bool autoupdate){
     if(autoupdate && gMW->ui->pbSpectrogramSTFTUpdate->isVisible())
         updateSTFTSettings();
 }
 
-void QGVSpectrogram::clearSTFTPlot(){
-//    cout << "QGVSpectrogram::clearSTFTPlot" << endl;
-    m_imgSTFTParams.clear();
-    m_imgSTFT.fill(Qt::white);
-    m_scene->update();
-}
-
-void QGVSpectrogram::updateSTFTPlot(bool force){
-//    COUTD << "QGVSpectrogram::updateSTFTPlot" << endl;
+void GVSpectrogram::updateSTFTPlot(bool force){
+//    COUTD << "GVSpectrogram::updateSTFTPlot" << endl;
 
     if(!gMW->ui->actionShowSpectrogram->isChecked())
         return;
@@ -426,10 +460,10 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
     FTSound* csnd = gFL->getCurrentFTSound(true);
     if(csnd){
         if(csnd->m_actionShow->isChecked()) {
-    //        cout << "QGVSpectrogram::updateSTFTPlot " << csnd->fileFullPath.toLatin1().constData() << endl;
+    //        cout << "GVSpectrogram::updateSTFTPlot " << csnd->fileFullPath.toLatin1().constData() << endl;
 
             if(force)
-                m_imgSTFTParams.clear();
+                csnd->m_imgSTFTParams.clear();
 
             int stepsize = std::floor(0.5+gFL->getFs()*m_dlgSettings->ui->sbSpectrogramStepSize->value());//[samples]
             int dftlen = -1;
@@ -443,9 +477,9 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
             bool cepliftpresdc = gMW->m_gvSpectrogram->m_dlgSettings->ui->cbSpectrogramCepstralLifteringPreserveDC->isChecked();
 
             STFTComputeThread::STFTParameters reqSTFTParams(csnd, m_win, stepsize, dftlen, cepliftorder, cepliftpresdc);
-            STFTComputeThread::ImageParameters reqImgSTFTParams(reqSTFTParams, &m_imgSTFT, m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex(), m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked(), gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0, gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0, m_dlgSettings->ui->cbSpectrogramLoudnessWeighting->isChecked());
+            STFTComputeThread::ImageParameters reqImgSTFTParams(reqSTFTParams, &(csnd->m_imgSTFT), m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex(), m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked(), gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0, gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0, m_dlgSettings->ui->cbSpectrogramLoudnessWeighting->isChecked(), m_dlgSettings->ui->cbSpectrogramColorRangeMode->currentIndex());
 
-            if(m_imgSTFTParams.isEmpty() || reqImgSTFTParams!=m_imgSTFTParams) {
+            if(csnd->m_imgSTFTParams.isEmpty() || reqImgSTFTParams!=csnd->m_imgSTFTParams) {
                 gMW->ui->pbSpectrogramSTFTUpdate->hide();
                 m_stftcomputethread->compute(reqImgSTFTParams);
             }
@@ -453,22 +487,21 @@ void QGVSpectrogram::updateSTFTPlot(bool force){
         // m_scene->update(); // Should not be called here, otherwise creates intermediate black background
     }
 
-//    COUTD << "QGVSpectrogram::~updateSTFTPlot" << endl;
+//    COUTD << "GVSpectrogram::~updateSTFTPlot" << endl;
 }
 
 
-void QGVSpectrogram::updateSceneRect() {
-    m_scene->setSceneRect(-1.0/gFL->getFs(), 0.0, gFL->getMaxDuration()+1.0/gFL->getFs(), gFL->getFs()/2);
+void GVSpectrogram::updateSceneRect() {
+    m_scene->setSceneRect(-1.0/gFL->getFs(), -gFL->getFs()/2.0, gFL->getMaxDuration()+1.0/gFL->getFs(), gFL->getFs()/2.0);
     m_scene->update();
-//    updateTextsGeometry();
 }
 
-void QGVSpectrogram::allSoundsChanged(){
+void GVSpectrogram::allSoundsChanged(){
     if(gFL->ftsnds.size()>0)
         updateSTFTPlot();
 }
 
-void QGVSpectrogram::viewSet(QRectF viewrect, bool forwardsync) {
+void GVSpectrogram::viewSet(QRectF viewrect, bool forwardsync) {
 
     QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
 
@@ -477,15 +510,16 @@ void QGVSpectrogram::viewSet(QRectF viewrect, bool forwardsync) {
             viewrect = currentviewrect;
 
         if(viewrect.top()<=m_scene->sceneRect().top())
-            viewrect.setTop(m_scene->sceneRect().top()-2);
+            viewrect.setTop(m_scene->sceneRect().top());
         if(viewrect.bottom()>=m_scene->sceneRect().bottom())
-            viewrect.setBottom(m_scene->sceneRect().bottom()+2);
+            viewrect.setBottom(m_scene->sceneRect().bottom());
         if(viewrect.left()<m_scene->sceneRect().left())
             viewrect.setLeft(m_scene->sceneRect().left());
         if(viewrect.right()>m_scene->sceneRect().right())
             viewrect.setRight(m_scene->sceneRect().right());
 
         fitInView(removeHiddenMargin(this, viewrect));
+        m_giGrid->updateLines();
 
         if(forwardsync){
             if(gMW->m_gvWaveform && !gMW->m_gvWaveform->viewport()->size().isEmpty()) { // && gMW->ui->actionShowWaveform->isChecked()
@@ -498,9 +532,9 @@ void QGVSpectrogram::viewSet(QRectF viewrect, bool forwardsync) {
     }
 }
 
-void QGVSpectrogram::resizeEvent(QResizeEvent* event){
+void GVSpectrogram::resizeEvent(QResizeEvent* event){
     // Note: Resized is called for all views so better to not forward modifications
-//    cout << "QGVSpectrogram::resizeEvent" << endl;
+//    cout << "GVSpectrogram::resizeEvent" << endl;
 
     if(event->oldSize().isEmpty() && !event->size().isEmpty()) {
 
@@ -512,8 +546,8 @@ void QGVSpectrogram::resizeEvent(QResizeEvent* event){
             QRectF viewrect;
             viewrect.setLeft(spectrorect.left());
             viewrect.setRight(spectrorect.right());
-            viewrect.setTop(0);
-            viewrect.setBottom(gFL->getFs()/2);
+            viewrect.setTop(-gFL->getFs()/2);
+            viewrect.setBottom(0.0);
             viewSet(viewrect, false);
         }
         else
@@ -526,44 +560,34 @@ void QGVSpectrogram::resizeEvent(QResizeEvent* event){
 
     updateTextsGeometry();
     setMouseCursorPosition(QPointF(-1,0), false);
-//    cout << "QGVSpectrogram::~resizeEvent" << endl;
+//    cout << "GVSpectrogram::~resizeEvent" << endl;
 }
 
-void QGVSpectrogram::scrollContentsBy(int dx, int dy) {
-//    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << " QGVSpectrogram::scrollContentsBy" << endl;
+void GVSpectrogram::scrollContentsBy(int dx, int dy) {
+//    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << " GVSpectrogram::scrollContentsBy" << endl;
 
-    // Invalidate the necessary parts
-    // Ensure the y ticks will be redrawn
-    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-    QTransform trans = transform();
-
-    QRectF r = QRectF(viewrect.left(), viewrect.top(), 5*14/trans.m11(), viewrect.height());
-    m_scene->invalidate(r); // TODO Throw away after grid is moved to items
-
-    r = QRectF(viewrect.left(), viewrect.top()+viewrect.height()-14/trans.m22(), viewrect.width(), 14/trans.m22());
-    m_scene->invalidate(r); // TODO Throw away after grid is moved to items
-
-    updateTextsGeometry();
     setMouseCursorPosition(QPointF(-1,0), false);
+    updateTextsGeometry();
 
     QGraphicsView::scrollContentsBy(dx, dy);
+
+    m_giGrid->updateLines();
 }
 
-void QGVSpectrogram::wheelEvent(QWheelEvent* event) {
+void GVSpectrogram::wheelEvent(QWheelEvent* event) {
 
     qreal numDegrees = (event->angleDelta() / 8).y();
     // Clip to avoid flipping (workaround of a Qt bug ?)
     if(numDegrees>90) numDegrees = 90;
     if(numDegrees<-90) numDegrees = -90;
 
-
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
-//    cout << "QGVSpectrogram::wheelEvent: " << viewrect << endl;
+//    cout << "GVSpectrogram::wheelEvent: " << viewrect << endl;
 
     if(event->modifiers().testFlag(Qt::ShiftModifier)){
         QScrollBar* sb = horizontalScrollBar();
-        sb->setValue(sb->value()-numDegrees);
+        sb->setValue(sb->value()-3*numDegrees);
     }
     else if((numDegrees>0 && viewrect.width()>10.0/gFL->getFs()) || numDegrees<0) {
         double gx = double(mapToScene(event->pos()).x()-viewrect.left())/viewrect.width();
@@ -585,7 +609,7 @@ void QGVSpectrogram::wheelEvent(QWheelEvent* event) {
     setMouseCursorPosition(p, true);
 }
 
-void QGVSpectrogram::mousePressEvent(QMouseEvent* event){
+void GVSpectrogram::mousePressEvent(QMouseEvent* event){
 //    std::cout << "QGVWaveform::mousePressEvent" << endl;
 
     QPointF p = mapToScene(event->pos());
@@ -621,8 +645,9 @@ void QGVSpectrogram::mousePressEvent(QMouseEvent* event){
             else if((m_selection.width()>0 && m_selection.height()>0) && (event->modifiers().testFlag(Qt::ControlModifier) || (event->x()>=selview.left() && event->x()<=selview.right() && event->y()>=selview.top() && event->y()<=selview.bottom()))){
                 // When scroling the selection
                 m_currentAction = CAMovingSelection;
-                m_topismax = m_mouseSelection.top()<=0.0;
-                m_bottomismin = m_mouseSelection.bottom()>=gFL->getFs()/2.0;
+//                COUTD << m_mouseSelection << " " << m_mouseSelection.width() << "x" << m_mouseSelection.height() << endl;
+                m_topismax = m_mouseSelection.top()<=-gFL->getFs()/2.0;
+                m_bottomismin = m_mouseSelection.bottom()>=0.0;
                 m_selection_pressedp = p;
                 m_mouseSelection = m_selection;
                 setCursor(Qt::ClosedHandCursor);
@@ -638,16 +663,20 @@ void QGVSpectrogram::mousePressEvent(QMouseEvent* event){
             }
         }
         if(gMW->ui->actionEditMode->isChecked()){
-            FTFZero* current_fzero = gFL->getCurrentFTFZero(false);
-            if(current_fzero){
-                m_currentAction = CAEditFZero;
-                m_editing_fzero = current_fzero;
-                m_selection_pressedp = p;
-                m_editing_fzero->edit(p.x(), p.y());
-                m_scene->update();
+            if(!event->modifiers().testFlag(Qt::ControlModifier) && !event->modifiers().testFlag(Qt::ShiftModifier)){
+                FTFZero* current_fzero = gFL->getCurrentFTFZero(false);
+                if(current_fzero){
+                    m_currentAction = CAEditFZero;
+                    m_editing_fzero = current_fzero;
+                    m_selection_pressedp = p;
+                    m_editing_fzero->edit(p.x(), -p.y());
+                    m_scene->update();
+                    gMW->m_gvSpectrumAmplitude->update();
+                    current_fzero->setEditing(true);
+                }
+                else
+                    playCursorSet(p.x(), true); // Place the play cursor
             }
-            else
-                playCursorSet(p.x(), true); // Place the play cursor
         }
     }
     else if(event->buttons()&Qt::RightButton) {
@@ -657,10 +686,24 @@ void QGVSpectrogram::mousePressEvent(QMouseEvent* event){
             m_selection_pressedp = p;
             m_pressed_mouseinviewport = mapFromScene(p);
             m_pressed_viewrect = mapToScene(viewport()->rect()).boundingRect();
-        }
-        else {
-            QPoint posglobal = mapToGlobal(mapFromScene(p)+QPoint(0,0));
-            m_contextmenu.exec(posglobal);
+
+            QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+//            COUTD << viewrect << std::endl;
+            // If the mouse is close enough to a border, set to it
+//            COUTD << std::abs(viewrect.top()-m_scene->sceneRect().top()) << " " << std::abs(m_pressed_mouseinviewport.y()-viewport()->rect().top()) << std::endl;
+//            COUTD << std::numeric_limits<float>::epsilon() << std::endl;
+            if(std::abs(viewrect.bottom()-m_scene->sceneRect().bottom())<std::numeric_limits<float>::epsilon()
+               && std::abs(m_pressed_mouseinviewport.y()-viewport()->rect().bottom())<20)
+                m_selection_pressedp.setY(m_scene->sceneRect().bottom());
+            if(std::abs(viewrect.top()-m_scene->sceneRect().top())<std::numeric_limits<float>::epsilon()
+               && std::abs(m_pressed_mouseinviewport.y()-viewport()->rect().top())<20)
+                m_selection_pressedp.setY(m_scene->sceneRect().top());
+            if(std::abs(viewrect.left()-m_scene->sceneRect().left())==0
+               && std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().left())<20)
+                m_selection_pressedp.setX(m_scene->sceneRect().left());
+            if(std::abs(viewrect.right()-m_scene->sceneRect().right())==0
+               && std::abs(m_pressed_mouseinviewport.x()-viewport()->rect().right())<20)
+                m_selection_pressedp.setX(m_scene->sceneRect().right());
         }
     }
 
@@ -668,8 +711,8 @@ void QGVSpectrogram::mousePressEvent(QMouseEvent* event){
 //    std::cout << "~QGVWaveform::mousePressEvent " << p.x() << endl;
 }
 
-void QGVSpectrogram::mouseMoveEvent(QMouseEvent* event){
-//    COUTD << "QGVSpectrogram::mouseMoveEvent" << endl;
+void GVSpectrogram::mouseMoveEvent(QMouseEvent* event){
+//    COUTD << "GVSpectrogram::mouseMoveEvent" << endl;
 
     QPointF p = mapToScene(event->pos());
 
@@ -679,6 +722,7 @@ void QGVSpectrogram::mouseMoveEvent(QMouseEvent* event){
 
     if(m_currentAction==CAMoving) {
         // When scrolling the view around the scene
+        m_giGrid->updateLines();
     }
     else if(m_currentAction==CAZooming) {
         double dx = -(event->pos()-m_pressed_mouseinviewport).x()/100.0;
@@ -694,6 +738,8 @@ void QGVSpectrogram::mouseMoveEvent(QMouseEvent* event){
         viewSet(newrect);
 
         updateTextsGeometry();
+
+        setMouseCursorPosition(m_selection_pressedp, true);
 
         m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
     }
@@ -716,8 +762,8 @@ void QGVSpectrogram::mouseMoveEvent(QMouseEvent* event){
     else if(m_currentAction==CAMovingSelection){
         // When scroling the selection
         m_mouseSelection.adjust(p.x()-m_selection_pressedp.x(), p.y()-m_selection_pressedp.y(), p.x()-m_selection_pressedp.x(), p.y()-m_selection_pressedp.y());
-        if(m_topismax) m_mouseSelection.setTop(0.0);
-        if(m_bottomismin) m_mouseSelection.setBottom(gFL->getFs()/2.0);
+        if(m_topismax) m_mouseSelection.setTop(-gFL->getFs()/2.0);
+        if(m_bottomismin) m_mouseSelection.setBottom(0.0);
         selectionSet(m_mouseSelection, true);
         m_selection_pressedp = p;
     }
@@ -730,9 +776,10 @@ void QGVSpectrogram::mouseMoveEvent(QMouseEvent* event){
     else if (m_currentAction==CAEditFZero){
         // Editing an F0 curve
         if(p!=m_selection_pressedp){
-            m_editing_fzero->edit(p.x(), p.y());
+            m_editing_fzero->edit(p.x(), -p.y());
             m_selection_pressedp = p;
             m_scene->update();
+            gMW->m_gvSpectrumAmplitude->update();
         }
     }
     else{
@@ -764,6 +811,19 @@ void QGVSpectrogram::mouseMoveEvent(QMouseEvent* event){
                     setCursor(Qt::OpenHandCursor);
                 else
                     setCursor(Qt::CrossCursor);
+
+                FTFZero* curfzero = gFL->getCurrentFTFZero();
+                if(curfzero && gMW->m_gvSpectrogram->m_aSpectrogramShowHarmonics->isChecked()){
+                    // Get the clostest harmonic
+                    double ct = p.x();
+                    double cf0 = qae::nearest<double>(curfzero->ts, curfzero->f0s, ct, -1.0);
+                    if(cf0>0){
+                        int h = int(-p.y()/cf0 +0.5);
+                        curfzero->m_giHarmonicForSpectrogram->setGain(h);
+                        curfzero->m_giHarmonicForSpectrogram->show();
+                        m_scene->update(); // Can make it lighter ?
+                    }
+                }
             }
         }
         else if(gMW->ui->actionEditMode->isChecked()){
@@ -772,6 +832,10 @@ void QGVSpectrogram::mouseMoveEvent(QMouseEvent* event){
             else if(event->modifiers().testFlag(Qt::ControlModifier)){
             }
             else{
+                FTFZero* curf0 = gFL->getCurrentFTFZero(false);
+                if(curf0){
+//                    setCursor(Qt::Pen); // TODO Set a pen cursor
+                }
             }
         }
     }
@@ -780,38 +844,25 @@ void QGVSpectrogram::mouseMoveEvent(QMouseEvent* event){
     QGraphicsView::mouseMoveEvent(event);
 }
 
-void QGVSpectrogram::mouseReleaseEvent(QMouseEvent* event) {
-//    COUTD << "QGVSpectrogram::mouseReleaseEvent" << endl;
+void GVSpectrogram::mouseReleaseEvent(QMouseEvent* event) {
+//    COUTD << "GVSpectrogram::mouseReleaseEvent" << endl;
 
-    QPointF p = mapToScene(event->pos());
+    bool kshift = event->modifiers().testFlag(Qt::ShiftModifier);
+    bool kctrl = event->modifiers().testFlag(Qt::ControlModifier);
 
-//    if(gMW->ui->actionEditMode->isChecked()){
-//        if(m_currentAction==CAEditFZero){
-//            if(m_editing_fzero_newvalues.size()>1){
-//                COUTD << "Update using the " << m_editing_fzero_newvalues.size() << " new values" << endl;
-
-//            }
-//            m_editing_fzero_newvalues.clear();
-//        }
-//    }
-
-
+    if(gMW->ui->actionEditMode->isChecked())
+        if(m_currentAction==CAEditFZero)
+            m_editing_fzero->setEditing(false);
 
     m_currentAction = CANothing;
 
+    gMW->updateMouseCursorState(kshift, kctrl);
+
+    QPointF p = mapToScene(event->pos());
     if(gMW->ui->actionSelectionMode->isChecked()) {
-        if(event->modifiers().testFlag(Qt::ShiftModifier)) {
-            setCursor(Qt::OpenHandCursor);
-        }
-        else if(event->modifiers().testFlag(Qt::ControlModifier)) {
-            setCursor(Qt::OpenHandCursor);
-        }
-        else{
+        if(!kshift && !kctrl){
             if(p.x()>=m_selection.left() && p.x()<=m_selection.right() && p.y()>=m_selection.top() && p.y()<=m_selection.bottom())
                 setCursor(Qt::OpenHandCursor);
-            else{
-                setCursor(Qt::CrossCursor);
-            }
         }
     }
 
@@ -826,9 +877,9 @@ void QGVSpectrogram::mouseReleaseEvent(QMouseEvent* event) {
 //    std::cout << "~QGVWaveform::mouseReleaseEvent " << endl;
 }
 
-void QGVSpectrogram::keyPressEvent(QKeyEvent* event){
+void GVSpectrogram::keyPressEvent(QKeyEvent* event){
 
-//    cout << "QGVSpectrogram::keyPressEvent " << endl;
+//    cout << "GVSpectrogram::keyPressEvent " << endl;
 
     if(event->key()==Qt::Key_Escape) {
         if(!gMW->m_gvWaveform->hasSelection()
@@ -842,7 +893,7 @@ void QGVSpectrogram::keyPressEvent(QKeyEvent* event){
     QGraphicsView::keyPressEvent(event);
 }
 
-void QGVSpectrogram::selectionClear(bool forwardsync) {
+void GVSpectrogram::selectionClear(bool forwardsync) {
     m_giShownSelection->hide();
     m_selection = QRectF(0, 0, 0, 0);
     m_mouseSelection = QRectF(0, 0, 0, 0);
@@ -856,18 +907,18 @@ void QGVSpectrogram::selectionClear(bool forwardsync) {
     if(forwardsync){
         if(gMW->m_gvWaveform)
             gMW->m_gvWaveform->selectionClear(false);
-        if(gMW->m_gvAmplitudeSpectrum)
-            gMW->m_gvAmplitudeSpectrum->selectionClear(false);
+        if(gMW->m_gvSpectrumAmplitude)
+            gMW->m_gvSpectrumAmplitude->selectionClear(false);
         if(gMW->m_gvSpectrumGroupDelay)
             gMW->m_gvSpectrumGroupDelay->selectionClear(false);
     }
 }
 
-void QGVSpectrogram::selectionSetTextInForm() {
+void GVSpectrogram::selectionSetTextInForm() {
 
     QString str;
 
-//    cout << "QGVSpectrogram::selectionSetText: " << m_selection.height() << " " << gMW->m_gvPhaseSpectrum->m_selection.height() << endl;
+//    cout << "GVSpectrogram::selectionSetText: " << m_selection.height() << " " << gMW->m_gvPhaseSpectrum->m_selection.height() << endl;
 
 //    if (m_selection.height()==0 && gMW->m_gvPhaseSpectrum->m_selection.height()==0) {
     if (m_selection.height()==0 && m_selection.width()==0) {
@@ -882,8 +933,8 @@ void QGVSpectrogram::selectionSetTextInForm() {
             right = m_selection.right();
         }
         else {
-            left = gMW->m_gvPhaseSpectrum->m_selection.left();
-            right = gMW->m_gvPhaseSpectrum->m_selection.right();
+            left = gMW->m_gvSpectrumPhase->m_selection.left();
+            right = gMW->m_gvSpectrumPhase->m_selection.right();
         }
         str += QString("[%1,%2]%3s").arg(left, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()).arg(right, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()).arg(right-left, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value());
 
@@ -899,7 +950,7 @@ void QGVSpectrogram::selectionSetTextInForm() {
     gMW->ui->lblSpectrogramSelectionTxt->setText(str);
 }
 
-void QGVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
+void GVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
     double fs = gFL->getFs();
 
     // Order the selection to avoid negative width and negative height
@@ -943,34 +994,34 @@ void QGVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
             }
         }
 
-        if(gMW->m_gvAmplitudeSpectrum){
+        if(gMW->m_gvSpectrumAmplitude){
             if(m_selection.height()>=gFL->getFs()/2){
-                gMW->m_gvAmplitudeSpectrum->selectionClear();
+                gMW->m_gvSpectrumAmplitude->selectionClear();
             }
             else{
-                QRectF rect = gMW->m_gvAmplitudeSpectrum->m_mouseSelection;
-                rect.setLeft(gFL->getFs()/2-m_selection.bottom());
-                rect.setRight(gFL->getFs()/2-m_selection.top());
+                QRectF rect = gMW->m_gvSpectrumAmplitude->m_mouseSelection;
+                rect.setLeft(-m_selection.bottom());
+                rect.setRight(-m_selection.top());
                 if(rect.height()==0){
-                    rect.setTop(gMW->m_gvAmplitudeSpectrum->m_scene->sceneRect().top());
-                    rect.setBottom(gMW->m_gvAmplitudeSpectrum->m_scene->sceneRect().bottom());
+                    rect.setTop(gMW->m_gvSpectrumAmplitude->m_scene->sceneRect().top());
+                    rect.setBottom(gMW->m_gvSpectrumAmplitude->m_scene->sceneRect().bottom());
                 }
-                gMW->m_gvAmplitudeSpectrum->selectionSet(rect, false);
+                gMW->m_gvSpectrumAmplitude->selectionSet(rect, false);
             }
         }
-        if(gMW->m_gvPhaseSpectrum){
+        if(gMW->m_gvSpectrumPhase){
             if(m_selection.height()>=gFL->getFs()/2){
-                gMW->m_gvPhaseSpectrum->selectionClear();
+                gMW->m_gvSpectrumPhase->selectionClear();
             }
             else{
-                QRectF rect = gMW->m_gvPhaseSpectrum->m_mouseSelection;
-                rect.setLeft(gFL->getFs()/2-m_selection.bottom());
-                rect.setRight(gFL->getFs()/2-m_selection.top());
+                QRectF rect = gMW->m_gvSpectrumPhase->m_mouseSelection;
+                rect.setLeft(-m_selection.bottom());
+                rect.setRight(-m_selection.top());
                 if(rect.height()==0){
-                    rect.setTop(gMW->m_gvPhaseSpectrum->m_scene->sceneRect().top());
-                    rect.setBottom(gMW->m_gvPhaseSpectrum->m_scene->sceneRect().bottom());
+                    rect.setTop(gMW->m_gvSpectrumPhase->m_scene->sceneRect().top());
+                    rect.setBottom(gMW->m_gvSpectrumPhase->m_scene->sceneRect().bottom());
                 }
-                gMW->m_gvPhaseSpectrum->selectionSet(rect, false);
+                gMW->m_gvSpectrumPhase->selectionSet(rect, false);
             }
         }
         if(gMW->m_gvSpectrumGroupDelay){
@@ -979,8 +1030,8 @@ void QGVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
             }
             else{
                 QRectF rect = gMW->m_gvSpectrumGroupDelay->m_mouseSelection;
-                rect.setLeft(gFL->getFs()/2-m_selection.bottom());
-                rect.setRight(gFL->getFs()/2-m_selection.top());
+                rect.setLeft(-m_selection.bottom());
+                rect.setRight(-m_selection.top());
                 if(rect.height()==0){
                     rect.setTop(gMW->m_gvSpectrumGroupDelay->m_scene->sceneRect().top());
                     rect.setBottom(gMW->m_gvSpectrumGroupDelay->m_scene->sceneRect().bottom());
@@ -993,7 +1044,7 @@ void QGVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
     selectionSetTextInForm();
 }
 
-void QGVSpectrogram::updateTextsGeometry() {
+void GVSpectrogram::updateTextsGeometry() {
     QTransform trans = transform();
     QTransform txttrans;
     txttrans.scale(1.0/trans.m11(), 1.0/trans.m22());
@@ -1011,7 +1062,7 @@ void QGVSpectrogram::updateTextsGeometry() {
     }
 }
 
-void QGVSpectrogram::selectionZoomOn(){
+void GVSpectrogram::selectionZoomOn(){
     if(m_selection.width()>0 && m_selection.height()>0){
         QRectF zoomonrect = m_selection;
         if(gMW->m_dlgSettings->ui->cbViewsAddMarginsOnSelection->isChecked()) {
@@ -1033,7 +1084,7 @@ void QGVSpectrogram::selectionZoomOn(){
     }
 }
 
-void QGVSpectrogram::azoomin(){
+void GVSpectrogram::azoomin(){
     QTransform trans = transform();
     qreal h11 = trans.m11();
     qreal h22 = trans.m22();
@@ -1046,7 +1097,7 @@ void QGVSpectrogram::azoomin(){
     setMouseCursorPosition(QPointF(-1,0), false);
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
 }
-void QGVSpectrogram::azoomout(){
+void GVSpectrogram::azoomout(){
     QTransform trans = transform();
     qreal h11 = trans.m11();
     qreal h22 = trans.m22();
@@ -1060,7 +1111,11 @@ void QGVSpectrogram::azoomout(){
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
 }
 
-void QGVSpectrogram::setMouseCursorPosition(QPointF p, bool forwardsync) {
+void GVSpectrogram::aunzoom(){
+    viewSet(m_scene->sceneRect(), true);
+}
+
+void GVSpectrogram::setMouseCursorPosition(QPointF p, bool forwardsync) {
     if(p.x()==-1){
         m_giMouseCursorLineFreqBack->hide();
         m_giMouseCursorLineTimeBack->hide();
@@ -1110,7 +1165,8 @@ void QGVSpectrogram::setMouseCursorPosition(QPointF p, bool forwardsync) {
         m_giMouseCursorTxtTime->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
         m_giMouseCursorTxtTime->show();
 
-        txt = QString("%1Hz").arg(0.5*gFL->getFs()-p.y());
+//        txt = QString("%1Hz").arg(0.5*gFL->getFs()-p.y());
+        txt = QString("%1Hz").arg(-p.y());
         m_giMouseCursorTxtFreqBack->setText(txt);
         br = m_giMouseCursorTxtFreqBack->boundingRect();
         m_giMouseCursorTxtFreqBack->setPos(viewrect.right()-(br.width()-2.0)/trans.m11(), p.y()-(br.height()-1.0)/trans.m22());
@@ -1127,17 +1183,17 @@ void QGVSpectrogram::setMouseCursorPosition(QPointF p, bool forwardsync) {
         if(forwardsync){
             if(gMW->m_gvWaveform)
                 gMW->m_gvWaveform->setMouseCursorPosition(p.x(), false);
-            if(gMW->m_gvAmplitudeSpectrum)
-                gMW->m_gvAmplitudeSpectrum->setMouseCursorPosition(QPointF(0.5*gFL->getFs()-p.y(), 0.0), false);
-            if(gMW->m_gvPhaseSpectrum)
-                gMW->m_gvPhaseSpectrum->setMouseCursorPosition(QPointF(0.5*gFL->getFs()-p.y(), 0.0), false);
+            if(gMW->m_gvSpectrumAmplitude)
+                gMW->m_gvSpectrumAmplitude->setMouseCursorPosition(QPointF(-p.y(), 0.0), false);
+            if(gMW->m_gvSpectrumPhase)
+                gMW->m_gvSpectrumPhase->setMouseCursorPosition(QPointF(-p.y(), 0.0), false);
             if(gMW->m_gvSpectrumGroupDelay)
-                gMW->m_gvSpectrumGroupDelay->setMouseCursorPosition(QPointF(0.5*gFL->getFs()-p.y(), 0.0), false);
+                gMW->m_gvSpectrumGroupDelay->setMouseCursorPosition(QPointF(-p.y(), 0.0), false);
         }
     }
 }
 
-void QGVSpectrogram::playCursorSet(double t, bool forwardsync){
+void GVSpectrogram::playCursorSet(double t, bool forwardsync){
     if(t==-1){
         if(m_selection.width()>0)
             playCursorSet(m_selection.left(), forwardsync);
@@ -1152,37 +1208,67 @@ void QGVSpectrogram::playCursorSet(double t, bool forwardsync){
         gMW->m_gvWaveform->playCursorSet(t, false);
 }
 
-void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
-
-//    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": QGVSpectrogram::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
+void GVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
+    Q_UNUSED(rect)
+//    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": GVSpectrogram::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
     // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
     // Draw the sound's spectrogram
-    FTSound* csnd = gFL->getCurrentFTSound(true);
-    if(csnd && csnd->m_actionShow->isChecked() && csnd->m_stftts.size()>0) {
+    if(QAEColorMap::getAt(m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex()).isTransparent()){
+        // If the color mapping is partly transparent, draw the spectro of all sounds
+        for(size_t fi=0; fi<gFL->ftsnds.size(); ++fi){
+            draw_spectrogram(painter, rect, viewrect, gFL->ftsnds[fi]);
+        }
+    }
+    else{
+        // If the color mapping is opaque, draw only the spectro of the current sound
+        FTSound* csnd = gFL->getCurrentFTSound(true);
+        if(csnd && csnd->m_actionShow->isChecked())
+            draw_spectrogram(painter, rect, viewrect, csnd);
+    }
 
-//        double bin2hz = fs*1/csnd->m_stftparams.dftlen;
+//    cout << "GVSpectrogram::~drawBackground" << endl;
+}
 
-        // Build the piece of STFT which will be drawn in the view
-        QRectF srcrect;
-        double stftwidth = csnd->m_stftts.back()-csnd->m_stftts.front();
-        srcrect.setLeft(0.5+(m_imgSTFT.rect().width()-1)*(viewrect.left()-csnd->m_stftts.front())/stftwidth);
-        srcrect.setRight(0.5+(m_imgSTFT.rect().width()-1)*(viewrect.right()-csnd->m_stftts.front())/stftwidth);
+void GVSpectrogram::draw_spectrogram(QPainter* painter, const QRectF& rect, const QRectF& viewrect, FTSound* snd){
+    Q_UNUSED(rect)
+    //        double bin2hz = fs*1/csnd->m_stftparams.dftlen;
+
+    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.lock();
+    if(snd==NULL
+      || !snd->m_actionShow->isChecked()
+      || snd->m_imgSTFT.isNull()
+      || snd->m_stftts.empty()) // First need to be computed
+    {
+        gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.unlock();
+        return;
+    }
+
+    double stftwidth = snd->m_stftts.back()-snd->m_stftts.front();
+
+    QRect imgrect = snd->m_imgSTFT.rect();
+
+    // Build the piece of STFT which will be drawn in the view
+    QRectF srcrect;
+    srcrect.setLeft(0.5+(imgrect.width()-1)*(viewrect.left()-snd->m_stftts.front())/stftwidth);
+    srcrect.setRight(0.5+(imgrect.width()-1)*(viewrect.right()-snd->m_stftts.front())/stftwidth);
 //        COUTD << "viewrect=" << viewrect << endl;
 //        COUTD << "IMG: " << m_imgSTFT.rect() << endl;
-        // This one is vertically super sync,
-        // but the cursor falls always on the top of the line, not in the middle of it.
-        srcrect.setTop((m_imgSTFT.rect().height()-1)*viewrect.top()/m_scene->sceneRect().height());
-        srcrect.setBottom((m_imgSTFT.rect().height()-1)*viewrect.bottom()/m_scene->sceneRect().height());
-        QRectF trgrect = viewrect;
-        srcrect.setTop(srcrect.top()+0.5);
-        srcrect.setBottom(srcrect.bottom()+0.5);
+    // This one is vertically super sync,
+    // but the cursor falls always on the top of the line, not in the middle of it.
+//        srcrect.setTop((m_imgSTFT.rect().height()-1)*viewrect.top()/m_scene->sceneRect().height());
+//        srcrect.setBottom((m_imgSTFT.rect().height()-1)*viewrect.bottom()/m_scene->sceneRect().height());
+    srcrect.setTop((imgrect.height()-1)*-(m_scene->sceneRect().top()-viewrect.top())/m_scene->sceneRect().height());
+    srcrect.setBottom((imgrect.height()-1)*-(m_scene->sceneRect().top()-viewrect.bottom())/m_scene->sceneRect().height());
+    srcrect.setTop(srcrect.top()+0.5);
+    srcrect.setBottom(srcrect.bottom()+0.5);
+    QRectF trgrect = viewrect;
 
-        // This one is the basic synchronized version,
-        // but it creates flickering when zooming
+    // This one is the basic synchronized version,
+    // but it creates flickering when zooming
 //        QRectF srcrect = m_imgSTFT.rect();
 //        QRectF trgrect = m_scene->sceneRect();
 //        trgrect.setLeft(csnd->m_stftts.front()-0.5*csnd->m_stftparams.stepsize/csnd->fs);
@@ -1191,155 +1277,38 @@ void QGVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 //        trgrect.setTop(-bin2hz/2);// Hard to verify because of the flickering
 //        trgrect.setBottom(fs/2+bin2hz/2);// Hard to verify because of the flickering
 
-//        COUTD << "Scene: " << m_scene->sceneRect() << endl;
-//        COUTD << "SRC: " << srcrect << endl;
-//        COUTD << "TRG: " << trgrect << endl;
+//        COUTD << "Scene: " << m_scene->sceneRect() << " " << m_scene->sceneRect().width() << "x" << m_scene->sceneRect().height() << endl;
+//        COUTD << "SRC: " << srcrect << " " << srcrect.width() << "x" << srcrect.height() << endl;
+//        COUTD << "TRG: " << trgrect << " " << trgrect.width() << "x" << trgrect.height() << endl;
 
-//        if(!m_stftcomputethread->isComputing())
-        if(!m_imgSTFT.isNull() && m_stftcomputethread->m_mutex_imageallocation.tryLock()) {
-            painter->drawImage(trgrect, m_imgSTFT, srcrect);
-            m_stftcomputethread->m_mutex_imageallocation.unlock();
-        }
-    }
+    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.unlock();
 
-    // Draw the grid above the spectrogram
-    if(m_aSpectrogramShowGrid->isChecked())
-        draw_grid(painter, rect);
-
-    // Draw the f0s
-    FTFZero* curfzero = gFL->getCurrentFTFZero(true);
-    for(size_t fi=0; fi<gFL->ftfzeros.size(); ++fi)
-        if(gFL->ftfzeros[fi]!=curfzero)
-            gFL->ftfzeros[fi]->draw_time_freq(painter, rect, m_aSpectrogramShowHarmonics->isChecked());
-    if(curfzero)
-        curfzero->draw_time_freq(painter, rect, m_aSpectrogramShowHarmonics->isChecked());
-
-    // TODO DELETE
-//    // Draw the F0 edition
-//    // TODO Use GraphicItem
-//    if(m_editing_fzero){
-//        QColor c = m_editing_fzero->getColor();
-//        c.setAlphaF(1.0);
-//        QPen outlinePen(c);
-//        outlinePen.setWidth(0);
-//        painter->setPen(outlinePen);
-//        for(size_t i=0; i<m_editing_fzero_newvalues.size()-1; ++i){
-//            painter->drawLine(QLineF(m_editing_fzero_newvalues[i], m_editing_fzero_newvalues[i+1]));
-//        }
-//    }
-
-
-//    cout << "QGVSpectrogram::~drawBackground" << endl;
-}
-
-void QGVSpectrogram::draw_grid(QPainter* painter, const QRectF& rect) {
-    // Prepare the pens and fonts
-    QTransform trans = transform();
-    QPen darkpen(QColor(0,0,0));
-    darkpen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-
-    painter->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
-    QFontMetrics qfm(gMW->m_dlgSettings->ui->lblGridFontSample->font());
-    QFont lightfont = painter->font();
-    QFont darkfont = painter->font();
-    darkfont.setBold(true);
-
-    QPen darkthickpen(QColor(0,0,0));
-    darkthickpen.setCosmetic(true);
-    darkthickpen.setWidth(1);
-    QPen lightpen(QColor(255,255,255));
-    lightpen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-    painter->setPen(darkpen);
-    QPointF shift(1, 1);
-    QStaticText stxt;
-
-    // Horizontal lines
-
-    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-
-    // Adapt the lines ordinates to the viewport
-    double f = log10(float(viewrect.height()));
-    int fi;
-    if(f<0) fi=int(f-1);
-    else fi = int(f);
-    double lstep = pow(10.0, fi);
-    int m=1;
-    while(int(viewrect.height()/lstep)<3){
-        lstep /= 2;
-        m++;
-    }
-    // cout << "lstep=" << lstep << endl;
-
-    // Draw the horizontal lines
-    painter->setPen(lightpen);
-    for(double l=gFL->getFs()/2.0-int((gFL->getFs()/2.0-rect.bottom())/lstep)*lstep; l>=rect.top(); l-=lstep)
-        painter->drawLine(QLineF(rect.left(), l, rect.right(), l));
-    painter->setPen(darkpen);
-    for(double l=gFL->getFs()/2.0-int((gFL->getFs()/2.0-rect.bottom())/lstep)*lstep; l>=rect.top(); l-=lstep)
-        painter->drawLine(QLineF(rect.left(), l-1.0/trans.m22(), rect.right(), l-1.0/trans.m22()));
-
-    // Write the ordinates of the horizontal lines
-    for(double l=gFL->getFs()/2.0-int((gFL->getFs()/2.0-rect.bottom())/lstep)*lstep; l>=rect.top(); l-=lstep){
-        painter->save();
-        painter->translate(QPointF(viewrect.left(), l));
-        painter->scale(1.0/trans.m11(), 1.0/trans.m22());
-
-        stxt = QStaticText(QString("%1Hz").arg(gFL->getFs()/2.0-l));
-        if(l<viewrect.bottom()-0.75*qfm.height()/trans.m22()){
-            painter->setPen(darkthickpen);
-            painter->setFont(darkfont);
-            painter->drawStaticText(QPointF(0, -qfm.height())+shift, stxt);
-            painter->setPen(lightpen);
-            painter->setFont(lightfont);
-            painter->drawStaticText(QPointF(0, -qfm.height()), stxt);
-        }
-        painter->restore();
-    }
-
-    // Vertical lines
-
-    // Adapt the lines absissa to the viewport
-    f = std::log10(float(viewrect.width()));
-    if(f<0) fi=int(f-1);
-    else fi = int(f);
-//    std::cout << viewrect.height() << " " << f << " " << fi << endl;
-    lstep = pow(10.0, fi);
-    m=1;
-    while(int(viewrect.width()/lstep)<6){
-        lstep /= 2;
-        m++;
-    }
-//    std::cout << "lstep=" << lstep << endl;
-
-    // Draw the vertical lines
-    painter->setPen(lightpen);
-    for(double l=int(rect.left()/lstep)*lstep; l<=rect.right(); l+=lstep)
-        painter->drawLine(QLineF(l, rect.top(), l, rect.bottom()));
-    painter->setPen(darkpen);
-    for(double l=int(rect.left()/lstep)*lstep; l<=rect.right(); l+=lstep)
-        painter->drawLine(QLineF(l+1.0/trans.m11(), rect.top(), l+1.0/trans.m11(), rect.bottom()));
-
-    // Write the absissa of the vertical lines
-    for(double l=int(rect.left()/lstep)*lstep; l<=rect.right(); l+=lstep){
-        painter->save();
-        painter->translate(QPointF(l, viewrect.bottom()-(qfm.height()-2)/trans.m22()));
-        painter->scale(1.0/trans.m11(), 1.0/trans.m22());
-        painter->setPen(darkthickpen);
-        painter->setFont(darkfont);
-        stxt = QStaticText(QString("%1s").arg(l, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()));
-        painter->drawStaticText(QPointF(0, 0)+shift, stxt);
-        painter->setPen(lightpen);
-        painter->setFont(lightfont);
-        painter->drawStaticText(QPointF(0, 0), stxt);
-        painter->restore();
+    if(m_stftcomputethread->m_mutex_imageallocation.tryLock()) {
+        painter->drawImage(trgrect, snd->m_imgSTFT, srcrect);
+        m_stftcomputethread->m_mutex_imageallocation.unlock();
     }
 }
 
-QGVSpectrogram::~QGVSpectrogram(){
+void GVSpectrogram::contextMenuEvent(QContextMenuEvent *event){
+    if (event->modifiers().testFlag(Qt::ShiftModifier)
+        || event->modifiers().testFlag(Qt::ControlModifier))
+        return;
+
+    QPoint posglobal = mapToGlobal(event->pos()+QPoint(0,0));
+    m_contextmenu.exec(posglobal);
+}
+
+GVSpectrogram::~GVSpectrogram(){
     m_stftcomputethread->m_mutex_computing.lock();
     m_stftcomputethread->m_mutex_computing.unlock();
     m_stftcomputethread->m_mutex_changingparams.lock();
     m_stftcomputethread->m_mutex_changingparams.unlock();
+    m_stftcomputethread->wait();
     delete m_stftcomputethread;
     delete m_dlgSettings;
+
+    delete m_aAutoUpdate;
+    delete m_aSpectrogramShowHarmonics;
+    delete m_aSpectrogramShowGrid;
+    delete m_aShowProperties;
 }

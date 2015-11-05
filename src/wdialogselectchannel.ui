@@ -53,6 +53,9 @@
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
           <widget class="QRadioButton" name="rdbImportOnlyOneChannel">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Import only the channel mentionned.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
             <string>Import only one channel</string>
            </property>
@@ -60,6 +63,9 @@
          </item>
          <item>
           <widget class="QSpinBox" name="sbChannelID">
+           <property name="toolTip">
+            <string>Import only the channel mentionned.</string>
+           </property>
            <property name="minimum">
             <number>1</number>
            </property>
@@ -69,6 +75,9 @@
        </item>
        <item row="0" column="0">
         <widget class="QRadioButton" name="rdbImportEachChannel">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Import each channel in a separate audio item.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>Import each channel separately</string>
          </property>
@@ -79,8 +88,11 @@
        </item>
        <item row="4" column="0">
         <widget class="QRadioButton" name="rdbMergeAllChannels">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Average all the channels into a single audio item.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
-          <string>Sum all the channels</string>
+          <string>Average all the channels</string>
          </property>
         </widget>
        </item>

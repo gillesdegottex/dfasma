@@ -18,37 +18,38 @@ file provided in the source code of DFasma. Another copy can be found at
 <http://www.gnu.org/licenses/>.
 */
 
-#ifndef QGVPHASESPECTRUM_H
-#define QGVPHASESPECTRUM_H
+#ifndef GVSPECTRUMPHASE_H
+#define GVSPECTRUMPHASE_H
 
 #include <vector>
 #include <deque>
 
 #include <QGraphicsView>
 #include <QMenu>
-#include <QToolBar>
-
-//#include "wmainwindow.h"
 
 #include "qaesigproc.h"
+#include "qaegigrid.h"
 #include "ftsound.h"
 
-//class GVPhaseSpectrumWDialogSettings;
 class WMainWindow;
 class QSpinBox;
 
-class QGVPhaseSpectrum : public QGraphicsView
+class GVSpectrumPhase : public QGraphicsView
 {
     Q_OBJECT
 
-public:
-    explicit QGVPhaseSpectrum(WMainWindow* parent);
+protected:
+    void contextMenuEvent(QContextMenuEvent *event);
 
-//    GVPhaseSpectrumWDialogSettings* m_dlgSettings;
+public:
+    explicit GVSpectrumPhase(WMainWindow* parent);
+
+    QMenu m_contextmenu;
 
     QGraphicsScene* m_scene;
 
-    QMenu m_contextmenu;
+    // Graphic items
+    QAEGIGrid* m_giGrid;
 
     QGraphicsLineItem* m_giCursorHoriz;
     QGraphicsLineItem* m_giCursorVert;
@@ -81,21 +82,21 @@ public:
     void viewSet(QRectF viewrect=QRectF(), bool forwardsync=true);
     void viewUpdateTexts();
     void drawBackground(QPainter* painter, const QRectF& rect);
-    void draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& ldft, double fs, double delay, const QRectF& rect);
-    void draw_grid(QPainter* painter, const QRectF& rect);
 
-//    QAction* m_aShowProperties;
-    QAction* m_aPhaseSpectrumGridUsePiFraction;
+    QAction* m_aPhaseSpectrumShowGrid;
+//    QAction* m_aPhaseSpectrumGridUsePiFraction;
 
-    ~QGVPhaseSpectrum();
+    ~GVSpectrumPhase();
 
 signals:
     
 public slots:
     void updateSceneRect();
+    void gridSetVisible(bool visible){m_giGrid->setVisible(visible);}
 
+    void selectionZoomOn();
     void azoomin();
     void azoomout();
 };
 
-#endif // QGVPHASESPECTRUM_H
+#endif // GVSPECTRUMPHASE_H

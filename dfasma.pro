@@ -1,19 +1,19 @@
-# Project created by QtCreator 2013-11-07T11:24:29
+# Project created by QtCreator
 #
 # Copyright (C) 2014 Gilles Degottex <gilles.degottex@gmail.com>
 # 
 # This file is part of DFasma.
-# 
+#
 # DFasma is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # DFasma is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # A copy of the GNU General Public License is available in the LICENSE.txt
 # file provided in the source code of DFasma. Another copy can be found at
 # <http://www.gnu.org/licenses/>.
@@ -28,15 +28,17 @@ CONFIG += fft_fftw3
 
 # For the audio file support
 # Chose among: file_audio_libsndfile, file_audio_libsox, file_audio_builtin
-#              (file_audio_qt, file_audio_libav)
 CONFIG += file_audio_libsndfile
 
 # Additional file format support
-# SDIF (can be disabled) (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
+# SDIF (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
 #CONFIG += file_sdif
 
 # Numerical precision. Chose among: precision_double, precision_float
 CONFIG += precision_double
+
+# Activate this line for logging some information into a txt file
+#CONFIG += debug_logfile
 
 # ------------------------------------------------------------------------------
 # (modify the following at your own risks !) -----------------------------------
@@ -46,7 +48,7 @@ message(CONFIG=$$CONFIG)
 # Generate the version number from git
 # (if fail, fall back on the version present in the README.txt file)
 DFASMAVERSIONGITPRO = $$system(git describe --tags --always)
-message(Git: DFasma version from Git: $$DFASMAVERSIONGITPRO)
+message(Git: Version: $$DFASMAVERSIONGITPRO)
 DFASMABRANCHGITPRO = $$system(git rev-parse --abbrev-ref HEAD)
 message(Git: Branch: $$DFASMABRANCHGITPRO)
 DEFINES += DFASMAVERSIONGIT=$$system(git describe --tags --always)
@@ -55,12 +57,12 @@ DEFINES += DFASMABRANCHGIT=$$system(git rev-parse --abbrev-ref HEAD)
 # To place the application's files in the proper folder
 # To place the shortcut in the proper folder
 isEmpty(PREFIXSHORTCUT){
-	isEmpty(PREFIX){
-		PREFIXSHORTCUT = /usr/local
-	}
-	else {
-	    PREFIXSHORTCUT = $$PREFIX
-	}
+    isEmpty(PREFIX){
+            PREFIXSHORTCUT = /usr/local
+    }
+    else {
+        PREFIXSHORTCUT = $$PREFIX
+    }
 }
 isEmpty(PREFIX){
     PREFIX = /usr/local
@@ -83,6 +85,13 @@ CONFIG(precision_float, precision_double|precision_float) {
     message(With single precision)
 } else {
     message(With double precision)
+}
+
+CONFIG(debug_logfile) {
+    message(Information will be dropped in a log file)
+    DEFINES += DEBUG_LOGFILE
+} else {
+    release: DEFINES += QT_NO_WARNING_OUTPUT QT_NO_DEBUG_OUTPUT
 }
 
 # Audio file reading libraries -------------------------------------------------
@@ -111,12 +120,12 @@ CONFIG(file_audio_libsndfile, file_audio_libsndfile|file_audio_libsox|file_audio
                 FILE_AUDIO_LIBDIR = "$$_PRO_FILE_PWD_/../lib/libsndfile-1.0.25-w32"
             }
         }
-        message(FILE_AUDIO_LIBDIR=$$FILE_AUDIO_LIBDIR)
         msvc: LIBS += "$$FILE_AUDIO_LIBDIR/lib/libsndfile-1.lib"
         gcc: LIBS += -L$$FILE_AUDIO_LIBDIR/lib -L$$FILE_AUDIO_LIBDIR/bin -lsndfile-1
     }
     unix:LIBS += -lsndfile
     !isEmpty(FILE_AUDIO_LIBDIR){
+        message(FILE_AUDIO_LIBDIR=$$FILE_AUDIO_LIBDIR)
         INCLUDEPATH += $$FILE_AUDIO_LIBDIR/include
         LIBS += -L$$FILE_AUDIO_LIBDIR/lib
     }
@@ -158,8 +167,8 @@ CONFIG(fft_fftw3, fft_fftw3|fft_builtin_fftreal){
                 FFT_LIBDIR = "$$_PRO_FILE_PWD_/../lib/fftw-3.3.4-dll32"
             }
         }
-        message(FFT_LIBDIR=$$FFT_LIBDIR)
         !isEmpty(FFT_LIBDIR){
+            message(FFT_LIBDIR=$$FFT_LIBDIR)
             INCLUDEPATH += $$FFT_LIBDIR
             LIBS += -L$$FFT_LIBDIR
         }
@@ -174,6 +183,7 @@ CONFIG(fft_fftw3, fft_fftw3|fft_builtin_fftreal){
     }
     unix {
         !isEmpty(FFT_LIBDIR){
+            message(FFT_LIBDIR=$$FFT_LIBDIR)
             INCLUDEPATH += $$FFT_LIBDIR/include
             LIBS += -L$$FFT_LIBDIR/lib
         }
@@ -214,7 +224,7 @@ CONFIG(file_sdif) {
     }
 }
 else {
-	message(Files: SDIF support: NO)
+    message(Files: SDIF support: NO)
 }
 
 # Common configurations --------------------------------------------------------
@@ -227,14 +237,15 @@ QMAKE_CXXFLAGS += -D__STDC_CONSTANT_MACROS
 
 TARGET = dfasma
 TEMPLATE = app
-
 RC_ICONS = icons/dfasma.ico
 RESOURCES += ressources.qrc
+
+win32: msvc: CONFIG += embed_manifest_exe
 
 FORMS     += src/wmainwindow.ui \
              src/wdialogselectchannel.ui \
              src/wdialogsettings.ui \
-             src/gvamplitudespectrumwdialogsettings.ui \
+             src/gvspectrumamplitudewdialogsettings.ui \
              src/gvspectrogramwdialogsettings.ui \
              src/aboutbox.ui
 
@@ -243,28 +254,31 @@ INCLUDEPATH += external/libqaudioextra/include
 
 SOURCES   += src/main.cpp\
              src/wmainwindow.cpp \
-             src/wdialogselectchannel.cpp \
+             src/wdialogsettings.cpp \
+             src/fileslistwidget.cpp \
+             src/aboutbox.cpp \
              src/filetype.cpp \
              src/ftsound.cpp \
+             src/wdialogselectchannel.cpp \
              src/ftfzero.cpp \
              src/ftlabels.cpp \
              src/gvwaveform.cpp \
-             src/gvamplitudespectrum.cpp \
-             src/gvamplitudespectrumwdialogsettings.cpp \
+             src/gvspectrumamplitude.cpp \
              src/fftresizethread.cpp \
-             src/gvphasespectrum.cpp \
+             src/gvspectrumamplitudewdialogsettings.cpp \
+             src/gvspectrumphase.cpp \
              src/gvspectrumgroupdelay.cpp \
-             src/wdialogsettings.cpp \
              src/gvspectrogram.cpp \
              src/stftcomputethread.cpp \
              src/gvspectrogramwdialogsettings.cpp \
-             src/aboutbox.cpp \
-             src/fileslistwidget.cpp \
              external/libqxt/qxtspanslider.cpp \
              external/audioengine/audioengine.cpp \
              external/libqaudioextra/src/qaesigproc.cpp \
              external/libqaudioextra/src/qaecolormap.cpp \
              external/libqaudioextra/src/qaesettingsauto.cpp \
+             external/libqaudioextra/src/qaegigrid.cpp \
+             external/libqaudioextra/src/qaegiuniformlysampledsignal.cpp \
+             external/libqaudioextra/src/qaegisampledsignal.cpp \
              external/libqaudioextra/external/mkfilter/mkfilter.cpp \
              external/REAPER/epoch_tracker/epoch_tracker.cc \
              external/REAPER/epoch_tracker/fft.cc \
@@ -272,23 +286,23 @@ SOURCES   += src/main.cpp\
              external/REAPER/epoch_tracker/lpc_analyzer.cc
 
 HEADERS   += src/wmainwindow.h \
-             src/wdialogselectchannel.h \
+             src/wdialogsettings.h \
+             src/fileslistwidget.h \
+             src/aboutbox.h \
              src/filetype.h \
              src/ftsound.h \
+             src/wdialogselectchannel.h \
              src/ftfzero.h \
              src/ftlabels.h \
              src/gvwaveform.h \
-             src/gvamplitudespectrum.h \
-             src/gvamplitudespectrumwdialogsettings.h \
-             src/gvphasespectrum.h \
+             src/gvspectrumamplitude.h \
+             src/fftresizethread.h \
+             src/gvspectrumamplitudewdialogsettings.h \
+             src/gvspectrumphase.h \
              src/gvspectrumgroupdelay.h \
-             src/wdialogsettings.h \
              src/gvspectrogram.h \
              src/stftcomputethread.h \
              src/gvspectrogramwdialogsettings.h \
-             src/fftresizethread.h \
-             src/aboutbox.h \
-             src/fileslistwidget.h \
              external/libqxt/qxtglobal.h \
              external/libqxt/qxtnamespace.h \
              external/libqxt/qxtspanslider.h \
@@ -297,6 +311,9 @@ HEADERS   += src/wmainwindow.h \
              external/libqaudioextra/include/qaesigproc.h \
              external/libqaudioextra/include/qaecolormap.h \
              external/libqaudioextra/include/qaesettingsauto.h \
+             external/libqaudioextra/include/qaegigrid.h \
+             external/libqaudioextra/include/qaegiuniformlysampledsignal.h \
+             external/libqaudioextra/include/qaegisampledsignal.h \
              external/libqaudioextra/external/mkfilter/mkfilter.h \
              external/REAPER/epoch_tracker/epoch_tracker.h \
              external/REAPER/epoch_tracker/fft.h \

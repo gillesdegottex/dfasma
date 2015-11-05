@@ -135,6 +135,9 @@ FTLabels::ClassConstructor FTLabels::s_class_constructor;
 
 void FTLabels::constructor_internal(){
     m_fileformat = FFNotSpecified;
+    m_src_fzero = NULL;
+
+    connect(m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setVisible(bool)));
 
     m_actionSave = new QAction("Save", this);
     m_actionSave->setStatusTip(tr("Save the labels times (overwrite the file !)"));
@@ -215,6 +218,18 @@ FTLabels::FTLabels(const FTLabels& ft)
 
 FileType* FTLabels::duplicate(){
     return new FTLabels(*this);
+}
+
+QString FTLabels::createFileNameFromFZero(const QString& fzerofilename){
+    QString fileName = dropFileExtension(fzerofilename);
+
+    if(gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText==FFSDIF)
+        return fileName+".sdif";
+    else if(gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText==FFTEXTAutoDetect
+            || gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText==FFTEXTTimeText)
+        return fileName+".vuv.txt";
+
+    return fileName+".vuv.txt";
 }
 
 void FTLabels::load() {
@@ -825,7 +840,7 @@ void FTLabels::addLabel(double position, const QString& text){
     waveform_lines.back()->setPen(pen);
     gMW->m_gvWaveform->m_scene->addItem(waveform_lines.back());
 
-    spectrogram_lines.push_back(new QGraphicsLineItem(0, 0, 0, gFL->getFs()));
+    spectrogram_lines.push_back(new QGraphicsLineItem(0, 0, 0, -0.5*gFL->getFs()));
     spectrogram_lines.back()->setPos(position, 0);
     spectrogram_lines.back()->setPen(pen);
     gMW->m_gvSpectrogram->m_scene->addItem(spectrogram_lines.back());    
@@ -842,8 +857,6 @@ void FTLabels::moveLabel(int index, double position){
     waveform_labels[index]->setPos(position, 0);
     spectrogram_lines[index]->setPos(position, 0);
     spectrogram_labels[index]->setPos(position, 0);
-
-    sort();
 
     m_is_edited = true;
     setStatus();
@@ -981,5 +994,87 @@ void FTLabels::sort(){
 FTLabels::~FTLabels() {
     clear();
 
+    for(size_t li=0; li<waveform_labels.size(); ++li)
+        delete waveform_labels[li];
+    for(size_t li=0; li<spectrogram_labels.size(); ++li)
+        delete spectrogram_labels[li];
+    for(size_t li=0; li<waveform_lines.size(); ++li)
+        delete waveform_lines[li];
+    for(size_t li=0; li<spectrogram_lines.size(); ++li)
+        delete spectrogram_lines[li];
+
     gFL->ftlabels.erase(std::find(gFL->ftlabels.begin(), gFL->ftlabels.end(), this));
+
+    delete m_actionSave;
+    delete m_actionSaveAs;
+}
+
+// Analysis --------------------------------------------------------------------
+
+FTLabels::FTLabels(QObject *parent, FTFZero *ftfzero, double tstart, double tend)
+    : QObject(parent)
+    , FileType(FTLABELS, createFileNameFromFZero(ftfzero->fileFullPath), this, ftfzero->getColor())
+{
+    FTLabels::constructor_internal();
+
+    if(gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText==FFSDIF)
+        m_fileformat = FFSDIF;
+    else if(gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText==FFTEXTAutoDetect
+            || gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText==FFTEXTTimeText)
+        m_fileformat = FFTEXTTimeText;
+
+    estimate(ftfzero, tstart, tend);
+
+    FTLabels::constructor_external();
+}
+
+void FTLabels::estimate(FTFZero *ftfzero, double tstart, double tend) {
+
+    if(ftfzero)
+        m_src_fzero = ftfzero;
+
+    if(!gFL->hasFile(m_src_fzero)){
+        QMessageBox::warning(gMW, "Missing Source file", "The source file used for updating the Voiced/Unvoiced markers is not listed in the application anymore.");
+        return;
+    }
+
+    if(tstart!=-1) tstart = std::max(tstart, 0.0);
+    if(tend!=-1) tend = std::min(tend, m_src_fzero->getLastSampleTime());
+
+//    COUTD << "FTLabels::estimate src=" << m_src_fzero->visibleName << " [" << tstart << "," << tend << "]s" << endl;
+
+//    if(_fileName==""){
+////        if(gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText==FFSDIF)
+////            setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.sdif");
+////        m_fileformat = FFSDIF;
+////        else
+//        setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.txt");
+//        m_fileformat = FFAsciiTimeValue;
+//    }
+
+    if(!m_src_fzero->ts.empty()){
+
+        bool voiced = m_src_fzero->f0s[0]>0;
+        if(voiced)
+            addLabel(m_src_fzero->ts[0], "V");
+        else
+            addLabel(m_src_fzero->ts[0], "U");
+
+        for(size_t n=1; n<m_src_fzero->ts.size(); ++n){
+//            COUTD << m_src_fzero->ts[n] << ": " << m_src_fzero->f0s[n] << std::endl;
+            bool curvoiced = m_src_fzero->f0s[n]>0;
+            if(!voiced && curvoiced)
+                addLabel(0.5*(m_src_fzero->ts[n-1]+m_src_fzero->ts[n]), "V");
+            if(voiced && !curvoiced)
+                addLabel(0.5*(m_src_fzero->ts[n-1]+m_src_fzero->ts[n]), "U");
+            voiced = curvoiced;
+        }
+    }
+
+    updateTextsGeometry();
+
+    m_is_edited = true;
+    setStatus();
+
+//    COUTD << ts.size() << " " << f0s.size() << endl;
 }

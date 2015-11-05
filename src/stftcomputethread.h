@@ -1,3 +1,23 @@
+/*
+Copyright (C) 2015  Gilles Degottex <gilles.degottex@gmail.com>
+
+This file is part of DFasma.
+
+DFasma is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+DFasma is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+A copy of the GNU General Public License is available in the LICENSE.txt
+file provided in the source code of DFasma. Another copy can be found at
+<http://www.gnu.org/licenses/>.
+*/
+
 #ifndef STFTCOMPUTETHREAD_H
 #define STFTCOMPUTETHREAD_H
 
@@ -82,6 +102,7 @@ public:
         FFTTYPE lower;
         FFTTYPE upper;
         bool loudnessweighting;
+        int colorrangemode;
 
         void clear(){
             stftparams.clear();
@@ -90,12 +111,13 @@ public:
             lower = -1;
             upper = -1;
             loudnessweighting = false;
+            colorrangemode = -1;
         }
 
         ImageParameters(){
             clear();
         }
-        ImageParameters(STFTComputeThread::STFTParameters reqSTFTparams, QImage* reqImgSTFT, int reqcolormap_index, bool reqcolormap_reversed, FFTTYPE reqlower, FFTTYPE requpper, bool reqloudnessweighting){
+        ImageParameters(STFTComputeThread::STFTParameters reqSTFTparams, QImage* reqImgSTFT, int reqcolormap_index, bool reqcolormap_reversed, FFTTYPE reqlower, FFTTYPE requpper, bool reqloudnessweighting, int reqcolorrangemode){
             clear();
             stftparams = reqSTFTparams;
             imgstft = reqImgSTFT;
@@ -104,6 +126,7 @@ public:
             lower = reqlower;
             upper = requpper;
             loudnessweighting = reqloudnessweighting;
+            colorrangemode = reqcolorrangemode;
         }
 
         bool operator==(const ImageParameters& param){
@@ -121,6 +144,8 @@ public:
                 return false;
             if(loudnessweighting!=param.loudnessweighting)
                 return false;
+            if(colorrangemode!=param.colorrangemode)
+                return false;
 
             return true;
         }
@@ -135,7 +160,8 @@ public:
     void compute(ImageParameters reqImgParams);     // Entry point
 
     mutable QMutex m_mutex_computing;      // To protect the access to the FFT and external variables
-    mutable QMutex m_mutex_changingparams; // To protect the access to the parameters above
+    mutable QMutex m_mutex_changingparams; // To protect the access to the parameters below
+    mutable QMutex m_mutex_stftts;         // To protect the access to the STFT times
     mutable QMutex m_mutex_imageallocation; // To protect the access to the image when allocating
 
     inline const ImageParameters& getCurrentParameters() const {return m_params_current;}
@@ -143,6 +169,8 @@ public:
     ImageParameters m_params_todo;      // The params which has to be done by the thread
     ImageParameters m_params_current;   // The params which is in preparation by the thread
     ImageParameters m_params_last;      // The last params which have been done
+
+    ~STFTComputeThread();
 };
 
 #endif // STFTCOMPUTETHREAD_H

@@ -1,13 +1,35 @@
+/*
+Copyright (C) 2014  Gilles Degottex <gilles.degottex@gmail.com>
+
+This file is part of DFasma.
+
+DFasma is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+DFasma is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+A copy of the GNU General Public License is available in the LICENSE.txt
+file provided in the source code of DFasma. Another copy can be found at
+<http://www.gnu.org/licenses/>.
+*/
+
 #include "gvspectrogramwdialogsettings.h"
 #include "ui_gvspectrogramwdialogsettings.h"
 
+#include <QSettings>
+
 #include "gvspectrogram.h"
 
-#include <QSettings>
+#include "../external/libqxt/qxtspanslider.h"
 
 #include "qaehelpers.h"
 
-GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(QGVSpectrogram* parent) :
+GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(GVSpectrogram *parent) :
     QDialog((QWidget*)parent),
     ui(new Ui::GVSpectrogramWDialogSettings)
 {
@@ -34,10 +56,12 @@ GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(QGVSpectrogram* paren
     if(ui->cbSpectrogramDFTSizeType->currentIndex()==0){
         ui->sbSpectrogramOversamplingFactor->hide();
         ui->sbSpectrogramDFTSize->show();
+        DFTSizeChanged(ui->sbSpectrogramDFTSize->value());
     }
     else if(ui->cbSpectrogramDFTSizeType->currentIndex()==1){
         ui->sbSpectrogramOversamplingFactor->show();
         ui->sbSpectrogramDFTSize->hide();
+        DFTSizeChanged(ui->sbSpectrogramOversamplingFactor->value());
     }
     connect(ui->cbSpectrogramDFTSizeType, SIGNAL(currentIndexChanged(int)), this, SLOT(DFTSizeTypeChanged(int)));
     connect(ui->sbSpectrogramDFTSize, SIGNAL(valueChanged(int)), this, SLOT(DFTSizeChanged(int)));
@@ -54,13 +78,19 @@ GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(QGVSpectrogram* paren
     gMW->m_settings.add(ui->cbSpectrogramColorMapReversed);
     gMW->m_settings.add(ui->cbSpectrogramLoudnessWeighting);
 
+    gMW->m_settings.add(ui->cbSpectrogramColorRangeMode);
+    colorRangeModeCurrentIndexChanged(ui->cbSpectrogramColorRangeMode->currentIndex());
+    gMW->m_qxtSpectrogramSpanSlider->setLowerValue(gMW->m_settings.value("m_qxtSpectrogramSpanSlider_lower", gMW->m_qxtSpectrogramSpanSlider->lowerValue()).toInt());
+    gMW->m_qxtSpectrogramSpanSlider->setUpperValue(gMW->m_settings.value("m_qxtSpectrogramSpanSlider_upper", gMW->m_qxtSpectrogramSpanSlider->upperValue()).toInt());
+
     checkImageSize();
     adjustSize();
 
-    connect(ui->cbSpectrogramWindowType, SIGNAL(currentIndexChanged(QString)), this, SLOT(CBSpectrumWindowTypeCurrentIndexChanged(QString)));
+    connect(ui->cbSpectrogramWindowType, SIGNAL(currentIndexChanged(QString)), this, SLOT(windowTypeCurrentIndexChanged(QString)));
+    connect(ui->cbSpectrogramColorRangeMode, SIGNAL(currentIndexChanged(int)), this, SLOT(colorRangeModeCurrentIndexChanged(int)));
 }
 
-void GVSpectrogramWDialogSettings::checkImageSize() {
+void GVSpectrogramWDialogSettings::checkImageSize(){
 
     int maxsampleindex = int(gFL->getMaxWavSize())-1;
 
@@ -75,11 +105,11 @@ void GVSpectrogramWDialogSettings::checkImageSize() {
     else if(ui->cbSpectrogramDFTSizeType->currentIndex()==1)
         dftlen = std::pow(2.0, std::ceil(log2(float(winlen)))+ui->sbSpectrogramOversamplingFactor->value());//[samples]
 
-    ui->lblActualWindowLength->setText(QString("%2s(%1)").arg(winlen).arg(double(winlen)/gFL->getFs()));
-    ui->lblActualStepSize->setText(QString("%2s(%1)").arg(stepsize).arg(double(stepsize)/gFL->getFs()));
+    ui->sbSpectrogramWindowSize->setToolTip(QString("Actual value is %2s (%1 samples)").arg(winlen).arg(double(winlen)/gFL->getFs()));
+    ui->sbSpectrogramStepSize->setToolTip(QString("Actual value is  %2s (%1 samples)").arg(stepsize).arg(double(stepsize)/gFL->getFs()));
 
     int imgheight = dftlen/2+1;
-    int imgwidth = int(1+double(maxsampleindex+1-winlen)/stepsize);
+    int imgwidth = int(1+double(maxsampleindex+1)/stepsize); // TODO Review this formula
 
     long int size = double(imgwidth)*imgheight*sizeof(QImage::Format_RGB32)/(1024.0*1024.0);
 
@@ -93,7 +123,24 @@ void GVSpectrogramWDialogSettings::checkImageSize() {
     ui->lblImgSizeWarning->setText(text);
 }
 
-void GVSpectrogramWDialogSettings::CBSpectrumWindowTypeCurrentIndexChanged(QString txt) {
+void GVSpectrogramWDialogSettings::colorRangeModeCurrentIndexChanged(int index){
+    if(index==0){
+        // Relative %
+        gMW->m_qxtSpectrogramSpanSlider->setMinimum(0);
+        gMW->m_qxtSpectrogramSpanSlider->setMaximum(100);
+        gMW->m_qxtSpectrogramSpanSlider->setLowerValue(30);
+        gMW->m_qxtSpectrogramSpanSlider->setUpperValue(90);
+    }
+    else if(index==1){
+        // Absolute dB
+        gMW->m_qxtSpectrogramSpanSlider->setMinimum(-3*gFL->getMaxSQNR());
+        gMW->m_qxtSpectrogramSpanSlider->setMaximum(10);
+        gMW->m_qxtSpectrogramSpanSlider->setLowerValue(-gFL->getMaxSQNR());
+        gMW->m_qxtSpectrogramSpanSlider->setUpperValue(10);
+    }
+}
+
+void GVSpectrogramWDialogSettings::windowTypeCurrentIndexChanged(QString txt){
     ui->lblWindowNormSigma->hide();
     ui->spSpectrogramWindowNormSigma->hide();
     ui->lblWindowNormPower->hide();
@@ -136,6 +183,7 @@ void GVSpectrogramWDialogSettings::DFTSizeTypeChanged(int index) {
         ui->sbSpectrogramDFTSize->setValue(dftlen);
         ui->sbSpectrogramOversamplingFactor->hide();
         ui->sbSpectrogramDFTSize->show();
+        ui->sbSpectrogramOversamplingFactor->setToolTip("<html><head/><body><p>DFT size = <span style=\" font-size:14pt;\">2</span><span style=\" font-size:14pt; vertical-align:super;\">⌈log2(winlen)⌉+X</span>="+QString::number(dftlen)+"</p></body></html>");
     }
     else{
         ui->sbSpectrogramOversamplingFactor->show();
@@ -157,6 +205,7 @@ void GVSpectrogramWDialogSettings::DFTSizeChanged(int value) {
     else if(ui->cbSpectrogramDFTSizeType->currentIndex()==1){
         int dftlen = std::pow(2.0, std::ceil(log2(float(winlen)))+ui->sbSpectrogramOversamplingFactor->value());//[samples]
         ui->sbSpectrogramDFTSize->setValue(dftlen);
+        ui->sbSpectrogramOversamplingFactor->setToolTip("<html><head/><body><p>DFT size = <span style=\" font-size:14pt;\">2</span><span style=\" font-size:14pt; vertical-align:super;\">⌈log2(winlen)⌉+X</span>="+QString::number(dftlen)+"</p></body></html>");
     }
 }
 

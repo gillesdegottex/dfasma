@@ -29,9 +29,12 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QColor>
 #include <QAudioFormat>
 #include <QAction>
+#include <QGraphicsItem>
 
 #include "filetype.h"
 #include "stftcomputethread.h"
+
+#include "qaegiuniformlysampledsignal.h"
 
 #ifdef SIGPROC_FLOAT
 #define WAVTYPE float
@@ -45,6 +48,9 @@ file provided in the source code of DFasma. Another copy can be found at
 class CFFTW3;
 #include "stftcomputethread.h"
 
+class GIWaveform;
+class GISpectrumAmplitude;
+
 class FTSound : public QIODevice, public FileType
 {
     Q_OBJECT
@@ -57,13 +63,12 @@ private:
     void load_finalize();             // Independent of the used file lib.
 
     QAudioFormat m_fileaudioformat;   // Format of the audio data
-
-    QAudioFormat m_outputaudioformat; // Temporary copy for readData
-
     void setSamplingRate(double _fs); // Used by implementations of load
-
     int m_channelid;  //-2:channels merged; -1:error; 0:no channel; >0:id
     bool m_isclipped;
+
+    // Playback
+    QAudioFormat m_outputaudioformat; // Temporary copy for readData
     bool m_isfiltered;
     bool m_isplaying;
 
@@ -81,53 +86,8 @@ public:
     std::vector<WAVTYPE> wav;
     std::vector<WAVTYPE> wavfiltered;
     std::vector<WAVTYPE>* wavtoplay;
-    WAVTYPE m_wavmaxamp;
     WAVTYPE m_filteredmaxamp;
-
-    WAVTYPE m_ampscale; // [linear]
-    qint64 m_delay;   // [sample index]
-
-    // Waveform
-    class WavParameters{
-    public:
-        QRect fullpixrect;
-        QRectF viewrect;
-        int winpixdelay;
-
-        std::vector<WAVTYPE>* wav; // The used wav to compute the DFT on.
-        qint64 delay;
-        WAVTYPE gain; // snd->m_ampscale*polarity
-
-        QDateTime lastreadtime;
-
-        void clear(){
-            fullpixrect = QRect();
-            viewrect = QRectF();
-            winpixdelay = 0;
-            wav = NULL;
-            delay = 0;
-            gain = 1.0;
-        }
-
-        WavParameters(){clear();}
-        WavParameters(const QRect& _fullpixrect, const QRectF& _viewrect, int _winpixdelay, FTSound* snd){
-            fullpixrect = _fullpixrect;
-            viewrect = _viewrect;
-            winpixdelay = _winpixdelay;
-            wav = snd->wavtoplay;
-            delay = snd->m_delay;
-            gain = snd->m_ampscale*(snd->m_actionInvPolarity->isChecked()?-1:1);
-            lastreadtime = snd->m_lastreadtime;
-        }
-
-        bool operator==(const WavParameters& param) const;
-        bool operator!=(const WavParameters& param) const {return !((*this)==param);}
-
-        inline bool isEmpty() const {return fullpixrect.isNull() || viewrect.isNull();}
-    };
-    std::deque<WAVTYPE> m_wavpx_min;
-    std::deque<WAVTYPE> m_wavpx_max;
-    WavParameters m_wavparams;
+    QAEGIUniformlySampledSignal* m_giWavForWaveform;
 
     // Spectra
     class DFTParameters{
@@ -172,12 +132,16 @@ public:
         inline bool isEmpty() const {return winlen==0 || dftlen==0 || wintype==-1 || normtype==-1;}
     };
 
-    std::vector<std::complex<FFTTYPE> > m_dft; // Store the _log_ of the DFT
-//    std::vector<std::complex<FFTTYPE> > m_dft; // Store the _log_ of the DFT
-    std::vector<FFTTYPE> m_gd; // Store the Group Delay (GD)
+    std::vector<FFTTYPE> m_dftamp; // [dB]
+    QAEGIUniformlySampledSignal* m_giWavForSpectrumAmplitude;
+
+    std::vector<FFTTYPE> m_dftphase; // [rad]
+    QAEGIUniformlySampledSignal* m_giWavForSpectrumPhase;
+
+    std::vector<FFTTYPE> m_dftgd; // [s]
+    QAEGIUniformlySampledSignal* m_giWavForSpectrumGroupDelay;
+
     DFTParameters m_dftparams;
-    FFTTYPE m_dft_min;
-    FFTTYPE m_dft_max;
 
     // Spectrogram
     std::deque<std::vector<WAVTYPE> > m_stft;
@@ -185,8 +149,12 @@ public:
     STFTComputeThread::STFTParameters m_stftparams;
     FFTTYPE m_stft_min;
     FFTTYPE m_stft_max;
+    QImage m_imgSTFT;
+    STFTComputeThread::ImageParameters m_imgSTFTParams; // This is the target parameters for the image
+                                                        // During STFT update, it doesn't correspond to m_imgSTFT
 
-    // QIODevice
+
+    // Play (from QIODevice)
     qint64 readData(char *data, qint64 maxlen);
     qint64 writeData(const char *data, qint64 len);
 //    qint64 bytesAvailable() const;
@@ -220,7 +188,9 @@ public:
     virtual bool isModified();
     virtual void setStatus();
     virtual void setDrawIcon(QPixmap& pm);
-
+    virtual void setColor(const QColor& _color);
+    virtual void zposReset();
+    virtual void zposBringForward();
 
     double setPlay(const QAudioFormat& format, double tstart=0.0, double tstop=0.0, double fstart=0.0, double fstop=0.0);
     bool isPlaying() const {return m_isplaying;}
@@ -234,9 +204,9 @@ public:
 public slots:
     bool reload();
     void needDFTUpdate();
-    void resetFiltering();
     void resetAmpScale();
     void resetDelay();
+    void inversePolarity();
     void setVisible(bool shown);
 };
 

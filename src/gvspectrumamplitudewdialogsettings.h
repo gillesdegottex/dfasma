@@ -18,36 +18,33 @@ file provided in the source code of DFasma. Another copy can be found at
 <http://www.gnu.org/licenses/>.
 */
 
-#include <QAudioDecoder>
+#ifndef GVSPECTRUMAMPLITUDEWDIALOGSETTINGS_H
+#define GVSPECTRUMAMPLITUDEWDIALOGSETTINGS_H
 
-class AudioDecoder : public QObject
+#include <QDialog>
+
+namespace Ui {
+class GVAmplitudeSpectrumWDialogSettings;
+}
+
+class GVSpectrumAmplitude;
+
+class GVAmplitudeSpectrumWDialogSettings : public QDialog
 {
     Q_OBJECT
 
+    GVSpectrumAmplitude* m_ampspec;
+
 public:
-    QAudioDecoder m_decoder;
+    explicit GVAmplitudeSpectrumWDialogSettings(GVSpectrumAmplitude* parent);
+    ~GVAmplitudeSpectrumWDialogSettings();
 
-    QString m_targetFilename;
-
-    qreal m_progress;
-
-//public:
-    AudioDecoder();
-    ~AudioDecoder() { }
-
-    void setSourceFilename(const QString &fileName);
-    void start();
-    void stop();
-
-    void setTargetFilename(const QString &fileName);
-
-public slots:
-    void readBuffer();
-    void error(QAudioDecoder::Error error);
-    void stateChanged(QAudioDecoder::State newState);
-    void finished();
+    Ui::GVAmplitudeSpectrumWDialogSettings *ui;
+private:
 
 private slots:
-    void updateProgress();
-
+    void CBSpectrumWindowTypeCurrentIndexChanged(QString txt);
+    void DFTSizeTypeChanged(int index);
 };
+
+#endif // GVSPECTRUMAMPLITUDEWDIALOGSETTINGS_H

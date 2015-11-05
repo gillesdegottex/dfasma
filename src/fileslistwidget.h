@@ -1,3 +1,23 @@
+/*
+Copyright (C) 2014  Gilles Degottex <gilles.degottex@gmail.com>
+
+This file is part of DFasma.
+
+DFasma is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+DFasma is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+A copy of the GNU General Public License is available in the LICENSE.txt
+file provided in the source code of DFasma. Another copy can be found at
+<http://www.gnu.org/licenses/>.
+*/
+
 #ifndef FILESLISTWIDGET_H
 #define FILESLISTWIDGET_H
 
@@ -23,7 +43,8 @@ class FilesListWidget : public QListWidget
     // I cannot find a way to do it already from the Qt5 library.
     // (FilesListWidget::hasItem returns NULL)
     std::map<FileType*,bool> m_present_files;
-    FTSound* m_lastSelectedSound;
+    FileType* m_prevSelectedFile;
+    FTSound* m_prevSelectedSound;
     void addExistingFilesRecursive(const QStringList& files, FileType::FType type=FileType::FTUNSET);
 
     std::deque<FileType*> m_current_sourced;
@@ -31,6 +52,12 @@ class FilesListWidget : public QListWidget
     // The progress dialog when loading a lot of files
     QProgressDialog* m_prgdlg;
     void stopFileProgressDialog();
+
+
+    enum CurrentAction {CANothing, CASetSource};
+    CurrentAction m_currentAction;
+
+    virtual void keyPressEvent(QKeyEvent * event);
 
 public:
     explicit FilesListWidget(QMainWindow *parent = 0);
@@ -55,8 +82,10 @@ public:
     unsigned int getMaxWavSize();
     double getMaxDuration();
     double getMaxLastSampleTime();
+    WAVTYPE getMaxSQNR() const; // Get the maximum QSNR among all sound files
 
-    void closeEditor(QWidget * editor, QAbstractItemDelegate::EndEditHint hint); // Wrong: it belongs to qlistview
+    void openEditor(QWidget * editor);
+    void closeEditor(QWidget * editor, QAbstractItemDelegate::EndEditHint hint);
 
 public slots:
     void changeFileListItemsSize();
@@ -68,6 +97,7 @@ public slots:
     void resetAmpScale();
     void resetDelay();
     void colorSelected(const QColor& color);
+    void setSource(FileType *file=NULL);
 
     void fileSelectionChanged();
     void selectedFilesClose();
@@ -77,6 +107,7 @@ public slots:
     void selectedFilesSave();
 
     void selectedFilesEstimateF0();
+    void selectedFilesEstimateVoicedUnvoicedMarkers();
 };
 
 #endif // FILESLISTWIDGET_H

@@ -22,6 +22,8 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QApplication>
 #include <QObject>
 #include <QIcon>
+#include <QTextStream>
+#include <QFileDialog>
 
 #ifdef FILE_AUDIO_LIBAV
 extern "C" {
@@ -46,8 +48,22 @@ extern "C" {
 
 #include "qaehelpers.h"
 
+#ifdef DEBUG_LOGFILE
+static QString g_debug_stream;
+void DFasmaMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg){
+    Q_UNUSED(type)
+    Q_UNUSED(context)
+    std::cout << "LOGGED: " << msg.toLatin1().constData() << std::endl;
+    QTextStream(&g_debug_stream) << msg.toLatin1().constData() << endl;
+}
+#endif
+
 int main(int argc, char *argv[])
 {
+    #ifdef DEBUG_LOGFILE
+    qInstallMessageHandler(DFasmaMessageHandler);
+    #endif
+
     #ifdef FILE_AUDIO_LIBAV
         // This call is necessarily done once in your app to initialize
         // libavformat to register all the muxers, demuxers and protocols.
@@ -77,8 +93,12 @@ int main(int argc, char *argv[])
     QObject::connect(&a, SIGNAL(focusWindowChanged(QWindow*)), w, SLOT(focusWindowChanged(QWindow*)));
     w->show();
 
-    int ret = a.exec();
+    a.exec();
+    DFLAG
 
+    delete w;
+
+    DFLAG
     #ifdef SUPPORT_SDIF
         Easdif::EasdifEnd();
     #endif
@@ -86,10 +106,23 @@ int main(int argc, char *argv[])
         sox_quit();
     #endif   
 
-    delete w;
+    DFLAG
+    // If asked, drop some log information in a file
+    #ifdef DEBUG_LOGFILE
+        QString logfilename = QFileDialog::getSaveFileName(NULL, "Save log file as...");
+        QFile logfile(logfilename);
+        logfile.open(QIODevice::WriteOnly);
+        QTextStream out(&logfile);
+        std::cout << g_debug_stream.size() << std::endl;
+        out << g_debug_stream;
+        logfile.close();
+    #endif
 
-//    COUTD << ret << std::endl;
-    exit(ret); // WORKAROUND?: won't quit otherwise on some platform (e.g. bouzouki) TODO This is surely related to some seg fault on exit #179
+    DFLAG
+    QCoreApplication::processEvents(); // Process all events before exit
+//    DCOUT << "exit(" << ret << ")" << std::endl;
+    DFLAG
+    exit(0); // WORKAROUND?: need this to avoid remaining background process on some platform (e.g. bouzouki) TODO This is surely related to some seg fault on exit #179
 
-    return ret;
+    return 0;
 }

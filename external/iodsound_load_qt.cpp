@@ -18,7 +18,6 @@ file provided in the source code of DFasma. Another copy can be found at
 <http://www.gnu.org/licenses/>.
 */
 
-
 #include "../src/ftsound.h"
 
 #include <iostream>

@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 /*
-This example has been widely adapted for the purpose of the DFasma software.
+This example has been widely adapted for the purpose of DFasma.
  */
 
 #ifndef AUDIOENGINE_H
@@ -82,14 +82,12 @@ class AudioEngine : public QObject
 
     QAudioFormat        m_format; // The format of the audio output
 
-    QList<QAudioDeviceInfo> m_availableAudioOutputDevices;
     QAudioDeviceInfo    m_audioOutputDevice;
     QAudioOutput*       m_audioOutput;
 
     FTSound* m_ftsound; // The selected sound to play
     double m_tobeplayed;
 
-    bool selectFormat();
     void setState(QAudio::State state);
     void setFormat(const QAudioFormat &format);
 
@@ -106,14 +104,13 @@ public:
     bool initialize(int fs);
     bool isInitialized();
 
-    const QList<QAudioDeviceInfo> &availableAudioOutputDevices() const
-                                    { return m_availableAudioOutputDevices; }
+    QList<QAudioDeviceInfo> availableAudioOutputDevices() const
+                                    { return QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);}
     const QAudioDeviceInfo& audioOutputDevice() const { return m_audioOutputDevice; }
     const QAudioFormat& format() const { return m_format; }
     QAudio::State state() const { return m_state; }
 
 public slots:
-    void listAudioOutputDevices();
     void selectAudioOutputDevice(const QString& devicename);
     void setAudioOutputDevice(const QAudioDeviceInfo &device);
     void startPlayback(FTSound* sound, double tstart=0.0, double tstop=0.0, double fstart=0.0, double fstop=0.0);
@@ -122,8 +119,6 @@ public slots:
 
 signals:
     void stateChanged(QAudio::State state);
-    void infoMessage(const QString &message, int durationMs);
-    void errorMessage(const QString &heading, const QString &detail);
     void formatChanged(const QAudioFormat &format);
     void audioOutputDeviceChanged(const QAudioDeviceInfo& device);
     void playPositionChanged(double t);

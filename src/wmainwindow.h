@@ -43,11 +43,11 @@ class FTSound;
 class FTFZero;
 class FTLabels;
 class AudioEngine;
-class QGVWaveform;
-class QGVAmplitudeSpectrum;
-class QGVPhaseSpectrum;
-class QGVSpectrumGroupDelay;
-class QGVSpectrogram;
+class GVWaveform;
+class GVSpectrumAmplitude;
+class GVSpectrumPhase;
+class GVSpectrumGroupDelay;
+class GVSpectrogram;
 class QHBoxLayout;
 class QProgressBar;
 class QProgressDialog;
@@ -68,14 +68,14 @@ class WMainWindow : public QMainWindow
     bool m_loading;
     QString m_version;
 
-    FilesListWidget* m_fileslist;
     FileType* m_last_file_editing;
 
     void connectModes();
     void disconnectModes();
 
-    FTSound* m_lastFilteredSound;
     QProgressBar* m_pbVolume;
+    QAction* m_pbVolumeAction;
+    QAction* m_audioSeparatorAction;
 
     // Global waiting bar for operations blocking the main window
     QProgressBar* m_globalWaitingBar;
@@ -90,32 +90,36 @@ private slots:
     void newFile();
     void openFile();
 
-    void play();
+    void play(bool filtered=false);
+    void playFiltered();
     void audioStateChanged(QAudio::State state);
     void audioOutputFormatChanged(const QAudioFormat& format);
     void enablePlay();
     void localEnergyChanged(double);
+    void changeColor();
 
     void setSelectionMode(bool checked);
     void setEditMode(bool checked);
-    void execAbout();
     void viewsDisplayedChanged();
     void viewsSpectrogramToggled(bool show);
     void changeToolBarSizes(int size);
-    void enterScrollHandDragMode();
-    void leaveScrollHandDragMode();
+    void execAbout();
 
 public slots:
     void focusWindowChanged(QWindow*win);
     void updateWindowTitle();
     void allSoundsChanged(); // TODO Should drop this
-    void selectAudioOutputDevice(int di);
-    void selectAudioOutputDevice(const QString& devicename);
-    void audioEngineError(const QString &heading, const QString &detail);
+    void audioSelectOutputDevice(int di);
+    void audioSelectOutputDevice(const QString& devicename);
+    void audioEnable(bool enable);
+    void audioInitialize(double fs);
+    void resetFiltering();
 
     void setInWaitingForFileState();
     void updateViewsAfterAddFile(bool isfirsts);
     void setEditing(FileType* ft);
+    void checkEditHiddenFile();
+    void updateMouseCursorState(bool kshift, bool kcontrol);
 
 public:
     explicit WMainWindow(QStringList files, QWidget* parent=0);
@@ -132,19 +136,20 @@ public:
     void globalWaitingBarSetValue(int value);
     void globalWaitingBarDone();
     void globalWaitingBarClear();
+    void statusBarSetText(const QString& text, int timeout=0, QColor color=QColor());
 
     // Views
-    QGVWaveform* m_gvWaveform;
-    QGVAmplitudeSpectrum* m_gvAmplitudeSpectrum;
-    QGVPhaseSpectrum* m_gvPhaseSpectrum;
-    QGVSpectrumGroupDelay* m_gvSpectrumGroupDelay;
-    QGVSpectrogram* m_gvSpectrogram;
+    GVWaveform* m_gvWaveform;
+    GVSpectrumAmplitude* m_gvSpectrumAmplitude;
+    GVSpectrumPhase* m_gvSpectrumPhase;
+    GVSpectrumGroupDelay* m_gvSpectrumGroupDelay;
+    GVSpectrogram* m_gvSpectrogram;
     QxtSpanSlider* m_qxtSpectrogramSpanSlider;
 
     // Audio
     AudioEngine* m_audioengine;
     FTSound* m_playingftsound;
-    void initializeSoundSystem(double fs);
+    FTSound* m_lastFilteredSound;
 };
 
 #endif // WMAINWINDOW_H

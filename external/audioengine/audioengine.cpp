@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 /*
-This example has been widely adapted for the purpose of the DFasma software.
+This example has been widely adapted for the purpose of DFasma.
  */
 
 #include "audioengine.h"
@@ -64,6 +64,8 @@ This example has been widely adapted for the purpose of the DFasma software.
 
 #include "../../src/ftsound.h"
 
+#include "qaehelpers.h"
+
 const int    NotifyIntervalMs       = 100;
 
 //-----------------------------------------------------------------------------
@@ -80,25 +82,6 @@ AudioEngine::AudioEngine(QObject *parent)
     m_rtinfo_timer.setSingleShot(false);
     m_rtinfo_timer.setInterval(1000*1/12.0);  // Ask for 24 refresh per second
     connect(&m_rtinfo_timer, SIGNAL(timeout()), this, SLOT(sendRealTimeInfo()));
-
-    listAudioOutputDevices();
-}
-
-void AudioEngine::listAudioOutputDevices() {
-    m_availableAudioOutputDevices = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
-
-//    if(m_availableAudioOutputDevices.size()==1){
-//        m_audioOutputDevice = QAudioDeviceInfo::defaultOutputDevice();
-//        std::cout << "Only one audio device available. Select it: " << m_audioOutputDevice.deviceName().toLocal8Bit().constData() << endl;
-//        emit audioOutputDeviceChanged(m_audioOutputDevice);
-//    }
-//    else if(m_availableAudioOutputDevices.size()>1){
-//        m_audioOutputDevice = QAudioDeviceInfo::defaultOutputDevice();
-//        std::cout << m_availableAudioOutputDevices.size() << " audio device available. Select the one by default:" << m_audioOutputDevice.deviceName().toLocal8Bit().constData() << endl;
-//        emit audioOutputDeviceChanged(m_audioOutputDevice);
-//    }
-//    else
-//        std::cout << "No audio device available!" << endl;
 }
 
 void AudioEngine::selectAudioOutputDevice(const QString& devicename) {
@@ -121,18 +104,15 @@ void AudioEngine::selectAudioOutputDevice(const QString& devicename) {
 
 AudioEngine::~AudioEngine()
 {
+    DFLAG
     if(m_audioOutput) {
+        DFLAG
         m_audioOutput->stop();
+        DFLAG
         delete m_audioOutput;
+        DFLAG
     }
-}
-
-//-----------------------------------------------------------------------------
-// Public functions
-//-----------------------------------------------------------------------------
-
-bool AudioEngine::isInitialized(){
-    return !m_audioOutputDevice.isNull() && m_fs>0;
+    DFLAG
 }
 
 //-----------------------------------------------------------------------------
@@ -141,7 +121,7 @@ bool AudioEngine::isInitialized(){
 
 void AudioEngine::startPlayback(FTSound* dssound, double tstart, double tstop, double fstart, double fstop)
 {
-//    DEBUGSTRING << "AudioEngine::startPlayback" << endl;
+    DLOG << "AudioEngine::startPlayback";
 
     if (m_audioOutput) {
         if (m_state==QAudio::SuspendedState) {
@@ -153,15 +133,12 @@ void AudioEngine::startPlayback(FTSound* dssound, double tstart, double tstop, d
 #endif
             m_audioOutput->resume();
         } else {
-//            DEBUGSTRING << "AudioEngine::startPlayback " << 1 << endl;
             stopPlayback();
-//            DEBUGSTRING << "AudioEngine::startPlayback " << 1 << endl;
             m_ftsound = dssound; // Select the new sound to play
-//            DEBUGSTRING << "AudioEngine::startPlayback " << 1 << endl;
 //            connect(m_dssound, SIGNAL(readChannelFinished()), this, SLOT(readChannelFinished()));
-//            DEBUGSTRING << "AudioEngine::startPlayback " << 1 << endl;
             m_tobeplayed = m_ftsound->setPlay(m_format, tstart, tstop, fstart, fstop);
-//            DEBUGSTRING << "AudioEngine::startPlayback " << 1 << endl;
+            // TODO Should check that the device is still available before starting it!
+            // 2015-10-22 I cannot find a way to do it with current Qt library (5.2)
             m_audioOutput->start(m_ftsound);
             m_rtinfo_timer.start();
             m_starttime = QDateTime::currentMSecsSinceEpoch();
@@ -169,26 +146,20 @@ void AudioEngine::startPlayback(FTSound* dssound, double tstart, double tstop, d
         }
     }
 
-//    DEBUGSTRING << "~AudioEngine::startPlayback" << endl;
+//    std::cout << "~AudioEngine::startPlayback" << endl;
 }
 
 void AudioEngine::stopPlayback()
 {
-//    DEBUGSTRING << "AudioEngine::stopPlayback" << endl;
     if (m_audioOutput && m_state!=QAudio::StoppedState) {
-//        DEBUGSTRING << "AudioEngine::stopPlayback 1" << endl;
         m_audioOutput->stop();
-//        DEBUGSTRING << "AudioEngine::stopPlayback 2" << endl;
         QCoreApplication::instance()->processEvents();
-//        DEBUGSTRING << "AudioEngine::stopPlayback 3" << endl;
 //        if(m_dssound) m_dssound->stop();
-//        DEBUGSTRING << "AudioEngine::stopPlayback 4" << endl;
         m_tobeplayed = 0.0;
         m_rtinfo_timer.stop();
         emit playPositionChanged(-1);
         emit localEnergyChanged(0);
     }
-//    DEBUGSTRING << "~AudioEngine::stopPlayback" << endl;
 }
 
 void AudioEngine::setAudioOutputDevice(const QAudioDeviceInfo &device)
@@ -240,31 +211,23 @@ void AudioEngine::audioNotify()
 
     // Add 0.5s in order to give time to the lowest level buffer to be played completely
     if (m_audioOutput->processedUSecs()/1000000.0 > m_tobeplayed + 0.5){
-//        DEBUGSTRING << "AudioEngine::audioNotify trigger auto-stop" << endl;
         stopPlayback();
     }
-
-//    DEBUGSTRING << "~AudioEngine::audioNotify" << endl;
 }
 
 void AudioEngine::audioStateChanged(QAudio::State state)
 {
-//    DEBUGSTRING << "AudioEngine::audioStateChanged from" << m_state << "to" << state << endl;
-
     if (state==QAudio::StoppedState) {
 
         // Check error
         QAudio::Error error = m_audioOutput->error();
 
         if (QAudio::NoError != error) {
-//            DEBUGSTRING << "AudioEngine::audioStateChanged: finished with errors!" << endl;
             reset();
             return;
         }
     }
     setState(state);
-
-//    DEBUGSTRING << "~AudioEngine::audioStateChanged" << endl;
 }
 
 void AudioEngine::reset() {
@@ -283,42 +246,10 @@ bool AudioEngine::initialize(int fs) {
     setState(QAudio::StoppedState);
     setFormat(QAudioFormat());
 
-    bool result = false;
+    QAudioFormat prevformat = m_format;
 
-    QAudioFormat format = m_format;
-
-    if (selectFormat()) {
-        if (m_format != format) {
-            if(m_audioOutput){
-                m_audioOutput->disconnect(this);
-                delete m_audioOutput;
-                m_audioOutput = 0;
-            }
-            result = true;
-            m_audioOutput = new QAudioOutput(m_audioOutputDevice, m_format, this);
-            m_audioOutput->setNotifyInterval(NotifyIntervalMs); // Use 100ms notification intervals
-            if(m_audioOutput->notifyInterval()!=NotifyIntervalMs)
-                qDebug() << "AudioEngine::initialize: Chosen notification intervals not used!" << m_audioOutput->notifyInterval() << "is used instead of" << NotifyIntervalMs;
-            connect(m_audioOutput, SIGNAL(notify()), this, SLOT(audioNotify()));
-            connect(m_audioOutput, SIGNAL(stateChanged(QAudio::State)), this, SLOT(audioStateChanged(QAudio::State)));
-//            cout << "AudioEngine::initialize periodSize: " << m_audioOutput->periodSize() << endl;
-        }
-    }
-    else {
-//        qDebug() << "AudioEngine::initialize format not supported." << endl;
-        emit errorMessage(tr("Audio output cannot be initialized"), tr("No available audio device or output format not supported."));
-    }
-
-    // qDebug() << "AudioEngine::initialize" << "format" << m_format;
-
-//    std::cout << "AudioEngine: " << m_audioOutput->bufferSize() << endl;
-
-    return result;
-}
-
-bool AudioEngine::selectFormat()
-{
     // Force fs and channel count to that of the file
+    // TODO Try different audio output
     QAudioFormat format;
     format.setByteOrder(QAudioFormat::LittleEndian);
     format.setCodec("audio/pcm");
@@ -327,18 +258,44 @@ bool AudioEngine::selectFormat()
     format.setSampleRate(m_fs);
     format.setChannelCount(1);
 
-    const bool outputSupport = m_audioOutputDevice.isFormatSupported(format);
-
-    if (!outputSupport){
-        // TODO merge with function initialize and throw an exception
-        qDebug() << "AudioEngine::initialize format" << format << "not supported! There will be no audio output!";
-        format = QAudioFormat();
-    }
-    else {
-        setFormat(format);
+    DLOG << "Try format: " << format;
+    if (!m_audioOutputDevice.isFormatSupported(format)){
+        QString formatstr = formatToString(format);
+        DLOG << "Format "+formatstr+" not supported. There will be no audio output!";
+        throw QString("Audio output format "+formatstr+" not supported.");
     }
 
-    return outputSupport;
+    setFormat(format);
+
+    DLOG << "Format changed";
+
+    // Clear any previous audio output
+    if(m_audioOutput){
+        m_audioOutput->disconnect(this);
+        delete m_audioOutput;
+        m_audioOutput = NULL;
+    }
+
+    // Build the new audio output
+    m_audioOutput = new QAudioOutput(m_audioOutputDevice, m_format, this);
+    m_audioOutput->setNotifyInterval(NotifyIntervalMs); // Use 100ms notification intervals
+    if(m_audioOutput->notifyInterval()!=NotifyIntervalMs)
+        qDebug() << "AudioEngine::initialize: Chosen notification intervals not used!" << m_audioOutput->notifyInterval() << "is used instead of" << NotifyIntervalMs;
+    connect(m_audioOutput, SIGNAL(notify()), this, SLOT(audioNotify()));
+    connect(m_audioOutput, SIGNAL(stateChanged(QAudio::State)), this, SLOT(audioStateChanged(QAudio::State)));
+
+    // qDebug() << "AudioEngine::initialize " << "format=" << m_format;
+
+//    std::cout << "AudioEngine::initialize periodSize: " << m_audioOutput->periodSize() << endl;
+//    std::cout << "AudioEngine: " << m_audioOutput->bufferSize() << endl;
+
+    return true;
+}
+
+bool AudioEngine::isInitialized(){
+    return !m_audioOutputDevice.isNull()
+            && m_audioOutput!=NULL
+            && m_fs>0;
 }
 
 void AudioEngine::setFormat(const QAudioFormat &format)

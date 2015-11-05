@@ -18,8 +18,8 @@ file provided in the source code of DFasma. Another copy can be found at
 <http://www.gnu.org/licenses/>.
 */
 
-#ifndef QGVAMPLITUDESPECTRUM_H
-#define QGVAMPLITUDESPECTRUM_H
+#ifndef QGVSPECTRUMAMPLITUDE_H
+#define QGVSPECTRUMAMPLITUDE_H
 
 #include <vector>
 #include <deque>
@@ -28,28 +28,30 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QMenu>
 #include <QTime>
 
+#include "qaesigproc.h"
+#include "qaegigrid.h"
+
 #include "wmainwindow.h"
 #include "fftresizethread.h"
-
-#include "qaesigproc.h"
 #include "ftsound.h"
 
 class GVAmplitudeSpectrumWDialogSettings;
 class MainWindow;
 class QSpinBox;
 
-class QGVAmplitudeSpectrum : public QGraphicsView
+class GVSpectrumAmplitude : public QGraphicsView
 {
     Q_OBJECT
-
-    QPen m_gridFontPen;
 
     QTime m_last_parameters_change;
 
     std::vector<FFTTYPE> m_win; // Keep one here to limit allocations
 
+protected:
+    void contextMenuEvent(QContextMenuEvent * event);
+
 public:
-    explicit QGVAmplitudeSpectrum(WMainWindow* parent);
+    explicit GVSpectrumAmplitude(WMainWindow* parent);
 
     GVAmplitudeSpectrumWDialogSettings* m_dlgSettings;
 
@@ -62,7 +64,13 @@ public:
     QMenu m_contextmenu;
 
     FTSound::DFTParameters m_trgDFTParameters;
-    std::vector<std::complex<FFTTYPE> > m_windft; // Window spectrum
+
+    QAEGIGrid* m_giGrid;
+    std::vector<FFTTYPE> m_windft; // Window spectrum
+    QAEGIUniformlySampledSignal* m_giWindow;
+    std::vector<FFTTYPE> m_elc;
+    QAEGIUniformlySampledSignal* m_giLoudnessCurve;
+
     std::vector<FFTTYPE> m_filterresponse;
 
     // Cursor
@@ -101,10 +109,8 @@ public:
     void viewSet(QRectF viewrect=QRectF(), bool sync=true);
     void viewUpdateTexts();
     void drawBackground(QPainter* painter, const QRectF& rect);
-    void draw_grid(QPainter* painter, const QRectF& rect);
-    void draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& ldft, double fs, double ascale, const QRectF& rect);
 
-    ~QGVAmplitudeSpectrum();
+    ~GVSpectrumAmplitude();
 
     QAction* m_aAmplitudeSpectrumShowGrid;
     QAction* m_aAmplitudeSpectrumShowWindow;
@@ -118,8 +124,11 @@ public:
     QAction* m_aAutoUpdateDFT;
     QAction* m_aFollowPlayCursor;
 
-signals:
-    
+protected slots:
+    void gridSetVisible(bool visible);
+    void windowSetVisible(bool visible);
+    void elcSetVisible(bool visible);
+
 public slots:
     void updateScrollBars();
 
@@ -131,6 +140,8 @@ public slots:
     void updateDFTs();
     void fftResizing(int prevSize, int newSize);
 
+    void setSamplingRate(double fs);
+
     void selectionZoomOn();
     void selectionClear(bool forwardsync=true);
     void azoomin();
@@ -138,4 +149,4 @@ public slots:
     void aunzoom();
 };
 
-#endif // QGVAMPLITUDESPECTRUM_H
+#endif // QGVSPECTRUMAMPLITUDE_H

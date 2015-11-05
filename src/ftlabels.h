@@ -23,6 +23,7 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include <deque>
 #include <vector>
+#include <iostream>
 
 #include <QString>
 #include <QColor>
@@ -34,6 +35,7 @@ file provided in the source code of DFasma. Another copy can be found at
 class QGraphicsSimpleTextItem;
 class QGraphicsLineItem;
 class FTLabels;
+class FTFZero;
 
 class FTGraphicsLabelItem : public QGraphicsTextItem
 {
@@ -92,13 +94,20 @@ public:
     virtual void fillContextMenu(QMenu& contextmenu);
     void updateTextsGeometry();
 
-    int getNbLabels() const {return int(starts.size());}
+    int getNbLabels() const                      {return int(starts.size());}
     void moveLabel(int index, double position);
     void moveAllLabel(double delay);
+    void finishEditing()                         {sort();}
     void changeText(int index, const QString& text);
     void setColor(const QColor& _color);
 
     ~FTLabels();
+
+    // Estimation
+    FTLabels(QObject* parent, FTFZero *ftfzero, double tstart=-1.0, double tend=-1.0);
+    void estimate(FTFZero *ftfzero, double tstart=-1.0, double tend=-1.0);
+    static QString createFileNameFromFZero(const QString& fzerofilename);
+    FTFZero* m_src_fzero;
 
 public slots:
     bool reload();

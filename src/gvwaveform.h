@@ -26,13 +26,13 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QGraphicsView>
 #include <QMenu>
 
-#include "ftsound.h"
+#include "qaegigrid.h"
 
-class WMainWindow;
 class QToolBar;
+class WMainWindow;
 class FTLabels;
 
-class QGVWaveform : public QGraphicsView
+class GVWaveform : public QGraphicsView
 {
     Q_OBJECT
 
@@ -40,18 +40,21 @@ class QGVWaveform : public QGraphicsView
 
     int m_ftlabel_current_index;
 
-    QGraphicsLineItem* m_giMouseCursorLine;
     QGraphicsSimpleTextItem* m_giMouseCursorTxt;
 
-    int m_scrolledx;
+//    int m_scrolledx; // For #419 ?
+
+protected:
+    void contextMenuEvent(QContextMenuEvent * event);
 
 public:
+    QGraphicsLineItem* m_giMouseCursorLine;
 
     QToolBar* m_toolBar;
 
     bool m_first_start;
 
-    float m_selection_pressedx;
+    QPointF m_selection_pressedp;
     QPointF m_pressed_mouseinviewport;
     QRectF m_pressed_scenerect;
     int m_ca_pressed_index;
@@ -66,11 +69,11 @@ public:
     QGraphicsLineItem* m_giPlayCursor;
     QGraphicsRectItem* m_giFilteredSelection;
 
-    QGraphicsPathItem* m_giWindow;
-
-    qreal m_ampzoom;
-
+    // Graphic items
     QGraphicsScene* m_scene;
+    QAEGIGrid* m_giGrid;
+    QGraphicsPathItem* m_giWindow;
+    qreal m_ampzoom;
 
     QAction* m_aWaveformShowGrid;
     QAction* m_aWaveformShowWindow;
@@ -79,13 +82,14 @@ public:
     QAction* m_aZoomOnSelection;
     QAction* m_aSelectionClear;
     QAction* m_aZoomIn;
+    QAction* m_aZoomXOnly;
     QAction* m_aZoomOut;
     QAction* m_aUnZoom;
     QAction* m_aFitViewToSoundsAmplitude;
     QAction* m_aWaveformShowSelectedWaveformOnTop;
     QMenu m_contextmenu;
 
-    explicit QGVWaveform(WMainWindow* parent);
+    explicit GVWaveform(WMainWindow* parent);
 
     void scrollContentsBy(int dx, int dy);
     void wheelEvent(QWheelEvent* event);
@@ -99,26 +103,22 @@ public:
     void drawBackground(QPainter* painter, const QRectF& rect);
 
 //    void cursorUpdate(float x);
-    QPen m_gridPen;
-    QPen m_gridFontPen;
-    void draw_grid(QPainter* painter, const QRectF& rect);
-    void draw_allwaveforms(QPainter* painter, const QRectF& rect);
-    void draw_waveform(QPainter* painter, const QRectF& rect, FTSound *snd);
 
     void selectSegmentFindStartEnd(double x, FTLabels* ftl, double& start, double& end);
     void selectSegment(double x, bool add);
     void selectRemoveSegment(double x);
     bool hasSelection(){return m_selection.width()>0.0;}
-    double getPlayCursorPosition();
+    double getPlayCursorPosition() const;
 
     void viewSet(QRectF viewrect, bool sync=true);
 
     void fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseSelection, int action);
 
-signals:
+    ~GVWaveform();
 
 public slots:
     void showScrollBars(bool show);
+    void gridSetVisible(bool visible){m_giGrid->setVisible(visible);}
 
     void updateSceneRect();
     void updateTextsGeometry();

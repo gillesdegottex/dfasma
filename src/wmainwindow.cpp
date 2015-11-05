@@ -31,8 +31,8 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "fileslistwidget.h"
 #include "gvwaveform.h"
-#include "gvamplitudespectrum.h"
-#include "gvphasespectrum.h"
+#include "gvspectrumamplitude.h"
+#include "gvspectrumphase.h"
 #include "gvspectrumgroupdelay.h"
 #include "gvspectrogram.h"
 #include "gvspectrogramwdialogsettings.h"
@@ -69,6 +69,9 @@ using namespace std;
 #include <QMimeData>
 #include <QScrollBar>
 #include <QProgressDialog>
+#include <QtDebug>
+#include <QColorDialog>
+
 #include "qaehelpers.h"
 
 #ifdef SUPPORT_SDIF
@@ -80,17 +83,17 @@ WMainWindow* gMW = NULL;
 WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     : QMainWindow(parent)
     , m_last_file_editing(NULL)
-    , m_lastFilteredSound(NULL)
     , m_dlgSettings(NULL)
     , ui(new Ui::WMainWindow)
     , m_gvWaveform(NULL)
-    , m_gvAmplitudeSpectrum(NULL)
-    , m_gvPhaseSpectrum(NULL)
+    , m_gvSpectrumAmplitude(NULL)
+    , m_gvSpectrumPhase(NULL)
     , m_gvSpectrumGroupDelay(NULL)
     , m_gvSpectrogram(NULL)
     , m_audioengine(NULL)
     , m_playingftsound(NULL)
-{ 
+    , m_lastFilteredSound(NULL)
+{
     gMW = this;
 
     m_loading = true;
@@ -99,10 +102,6 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     ui->setupUi(this);
     ui->pbSpectrogramSTFTUpdate->hide();
     m_qxtSpectrogramSpanSlider = new QxtSpanSlider(Qt::Vertical, this);
-    m_qxtSpectrogramSpanSlider->setMinimum(0);
-    m_qxtSpectrogramSpanSlider->setMaximum(100);
-    m_qxtSpectrogramSpanSlider->setUpperValue(90);
-    m_qxtSpectrogramSpanSlider->setLowerValue(30);
     m_qxtSpectrogramSpanSlider->setMinimumWidth(18);
     m_qxtSpectrogramSpanSlider->setMaximumWidth(18);
     m_qxtSpectrogramSpanSlider->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
@@ -112,13 +111,13 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 
     m_dlgSettings = new WDialogSettings(this);
 
-    m_fileslist = new FilesListWidget(this);
-    ui->vlFilesList->addWidget(m_fileslist);
+    gFL = new FilesListWidget(this);
+    ui->vlFilesList->addWidget(gFL);
     ui->lblFileInfo->hide();
 
     ui->mainToolBar->setIconSize(QSize(1.5*m_dlgSettings->ui->sbViewsToolBarSizes->value(),1.5*m_dlgSettings->ui->sbViewsToolBarSizes->value()));
     connect(m_dlgSettings->ui->sbFileListItemSize, SIGNAL(valueChanged(int)), gFL, SLOT(changeFileListItemsSize()));
-    m_fileslist->changeFileListItemsSize();
+    gFL->changeFileListItemsSize();
 
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(execAbout()));
     connect(ui->actionSelectedFilesReload, SIGNAL(triggered()), gFL, SLOT(selectedFilesReload()));
@@ -128,9 +127,10 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     connect(ui->actionSelectedFilesSave, SIGNAL(triggered()), gFL, SLOT(selectedFilesSave()));
     connect(ui->actionEstimationF0, SIGNAL(triggered()), gFL, SLOT(selectedFilesEstimateF0()));
     connect(ui->actionEstimationF0Forced, SIGNAL(triggered()), gFL, SLOT(selectedFilesEstimateF0()));
+    connect(ui->actionEstimationVoicedUnvoicedMarkers, SIGNAL(triggered()), gFL, SLOT(selectedFilesEstimateVoicedUnvoicedMarkers()));
 
     ui->statusBar->setStyleSheet("QStatusBar::item { border: 0px solid black }; ");
-    m_globalWaitingBar = new QProgressBar(ui->statusBar);
+    m_globalWaitingBar = new QProgressBar(this);
     m_globalWaitingBar->setAlignment(Qt::AlignRight);
     m_globalWaitingBar->setMaximumSize(100, 14);
     m_globalWaitingBar->setValue(50);
@@ -138,10 +138,10 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     m_globalWaitingBar->hide();
 
     setAcceptDrops(true);
-    m_fileslist->setAcceptDrops(true);
-    m_fileslist->setSelectionRectVisible(false);
-    m_fileslist->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(m_fileslist, SIGNAL(customContextMenuRequested(const QPoint&)), gFL, SLOT(showFileContextMenu(const QPoint&)));
+    gFL->setAcceptDrops(true);
+    gFL->setSelectionRectVisible(false);
+    gFL->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(gFL, SIGNAL(customContextMenuRequested(const QPoint&)), gFL, SLOT(showFileContextMenu(const QPoint&)));
 
     ui->actionAbout->setIcon(QIcon(":/icons/about.svg"));
     ui->actionSettings->setIcon(QIcon(":/icons/settings.svg"));
@@ -158,7 +158,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     connect(ui->actionSettings, SIGNAL(triggered()), m_dlgSettings, SLOT(exec()));
     ui->actionSelectionMode->setChecked(true);
     connectModes();
-    connect(m_fileslist, SIGNAL(itemSelectionChanged()), gFL, SLOT(fileSelectionChanged()));
+    connect(gFL, SIGNAL(itemSelectionChanged()), gFL, SLOT(fileSelectionChanged()));
     addAction(ui->actionSelectedFilesToggleShown);
     addAction(ui->actionSelectedFilesReload);
     addAction(ui->actionSelectedFilesDuplicate);
@@ -166,12 +166,13 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     addAction(ui->actionPlayFiltered);
     addAction(ui->actionEstimationF0);
     addAction(ui->actionEstimationF0Forced);
+    addAction(ui->actionEstimationVoicedUnvoicedMarkers);
 
     // Audio engine for playing the selections
     ui->actionPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
     ui->actionPlay->setEnabled(false);
     connect(ui->actionPlay, SIGNAL(triggered()), this, SLOT(play()));
-    connect(ui->actionPlayFiltered, SIGNAL(triggered()), this, SLOT(play()));
+    connect(ui->actionPlayFiltered, SIGNAL(triggered()), this, SLOT(playFiltered()));
     m_pbVolume = new QProgressBar(this);
     m_pbVolume->setOrientation(Qt::Vertical);
     m_pbVolume->setTextVisible(false);
@@ -182,25 +183,24 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     m_pbVolume->setMaximumHeight(ui->mainToolBar->height());
     m_pbVolume->setMinimum(-50); // Quite arbitrary
     m_pbVolume->setValue(-50);   // Quite arbitrary
-    m_pbVolume->setEnabled(false);
-    ui->mainToolBar->insertWidget(ui->actionSettings, m_pbVolume);
-    ui->mainToolBar->insertSeparator(ui->actionSettings);
+    m_pbVolumeAction = ui->mainToolBar->insertWidget(ui->actionSettings, m_pbVolume);
+    m_audioSeparatorAction = ui->mainToolBar->insertSeparator(ui->actionSettings);
 
-    m_gvWaveform = new QGVWaveform(this);
+    m_gvWaveform = new GVWaveform(this);
     ui->lWaveformGraphicsView->addWidget(m_gvWaveform);
 
     // Spectra
-    m_gvAmplitudeSpectrum = new QGVAmplitudeSpectrum(this);
-    ui->lSpectrumAmplitudeGraphicsView->addWidget(m_gvAmplitudeSpectrum);
+    m_gvSpectrumAmplitude = new GVSpectrumAmplitude(this);
+    ui->lSpectrumAmplitudeGraphicsView->addWidget(m_gvSpectrumAmplitude);
     m_settings.add(ui->actionShowAmplitudeSpectrum);
     ui->wSpectrumAmplitude->setVisible(ui->actionShowAmplitudeSpectrum->isChecked());
 
-    m_gvPhaseSpectrum = new QGVPhaseSpectrum(this);
-    ui->lSpectrumPhaseGraphicsView->addWidget(m_gvPhaseSpectrum);
+    m_gvSpectrumPhase = new GVSpectrumPhase(this);
+    ui->lSpectrumPhaseGraphicsView->addWidget(m_gvSpectrumPhase);
     m_settings.add(ui->actionShowPhaseSpectrum);
     ui->wSpectrumPhase->setVisible(ui->actionShowPhaseSpectrum->isChecked());
 
-    m_gvSpectrumGroupDelay = new QGVSpectrumGroupDelay(this);
+    m_gvSpectrumGroupDelay = new GVSpectrumGroupDelay(this);
     ui->lSpectrumGroupDelayGraphicsView->addWidget(m_gvSpectrumGroupDelay);
     m_settings.add(ui->actionShowGroupDelaySpectrum);
     ui->wSpectrumGroupDelay->setVisible(ui->actionShowGroupDelaySpectrum->isChecked());
@@ -210,24 +210,24 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
                              || ui->actionShowGroupDelaySpectrum->isChecked());
 
     // Spectrogram
-    m_gvSpectrogram = new QGVSpectrogram(this);
+    m_gvSpectrogram = new GVSpectrogram(this);
     ui->lSpectrogramGraphicsView->addWidget(m_gvSpectrogram);
     m_settings.add(ui->actionShowSpectrogram);
     ui->wSpectrogram->setVisible(ui->actionShowSpectrogram->isChecked());
     connect(ui->pbSpectrogramSTFTUpdate, SIGNAL(clicked()), m_gvSpectrogram, SLOT(updateSTFTSettings()));
     connect(ui->actionShowSpectrogram, SIGNAL(toggled(bool)), this, SLOT(viewsSpectrogramToggled(bool)));
 
-    m_gvAmplitudeSpectrum->updateScrollBars();
-    connect(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow, SIGNAL(toggled(bool)), m_gvAmplitudeSpectrum, SLOT(updateScrollBars()));
+    m_gvSpectrumAmplitude->updateScrollBars();
+    connect(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow, SIGNAL(toggled(bool)), m_gvSpectrumAmplitude, SLOT(updateScrollBars()));
 
 
     // Link axis' views
-    connect(m_gvAmplitudeSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvPhaseSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
-    connect(m_gvAmplitudeSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrumGroupDelay->horizontalScrollBar(), SLOT(setValue(int)));
-    connect(m_gvPhaseSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvAmplitudeSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
-    connect(m_gvPhaseSpectrum->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrumGroupDelay->horizontalScrollBar(), SLOT(setValue(int)));
-    connect(m_gvSpectrumGroupDelay->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvAmplitudeSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
-    connect(m_gvSpectrumGroupDelay->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvPhaseSpectrum->horizontalScrollBar(), SLOT(setValue(int)));
+    connect(m_gvSpectrumAmplitude->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrumPhase->horizontalScrollBar(), SLOT(setValue(int)));
+    connect(m_gvSpectrumAmplitude->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrumGroupDelay->horizontalScrollBar(), SLOT(setValue(int)));
+    connect(m_gvSpectrumPhase->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrumAmplitude->horizontalScrollBar(), SLOT(setValue(int)));
+    connect(m_gvSpectrumPhase->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrumGroupDelay->horizontalScrollBar(), SLOT(setValue(int)));
+    connect(m_gvSpectrumGroupDelay->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrumAmplitude->horizontalScrollBar(), SLOT(setValue(int)));
+    connect(m_gvSpectrumGroupDelay->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrumPhase->horizontalScrollBar(), SLOT(setValue(int)));
     connect(m_gvWaveform->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrogram->horizontalScrollBar(), SLOT(setValue(int)));
     connect(m_gvSpectrogram->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvWaveform->horizontalScrollBar(), SLOT(setValue(int)));
 
@@ -294,7 +294,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 
     m_audioengine = new AudioEngine(this);
     if(m_audioengine) {
-        connect(m_audioengine, SIGNAL(errorMessage(const QString &, const QString &)), this, SLOT(audioEngineError(const QString &, const QString &)));
+        audioEnable(false);
         connect(m_audioengine, SIGNAL(stateChanged(QAudio::State)), this, SLOT(audioStateChanged(QAudio::State)));
         connect(m_audioengine, SIGNAL(formatChanged(const QAudioFormat&)), this, SLOT(audioOutputFormatChanged(const QAudioFormat&)));
         connect(m_audioengine, SIGNAL(playPositionChanged(double)), m_gvWaveform, SLOT(playCursorSet(double)));
@@ -304,20 +304,15 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
         QList<QAudioDeviceInfo> audioDevices = m_audioengine->availableAudioOutputDevices();
         for(int di=0; di<audioDevices.size(); di++)
             m_dlgSettings->ui->cbPlaybackAudioOutputDevices->addItem(audioDevices[di].deviceName());
-        if(m_dlgSettings->ui->cbPlaybackAudioOutputDevices->count()==0){
-            m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText("<small>No audio device available.</small>");
-            m_dlgSettings->ui->lblAudioOutputDeviceFormat->show();
-//            m_dlgSettings->ui->cbPlaybackAudioOutputDevices->hide();
-        }
-        selectAudioOutputDevice(m_settings.value("cbPlaybackAudioOutputDevices", "default").toString());
-        connect(m_dlgSettings->ui->cbPlaybackAudioOutputDevices, SIGNAL(currentIndexChanged(int)), this, SLOT(selectAudioOutputDevice(int)));
+        audioSelectOutputDevice(m_settings.value("cbPlaybackAudioOutputDevices", "default").toString());
+        connect(m_dlgSettings->ui->cbPlaybackAudioOutputDevices, SIGNAL(currentIndexChanged(int)), this, SLOT(audioSelectOutputDevice(int)));
         m_dlgSettings->adjustSize();
     }
 
     // This one seems able to open distant files because file paths arrive in gvfs format
     // in the main.
     // Doesn't work any more (at least with sftp). The gvfs "miracle" might not be very reliable.
-    m_fileslist->addExistingFiles(files);
+    gFL->addExistingFiles(files);
     updateViewsAfterAddFile(true);
 
     if(files.size()>0)
@@ -330,36 +325,52 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 }
 
 WMainWindow::~WMainWindow() {
-//    COUTD << "WMainWindow::~WMainWindow" << endl;
+//    DCOUT << "WMainWindow::~WMainWindow()" << std::endl;
 
+    DFLAG
     m_gvSpectrogram->m_stftcomputethread->cancelComputation(true);
-    m_gvAmplitudeSpectrum->m_fftresizethread->cancelComputation(true);
+    m_gvSpectrumAmplitude->m_fftresizethread->cancelComputation(true);
 
-    m_fileslist->selectAll();
-    m_fileslist->selectedFilesClose();
+    DFLAG
+    gFL->selectAll();
+    gFL->selectedFilesClose();
 
+    DFLAG
+    delete gFL;
+
+    DFLAG
     // The audio player
     if(m_audioengine){
         delete m_audioengine;
         m_audioengine=NULL;
     }
 
+    DFLAG
     // Delete views
     delete m_gvWaveform; m_gvWaveform=NULL;
-    delete m_gvAmplitudeSpectrum; m_gvAmplitudeSpectrum=NULL;
-    delete m_gvPhaseSpectrum; m_gvPhaseSpectrum=NULL;
+    DFLAG
+    delete m_gvSpectrumAmplitude; m_gvSpectrumAmplitude=NULL;
+    DFLAG
+    delete m_gvSpectrumPhase; m_gvSpectrumPhase=NULL;
+    DFLAG
     delete m_gvSpectrumGroupDelay; m_gvSpectrumGroupDelay=NULL;
+    DFLAG
     delete m_gvSpectrogram; m_gvSpectrogram=NULL;
+    DFLAG
     delete m_dlgSettings; m_dlgSettings=NULL;
+    DFLAG
+    // The GUI
+    delete ui;
+    ui = NULL;
 
-    delete ui; ui=NULL; // The GUI
+    DFLAG
 }
 
 // Interface ===================================================================
 
 void WMainWindow::changeToolBarSizes(int size) {
     gMW->m_gvWaveform->m_toolBar->setIconSize(QSize(size,size));
-    gMW->m_gvAmplitudeSpectrum->m_toolBar->setIconSize(QSize(size,size));
+    gMW->m_gvSpectrumAmplitude->m_toolBar->setIconSize(QSize(size,size));
     gMW->m_gvSpectrogram->m_toolBar->setIconSize(QSize(size,size));
     ui->mainToolBar->setIconSize(QSize(1.5*size,1.5*size));
     m_pbVolume->setMaximumWidth(m_dlgSettings->ui->sbViewsToolBarSizes->value()/2);
@@ -367,7 +378,7 @@ void WMainWindow::changeToolBarSizes(int size) {
 }
 
 void WMainWindow::updateWindowTitle() {
-    int count = m_fileslist->count();
+    int count = gFL->count();
     if(count>0) setWindowTitle("DFasma ("+QString::number(count)+")");
     else        setWindowTitle("DFasma");
 }
@@ -397,14 +408,13 @@ QString WMainWindow::version(){
     }
     QString m_version = dfasmaversion;
 
-    m_version += " (compiled by "+QString(COMPILER)+" for ";
+    m_version += "\nCompiled by "+getCompilerVersion()+" for ";
     #ifdef Q_PROCESSOR_X86_32
       m_version += "32bits";
     #endif
     #ifdef Q_PROCESSOR_X86_64
       m_version += "64bits";
     #endif
-    m_version += ")";
 
     return m_version;
 }
@@ -440,12 +450,26 @@ void WMainWindow::globalWaitingBarClear(){
     QCoreApplication::processEvents(); // To show the progress
 }
 
+void WMainWindow::statusBarSetText(const QString &text, int timeout, QColor color)
+{
+    statusBar()->showMessage(text, timeout);
+    if(color.isValid()){
+        QPalette palette = QMainWindow::statusBar()->palette();
+        palette.setColor(QPalette::Foreground, Qt::red);
+        QMainWindow::statusBar()->setPalette(palette);
+        QMainWindow::statusBar()->setAutoFillBackground(true);
+    }
+    else{
+        QMainWindow::statusBar()->setAutoFillBackground(false);
+    }
+}
+
 // File management =======================================================
 
 void WMainWindow::newFile(){
     QMessageBox::StandardButton btn = QMessageBox::question(this, "Create a new file ...", "Do you want to create an empty label file?", QMessageBox::Yes | QMessageBox::No);
     if(btn==QMessageBox::Yes){
-        m_fileslist->addItem(new FTLabels(this));
+        gFL->addItem(new FTLabels(this));
     }
 }
 
@@ -487,8 +511,8 @@ void WMainWindow::openFile() {
 //    QStringList l = dlg.selectedFiles();
 
     if(files.size()>0) {
-        bool isfirsts = m_fileslist->ftsnds.size()==0;
-        m_fileslist->addExistingFiles(files, type);
+        bool isfirsts = gFL->ftsnds.size()==0;
+        gFL->addExistingFiles(files, type);
         updateViewsAfterAddFile(isfirsts);
     }
 }
@@ -505,18 +529,31 @@ void WMainWindow::dropEvent(QDropEvent *event){
         files.append(lurl[lurli].toLocalFile());
 //        files.append(lurl[lurli].url());
 
-    bool isfirsts = m_fileslist->ftsnds.size()==0;
-    m_fileslist->addExistingFiles(files);
+    bool isfirsts = gFL->ftsnds.size()==0;
+    gFL->addExistingFiles(files);
     updateViewsAfterAddFile(isfirsts);
 }
 void WMainWindow::dragEnterEvent(QDragEnterEvent *event){
     event->acceptProposedAction();
 }
 
+void WMainWindow::changeColor(){
+    QColorDialog colordialog(this);
+    QObject::connect(&colordialog, SIGNAL(colorSelected(const QColor &)), gFL, SLOT(colorSelected(const QColor &)));
+//    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), gFL, SLOT(colorSelected(const QColor &)));
+    // Add the available Matlab colors to the custom colors
+
+    int ci = 0;
+    for(std::deque<QColor>::const_iterator it=FileType::availableColors().begin(); it!=FileType::availableColors().end(); it++,ci++)
+        QColorDialog::setCustomColor(ci, (*it));
+
+    colordialog.exec();
+}
+
 // Views =======================================================================
 
 void WMainWindow::updateViewsAfterAddFile(bool isfirsts) {
-    if(m_fileslist->count()==0)
+    if(gFL->count()==0)
         setInWaitingForFileState();
     else {
         ui->actionSelectedFilesClose->setEnabled(true);
@@ -526,15 +563,18 @@ void WMainWindow::updateViewsAfterAddFile(bool isfirsts) {
         ui->splitterViews->show();
         updateWindowTitle();
         m_gvWaveform->updateSceneRect();
+        if(m_gvSpectrogram->m_dlgSettings->ui->cbSpectrogramColorRangeMode->currentIndex()==1)
+            m_qxtSpectrogramSpanSlider->setMinimum(-3*gFL->getMaxSQNR());
         m_gvSpectrogram->updateSceneRect();
-        m_gvAmplitudeSpectrum->updateAmplitudeExtent();
-        m_gvPhaseSpectrum->updateSceneRect();
+        m_gvSpectrumAmplitude->updateAmplitudeExtent();
+        m_gvSpectrumPhase->updateSceneRect();
         m_gvSpectrumGroupDelay->updateSceneRect();
         if(isfirsts){
             m_gvWaveform->viewSet(m_gvWaveform->m_scene->sceneRect(), false);
             m_gvSpectrogram->viewSet(m_gvSpectrogram->m_scene->sceneRect(), false);
-            m_gvAmplitudeSpectrum->viewSet(m_gvAmplitudeSpectrum->m_scene->sceneRect(), false);
-            m_gvPhaseSpectrum->viewSet(m_gvPhaseSpectrum->m_scene->sceneRect(), false);
+            m_gvSpectrumAmplitude->amplitudeMinChanged();
+//            m_gvAmplitudeSpectrum->viewSet(m_gvAmplitudeSpectrum->m_scene->sceneRect(), false);
+            m_gvSpectrumPhase->viewSet(m_gvSpectrumPhase->m_scene->sceneRect(), false);
             m_gvSpectrumGroupDelay->viewSet(m_gvSpectrumGroupDelay->m_scene->sceneRect(), false);
             ui->actionFileNew->setEnabled(true);
         }
@@ -550,9 +590,15 @@ void WMainWindow::viewsDisplayedChanged() {
     gMW->m_gvWaveform->m_aWaveformShowWindow->setEnabled(ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked() || ui->actionShowGroupDelaySpectrum->isChecked());
 
     // Set the horizontal scroll bars of the spectra
-    m_gvAmplitudeSpectrum->updateScrollBars();
+    m_gvSpectrumAmplitude->updateScrollBars();
 
-    gMW->m_gvAmplitudeSpectrum->selectionSetTextInForm();
+    gMW->m_gvSpectrumAmplitude->selectionSetTextInForm();
+}
+
+void WMainWindow::viewsSpectrogramToggled(bool show)
+{
+    if(show && gFL->ftsnds.size()>0)
+        m_gvSpectrogram->updateSTFTSettings(); // This will update the window computation AND trigger the STFT computation
 }
 
 void WMainWindow::viewsSpectrogramToggled(bool show)
@@ -562,88 +608,134 @@ void WMainWindow::viewsSpectrogramToggled(bool show)
 }
 
 void WMainWindow::keyPressEvent(QKeyEvent* event){
-    bool kshift = event->modifiers().testFlag(Qt::ShiftModifier);
-    bool kctrl = event->modifiers().testFlag(Qt::ControlModifier);
-    if(event->key()==Qt::Key_Shift && !kctrl){
-        enterScrollHandDragMode();
+    QMainWindow::keyPressEvent(event);
+
+    updateMouseCursorState(event->modifiers().testFlag(Qt::ShiftModifier) || (event && event->key()==Qt::Key_Shift)
+                         , event->modifiers().testFlag(Qt::ControlModifier) || (event && event->key()==Qt::Key_Control));
+
+    if(event->key()==Qt::Key_Escape){
+        FTSound* currentftsound = gFL->getCurrentFTSound(true);
+        if(currentftsound && currentftsound->isFiltered()) {
+            currentftsound->setFiltered(false);
+            gFL->fileInfoUpdate();
+        }
     }
-    else if(event->key()==Qt::Key_Control && !kshift){
-        if(ui->actionSelectionMode->isChecked()){
-            if(m_gvWaveform->m_selection.width()>0){
-                m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
+}
+
+void WMainWindow::updateMouseCursorState(bool kshift, bool kcontrol){
+//    DCOUT << "WMainWindow::updateMouseCursorState shift=" << kshift << " ctrl=" << kcontrol << std::endl;
+
+    FileType* currentfile = gFL->currentFile();
+
+    if(ui->actionSelectionMode->isChecked()){
+        if(kshift && !kcontrol){
+            m_gvWaveform->setDragMode(QGraphicsView::ScrollHandDrag);
+            m_gvSpectrogram->setDragMode(QGraphicsView::ScrollHandDrag);
+            m_gvSpectrumAmplitude->setDragMode(QGraphicsView::ScrollHandDrag);
+            m_gvSpectrumPhase->setDragMode(QGraphicsView::ScrollHandDrag);
+            m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::ScrollHandDrag);
+        }
+        else if(!kshift && kcontrol){
+            if(m_gvWaveform->m_selection.width()>0)
                 m_gvWaveform->setCursor(Qt::OpenHandCursor);
-            }
-            if(m_gvAmplitudeSpectrum->m_selection.width()*m_gvAmplitudeSpectrum->m_selection.height()>0){
-                m_gvAmplitudeSpectrum->setDragMode(QGraphicsView::NoDrag);
-                m_gvAmplitudeSpectrum->setCursor(Qt::OpenHandCursor);
-            }
-            if(m_gvPhaseSpectrum->m_selection.width()*m_gvPhaseSpectrum->m_selection.height()>0){
-                m_gvPhaseSpectrum->setDragMode(QGraphicsView::NoDrag);
-                m_gvPhaseSpectrum->setCursor(Qt::OpenHandCursor);
-            }
-            if(m_gvSpectrumGroupDelay->m_selection.width()*m_gvSpectrumGroupDelay->m_selection.height()>0){
-                m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::NoDrag);
-                m_gvSpectrumGroupDelay->setCursor(Qt::OpenHandCursor);
-            }
-            if(m_gvSpectrogram->m_selection.width()*m_gvSpectrogram->m_selection.height()>0){
-                m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
+            if(m_gvSpectrogram->m_selection.width()*m_gvSpectrogram->m_selection.height()>0)
                 m_gvSpectrogram->setCursor(Qt::OpenHandCursor);
-            }
+            if(m_gvSpectrumAmplitude->m_selection.width()*m_gvSpectrumAmplitude->m_selection.height()>0)
+                m_gvSpectrumAmplitude->setCursor(Qt::OpenHandCursor);
+            if(m_gvSpectrumPhase->m_selection.width()*m_gvSpectrumPhase->m_selection.height()>0)
+                m_gvSpectrumPhase->setCursor(Qt::OpenHandCursor);
+            if(m_gvSpectrumGroupDelay->m_selection.width()*m_gvSpectrumGroupDelay->m_selection.height()>0)
+                m_gvSpectrumGroupDelay->setCursor(Qt::OpenHandCursor);
         }
-        else if(ui->actionEditMode->isChecked()){
-            m_gvWaveform->setCursor(Qt::SizeHorCursor);
-        }
-    }
-    else if(event->key()==Qt::Key_Control && kshift){
-        if(ui->actionSelectionMode->isChecked()){
+        else if(kshift && kcontrol){
             m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
             m_gvWaveform->setCursor(Qt::CrossCursor);
-            m_gvAmplitudeSpectrum->setDragMode(QGraphicsView::NoDrag);
-            m_gvAmplitudeSpectrum->setCursor(Qt::CrossCursor);
-            m_gvPhaseSpectrum->setDragMode(QGraphicsView::NoDrag);
-            m_gvPhaseSpectrum->setCursor(Qt::OpenHandCursor); // For the window's pos control
-            m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::NoDrag);
-            m_gvSpectrumGroupDelay->setCursor(Qt::OpenHandCursor); // For the window's pos control
             m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
             m_gvSpectrogram->setCursor(Qt::CrossCursor);
+            m_gvSpectrumAmplitude->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrumAmplitude->setCursor(Qt::CrossCursor);
+            m_gvSpectrumPhase->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrumPhase->setCursor(Qt::OpenHandCursor); // For the window's pos control
+            m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrumGroupDelay->setCursor(Qt::OpenHandCursor); // For the window's pos control
         }
-        else if(ui->actionEditMode->isChecked()){
+        else if(!kshift && !kcontrol){
             m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
             m_gvWaveform->setCursor(Qt::CrossCursor);
+            m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrogram->setCursor(Qt::CrossCursor);
+            m_gvSpectrumAmplitude->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrumAmplitude->setCursor(Qt::CrossCursor);
+            m_gvSpectrumPhase->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrumPhase->setCursor(Qt::CrossCursor);
+            m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrumGroupDelay->setCursor(Qt::CrossCursor);
         }
     }
-    else{
-        if(event->key()==Qt::Key_Escape){
-            FTSound* currentftsound = m_fileslist->getCurrentFTSound();
-            if(currentftsound && currentftsound->isFiltered()) {
-                currentftsound->resetFiltering();
-                gFL->fileInfoUpdate();
-            }
+    else if(ui->actionEditMode->isChecked()){
+        if(kshift && !kcontrol){
+            m_gvWaveform->setDragMode(QGraphicsView::ScrollHandDrag);
+            m_gvSpectrogram->setDragMode(QGraphicsView::ScrollHandDrag);
+            m_gvSpectrumAmplitude->setDragMode(QGraphicsView::ScrollHandDrag);
+            m_gvSpectrumPhase->setDragMode(QGraphicsView::ScrollHandDrag);
+            m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::ScrollHandDrag);
+        }
+        else if(!kshift && kcontrol){
+            m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
+            if(currentfile && currentfile->is(FileType::FTSOUND))
+                m_gvWaveform->setCursor(Qt::SizeHorCursor);
+            m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrumAmplitude->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrumPhase->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::NoDrag);
+        }
+        else if(kshift && kcontrol){
+            m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
+            m_gvWaveform->setCursor(Qt::CrossCursor);
+            m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrogram->setCursor(Qt::CrossCursor);
+            m_gvSpectrumAmplitude->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrumAmplitude->setCursor(Qt::CrossCursor);
+            m_gvSpectrumPhase->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrumPhase->setCursor(Qt::CrossCursor);
+            m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrumGroupDelay->setCursor(Qt::CrossCursor);
+        }
+        else if(!kshift && !kcontrol){
+            m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
+            if(currentfile && currentfile->is(FileType::FTSOUND))
+                m_gvWaveform->setCursor(Qt::SizeVerCursor);
+            else
+                m_gvWaveform->setCursor(Qt::CrossCursor);
+
+            m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
+            m_gvSpectrogram->setCursor(Qt::CrossCursor);
+
+            m_gvSpectrumAmplitude->setDragMode(QGraphicsView::NoDrag);
+            if(currentfile && currentfile->is(FileType::FTSOUND))
+                m_gvSpectrumAmplitude->setCursor(Qt::SizeVerCursor);
+            else
+                m_gvSpectrumAmplitude->setCursor(Qt::CrossCursor);
+
+            m_gvSpectrumPhase->setDragMode(QGraphicsView::NoDrag);
+            if(currentfile && currentfile->is(FileType::FTSOUND))
+                m_gvSpectrumPhase->setCursor(Qt::SizeVerCursor);    // For the signal's position control
+            else
+                m_gvSpectrumPhase->setCursor(Qt::CrossCursor);
+
+            m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::NoDrag);
+            if(currentfile && currentfile->is(FileType::FTSOUND))
+                m_gvSpectrumGroupDelay->setCursor(Qt::SizeVerCursor);    // For the signal's position control
+            else
+                m_gvSpectrumGroupDelay->setCursor(Qt::CrossCursor);
         }
     }
 }
 
 void WMainWindow::keyReleaseEvent(QKeyEvent* event){
-    if(event->key()==Qt::Key_Shift){
-        leaveScrollHandDragMode();
-    }
-    if(event->key()==Qt::Key_Control){
-        if(ui->actionSelectionMode->isChecked()){
-            m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
-            m_gvWaveform->setCursor(Qt::CrossCursor);
-            m_gvAmplitudeSpectrum->setDragMode(QGraphicsView::NoDrag);
-            m_gvAmplitudeSpectrum->setCursor(Qt::CrossCursor);
-            m_gvPhaseSpectrum->setDragMode(QGraphicsView::NoDrag);
-            m_gvPhaseSpectrum->setCursor(Qt::CrossCursor);
-            m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::NoDrag);
-            m_gvSpectrumGroupDelay->setCursor(Qt::CrossCursor);
-            m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
-            m_gvSpectrogram->setCursor(Qt::CrossCursor);
-        }
-        else {
-            m_gvWaveform->setCursor(Qt::SizeVerCursor);
-        }
-    }
+    QMainWindow::keyReleaseEvent(event);
+
+    updateMouseCursorState(event->modifiers().testFlag(Qt::ShiftModifier), event->modifiers().testFlag(Qt::ControlModifier));
 }
 
 void WMainWindow::connectModes(){
@@ -663,15 +755,17 @@ void WMainWindow::setSelectionMode(bool checked){
         connectModes();
 
         // Clear the icons from the edit mode
-        QList<QListWidgetItem*> list = m_fileslist->selectedItems();
+        QList<QListWidgetItem*> list = gFL->selectedItems();
         for(int i=0; i<list.size(); i++)
             ((FileType*)list[i])->setEditing(false);
 
         m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
-        m_gvAmplitudeSpectrum->setDragMode(QGraphicsView::NoDrag);
-        m_gvPhaseSpectrum->setDragMode(QGraphicsView::NoDrag);
+        m_gvSpectrumAmplitude->setDragMode(QGraphicsView::NoDrag);
+        m_gvSpectrumPhase->setDragMode(QGraphicsView::NoDrag);
         m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::NoDrag);
         m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
+
+        gMW->updateMouseCursorState(QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier), QApplication::keyboardModifiers().testFlag(Qt::ControlModifier));
 
         QPoint cp = QCursor::pos();
 
@@ -679,15 +773,13 @@ void WMainWindow::setSelectionMode(bool checked){
         QPointF p = m_gvWaveform->mapToScene(m_gvWaveform->mapFromGlobal(cp));
         if(p.x()>=m_gvWaveform->m_selection.left() && p.x()<=m_gvWaveform->m_selection.right())
             m_gvWaveform->setCursor(Qt::OpenHandCursor);
-        else
-            m_gvWaveform->setCursor(Qt::CrossCursor);
 
         // Change spectrum's cursor
-        p = m_gvAmplitudeSpectrum->mapToScene(m_gvAmplitudeSpectrum->mapFromGlobal(cp));
-        if(p.x()>=m_gvAmplitudeSpectrum->m_selection.left() && p.x()<=m_gvAmplitudeSpectrum->m_selection.right() && p.y()>=m_gvAmplitudeSpectrum->m_selection.top() && p.y()<=m_gvAmplitudeSpectrum->m_selection.bottom())
-            m_gvAmplitudeSpectrum->setCursor(Qt::OpenHandCursor);
-        else
-            m_gvAmplitudeSpectrum->setCursor(Qt::CrossCursor);
+        p = m_gvSpectrumAmplitude->mapToScene(m_gvSpectrumAmplitude->mapFromGlobal(cp));
+        if(p.x()>=m_gvSpectrumAmplitude->m_selection.left() && p.x()<=m_gvSpectrumAmplitude->m_selection.right() && p.y()>=m_gvSpectrumAmplitude->m_selection.top() && p.y()<=m_gvSpectrumAmplitude->m_selection.bottom())
+            m_gvSpectrumAmplitude->setCursor(Qt::OpenHandCursor);
+
+        checkEditHiddenFile();
     }
     else
         setSelectionMode(true);
@@ -699,12 +791,9 @@ void WMainWindow::setEditMode(bool checked){
         if(!ui->actionEditMode->isChecked()) ui->actionEditMode->setChecked(true);
         connectModes();
 
-        m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
-        m_gvWaveform->setCursor(Qt::SizeVerCursor);
-        m_gvAmplitudeSpectrum->setDragMode(QGraphicsView::NoDrag);
-        m_gvAmplitudeSpectrum->setCursor(Qt::SizeVerCursor);
-        m_gvPhaseSpectrum->setDragMode(QGraphicsView::NoDrag);
-        m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::NoDrag);
+        gMW->updateMouseCursorState(QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier), QApplication::keyboardModifiers().testFlag(Qt::ControlModifier));
+
+        checkEditHiddenFile();
     }
     else
         setSelectionMode(true);
@@ -721,49 +810,29 @@ void WMainWindow::setEditing(FileType *ft){
     m_last_file_editing = ft;
 }
 
-void WMainWindow::enterScrollHandDragMode(){
-    m_gvWaveform->setDragMode(QGraphicsView::ScrollHandDrag);
-    m_gvAmplitudeSpectrum->setDragMode(QGraphicsView::ScrollHandDrag);
-    m_gvPhaseSpectrum->setDragMode(QGraphicsView::ScrollHandDrag);
-    m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::ScrollHandDrag);
-    m_gvSpectrogram->setDragMode(QGraphicsView::ScrollHandDrag);
-}
-
-void WMainWindow::leaveScrollHandDragMode(){
-    m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
-    m_gvAmplitudeSpectrum->setDragMode(QGraphicsView::NoDrag);
-    m_gvPhaseSpectrum->setDragMode(QGraphicsView::NoDrag);
-    m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::NoDrag);
-    m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
-    if(ui->actionSelectionMode->isChecked()){
-        m_gvWaveform->setCursor(Qt::CrossCursor);
-        m_gvAmplitudeSpectrum->setCursor(Qt::CrossCursor);
-        m_gvSpectrogram->setCursor(Qt::CrossCursor);
+void WMainWindow::checkEditHiddenFile(){
+    FileType* currfile = gFL->currentFile();
+    if(ui->actionEditMode->isChecked()
+        && currfile && !currfile->isVisible()){
+        statusBarSetText("You cannot edit a hidden file!", 0, Qt::red);
     }
-    else if(ui->actionEditMode->isChecked()){
-        m_gvWaveform->setCursor(Qt::SizeVerCursor);
-    }
+    else
+        statusBar()->clearMessage();
 }
 
 void WMainWindow::focusWindowChanged(QWindow* win){
     Q_UNUSED(win)
 
-    if(QGuiApplication::keyboardModifiers().testFlag(Qt::ShiftModifier)
-        && !QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
-        enterScrollHandDragMode();
-    else
-        leaveScrollHandDragMode();
-
-    m_fileslist->checkFileModifications();
+    gFL->checkFileModifications();
 }
 
 
 void WMainWindow::allSoundsChanged(){
 //    COUTD << "WMainWindow::allSoundsChanged" << endl;
-    m_gvWaveform->m_scene->update(); // Can be also very heavy if updating multiple files
-    m_gvAmplitudeSpectrum->updateDFTs(); // Can be also very heavy if updating multiple files
-    m_gvAmplitudeSpectrum->m_scene->update();
-    m_gvPhaseSpectrum->m_scene->update();
+//    m_gvWaveform->m_scene->update(); // TODO delete ?
+    m_gvSpectrumAmplitude->updateDFTs(); // Can be also very heavy if updating multiple files
+    m_gvSpectrumAmplitude->m_scene->update();
+    m_gvSpectrumPhase->m_scene->update();
     m_gvSpectrumGroupDelay->m_scene->update();
     m_gvSpectrogram->m_dlgSettings->checkImageSize();
     // m_gvSpectrogram->soundsChanged(); // Too heavy to be here, call updateSTFTPlot(force) instead
@@ -773,7 +842,7 @@ void WMainWindow::allSoundsChanged(){
 // Put the program into a waiting-for-sound-files state
 // (initializeSoundSystem will wake up the necessary functions if a sound file arrived)
 void WMainWindow::setInWaitingForFileState(){
-    if(m_fileslist->count()>0)
+    if(gFL->count()>0)
         return;
 
     ui->splitterViews->hide();
@@ -782,27 +851,68 @@ void WMainWindow::setInWaitingForFileState(){
     ui->actionSelectedFilesReload->setEnabled(false);
     ui->actionSelectedFilesToggleShown->setEnabled(false);
     ui->actionPlay->setEnabled(false);
-    m_pbVolume->setEnabled(false);
     ui->actionFileNew->setEnabled(false);
 }
 
 // Audio management ============================================================
 
-void WMainWindow::initializeSoundSystem(double fs) {
+void WMainWindow::audioInitialize(double fs) {
+    DLOG << "WMainWindow::initializeSoundSystem fs=" << fs;
 
-    m_audioengine->initialize(fs);
-    if(m_audioengine->isInitialized()) {
+    m_gvSpectrumAmplitude->setSamplingRate(fs);
+
+    bool audio_available = false;
+
+    if(m_dlgSettings->ui->cbPlaybackAudioOutputDevices->count()==0){
+        DLOG << "No audio device available";
+        QString txt = "<small>No audio device available.";
+        #if defined(Q_OS_LINUX) || defined(Q_OS_MAC)
+            txt += "<br/>Are all Qt Multimedia packages installed ? (e.g. libqt5multimedia5-plugins)";
+        #endif
+        txt += "</small>";
+        m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText(txt);
+    }
+    else{
+        try{
+            audio_available = m_audioengine->initialize(fs);
+        }
+        catch(QString error){
+            DLOG << error;
+            m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText("<small>"+error+"</small>");
+        }
+    }
+
+    audioEnable(audio_available);
+
+    DLOG << "WMainWindow::~initializeSoundSystem";
+}
+
+void WMainWindow::audioEnable(bool enable){
+    if(enable) {
+        DLOG << "Audio Available";
         ui->actionPlay->setEnabled(true);
-        m_pbVolume->setEnabled(true);
+        ui->actionPlay->setVisible(true);
+        m_audioSeparatorAction->setVisible(true);
+        m_pbVolumeAction->setVisible(true);
+        m_gvWaveform->m_giPlayCursor->show();
+        m_gvSpectrogram->m_giPlayCursor->show();
+    }
+    else {
+        DLOG << "Audio NOT Available";
+        ui->actionPlay->setVisible(false);
+        m_pbVolumeAction->setVisible(false);
+        m_audioSeparatorAction->setVisible(false);
+        m_gvWaveform->m_giPlayCursor->hide();
+        m_gvSpectrogram->m_giPlayCursor->hide();
     }
 }
 
-void WMainWindow::selectAudioOutputDevice(int di) {
+void WMainWindow::audioSelectOutputDevice(int di) {
     QList<QAudioDeviceInfo> audioDevices = m_audioengine->availableAudioOutputDevices();
     m_audioengine->setAudioOutputDevice(audioDevices[di]);
 }
 
-void WMainWindow::selectAudioOutputDevice(const QString& devicename) {
+void WMainWindow::audioSelectOutputDevice(const QString& devicename) {
     if(devicename=="default") {
         m_audioengine->setAudioOutputDevice(QAudioDeviceInfo::defaultOutputDevice());
     }
@@ -821,9 +931,9 @@ void WMainWindow::selectAudioOutputDevice(const QString& devicename) {
 }
 
 void WMainWindow::audioOutputFormatChanged(const QAudioFormat &format) {
-//    cout << "WMainWindow::audioOutputFormatChanged" << endl;
+//    DCOUT << "WMainWindow::audioOutputFormatChanged" << endl;
     if(format.sampleRate()==-1) {
-        m_dlgSettings->ui->lblAudioOutputDeviceFormat->hide();
+        m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText("<small>No audio device selected.</small>");
     }
     else {
         QAudioDeviceInfo adinfo = m_audioengine->audioOutputDevice();
@@ -848,42 +958,29 @@ void WMainWindow::audioOutputFormatChanged(const QAudioFormat &format) {
             str += " big endian";
         else if(byteOrder==QAudioFormat::LittleEndian)
             str += " little endian";
-//        str += "<br/>";
 
         m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText("<small>"+str+"</small>");
-        m_dlgSettings->ui->lblAudioOutputDeviceFormat->show();
-        ui->actionPlay->setEnabled(true);
-        m_pbVolume->setEnabled(true);
     }
 //    cout << "WMainWindow::~audioOutputFormatChanged" << endl;
 }
 
-void WMainWindow::audioEngineError(const QString &heading, const QString &detail) {
-    Q_UNUSED(heading)
-    Q_UNUSED(detail)
-    if(!m_audioengine->isInitialized()) {
-        m_dlgSettings->ui->lblAudioOutputDeviceFormat->setText("<small>"+heading+": "+detail+"</small>");
-        ui->actionPlay->setEnabled(false);
-        m_pbVolume->setEnabled(false);
-    }
+void WMainWindow::playFiltered(){
+    play(true);
 }
 
-void WMainWindow::play()
-{
-    if(m_audioengine && m_audioengine->isInitialized()){
+void WMainWindow::play(bool filtered){
+    DLOG << "WMainWindow::play";
 
-        if(m_audioengine->state()==QAudio::IdleState || m_audioengine->state()==QAudio::StoppedState){
-        // DEBUGSTRING << "MainWindow::play QAudio::IdleState || QAudio::StoppedState" << endl;
+    if(m_audioengine
+       && m_audioengine->isInitialized()){
+
+        if(m_audioengine->state()==QAudio::IdleState
+           || m_audioengine->state()==QAudio::StoppedState){
+        // COUTD << "MainWindow::play QAudio::IdleState || QAudio::StoppedState" << endl;
 
             // If stopped, play the whole signal or its selection
-            FTSound* currentftsound = m_fileslist->getCurrentFTSound(true);
-            if(currentftsound) {
-
-                // Start by reseting any previously filtered sounds
-                if(m_lastFilteredSound && m_lastFilteredSound->isFiltered()){
-                    m_lastFilteredSound->resetFiltering();
-                    m_lastFilteredSound->needDFTUpdate();
-                }
+            FTSound* currentftsound = gFL->getCurrentFTSound(true);
+            if(currentftsound){
 
                 double tstart = m_gvWaveform->m_giPlayCursor->pos().x();
                 double tstop = gFL->getMaxLastSampleTime();
@@ -894,49 +991,22 @@ void WMainWindow::play()
 
                 double fstart = 0.0;
                 double fstop = gFL->getFs();
-                if(QApplication::keyboardModifiers().testFlag(Qt::ControlModifier) &&
-                    m_gvAmplitudeSpectrum->m_selection.width()>0){
-                    fstart = m_gvAmplitudeSpectrum->m_selection.left();
-                    fstop = m_gvAmplitudeSpectrum->m_selection.right();
+                if(filtered && m_gvSpectrumAmplitude->m_selection.width()>0){
+                    fstart = m_gvSpectrumAmplitude->m_selection.left();
+                    fstop = m_gvSpectrumAmplitude->m_selection.right();
                 }
 
                 try {
-                    if(fstart!=0.0 || fstop!=gFL->getFs()){
-                        for(size_t fi=0; fi<m_fileslist->ftsnds.size(); fi++)
-                            m_fileslist->ftsnds[fi]->setFiltered(false);
-                        currentftsound->setFiltered(true);
-                        m_lastFilteredSound = currentftsound;
-                    }
-                    else
-                        currentftsound->setFiltered(false);
-
-                    if(!currentftsound->m_actionShow->isChecked())
-                        statusBar()->showMessage("WARNING: Playing a hidden waveform!", 3000);
-                    else
-                        statusBar()->clearMessage();
-
                     m_gvWaveform->m_initialPlayPosition = tstart;
                     m_playingftsound = currentftsound;
                     m_audioengine->startPlayback(currentftsound, tstart, tstop, fstart, fstop);
-                    gFL->fileInfoUpdate();
-
-                    if(fstart!=0.0 || fstop!=gFL->getFs()) {
-                        if(m_gvWaveform->m_giSelection->rect().width()>0)
-                            m_gvWaveform->m_giFilteredSelection->setRect(m_gvWaveform->m_giSelection->rect());
-                        else
-                            m_gvWaveform->m_giFilteredSelection->setRect(-0.5/gFL->getFs(), -1.0, currentftsound->getLastSampleTime()+1.0/gFL->getFs(), 2.0);
-                        m_gvWaveform->m_giFilteredSelection->show();
-                    }
-                    else {
-                        m_gvWaveform->m_giFilteredSelection->hide();
-                    }
 
                     ui->actionPlay->setEnabled(false);
                     // Delay the stop and re-play,
                     // to avoid the audio engine to go hysterical and crash.
                     QTimer::singleShot(250, this, SLOT(enablePlay()));
                 }
-                catch(QString err) {
+                catch(QString err){
                     statusBar()->showMessage("Error during playback: "+err);
                 }
             }
@@ -944,11 +1014,10 @@ void WMainWindow::play()
         else if(m_audioengine->state()==QAudio::ActiveState){
             // If playing, just stop it
             m_audioengine->stopPlayback();
-//            m_gvWaveform->m_giPlayCursor->hide();
         }
     }
     else
-        statusBar()->showMessage("The engine is not ready for playing. Missing available sound device ?");
+        statusBar()->showMessage("The sound cannot be played. Please check settings for details.");
 }
 
 void WMainWindow::enablePlay(){
@@ -970,6 +1039,13 @@ void WMainWindow::audioStateChanged(QAudio::State state){
     }
 
 //    DEBUGSTRING << "~MainWindow::stateChanged " << state << endl;
+}
+
+void WMainWindow::resetFiltering(){
+    if(m_lastFilteredSound){
+        gMW->m_lastFilteredSound->setFiltered(false);
+        m_lastFilteredSound = NULL;
+    }
 }
 
 void WMainWindow::localEnergyChanged(double e){

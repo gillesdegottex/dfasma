@@ -18,17 +18,16 @@ file provided in the source code of DFasma. Another copy can be found at
 <http://www.gnu.org/licenses/>.
 */
 
-#include "gvphasespectrum.h"
+#include "gvspectrumphase.h"
 
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "gvwaveform.h"
-#include "gvamplitudespectrum.h"
+#include "gvspectrumamplitude.h"
 #include "gvspectrumgroupdelay.h"
 #include "gvspectrogram.h"
 #include "ftsound.h"
 #include "ftfzero.h"
-#include "qaesigproc.h"
 #include "ui_wdialogsettings.h"
 
 #include <iostream>
@@ -43,9 +42,10 @@ using namespace std;
 #include <QStaticText>
 #include <QDebug>
 
+#include "qaesigproc.h"
 #include "qaehelpers.h"
 
-QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
+GVSpectrumPhase::GVSpectrumPhase(WMainWindow* parent)
     : QGraphicsView(parent)
     , m_scene(NULL)
 {
@@ -58,42 +58,62 @@ QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
     m_scene = new QGraphicsScene(this);
     setScene(m_scene);
 
-    m_aPhaseSpectrumGridUsePiFraction = new QAction(tr("Grid uses fractions of &Pi"), this);
-    m_aPhaseSpectrumGridUsePiFraction->setObjectName("m_aPhaseSpectrumGridUsePiFraction");
-    m_aPhaseSpectrumGridUsePiFraction->setStatusTip(tr("Use fraction of Pi for displaying the grid instead of decimals"));
-//    m_aPhaseSpectrumGridUsePiFraction->setIcon(QIcon(":/icons/grid.svg"));
-    m_aPhaseSpectrumGridUsePiFraction->setCheckable(true);
-    m_aPhaseSpectrumGridUsePiFraction->setChecked(false);
-    gMW->m_settings.add(m_aPhaseSpectrumGridUsePiFraction);
-    connect(m_aPhaseSpectrumGridUsePiFraction, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
+    m_aPhaseSpectrumShowGrid = new QAction(tr("Show &grid"), this);
+    m_aPhaseSpectrumShowGrid->setObjectName("m_aPhaseSpectrumShowGrid");
+    m_aPhaseSpectrumShowGrid->setStatusTip(tr("Show or hide the grid"));
+    m_aPhaseSpectrumShowGrid->setIcon(QIcon(":/icons/grid.svg"));
+    m_aPhaseSpectrumShowGrid->setCheckable(true);
+    m_aPhaseSpectrumShowGrid->setChecked(true);
+    gMW->m_settings.add(m_aPhaseSpectrumShowGrid);
+    m_giGrid = new QAEGIGrid(this, "Hz", "rad");
+    m_giGrid->setMathYAxis(true);
+    m_giGrid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
+    m_giGrid->setVisible(m_aPhaseSpectrumShowGrid->isChecked());
+    m_scene->addItem(m_giGrid);
+    connect(m_aPhaseSpectrumShowGrid, SIGNAL(toggled(bool)), this, SLOT(gridSetVisible(bool)));
+
+    // TODO
+//    m_aPhaseSpectrumGridUsePiFraction = new QAction(tr("Grid uses fractions of &Pi"), this);
+//    m_aPhaseSpectrumGridUsePiFraction->setObjectName("m_aPhaseSpectrumGridUsePiFraction");
+//    m_aPhaseSpectrumGridUsePiFraction->setStatusTip(tr("Use fraction of Pi for displaying the grid instead of decimals"));
+////    m_aPhaseSpectrumGridUsePiFraction->setIcon(QIcon(":/icons/grid.svg"));
+//    m_aPhaseSpectrumGridUsePiFraction->setCheckable(true);
+//    m_aPhaseSpectrumGridUsePiFraction->setChecked(false);
+//    gMW->m_settings.add(m_aPhaseSpectrumGridUsePiFraction);
+//    connect(m_aPhaseSpectrumGridUsePiFraction, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
 
     // Cursor
     m_giCursorHoriz = new QGraphicsLineItem(0, -100, 0, 100);
+    m_giCursorHoriz->hide();
     QPen cursorPen(QColor(64, 64, 64));
     cursorPen.setWidth(0);
     m_giCursorHoriz->setPen(cursorPen);
-    m_giCursorHoriz->hide();
+    m_giCursorHoriz->setZValue(100);
     m_scene->addItem(m_giCursorHoriz);
     m_giCursorVert = new QGraphicsLineItem(0, 0, gFL->getFs()/2.0, 0);
-    m_giCursorVert->setPen(cursorPen);
     m_giCursorVert->hide();
+    m_giCursorVert->setPen(cursorPen);
+    m_giCursorVert->setZValue(100);
     m_scene->addItem(m_giCursorVert);
     QFont font("Helvetica", 10);
     m_giCursorPositionXTxt = new QGraphicsSimpleTextItem();
+    m_giCursorPositionXTxt->hide();
     m_giCursorPositionXTxt->setBrush(QColor(64, 64, 64));
     m_giCursorPositionXTxt->setFont(font);
-    m_giCursorPositionXTxt->hide();
+    m_giCursorPositionXTxt->setZValue(100);
     m_scene->addItem(m_giCursorPositionXTxt);
     m_giCursorPositionYTxt = new QGraphicsSimpleTextItem();
+    m_giCursorPositionYTxt->hide();
     m_giCursorPositionYTxt->setBrush(QColor(64, 64, 64));
     m_giCursorPositionYTxt->setFont(font);
-    m_giCursorPositionYTxt->hide();
+    m_giCursorPositionYTxt->setZValue(100);
     m_scene->addItem(m_giCursorPositionYTxt);
 
     // Selection
     m_currentAction = CANothing;
     m_giShownSelection = new QGraphicsRectItem();
     m_giShownSelection->hide();
+    m_giShownSelection->setZValue(100.0);
     m_scene->addItem(m_giShownSelection);
     m_giSelectionTxt = new QGraphicsSimpleTextItem();
     m_giSelectionTxt->hide();
@@ -112,23 +132,22 @@ QGVPhaseSpectrum::QGVPhaseSpectrum(WMainWindow* parent)
     setMouseTracking(true);
 
     // Build the context menu
-    m_contextmenu.addAction(gMW->m_gvAmplitudeSpectrum->m_aAmplitudeSpectrumShowGrid);
-    m_contextmenu.addAction(m_aPhaseSpectrumGridUsePiFraction);
+    m_contextmenu.addAction(m_aPhaseSpectrumShowGrid);
+//    m_contextmenu.addAction(m_aPhaseSpectrumGridUsePiFraction); // TODO
     m_contextmenu.addSeparator();
-    m_contextmenu.addAction(gMW->m_gvAmplitudeSpectrum->m_aAutoUpdateDFT);
-    m_contextmenu.addAction(gMW->m_gvAmplitudeSpectrum->m_aFollowPlayCursor);
+    m_contextmenu.addAction(gMW->m_gvSpectrumAmplitude->m_aAutoUpdateDFT);
+    m_contextmenu.addAction(gMW->m_gvSpectrumAmplitude->m_aFollowPlayCursor);
     m_contextmenu.addSeparator();
-    m_contextmenu.addAction(gMW->m_gvAmplitudeSpectrum->m_aShowProperties);
+    m_contextmenu.addAction(gMW->m_gvSpectrumAmplitude->m_aShowProperties);
 
-    connect(gMW->m_gvAmplitudeSpectrum->m_aAmplitudeSpectrumShowGrid, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
     connect(gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop, SIGNAL(triggered()), m_scene, SLOT(update()));
 }
 
-void QGVPhaseSpectrum::updateSceneRect() {
+void GVSpectrumPhase::updateSceneRect() {
     m_scene->setSceneRect(0.0, -M_PI, gFL->getFs()/2, 2*M_PI);
 }
 
-void QGVPhaseSpectrum::viewSet(QRectF viewrect, bool sync) {
+void GVSpectrumPhase::viewSet(QRectF viewrect, bool sync) {
 //    cout << "QGVPhaseSpectrum::viewSet" << endl;
 
     QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
@@ -136,6 +155,18 @@ void QGVPhaseSpectrum::viewSet(QRectF viewrect, bool sync) {
     if(viewrect==QRect() || viewrect!=currentviewrect) {
         if(viewrect==QRectF())
             viewrect = currentviewrect;
+
+        QPointF center = viewrect.center();
+        double hzeps = 1e-10;
+        if(viewrect.width()<hzeps){
+            viewrect.setLeft(center.x()-0.5*hzeps);
+            viewrect.setRight(center.x()+0.5*hzeps);
+        }
+        double radeps = 1e-10;
+        if(viewrect.height()<radeps){
+            viewrect.setTop(center.x()-0.5*radeps);
+            viewrect.setBottom(center.x()+0.5*radeps);
+        }
 
         if(viewrect.top()<=m_scene->sceneRect().top())
             viewrect.setTop(m_scene->sceneRect().top()-0.1);
@@ -148,12 +179,14 @@ void QGVPhaseSpectrum::viewSet(QRectF viewrect, bool sync) {
 
         fitInView(removeHiddenMargin(this, viewrect));
 
+        m_giGrid->updateLines();
+
         if(sync){
-            if(gMW->m_gvAmplitudeSpectrum && gMW->ui->actionShowAmplitudeSpectrum->isChecked()) {
-                QRectF amprect = gMW->m_gvAmplitudeSpectrum->mapToScene(gMW->m_gvAmplitudeSpectrum->viewport()->rect()).boundingRect();
+            if(gMW->m_gvSpectrumAmplitude && gMW->ui->actionShowAmplitudeSpectrum->isChecked()) {
+                QRectF amprect = gMW->m_gvSpectrumAmplitude->mapToScene(gMW->m_gvSpectrumAmplitude->viewport()->rect()).boundingRect();
                 amprect.setLeft(viewrect.left());
                 amprect.setRight(viewrect.right());
-                gMW->m_gvAmplitudeSpectrum->viewSet(amprect, false);
+                gMW->m_gvSpectrumAmplitude->viewSet(amprect, false);
             }
 
             if(gMW->m_gvSpectrumGroupDelay && gMW->ui->actionShowGroupDelaySpectrum->isChecked()) {
@@ -167,7 +200,7 @@ void QGVPhaseSpectrum::viewSet(QRectF viewrect, bool sync) {
 //    cout << "QGVPhaseSpectrum::~viewSet" << endl;
 }
 
-void QGVPhaseSpectrum::resizeEvent(QResizeEvent* event) {
+void GVSpectrumPhase::resizeEvent(QResizeEvent* event) {
 //    COUTD << "QGVPhaseSpectrum::resizeEvent" << endl;
 
     QRectF oldviewrect = mapToScene(QRect(QPoint(0,0), event->oldSize())).boundingRect();
@@ -176,8 +209,8 @@ void QGVPhaseSpectrum::resizeEvent(QResizeEvent* event) {
 
         updateSceneRect();
 
-        if(gMW->m_gvAmplitudeSpectrum->viewport()->rect().width()*gMW->m_gvAmplitudeSpectrum->viewport()->rect().height()>0){
-            QRectF phaserect = gMW->m_gvAmplitudeSpectrum->mapToScene(gMW->m_gvAmplitudeSpectrum->viewport()->rect()).boundingRect();
+        if(gMW->m_gvSpectrumAmplitude->viewport()->rect().width()*gMW->m_gvSpectrumAmplitude->viewport()->rect().height()>0){
+            QRectF phaserect = gMW->m_gvSpectrumAmplitude->mapToScene(gMW->m_gvSpectrumAmplitude->viewport()->rect()).boundingRect();
 
             QRectF viewrect;
             viewrect.setLeft(phaserect.left());
@@ -194,38 +227,22 @@ void QGVPhaseSpectrum::resizeEvent(QResizeEvent* event) {
         viewSet(oldviewrect, false);
     }
 
-//    // Set the scroll bars in the amplitude and phase views
-//    if(event->size().height()==0)
-//        gMW->m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-//    else
-//        gMW->m_gvAmplitudeSpectrum->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
     viewUpdateTexts();
     setMouseCursorPosition(QPointF(-1,0), false);
 
 //    COUTD << "QGVPhaseSpectrum::~resizeEvent" << endl;
 }
 
-void QGVPhaseSpectrum::scrollContentsBy(int dx, int dy){
-
-    // Invalidate the necessary parts
-    // Ensure the y ticks labels will be redrawn
-    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-    QTransform trans = transform();
-
-    QRectF r = QRectF(viewrect.left(), viewrect.top(), 5*14.0/trans.m11(), viewrect.height());
-    m_scene->invalidate(r);
-
-    r = QRectF(viewrect.left(), viewrect.bottom()-14/trans.m22(), viewrect.width(), 14/trans.m22());
-    m_scene->invalidate(r);
-
-    viewUpdateTexts();
+void GVSpectrumPhase::scrollContentsBy(int dx, int dy){
     setMouseCursorPosition(QPointF(-1,0), false);
+    viewUpdateTexts();
 
     QGraphicsView::scrollContentsBy(dx, dy);
+
+    m_giGrid->updateLines();
 }
 
-void QGVPhaseSpectrum::wheelEvent(QWheelEvent* event) {
+void GVSpectrumPhase::wheelEvent(QWheelEvent* event) {
 //    cout << "QGVPhaseSpectrum::wheelEvent" << endl;
 
     qreal numDegrees = (event->angleDelta() / 8).y();
@@ -247,7 +264,7 @@ void QGVPhaseSpectrum::wheelEvent(QWheelEvent* event) {
 //    cout << "QGVPhaseSpectrum::~wheelEvent" << endl;
 }
 
-void QGVPhaseSpectrum::mousePressEvent(QMouseEvent* event){
+void GVSpectrumPhase::mousePressEvent(QMouseEvent* event){
 //    std::cout << "QGVWaveform::mousePressEvent" << endl;
 
     QPointF p = mapToScene(event->pos());
@@ -306,13 +323,16 @@ void QGVPhaseSpectrum::mousePressEvent(QMouseEvent* event){
                 selectionSet(m_mouseSelection, true);
             }
         }
-        else if(gMW->ui->actionEditMode->isChecked()){
-            if(kctrl && kshift) {
-                m_currentAction = CAWaveformDelay;
-                m_selection_pressedp = p;
-                FTSound* currentftsound = gFL->getCurrentFTSound();
-                if(currentftsound)
-                    m_pressed_delay = currentftsound->m_delay;
+        else if(gMW->ui->actionEditMode->isChecked()
+                && (gFL->currentFile() && gFL->currentFile()->isVisible())){
+            if(!kctrl && !kshift) {
+                FTSound* currentftsound = gFL->getCurrentFTSound(false);
+                if(currentftsound){
+                    m_currentAction = CAWaveformDelay;
+                    m_selection_pressedp = p;
+                    m_pressed_delay = currentftsound->m_giWavForWaveform->delay();
+                    gMW->setEditing(currentftsound);
+                }
             }
         }
     }
@@ -324,38 +344,38 @@ void QGVPhaseSpectrum::mousePressEvent(QMouseEvent* event){
             m_pressed_mouseinviewport = mapFromScene(p);
             m_pressed_viewrect = mapToScene(viewport()->rect()).boundingRect();
         }
-        else {
-            QPoint posglobal = mapToGlobal(mapFromScene(p)+QPoint(0,0));
-            m_contextmenu.exec(posglobal);
-        }
     }
 
     QGraphicsView::mousePressEvent(event);
 //    std::cout << "~QGVWaveform::mousePressEvent " << p.x() << endl;
 }
 
-void QGVPhaseSpectrum::mouseMoveEvent(QMouseEvent* event){
+void GVSpectrumPhase::mouseMoveEvent(QMouseEvent* event){
 //    std::cout << "QGVWaveform::mouseMoveEvent" << selection.width() << endl;
 
     QPointF p = mapToScene(event->pos());
+
+    setMouseCursorPosition(p, true);
 
 //    std::cout << "QGVWaveform::mouseMoveEvent action=" << m_currentAction << " x=" << p.x() << " y=" << p.y() << endl;
 
     if(m_currentAction==CAMoving) {
         // When scrolling the view around the scene
 //        setMouseCursorPosition(QPointF(-1,0), true);
+        m_giGrid->updateLines();
     }
     else if(m_currentAction==CAZooming) {
         double dx = -(event->pos()-m_pressed_mouseinviewport).x()/100.0;
         double dy = (event->pos()-m_pressed_mouseinviewport).y()/100.0;
 
         QRectF newrect = m_pressed_viewrect;
-
         newrect.setLeft(m_selection_pressedp.x()-(m_selection_pressedp.x()-m_pressed_viewrect.left())*exp(dx));
         newrect.setRight(m_selection_pressedp.x()+(m_pressed_viewrect.right()-m_selection_pressedp.x())*exp(dx));
         newrect.setTop(m_selection_pressedp.y()-(m_selection_pressedp.y()-m_pressed_viewrect.top())*exp(dy));
         newrect.setBottom(m_selection_pressedp.y()+(m_pressed_viewrect.bottom()-m_selection_pressedp.y())*exp(dy));
         viewSet(newrect);
+
+        setMouseCursorPosition(m_selection_pressedp, true);
     }
     else if(m_currentAction==CAModifSelectionLeft){
         m_mouseSelection.setLeft(p.x()-m_selection_pressedp.x());
@@ -398,14 +418,14 @@ void QGVPhaseSpectrum::mouseMoveEvent(QMouseEvent* event){
         double dy = -(p.y()-m_selection_pressedp.y());
         // cout << "CAWaveformDelay at " << m_selection_pressedp.x() << " " << dy << "rad" << endl;
         double dt = ((gFL->getFs()/m_selection_pressedp.x())*dy/(2*M_PI))/gFL->getFs();
-        FTSound* currentftsound = gFL->getCurrentFTSound();
+        FTSound* currentftsound = gFL->getCurrentFTSound(true);
         if(currentftsound){
-            currentftsound->m_delay = m_pressed_delay - dt*gFL->getFs();
+            currentftsound->m_giWavForWaveform->setDelay(m_pressed_delay - dt*gFL->getFs());
 
             currentftsound->needDFTUpdate();
 
             gMW->m_gvWaveform->m_scene->update();
-            gMW->m_gvAmplitudeSpectrum->updateDFTs();
+            gMW->m_gvSpectrumAmplitude->updateDFTs();
             gFL->fileInfoUpdate();
             gMW->ui->pbSpectrogramSTFTUpdate->show();
         }
@@ -443,68 +463,62 @@ void QGVPhaseSpectrum::mouseMoveEvent(QMouseEvent* event){
         }
     }
 
-    setMouseCursorPosition(p, true);
-
 //    std::cout << "~QGVWaveform::mouseMoveEvent" << endl;
     QGraphicsView::mouseMoveEvent(event);
 }
 
-void QGVPhaseSpectrum::mouseReleaseEvent(QMouseEvent* event){
+void GVSpectrumPhase::mouseReleaseEvent(QMouseEvent* event){
 //    std::cout << "QGVWaveform::mouseReleaseEvent " << selection.width() << endl;
 
-    QPointF p = mapToScene(event->pos());
+    bool kshift = event->modifiers().testFlag(Qt::ShiftModifier);
+    bool kctrl = event->modifiers().testFlag(Qt::ControlModifier);
 
     m_currentAction = CANothing;
 
+    gMW->updateMouseCursorState(kshift, kctrl);
+
+    QPointF p = mapToScene(event->pos());
     if(gMW->ui->actionSelectionMode->isChecked()){
-        if(event->modifiers().testFlag(Qt::ShiftModifier)){
-            setCursor(Qt::OpenHandCursor);
-        }
-        else if(event->modifiers().testFlag(Qt::ControlModifier)){
-            setCursor(Qt::OpenHandCursor);
-        }
-        else{
+        if(abs(m_selection.width())<=0 || abs(m_selection.height())<=0)
+            gMW->m_gvSpectrumAmplitude->selectionClear();
+
+        if(!kshift && !kctrl){
             if(p.x()>=m_selection.left() && p.x()<=m_selection.right() && p.y()>=m_selection.top() && p.y()<=m_selection.bottom())
                 setCursor(Qt::OpenHandCursor);
-            else
-                setCursor(Qt::CrossCursor);
         }
     }
-    else if(gMW->ui->actionEditMode->isChecked()){
-        if(event->modifiers().testFlag(Qt::ShiftModifier)){
-        }
-        else if(event->modifiers().testFlag(Qt::ControlModifier)){
-        }
-        else{
-            setCursor(Qt::SizeVerCursor);
-        }
-    }
-
-    if(abs(m_selection.width())<=0 || abs(m_selection.height())<=0)
-        gMW->m_gvAmplitudeSpectrum->selectionClear();
 
     QGraphicsView::mouseReleaseEvent(event);
 //    std::cout << "~QGVWaveform::mouseReleaseEvent " << endl;
 }
 
-void QGVPhaseSpectrum::keyPressEvent(QKeyEvent* event){
+void GVSpectrumPhase::keyPressEvent(QKeyEvent* event){
     if(event->key()==Qt::Key_Escape){
-        if(!gMW->m_gvAmplitudeSpectrum->hasSelection()) {
+        if(!gMW->m_gvSpectrumAmplitude->hasSelection()) {
             if(!gMW->m_gvSpectrogram->hasSelection()
                 && !gMW->m_gvWaveform->hasSelection())
                 gMW->m_gvWaveform->playCursorSet(0.0, true);
 
             gMW->m_gvSpectrogram->selectionClear();
         }
-        gMW->m_gvAmplitudeSpectrum->selectionClear();
+        gMW->m_gvSpectrumAmplitude->selectionClear();
     }
-    //if(event->key()==Qt::Key_S)
-    //    selectionZoomOn(); // Doesn't exist for the phase spectrum
+    else if(event->key()==Qt::Key_S)
+        selectionZoomOn();
 
     QGraphicsView::keyPressEvent(event);
 }
 
-void QGVPhaseSpectrum::selectionClear(bool forwardsync){
+void GVSpectrumPhase::contextMenuEvent(QContextMenuEvent *event){
+    if (event->modifiers().testFlag(Qt::ShiftModifier)
+        || event->modifiers().testFlag(Qt::ControlModifier))
+        return;
+
+    QPoint posglobal = mapToGlobal(event->pos()+QPoint(0,0));
+    m_contextmenu.exec(posglobal);
+}
+
+void GVSpectrumPhase::selectionClear(bool forwardsync){
     Q_UNUSED(forwardsync)
     m_selection = QRectF(0, 0, 0, 0);
     m_mouseSelection = QRectF(0, 0, 0, 0);
@@ -514,7 +528,7 @@ void QGVPhaseSpectrum::selectionClear(bool forwardsync){
     setCursor(Qt::CrossCursor);
 }
 
-void QGVPhaseSpectrum::selectionSet(QRectF selection, bool forwardsync){
+void GVSpectrumPhase::selectionSet(QRectF selection, bool forwardsync){
     // Order the selection to avoid negative width and negative height
     if(selection.right()<selection.left()){
         qreal tmp = selection.left();
@@ -542,15 +556,15 @@ void QGVPhaseSpectrum::selectionSet(QRectF selection, bool forwardsync){
     viewUpdateTexts();
 
     if(forwardsync) {
-        if(gMW->m_gvAmplitudeSpectrum){
-            QRectF rect = gMW->m_gvAmplitudeSpectrum->m_mouseSelection;
+        if(gMW->m_gvSpectrumAmplitude){
+            QRectF rect = gMW->m_gvSpectrumAmplitude->m_mouseSelection;
             rect.setLeft(m_mouseSelection.left());
             rect.setRight(m_mouseSelection.right());
             if(rect.height()==0) {
-                rect.setTop(gMW->m_gvAmplitudeSpectrum->m_scene->sceneRect().top());
-                rect.setBottom(gMW->m_gvAmplitudeSpectrum->m_scene->sceneRect().bottom());
+                rect.setTop(gMW->m_gvSpectrumAmplitude->m_scene->sceneRect().top());
+                rect.setBottom(gMW->m_gvSpectrumAmplitude->m_scene->sceneRect().bottom());
             }
-            gMW->m_gvAmplitudeSpectrum->selectionSet(rect, false);
+            gMW->m_gvSpectrumAmplitude->selectionSet(rect, false);
         }
 
         if(gMW->m_gvSpectrumGroupDelay){
@@ -578,7 +592,7 @@ void QGVPhaseSpectrum::selectionSet(QRectF selection, bool forwardsync){
 
 }
 
-void QGVPhaseSpectrum::viewUpdateTexts(){
+void GVSpectrumPhase::viewUpdateTexts(){
     QTransform trans = transform();
     QTransform txttrans;
     txttrans.scale(1.0/trans.m11(), 1.0/trans.m22());
@@ -593,7 +607,29 @@ void QGVPhaseSpectrum::viewUpdateTexts(){
     m_giSelectionTxt->setPos(m_selection.center()-QPointF(0.5*br.width()/trans.m11(), 0.5*br.height()/trans.m22()));
 }
 
-void QGVPhaseSpectrum::azoomin(){
+void GVSpectrumPhase::selectionZoomOn(){
+    if(m_selection.width()>0 && m_selection.height()>0){
+        QRectF zoomonrect = m_selection;
+        if(gMW->m_dlgSettings->ui->cbViewsAddMarginsOnSelection->isChecked()) {
+            zoomonrect.setTop(zoomonrect.top()-0.1*zoomonrect.height());
+            zoomonrect.setBottom(zoomonrect.bottom()+0.1*zoomonrect.height());
+            zoomonrect.setLeft(zoomonrect.left()-0.1*zoomonrect.width());
+            zoomonrect.setRight(zoomonrect.right()+0.1*zoomonrect.width());
+        }
+        viewSet(zoomonrect);
+
+        viewUpdateTexts();
+
+        if(gMW->m_gvSpectrumAmplitude)
+            gMW->m_gvSpectrumAmplitude->viewUpdateTexts();
+        if(gMW->m_gvSpectrumGroupDelay)
+            gMW->m_gvSpectrumGroupDelay->viewUpdateTexts();
+
+        setMouseCursorPosition(QPointF(-1,0), false);
+    }
+}
+
+void GVSpectrumPhase::azoomin(){
     QTransform trans = transform();
     qreal h11 = trans.m11();
     qreal h22 = trans.m22();
@@ -605,7 +641,7 @@ void QGVPhaseSpectrum::azoomin(){
 
     setMouseCursorPosition(QPointF(-1,0), false);
 }
-void QGVPhaseSpectrum::azoomout(){
+void GVSpectrumPhase::azoomout(){
     QTransform trans = transform();
     qreal h11 = trans.m11();
     qreal h22 = trans.m22();
@@ -618,7 +654,7 @@ void QGVPhaseSpectrum::azoomout(){
     setMouseCursorPosition(QPointF(-1,0), false);
 }
 
-void QGVPhaseSpectrum::setMouseCursorPosition(QPointF p, bool forwardsync) {
+void GVSpectrumPhase::setMouseCursorPosition(QPointF p, bool forwardsync) {
 
     QFontMetrics qfm(gMW->m_dlgSettings->ui->lblGridFontSample->font());
 
@@ -667,23 +703,19 @@ void QGVPhaseSpectrum::setMouseCursorPosition(QPointF p, bool forwardsync) {
 
     if(forwardsync){
         if(gMW->m_gvSpectrogram)
-            gMW->m_gvSpectrogram->setMouseCursorPosition(QPointF(0.0, p.x()), false);
-        if(gMW->m_gvAmplitudeSpectrum)
-            gMW->m_gvAmplitudeSpectrum->setMouseCursorPosition(QPointF(p.x(), 0.0), false);
+            gMW->m_gvSpectrogram->setMouseCursorPosition(QPointF(gMW->m_gvSpectrogram->m_giMouseCursorLineTime->x(), -p.x()), false);
+        if(gMW->m_gvSpectrumAmplitude)
+            gMW->m_gvSpectrumAmplitude->setMouseCursorPosition(QPointF(p.x(), 0.0), false);
         if(gMW->m_gvSpectrumGroupDelay)
             gMW->m_gvSpectrumGroupDelay->setMouseCursorPosition(QPointF(p.x(), 0.0), false);
     }
 }
 
-void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
-
+void GVSpectrumPhase::drawBackground(QPainter* painter, const QRectF& rect){
+    Q_UNUSED(rect)
 //    COUTD << ": QGVPhaseSpectrum::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
     // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
-
-    // Draw grid
-    if(gMW->m_gvAmplitudeSpectrum->m_aAmplitudeSpectrumShowGrid->isChecked())
-        draw_grid(painter, rect);
 
     // Draw the f0 grids
     if(!gFL->ftfzeros.empty()) {
@@ -697,7 +729,7 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
             painter->setPen(outlinePen);
             painter->setBrush(QBrush(gFL->ftfzeros[fi]->getColor()));
 
-            double ct = 0.5*(gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.nl+gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.nr)/gFL->getFs();
+            double ct = 0.5*(gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.nl+gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.nr)/gFL->getFs();
             double cf0 = qae::nearest<double>(gFL->ftfzeros[fi]->ts, gFL->ftfzeros[fi]->f0s, ct, -1.0);
 
             // cout << ct << ":" << cf0 << endl;
@@ -718,259 +750,8 @@ void QGVPhaseSpectrum::drawBackground(QPainter* painter, const QRectF& rect){
         }
     }
 
-    if (gMW->m_gvWaveform->m_selection.width()==0)
-        return;
-
-    // Draw the phase spectra
-
-    FTSound* currsnd = gFL->getCurrentFTSound(true);
-
-    for(size_t fi=0; fi<gFL->ftsnds.size(); fi++){
-        if(!gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop->isChecked() || gFL->ftsnds[fi]!=currsnd){
-            if(gFL->ftsnds[fi]->m_actionShow->isChecked()){
-                QPen outlinePen(gFL->ftsnds[fi]->getColor());
-                outlinePen.setWidth(0);
-                painter->setPen(outlinePen);
-                painter->setBrush(QBrush(gFL->ftsnds[fi]->getColor()));
-
-                draw_spectrum(painter, gFL->ftsnds[fi]->m_dft, gFL->getFs(), (gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.winlen-1)/2.0, rect);
-            }
-        }
-    }
-
-    if(gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop->isChecked()){
-        if(currsnd->m_actionShow->isChecked()){
-            QPen outlinePen(currsnd->getColor());
-            outlinePen.setWidth(0);
-            painter->setPen(outlinePen);
-            painter->setBrush(QBrush(currsnd->getColor()));
-
-            draw_spectrum(painter, currsnd->m_dft, gFL->getFs(), (gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.winlen-1)/2.0, rect);
-        }
-    }
-
 //    cout << "QGVPhaseSpectrum::~drawBackground" << endl;
 }
 
-void QGVPhaseSpectrum::draw_spectrum(QPainter* painter, std::vector<std::complex<WAVTYPE> >& ldft, double fs, double delay, const QRectF& rect) {
-    int dftlen = (int(ldft.size())-1)*2;
-    if (dftlen<2)
-        return;
-
-    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-
-    int kmin = std::max(0, int(dftlen*rect.left()/fs));
-    int kmax = std::min(dftlen/2, int(1+dftlen*rect.right()/fs));
-
-    // Draw the sound's spectra
-    double samppixdensity = (dftlen*(viewrect.right()-viewrect.left())/fs)/viewport()->rect().width();
-
-    if(samppixdensity<=1.0) {
-//         COUTD << "Spec: Draw lines between each bin" << endl;
-
-        double prevx = fs*kmin/dftlen;
-        double dp = delay*2.0*M_PI*kmin/dftlen;
-        dp += ldft[kmin].imag();
-        double prevy = std::arg(std::complex<WAVTYPE>(cos(dp),sin(dp)));
-        std::complex<WAVTYPE>* data = ldft.data();
-        for(int k=kmin+1; k<=kmax; ++k){
-            double x = fs*k/dftlen;
-            dp = delay*2.0*M_PI*k/dftlen;
-            dp += (*(data+k)).imag();
-            double y = std::arg(std::complex<WAVTYPE>(cos(dp),sin(dp))); // TODO Use wrap instead
-            painter->drawLine(QLineF(prevx, -prevy, x, -y));
-            prevx = x;
-            prevy = y;
-        }
-    }
-    else {
-//         COUTD << "Spec: Plot only one line per pixel, in order to reduce computation time" << endl;
-
-        painter->setWorldMatrixEnabled(false); // Work in pixel coordinates
-
-        QRect pixrect = mapFromScene(rect).boundingRect();
-        QRect fullpixrect = mapFromScene(viewrect).boundingRect();
-
-        double s2p = -(fullpixrect.height()-1)/viewrect.height(); // Scene to pixel
-        double p2s = viewrect.width()/fullpixrect.width(); // Pixel to scene
-        double yzero = mapFromScene(QPointF(0,0)).y();
-
-        std::complex<WAVTYPE>* yp = ldft.data();
-
-        for(int i=pixrect.left(); i<=pixrect.right(); i++) {
-            int ns = int(dftlen*(viewrect.left()+i*p2s)/fs);
-            int ne = int(dftlen*(viewrect.left()+(i+1)*p2s)/fs);
-
-            if(ns>=0 && ne<int(ldft.size())) {
-                WAVTYPE ymin = std::numeric_limits<WAVTYPE>::infinity();
-                WAVTYPE ymax = -std::numeric_limits<WAVTYPE>::infinity();
-                std::complex<WAVTYPE>* ypp = yp+ns;
-                WAVTYPE y;
-                for(int n=ns; n<=ne; n++) {
-                    double dp = delay*2.0*M_PI*n/dftlen;
-                    dp += (*ypp).imag();
-                    y = std::arg(std::complex<WAVTYPE>(cos(dp),sin(dp))); // TODO Use wrap instead
-                    ymin = std::min(ymin, y);
-                    ymax = std::max(ymax, y);
-                    ypp++;
-                }
-                ymin *= s2p;
-                ymax *= s2p;
-                ymin = int(ymin-1);
-                ymax = int(ymax);
-                painter->drawLine(QLineF(i, yzero+ymin, i, yzero+ymax));
-            }
-        }
-
-        painter->setWorldMatrixEnabled(true); // Go back to scene coordinates
-    }
-}
-
-void QGVPhaseSpectrum::draw_grid(QPainter* painter, const QRectF& rect){
-
-    // TODO Everything here could be save a lot of drawing instructions
-
-    // Prepare the pens and fonts
-    QPen gridPen(QColor(192,192,192)); //192
-    gridPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-    QPen thinGridPen(QColor(224,224,224));
-    thinGridPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-    QPen gridFontPen(QColor(128,128,128));
-    gridFontPen.setWidth(0); // Cosmetic pen (width=1pixel whatever the transform)
-    painter->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
-    QFontMetrics qfm(gMW->m_dlgSettings->ui->lblGridFontSample->font());
-
-    // Horizontal lines
-
-    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-
-    // Draw the horizontal lines
-    double lstep;
-    int m;
-    if(m_aPhaseSpectrumGridUsePiFraction->isChecked()){
-        // Adapt the lines ordinates to the viewport
-        lstep = M_PI;
-        m=1;
-        while(int(viewrect.height()/lstep)<3){
-            lstep /= 2;
-            m++;
-        }
-
-//        int mn=0;
-//        painter->setPen(gridPen);
-//        painter->drawLine(QLineF(rect.left(), 0, rect.right(), 0));
-//    //    for(double l=int(viewrect.top()/lstep)*lstep; l<=rect.bottom(); l+=lstep){
-//        for(double l=0.0; l<=rect.bottom(); l+=lstep){
-//    //        if(mn%m==0) painter->setPen(gridPen);
-//    //        else        painter->setPen(thinGridPen);
-//            painter->drawLine(QLineF(rect.left(), l, rect.right(), l));
-//            mn++;
-//        }
-//        for(double l=0.0; l>=rect.top(); l-=lstep){
-//    //        if(mn%m==0) painter->setPen(gridPen);
-//    //        else        painter->setPen(thinGridPen);
-//            painter->drawLine(QLineF(rect.left(), l, rect.right(), l));
-//            mn++;
-//        }
-    }
-    else{
-        // Adapt the lines ordinates to the viewport
-        double f = log10(float(viewrect.height()));
-        int fi;
-        if(f<0) fi=int(f-1);
-        else fi = int(f);
-        lstep = pow(10.0, fi);
-        m=1;
-        while(int(viewrect.height()/lstep)<3){
-            lstep /= 2;
-            m++;
-        }
-    }
-
-//    {
-        int mn=0;
-        painter->setPen(gridPen);
-        painter->drawLine(QLineF(rect.left(), 0, rect.right(), 0));
-    //    for(double l=int(viewrect.top()/lstep)*lstep; l<=rect.bottom(); l+=lstep){
-        for(double l=0.0; l<=rect.bottom(); l+=lstep){
-    //        if(mn%m==0) painter->setPen(gridPen);
-    //        else        painter->setPen(thinGridPen);
-            painter->drawLine(QLineF(rect.left(), l, rect.right(), l));
-            mn++;
-        }
-        for(double l=0.0; l>=rect.top(); l-=lstep){
-    //        if(mn%m==0) painter->setPen(gridPen);
-    //        else        painter->setPen(thinGridPen);
-            painter->drawLine(QLineF(rect.left(), l, rect.right(), l));
-            mn++;
-        }
-
-        // Write the ordinates of the horizontal lines
-        painter->setPen(gridFontPen);
-        QTransform trans = transform();
-        for(double l=0.0; l<=rect.bottom(); l+=lstep) {
-            painter->save();
-            painter->translate(QPointF(viewrect.left(), l));
-            painter->scale(1.0/trans.m11(), 1.0/trans.m22());
-
-            QString txt = QString("%1rad").arg(-l);
-            QRectF txtrect = painter->boundingRect(QRectF(), Qt::AlignLeft, txt);
-            if(l<viewrect.bottom()-0.75*txtrect.height()/trans.m22())
-                painter->drawStaticText(QPointF(0, -0.9*txtrect.height()), QStaticText(txt));
-            painter->restore();
-        }
-        for(double l=0.0; l>=rect.top(); l-=lstep) {
-            painter->save();
-            painter->translate(QPointF(viewrect.left(), l));
-            painter->scale(1.0/trans.m11(), 1.0/trans.m22());
-
-            QString txt = QString("%1rad").arg(-l);
-            QRectF txtrect = painter->boundingRect(QRectF(), Qt::AlignLeft, txt);
-            if(l<viewrect.bottom()-0.75*txtrect.height()/trans.m22())
-                painter->drawStaticText(QPointF(0, -0.9*txtrect.height()), QStaticText(txt));
-            painter->restore();
-        }
-//    }
-
-    {
-        // Vertical lines
-
-        // Adapt the lines absissa to the viewport
-        double f = log10(float(viewrect.width()));
-        int fi;
-        if(f<0) fi=int(f-1);
-        else fi = int(f);
-    //    std::cout << viewrect.height() << " " << f << " " << fi << endl;
-        double lstep = pow(10.0, fi);
-        int m=1;
-        while(int(viewrect.width()/lstep)<6) {
-            lstep /= 2;
-            m++;
-        }
-    //    std::cout << "lstep=" << lstep << endl;
-
-        // Draw the vertical lines
-        int mn = 0;
-        painter->setPen(gridPen);
-        for(double l=int(viewrect.left()/lstep)*lstep; l<=rect.right(); l+=lstep){
-    //        if(mn%m==0) painter->setPen(gridPen);
-    //        else        painter->setPen(thinGridPen);
-            painter->drawLine(QLineF(l, rect.top(), l, rect.bottom()));
-            mn++;
-        }
-
-        // Write the absissa of the vertical lines
-        painter->setPen(gridFontPen);
-        QTransform trans = transform();
-        for(double l=int(viewrect.left()/lstep)*lstep; l<=rect.right(); l+=lstep) {
-            painter->save();
-            painter->translate(QPointF(l, viewrect.bottom()-(qfm.height()-2)/trans.m22()));
-            painter->scale(1.0/trans.m11(), 1.0/trans.m22());
-            painter->drawStaticText(QPointF(0, 0), QStaticText(QString("%1Hz").arg(l)));
-            painter->restore();
-        }
-    }
-}
-
-QGVPhaseSpectrum::~QGVPhaseSpectrum() {
+GVSpectrumPhase::~GVSpectrumPhase() {
 }

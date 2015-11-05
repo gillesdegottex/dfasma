@@ -29,6 +29,8 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QAction>
 class QGraphicsSimpleTextItem;
 
+class QAEGISampledSignal;
+
 #include "filetype.h"
 class FTSound;
 
@@ -48,6 +50,7 @@ private:
 
     QAction* m_actionSave;
     QAction* m_actionSaveAs;
+    QAction* m_actionSetSource;
 
     FileFormat m_fileformat;
 
@@ -57,29 +60,31 @@ public:
     FTFZero(const FTFZero& ft);  // Duplicate
     ~FTFZero();
 
-    std::deque<double> ts;
-    std::deque<double> f0s;
+    std::vector<double> ts;
+    std::vector<double> f0s;
+    QAEGISampledSignal* m_giF0ForSpectrogram;
+    QAEGISampledSignal* m_giHarmonicForSpectrogram;
 
     QGraphicsSimpleTextItem* m_aspec_txt;
     virtual void fillContextMenu(QMenu& contextmenu);
     void updateTextsGeometry();
     void setColor(const QColor& _color);
+    virtual void zposReset();
+    virtual void zposBringForward();
 
     virtual QString info() const;
     virtual double getLastSampleTime() const;
 
+    // Edition
+    void edit(double t, double f0);
+
     // Drawing
-    void draw_time_freq(QPainter* painter, const QRectF& rect, bool draw_harmonics);
     void draw_freq_amp(QPainter* painter, const QRectF& rect);
 
     // Estimation
     FTFZero(QObject* parent, FTSound *ftsnd, double f0min, double f0max, double tstart=-1.0, double tend=-1.0, bool force=false);
     void estimate(FTSound *ftsnd, double f0min, double f0max, double tstart=-1.0, double tend=-1.0, bool force=false);
-
     static QString createFileNameFromSound(const QString& sndfilename);
-
-    void edit(double t, double f0);
-
     FTSound* m_src_snd;
 
 public slots:
@@ -87,6 +92,7 @@ public slots:
     void save();
     void saveAs();
     void setVisible(bool shown);
+    void setSource(FileType* src);
 };
 
 #endif // FTFZERO_H

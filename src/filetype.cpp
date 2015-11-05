@@ -27,12 +27,12 @@ using namespace std;
 
 #include <QMenu>
 #include <QFileInfo>
-#include <QColorDialog>
 #include <QMessageBox>
 #include <QSvgRenderer>
+
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
-#include "gvamplitudespectrum.h"
+#include "gvspectrumamplitude.h"
 
 #ifdef SUPPORT_SDIF
 #include <easdif/easdif.h>
@@ -61,7 +61,11 @@ FileType::ClassConstructor FileType::s_class_constructor;
 static deque<QColor> s_colors;
 static int s_colors_loaded = 0;
 
-QColor FileType::GetNextColor(){
+const std::deque<QColor>& FileType::availableColors(){
+    return s_colors;
+}
+
+QColor FileType::getNextColor(){
 
     // If empty, initialize the colors
     if(s_colors.empty()){
@@ -256,11 +260,13 @@ void FileType::constructor_external(){
     gFL->m_present_files.insert(make_pair(this,true));
 }
 
-FileType::FileType(FType _type, const QString& _fileName, QObject * parent, const QColor& _color)
+FileType::FileType(FType _type, const QString& _fileName, QObject *parent, const QColor& _color)
     : m_type(_type)
     , m_color(_color)
     , fileFullPath(_fileName)
 {
+    Q_UNUSED(parent)
+
     FileType::constructor_internal();
 //    cout << "FileType::FileType: " << _fileName.toLocal8Bit().constData() << endl;
 
@@ -301,7 +307,7 @@ QString FileType::info() const {
         else{
             datestr = m_modifiedtime.toString("HH:mm:ss ddMMM");
             if(m_modifiedtime>m_lastreadtime) datestr = "<b>"+datestr+"</b>";
-            str += "Last file modification at "+datestr;
+            str += "Modified at "+datestr;
         }
     }
 
@@ -377,22 +383,11 @@ void FileType::setIsSource(bool issource){
     }
 }
 
-
 void FileType::fillContextMenu(QMenu& contextmenu) {
     contextmenu.addAction(m_actionShow);
     contextmenu.addAction(gMW->ui->actionSelectedFilesReload);
     contextmenu.addAction(gMW->ui->actionSelectedFilesDuplicate);
-    QColorDialog* colordialog = new QColorDialog(&contextmenu); // TODO delete this !!!
-    QObject::connect(colordialog, SIGNAL(colorSelected(const QColor &)), gFL, SLOT(colorSelected(const QColor &)));
-//    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), gFL, SLOT(colorSelected(const QColor &)));
-//    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), gMW->m_gvSpectrum, SLOT(allSoundsChanged()));
-
-    // Add the available Matlab colors to the custom colors
-    int ci = 0;
-    for(std::deque<QColor>::iterator it=s_colors.begin(); it!=s_colors.end(); it++,ci++)
-        QColorDialog::setCustomColor(ci, (*it));
-
-    contextmenu.addAction("Color...", colordialog, SLOT(exec()));
+    contextmenu.addAction("Color...", gMW, SLOT(changeColor()));
     contextmenu.addAction(gMW->ui->actionSelectedFilesClose);
     contextmenu.addSeparator();
 }
@@ -422,7 +417,6 @@ void FileType::setStatus() {
     QString liststr = visibleName;
     QString tooltipstr = fileInfo.absoluteFilePath();
 
-//    cout << m_lastreadtime.toString().toLatin1().constData() << ":" << m_modifiedtime.toString().toLatin1().constData() << endl;
     if(m_lastreadtime<m_modifiedtime || m_modifiedtime==QDateTime()){
         liststr = '!'+liststr;
         if(m_lastreadtime==QDateTime())
@@ -438,9 +432,7 @@ void FileType::setStatus() {
         // TODO Set plain icon in the square ?
     }
     if(!m_actionShow->isChecked()) {
-        // liststr = '('+liststr+')';
         tooltipstr = "(hidden)"+tooltipstr;
-        // TODO Add diagonal stripes in the icon
     }
 
     setText(liststr);
@@ -451,4 +443,6 @@ FileType::~FileType() {
     gFL->m_present_files.erase(this);
 
     s_colors.push_front(m_color);
+
+    delete m_actionShow;
 }

@@ -43,8 +43,10 @@ using namespace Easdif;
 #include "ui_wmainwindow.h"
 #include "ui_wdialogsettings.h"
 #include "gvwaveform.h"
-#include "gvamplitudespectrum.h"
+#include "gvspectrumamplitude.h"
+#include "gvspectrogram.h"
 
+#include "qaegisampledsignal.h"
 #include "qaehelpers.h"
 
 std::deque<QString> FTFZero::s_formatstrings;
@@ -62,22 +64,28 @@ FTFZero::ClassConstructor::ClassConstructor(){
 FTFZero::ClassConstructor FTFZero::s_class_constructor;
 
 QString FTFZero::createFileNameFromSound(const QString& sndfilename){
-    QString fileName = DropFileExtension(sndfilename);
+    QString fileName = dropFileExtension(sndfilename);
 
     if(gMW->m_dlgSettings->ui->cbF0DefaultFormat->currentIndex()+FFAsciiTimeValue==FFSDIF)
         return fileName+".sdif";
     else if(gMW->m_dlgSettings->ui->cbF0DefaultFormat->currentIndex()+FFAsciiTimeValue==FFAsciiAutoDetect
             || gMW->m_dlgSettings->ui->cbF0DefaultFormat->currentIndex()+FFAsciiTimeValue==FFAsciiTimeValue)
         return fileName+".f0.txt";
+
+    return fileName+".f0.txt";
 }
 
 
 void FTFZero::constructor_internal(){
     m_fileformat = FFNotSpecified;
     m_src_snd = NULL;
+    m_giF0ForSpectrogram = NULL;
+    m_giHarmonicForSpectrogram = NULL;
 
-    m_aspec_txt = new QGraphicsSimpleTextItem("unset");
-    gMW->m_gvAmplitudeSpectrum->m_scene->addItem(m_aspec_txt);
+    connect(m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setVisible(bool)));
+
+    m_aspec_txt = new QGraphicsSimpleTextItem("unset"); // TODO delete ?
+    gMW->m_gvSpectrumAmplitude->m_scene->addItem(m_aspec_txt);
     setColor(getColor()); // Indirectly set the proper color to the m_aspec_txt
 
     m_actionSave = new QAction("Save", this);
@@ -87,12 +95,39 @@ void FTFZero::constructor_internal(){
     m_actionSaveAs = new QAction("Save as...", this);
     m_actionSaveAs->setStatusTip(tr("Save the f0 curve in a given file..."));
     connect(m_actionSaveAs, SIGNAL(triggered()), this, SLOT(saveAs()));
+    m_actionSetSource = new QAction("Set corresponding waveform...", this);
+    m_actionSetSource->setStatusTip(tr("Set the waveform this F0 should correspond to."));
+    connect(m_actionSetSource, SIGNAL(triggered()), gFL, SLOT(setSource()));
 }
 
 void FTFZero::constructor_external(){
     FileType::constructor_external();
 
     gFL->ftfzeros.push_back(this);
+
+    QPen pen(getColor());
+    pen.setWidth(0);
+
+    m_giF0ForSpectrogram = new QAEGISampledSignal(&ts, &f0s, gMW->m_gvSpectrogram);
+    m_giF0ForSpectrogram->setShowZeroValues(false);
+    QPen spectro_pen(getColor());
+    spectro_pen.setCosmetic(true);
+    spectro_pen.setWidth(3);
+    m_giF0ForSpectrogram->setPen(spectro_pen);
+    gMW->m_gvSpectrogram->m_scene->addItem(m_giF0ForSpectrogram);
+
+    m_giHarmonicForSpectrogram = new QAEGISampledSignal(&ts, &f0s, gMW->m_gvSpectrogram);
+    m_giHarmonicForSpectrogram->setShowZeroValues(false);
+    QColor harmcolor = getColor();
+//    harmcolor.setAlphaF(0.5);
+    QPen harmspectro_pen(harmcolor);
+    harmspectro_pen.setCosmetic(true);
+    harmspectro_pen.setWidth(3);
+    m_giHarmonicForSpectrogram->setPen(harmspectro_pen);
+//    m_giHarmonicForSpectrogram->setVisible(true);
+    m_giHarmonicForSpectrogram->setVisible(gMW->m_gvSpectrogram->m_aSpectrogramShowHarmonics->isChecked());
+//    m_giHarmonicForSpectrogram->setGain(1.0);
+    gMW->m_gvSpectrogram->m_scene->addItem(m_giHarmonicForSpectrogram);
 }
 
 FTFZero::FTFZero(const QString& _fileName, QObject* parent, FileType::FileContainer container, FileFormat fileformat)
@@ -287,6 +322,9 @@ bool FTFZero::reload() {
     // ... and reload the data from the file
     load();
 
+    m_giF0ForSpectrogram->update();
+    m_giHarmonicForSpectrogram->update();
+
     return true;
 }
 
@@ -479,14 +517,16 @@ void FTFZero::fillContextMenu(QMenu& contextmenu) {
     contextmenu.addAction(m_actionSaveAs);
     contextmenu.addSeparator();
     contextmenu.addAction(gMW->ui->actionEstimationF0);
+    contextmenu.addAction(gMW->ui->actionEstimationVoicedUnvoicedMarkers);
+    contextmenu.addAction(m_actionSetSource);
 }
 
 void FTFZero::updateTextsGeometry(){
     if(!m_actionShow->isChecked())
         return;
 
-    QRectF aspec_viewrect = gMW->m_gvAmplitudeSpectrum->mapToScene(gMW->m_gvAmplitudeSpectrum->viewport()->rect()).boundingRect();
-    QTransform aspec_trans = gMW->m_gvAmplitudeSpectrum->transform();
+    QRectF aspec_viewrect = gMW->m_gvSpectrumAmplitude->mapToScene(gMW->m_gvSpectrumAmplitude->viewport()->rect()).boundingRect();
+    QTransform aspec_trans = gMW->m_gvSpectrumAmplitude->transform();
 
     QTransform mat1;
     mat1.translate(1.0/aspec_trans.m11(), aspec_viewrect.top()+10/aspec_trans.m22());
@@ -500,9 +540,19 @@ void FTFZero::setVisible(bool shown){
         updateTextsGeometry();
 
     m_aspec_txt->setVisible(shown);
+    m_giF0ForSpectrogram->setVisible(shown);
+    m_giHarmonicForSpectrogram->setVisible(shown);
 }
 
-void FTFZero::setColor(const QColor& color) {
+void FTFZero::setSource(FileType *src){
+    if(src->is(FTSOUND))
+        m_src_snd = (FTSound*)src;
+}
+
+void FTFZero::setColor(const QColor& color){
+    if(color==getColor())
+        return;
+
     FileType::setColor(color);
 
     QPen pen(getColor());
@@ -511,8 +561,20 @@ void FTFZero::setColor(const QColor& color) {
 
     m_aspec_txt->setPen(pen);
     m_aspec_txt->setBrush(brush);
+
+    pen = m_giF0ForSpectrogram->getPen();
+    pen.setColor(color);
+    m_giF0ForSpectrogram->setPen(pen);
+    m_giHarmonicForSpectrogram->setPen(pen);
 }
 
+void FTFZero::zposReset(){
+    m_giF0ForSpectrogram->setZValue(0.0);
+}
+
+void FTFZero::zposBringForward(){
+    m_giF0ForSpectrogram->setZValue(1.0);
+}
 
 double FTFZero::getLastSampleTime() const {
     if(ts.empty())
@@ -522,61 +584,39 @@ double FTFZero::getLastSampleTime() const {
 }
 
 void FTFZero::edit(double t, double f0){
+    if(f0<0)
+        f0 = 0.0;
+
 //    COUTD << "FTFZero::edit " << t << " " << f0 << endl;
 
+    double step = qae::median(qae::diff(ts)); // TODO Speed up: Pre-compute
 
+    std::vector<double>::iterator itlb = std::lower_bound(ts.begin(), ts.end(), t+step/2);
+    int ri = itlb-ts.begin()-1;
+
+    if(ri>=0 && ri<int(ts.size())){
+        f0s[ri] = f0;
+        if(m_giF0ForSpectrogram)
+            m_giF0ForSpectrogram->updateGeometry();
+    }
+
+    m_is_edited = true;
+    setStatus();
 }
 
 FTFZero::~FTFZero() {
+    delete m_giF0ForSpectrogram;
+    delete m_giHarmonicForSpectrogram;
     delete m_aspec_txt;
 
     gFL->ftfzeros.erase(std::find(gFL->ftfzeros.begin(), gFL->ftfzeros.end(), this));
+
+    delete m_actionSave;
+    delete m_actionSaveAs;
+    delete m_actionSetSource;
 }
 
 // Drawing ---------------------------------------------------------------------
-
-void FTFZero::draw_time_freq(QPainter* painter, const QRectF& rect, bool draw_harmonics){
-    Q_UNUSED(rect)
-
-    if(!m_actionShow->isChecked()
-       || ts.size()<2)
-        return;
-
-    double ny = gFL->getFs()/2;
-
-    QColor c = getColor();
-    c.setAlphaF(1.0);
-    QPen outlinePen(c);
-    outlinePen.setCosmetic(true);
-    outlinePen.setWidth(3);
-    painter->setPen(outlinePen);
-    double f0min = ny;
-    for(int ti=0; ti<int(ts.size())-1; ++ti){
-        if(f0s[ti]>0.0)
-            f0min = std::min(f0min, f0s[ti]);
-        double lf0 = f0s[ti];
-        double rf0 = f0s[ti+1];
-        if(lf0>0 && rf0>0)
-            painter->drawLine(QLineF(ts[ti], ny-lf0, ts[ti+1], ny-rf0));
-    }
-    if(f0s.back()>0.0)
-        f0min = std::min(f0min, f0s.back());
-
-    if(draw_harmonics){
-        // Draw harmonics up to Nyquist
-        c.setAlphaF(0.5);
-        outlinePen.setColor(c);
-        painter->setPen(outlinePen);
-        for(int h=2; h<int(ny/f0min)+1; h++){
-            for(int ti=0; ti<int(ts.size())-1; ++ti){
-                double lf0 = f0s[ti];
-                double rf0 = f0s[ti+1];
-                if(lf0>0 && rf0>0)
-                    painter->drawLine(QLineF(ts[ti], ny-h*f0s[ti], ts[ti+1], ny-h*f0s[ti+1]));
-            }
-        }
-    }
-}
 
 void FTFZero::draw_freq_amp(QPainter* painter, const QRectF& rect){
     Q_UNUSED(rect)
@@ -594,7 +634,7 @@ void FTFZero::draw_freq_amp(QPainter* painter, const QRectF& rect){
 
     double ct = 0.0; // The time where the f0 curve has to be sampled
     if(gMW->m_gvWaveform->hasSelection())
-        ct = 0.5*(gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.nl+gMW->m_gvAmplitudeSpectrum->m_trgDFTParameters.nr)/gFL->getFs();
+        ct = 0.5*(gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.nl+gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.nr)/gFL->getFs();
     else
         ct = gMW->m_gvWaveform->getPlayCursorPosition();
     double cf0 = qae::nearest<double>(ts, f0s, ct, -1.0);
@@ -650,7 +690,7 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
         m_src_snd = ftsnd;
 
     if(!gFL->hasFile(m_src_snd)){
-        QMessageBox::warning(gMW, "Missing Source file", "The source file used for updating the F0 is not present in DFasma anymore.");
+        QMessageBox::warning(gMW, "Missing Source file", "The source file used for updating the F0 is not listed in the application anymore.");
         return;
     }
 
@@ -658,11 +698,12 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
 
     f0min = std::max(f0min, gMW->m_dlgSettings->ui->dsbEstimationF0Min->minimum()); // Fix hard-coded minimum for f0
     f0max = std::min(f0max, fs/2.0); // Fix hard-coded minimum for f0
-    if(tstart!=-1) tstart = std::max(tstart, 0.0);
-    if(tend!=-1) tend = std::min(tend, m_src_snd->getLastSampleTime());
+    if(tstart!=-1)
+        tstart = std::max(tstart, 0.0);
+    if(tend!=-1)
+        tend = std::min(tend, m_src_snd->getLastSampleTime());
 
 //    COUTD << "FTFZero::estimate src=" << m_src_snd->visibleName << " [" << f0min << "," << f0max << "]Hz [" << tstart << "," << tend << "]s " << force << endl;
-
 
 //    if(_fileName==""){
 ////        if(gMW->m_dlgSettings->ui->cbLabelsDefaultFormat->currentIndex()+FFTEXTTimeText==FFSDIF)
@@ -698,13 +739,16 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
         iskiplast = std::min(int64_t(m_src_snd->wav.size()),std::max(int64_t(0),int64_t(fs*(tend+10*timestepsize))));
     else
         iskiplast = m_src_snd->wav.size()-1;
-//    COUTD << iskipfirst << " " << iskiplast << endl;
     double tiskipfirst = iskipfirst/fs; // First index of signal's segment which is analyzed.
-//    double tiskiplast = iskiplast/fs;
-//    COUTD << tiskipfirst << " " << tiskiplast << endl;
     vector<int16_t> data(iskiplast-iskipfirst+1);
-    for(size_t i=0; i<data.size(); ++i)
-        data[i] = 32768*m_src_snd->wav[i+iskipfirst];
+    for(size_t i=0; i<data.size(); ++i){
+        int64_t idx = i+iskipfirst-m_src_snd->m_giWavForWaveform->delay();
+        if(idx>=0 && idx<int64_t(m_src_snd->wav.size()))
+            data[i] = 32768*m_src_snd->wav[idx];
+        else{
+            data[i] = 0.0;
+        }
+    }
 //    COUTD << iskipfirst << " " << data.size() << endl;
     if(fs<6000.0)
         QMessageBox::warning(gMW, "Problem during estimation of F0", "Sampling rate is smaller than 6kHz, which may create substantial estimation errors.");
@@ -744,7 +788,7 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
 
     // Estimation is done, let's fill/replace the f0 curve
     if(tstart==-1 && tend==-1){
-        // If time segment is undefined, clear replace everything
+        // If time segment is undefined, replace everything
         ts.resize(f0.size());
         for (size_t i=0; i<ts.size(); ++i)
             ts[i] = timestepsize*i;
@@ -753,20 +797,15 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
     }
     else{
         // Find where the former values are
-        // (using log-time search)
-        std::deque<double>::iterator itlb = std::lower_bound(ts.begin(), ts.end(), tstart);
-        std::deque<double>::iterator ithb = std::upper_bound(ts.begin(), ts.end(), tend);
+        // (using log2-time search)
+        std::vector<double>::iterator itlb = std::lower_bound(ts.begin(), ts.end(), tstart);
+        std::vector<double>::iterator ithb = std::upper_bound(ts.begin(), ts.end(), tend);
         int erasefirst = itlb-ts.begin();
         int eraselast = ithb-ts.begin()-1;
 
-//        COUTD << last-first+1 << endl;
-
-//        for(size_t i=first; i<=last; ++i)
-//            f0s[i] = 0.0;
-
         // Erase the former values
-        std::deque<double>::iterator tsl = ts.erase(ts.begin()+erasefirst, ts.begin()+eraselast+1);
-        std::deque<double>::iterator f0sl = f0s.erase(f0s.begin()+erasefirst, f0s.begin()+eraselast+1);
+        std::vector<double>::iterator tsl = ts.erase(ts.begin()+erasefirst, ts.begin()+eraselast+1);
+        std::vector<double>::iterator f0sl = f0s.erase(f0s.begin()+erasefirst, f0s.begin()+eraselast+1);
 
         // And insert the new values
 
@@ -788,6 +827,8 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
 
     gMW->globalWaitingBarDone();
 
+    if(m_giF0ForSpectrogram)
+        m_giF0ForSpectrogram->updateGeometry();
     updateTextsGeometry();
 
     m_is_edited = true;

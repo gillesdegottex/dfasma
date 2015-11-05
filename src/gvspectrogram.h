@@ -18,8 +18,8 @@ file provided in the source code of DFasma. Another copy can be found at
 <http://www.gnu.org/licenses/>.
 */
 
-#ifndef QGVSPECTROGRAM_H
-#define QGVSPECTROGRAM_H
+#ifndef GVSPECTROGRAM_H
+#define GVSPECTROGRAM_H
 
 #include <vector>
 #include <deque>
@@ -30,9 +30,10 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QMenu>
 class QTime;
 
-#include "wmainwindow.h"
-
 #include "qaesigproc.h"
+#include "qaegigrid.h"
+
+#include "wmainwindow.h"
 #include "ftsound.h"
 
 class GVSpectrogramWDialogSettings;
@@ -40,19 +41,20 @@ class MainWindow;
 class QSpinBox;
 class STFTComputeThread;
 
-class QGVSpectrogram : public QGraphicsView
+class GVSpectrogram : public QGraphicsView
 {
     Q_OBJECT
 
     QTime m_progresswidgets_lastup;
 
-    QGraphicsLineItem* m_giPlayCursor;
-
     FTFZero* m_editing_fzero;
 //    std::deque<QPointF> m_editing_fzero_newvalues; // TODO DELETE
 
+protected:
+    void contextMenuEvent(QContextMenuEvent * event);
+
 public:
-    explicit QGVSpectrogram(WMainWindow* parent);
+    explicit GVSpectrogram(WMainWindow* parent);
 
     GVSpectrogramWDialogSettings* m_dlgSettings;
 
@@ -76,9 +78,10 @@ public:
     QGraphicsSimpleTextItem* m_giMouseCursorTxtFreq;
     void setMouseCursorPosition(QPointF p, bool forwardsync);
 
-    QImage m_imgSTFT;
-    STFTComputeThread::ImageParameters m_imgSTFTParams; // This is the target parameters for the image
-                                                        // During STFT update, it doesn't correspond to m_imgSTFT
+    QGraphicsLineItem* m_giPlayCursor;
+
+    QAEGIGrid* m_giGrid;
+
     QPointF m_selection_pressedp;
     bool m_topismax;
     bool m_bottomismin;
@@ -103,9 +106,9 @@ public:
 
     void viewSet(QRectF viewrect=QRectF(), bool forwardsync=true);
     void drawBackground(QPainter* painter, const QRectF& rect);
-    void draw_grid(QPainter* painter, const QRectF& rect);
+    void draw_spectrogram(QPainter* painter, const QRectF& rect, const QRectF& viewrect, FTSound* snd);
 
-    ~QGVSpectrogram();
+    ~GVSpectrogram();
 
     QAction* m_aSpectrogramShowGrid;
     QAction* m_aSpectrogramShowHarmonics;
@@ -114,12 +117,15 @@ public:
     QAction* m_aSelectionClear;
     QAction* m_aZoomIn;
     QAction* m_aZoomOut;
+    QAction* m_aUnZoom;
     QAction* m_aShowProperties;
 
 signals:
 
 public slots:
     void showScrollBars(bool show);
+    void gridSetVisible(bool visible);
+    void showHarmonics(bool show);
 
     void allSoundsChanged();
     void playCursorSet(double t, bool forwardsync);
@@ -130,7 +136,6 @@ public slots:
     void updateTextsGeometry();
     void updateSTFTSettings();
     void updateSTFTPlot(bool force=false);
-    void clearSTFTPlot();
     void stftComputingStateChanged(int state);
     void showProgressWidgets();
     void autoUpdate(bool autoupdate);
@@ -139,6 +144,7 @@ public slots:
     void selectionClear(bool forwardsync=true);
     void azoomin();
     void azoomout();
+    void aunzoom();
 };
 
-#endif // QGVSPECTROGRAM_H
+#endif // GVSPECTROGRAM_H
