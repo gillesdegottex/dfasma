@@ -43,10 +43,17 @@ cd ..
 
 #"C:/Program Files (x86)/Inno Setup 5/ISCC"
 
+echo INNOSCRIPT
 
 # Run Inno setup to create the installer
-If ($arch -eq 'x64') { $INNOSCRIPT = DFasma_MSVC2012_Win64bit.iss }
-Else { $INNOSCRIPT = DFasma_MSVC2012_Win32bit.iss }
+If ($arch -eq 'x64') {
+    $INNOSCRIPT = DFasma_MSVC2012_Win64bit.iss
+}
+Else {
+    $INNOSCRIPT = DFasma_MSVC2012_Win32bit.iss
+}
+
+echo $INNOSCRIPT
 
 & "c:\Program Files (x86)\Inno Setup 5\ISCC.exe" /o. /dMyAppVersion=$VERSION c:\projects\dfasma\distrib\$INNOSCRIPT
 
