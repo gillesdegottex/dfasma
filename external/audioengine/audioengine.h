@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 /*
-This example has been widely adapted for the purpose of the DFasma software.
+This example has been widely adapted for the purpose of DFasma.
  */
 
 #ifndef AUDIOENGINE_H

@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 /*
-This example has been widely adapted for the purpose of the DFasma software.
+This example has been widely adapted for the purpose of DFasma.
  */
 
 #include "audioengine.h"
@@ -104,10 +104,15 @@ void AudioEngine::selectAudioOutputDevice(const QString& devicename) {
 
 AudioEngine::~AudioEngine()
 {
+    DFLAG
     if(m_audioOutput) {
+        DFLAG
         m_audioOutput->stop();
+        DFLAG
         delete m_audioOutput;
+        DFLAG
     }
+    DFLAG
 }
 
 //-----------------------------------------------------------------------------

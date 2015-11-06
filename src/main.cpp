@@ -93,8 +93,12 @@ int main(int argc, char *argv[])
     QObject::connect(&a, SIGNAL(focusWindowChanged(QWindow*)), w, SLOT(focusWindowChanged(QWindow*)));
     w->show();
 
-    int ret = a.exec();
+    a.exec();
+    DFLAG
 
+    delete w;
+
+    DFLAG
     #ifdef SUPPORT_SDIF
         Easdif::EasdifEnd();
     #endif
@@ -102,8 +106,7 @@ int main(int argc, char *argv[])
         sox_quit();
     #endif   
 
-    delete w;
-
+    DFLAG
     // If asked, drop some log information in a file
     #ifdef DEBUG_LOGFILE
         QString logfilename = QFileDialog::getSaveFileName(NULL, "Save log file as...");
@@ -115,9 +118,11 @@ int main(int argc, char *argv[])
         logfile.close();
     #endif
 
+    DFLAG
     QCoreApplication::processEvents(); // Process all events before exit
 //    DCOUT << "exit(" << ret << ")" << std::endl;
-    exit(ret); // WORKAROUND?: need this to avoid remaining background process on some platform (e.g. bouzouki) TODO This is surely related to some seg fault on exit #179
+    DFLAG
+    exit(0); // WORKAROUND?: need this to avoid remaining background process on some platform (e.g. bouzouki) TODO This is surely related to some seg fault on exit #179
 
-    return ret;
+    return 0;
 }

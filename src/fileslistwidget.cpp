@@ -1,3 +1,23 @@
+/*
+Copyright (C) 2014  Gilles Degottex <gilles.degottex@gmail.com>
+
+This file is part of DFasma.
+
+DFasma is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+DFasma is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+A copy of the GNU General Public License is available in the LICENSE.txt
+file provided in the source code of DFasma. Another copy can be found at
+<http://www.gnu.org/licenses/>.
+*/
+
 #include "fileslistwidget.h"
 
 #include <QFileInfo>
@@ -32,6 +52,9 @@ FilesListWidget* gFL = NULL;
 // Create a Delegate for calling the openEditor that is sadly missing from QAbstractItemView
 class FilesListWidgetDelegate : public QItemDelegate {
     public:
+    FilesListWidgetDelegate(QObject * parent = 0)
+        : QItemDelegate(parent)
+    {}
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const {
         QWidget* editor = QItemDelegate::createEditor(parent, option, index);
         gFL->openEditor(editor);
@@ -55,7 +78,7 @@ FilesListWidget::FilesListWidget(QMainWindow *parent)
     setDragDropMode(QAbstractItemView::InternalMove);
     setWordWrap(true);
 
-    setItemDelegate(new FilesListWidgetDelegate());
+    setItemDelegate(new FilesListWidgetDelegate(this));
 }
 
 void FilesListWidget::openEditor(QWidget * editor){
@@ -367,6 +390,7 @@ void FilesListWidget::showFileContextMenu(const QPoint& pos) {
     else {
         contextmenu.addAction(gMW->ui->actionSelectedFilesToggleShown);
         contextmenu.addAction(gMW->ui->actionSelectedFilesReload);
+        contextmenu.addAction(gMW->ui->actionSelectedFilesDuplicate);
         contextmenu.addAction(gMW->ui->actionSelectedFilesClose);
     }
 
@@ -457,8 +481,8 @@ void FilesListWidget::fileSelectionChanged() {
         gMW->ui->actionSelectedFilesClose->setEnabled(list.size()>0);
 
         fileInfoUpdate();
-
         gMW->updateMouseCursorState(QApplication::keyboardModifiers().testFlag(Qt::ShiftModifier), QApplication::keyboardModifiers().testFlag(Qt::ControlModifier));
+        gMW->checkEditHiddenFile();
     }
 
 //    COUTD << "WMainWindow::~fileSelectionChanged" << endl;
@@ -468,12 +492,17 @@ void FilesListWidget::fileInfoUpdate() {
 
     // If only one file selected
     // Display Basic information of it
-    if(list.size()==1) {
+    if(list.empty()) {
+        gMW->ui->lblFileInfo->hide();
+    }
+    else if(list.size()==1) {
         gMW->ui->lblFileInfo->setText(((FileType*)list.at(0))->info());
         gMW->ui->lblFileInfo->show();
     }
-    else
-        gMW->ui->lblFileInfo->hide();
+    else {
+        gMW->ui->lblFileInfo->setText(QString::number(list.size())+" files selected");
+        gMW->ui->lblFileInfo->show();
+    }
 }
 
 // FileType is not an qobject, thus, need to forward the message manually (i.e. without signal system).
@@ -537,6 +566,7 @@ void FilesListWidget::selectedFilesToggleShown() {
     gMW->m_gvSpectrumAmplitude->m_scene->update();
     gMW->m_gvSpectrumPhase->m_scene->update();
     gMW->m_gvSpectrumGroupDelay->m_scene->update();
+    gMW->checkEditHiddenFile();
 }
 
 void FilesListWidget::selectedFilesClose() {

@@ -84,7 +84,7 @@ void FTFZero::constructor_internal(){
 
     connect(m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setVisible(bool)));
 
-    m_aspec_txt = new QGraphicsSimpleTextItem("unset");
+    m_aspec_txt = new QGraphicsSimpleTextItem("unset"); // TODO delete ?
     gMW->m_gvSpectrumAmplitude->m_scene->addItem(m_aspec_txt);
     setColor(getColor()); // Indirectly set the proper color to the m_aspec_txt
 
@@ -536,8 +536,6 @@ void FTFZero::updateTextsGeometry(){
 void FTFZero::setVisible(bool shown){
     FileType::setVisible(shown);
 
-    DCOUT << shown << endl;
-
     if(shown)
         updateTextsGeometry();
 
@@ -612,6 +610,10 @@ FTFZero::~FTFZero() {
     delete m_aspec_txt;
 
     gFL->ftfzeros.erase(std::find(gFL->ftfzeros.begin(), gFL->ftfzeros.end(), this));
+
+    delete m_actionSave;
+    delete m_actionSaveAs;
+    delete m_actionSetSource;
 }
 
 // Drawing ---------------------------------------------------------------------

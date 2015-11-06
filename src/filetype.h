@@ -61,9 +61,10 @@ public:
     inline static QString getTypeNameAndExtensions(FType type){return s_types_name_and_extensions[type];}
     inline bool is(FType type) const {return m_type==type;}
     enum FileContainer {FCUNSET=0, FCANYSOUND, FCTEXT, FCASCII, FCSDIF}; // File Containers (not format !)
-    static QColor GetNextColor();
+    static QColor getNextColor();
+    static const std::deque<QColor>& availableColors();
 
-    FileType(FType _type, const QString& _fileName, QObject *parent, const QColor& _color=GetNextColor());
+    FileType(FType _type, const QString& _fileName, QObject *parent, const QColor& _color=getNextColor());
 
     QString fileFullPath;   // The file path on storage place
     QString visibleName;    // The name shown in the File List

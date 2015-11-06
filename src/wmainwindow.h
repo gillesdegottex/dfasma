@@ -68,7 +68,6 @@ class WMainWindow : public QMainWindow
     bool m_loading;
     QString m_version;
 
-    FilesListWidget* m_fileslist;
     FileType* m_last_file_editing;
 
     void connectModes();
@@ -97,13 +96,14 @@ private slots:
     void audioOutputFormatChanged(const QAudioFormat& format);
     void enablePlay();
     void localEnergyChanged(double);
+    void changeColor();
 
     void setSelectionMode(bool checked);
     void setEditMode(bool checked);
-    void execAbout();
     void viewsDisplayedChanged();
     void viewsSpectrogramToggled(bool show);
     void changeToolBarSizes(int size);
+    void execAbout();
 
 public slots:
     void focusWindowChanged(QWindow*win);
@@ -118,6 +118,7 @@ public slots:
     void setInWaitingForFileState();
     void updateViewsAfterAddFile(bool isfirsts);
     void setEditing(FileType* ft);
+    void checkEditHiddenFile();
     void updateMouseCursorState(bool kshift, bool kcontrol);
 
 public:
@@ -135,6 +136,7 @@ public:
     void globalWaitingBarSetValue(int value);
     void globalWaitingBarDone();
     void globalWaitingBarClear();
+    void statusBarSetText(const QString& text, int timeout=0, QColor color=QColor());
 
     // Views
     GVWaveform* m_gvWaveform;

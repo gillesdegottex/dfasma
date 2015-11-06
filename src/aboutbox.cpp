@@ -1,3 +1,23 @@
+/*
+Copyright (C) 2014  Gilles Degottex <gilles.degottex@gmail.com>
+
+This file is part of DFasma.
+
+DFasma is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+DFasma is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+A copy of the GNU General Public License is available in the LICENSE.txt
+file provided in the source code of DFasma. Another copy can be found at
+<http://www.gnu.org/licenses/>.
+*/
+
 #include "aboutbox.h"
 #include "ui_aboutbox.h"
 
@@ -63,7 +83,7 @@ AboutBox::AboutBox(QWidget *parent) :
     if(sizeof(FFTTYPE)==8)  fftinfostr += "double";
     if(sizeof(FFTTYPE)==16)  fftinfostr += "quadruple";
     fftinfostr += "); smallest: "+QString::number(20*log10(std::numeric_limits<FFTTYPE>::min()))+"dB)";
-    ui->vlLibraries->addWidget(new QLabel(fftinfostr));
+    ui->vlLibraries->addWidget(new QLabel(fftinfostr, this));
 
     // SDIF
     QString sdifinfostr = "";
@@ -72,9 +92,9 @@ AboutBox::AboutBox(QWidget *parent) :
     #else
         sdifinfostr = "<i>No support for SDIF file format</i>";
     #endif
-    ui->vlLibraries->addWidget(new QLabel(sdifinfostr));
+    ui->vlLibraries->addWidget(new QLabel(sdifinfostr, this));
 
-    ui->vlLibraries->addWidget(new QLabel("<i>For reading Audio files:</i> "+FTSound::getAudioFileReadingDescription()));
+    ui->vlLibraries->addWidget(new QLabel("<i>For reading Audio files:</i> "+FTSound::getAudioFileReadingDescription(), this));
     QStringList list = FTSound::getAudioFileReadingSupportedFormats();
     for(QStringList::Iterator it=list.begin(); it!=list.end(); ++it)
         ui->listSupportedFormats->addItem(*it);

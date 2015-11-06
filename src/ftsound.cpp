@@ -390,8 +390,8 @@ QString FTSound::info() const {
 //        }
     }
 
-    if(m_giWavForWaveform->gain()!=1.0)
-        str += "<b>Scaled: "+QString::number(20*std::log10(m_giWavForWaveform->gain()), 'f', 4)+"dB ("+QString::number(m_giWavForWaveform->gain(), 'f', 4)+")</b><br/>";
+    if(std::abs(m_giWavForWaveform->gain())!=1.0)
+        str += "<b>Scaled: "+QString::number(20*std::log10(std::abs(m_giWavForWaveform->gain())), 'f', 4)+"dB ("+QString::number(m_giWavForWaveform->gain(), 'f', 4)+")</b><br/>";
     if(isClipped())
         str += "<font color=\"red\"><b>CLIPPED</b></font><br/>";
     if(m_giWavForWaveform->delay()!=0.0)
@@ -416,8 +416,8 @@ void FTSound::fillContextMenu(QMenu& contextmenu) {
     contextmenu.addAction(gMW->ui->actionPlay);
     contextmenu.addAction(m_actionResetFiltering);
     contextmenu.addAction(m_actionInvPolarity);
-    m_actionResetAmpScale->setText(QString("Reset amplitude scaling (%1dB) to 0dB").arg(20*log10(m_giWavForWaveform->gain()), 0, 'g', 3));
-    m_actionResetAmpScale->setDisabled(m_giWavForWaveform->gain()==1.0);
+    m_actionResetAmpScale->setText(QString("Reset amplitude scaling (%1dB) to 0dB").arg(20*log10(std::abs(m_giWavForWaveform->gain())), 0, 'g', 3));
+    m_actionResetAmpScale->setDisabled(std::abs(m_giWavForWaveform->gain())==1.0);
     contextmenu.addAction(m_actionResetAmpScale);
     m_actionResetDelay->setText(QString("Reset delay (%1s) to 0s").arg(m_giWavForWaveform->delay()/gFL->getFs(), 0, 'g', gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()));
     m_actionResetDelay->setDisabled(m_giWavForWaveform->delay()==0);
@@ -856,6 +856,11 @@ FTSound::~FTSound(){
     delete m_giWavForSpectrumGroupDelay;
 
     gFL->ftsnds.erase(std::find(gFL->ftsnds.begin(), gFL->ftsnds.end(), this));
+
+    delete m_actionResetFiltering;
+    delete m_actionResetDelay;
+    delete m_actionResetAmpScale;
+    delete m_actionInvPolarity;
 }
 
 
