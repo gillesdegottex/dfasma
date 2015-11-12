@@ -941,9 +941,10 @@ void GVSpectrogram::selectionSetTextInForm() {
         if (m_selection.height()>0) {
             // TODO The two lines below cannot be avoided exept by reversing the y coordinate of the
             //      whole seen, and I don't know how to do this :(
-            double lower = gFL->getFs()/2-m_selection.bottom();
-            if(std::abs(lower)<1e-10) lower=0.0;
-            str += QString(" x [%4,%5]%6Hz").arg(lower).arg(gFL->getFs()/2-m_selection.top()).arg(m_selection.height());
+//            double lower = gFL->getFs()/2-m_selection.bottom();
+//            if(std::abs(lower)<1e-10) lower=0.0;
+//            str += QString(" x [%4,%5]%6Hz").arg(lower).arg(gFL->getFs()/2-m_selection.top()).arg(m_selection.height());
+            str += QString(" x [%4,%5]%6Hz").arg(-m_selection.bottom()).arg(-m_selection.top()).arg(m_selection.height());
         }
     }
 
