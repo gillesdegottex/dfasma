@@ -607,17 +607,8 @@ void WMainWindow::keyPressEvent(QKeyEvent* event){
     updateMouseCursorState(event->modifiers().testFlag(Qt::ShiftModifier) || (event && event->key()==Qt::Key_Shift)
                          , event->modifiers().testFlag(Qt::ControlModifier) || (event && event->key()==Qt::Key_Control));
 
-    if(event->key()==Qt::Key_Escape){
+    if(event->key()==Qt::Key_Escape)
         resetFiltering();
-//        FTSound* currentftsound = gFL->getCurrentFTSound(true);
-//        if(currentftsound && currentftsound->isFiltered()) {
-//            currentftsound->setFiltered(false);
-//            m_gvWaveform->m_giFilteredSelection->hide();
-//            m_gvSpectrumAmplitude->m_filterresponse.clear();
-//            m_gvSpectrumAmplitude->updateDFTs();
-//            gFL->fileInfoUpdate();
-//        }
-    }
 }
 
 void WMainWindow::updateMouseCursorState(bool kshift, bool kcontrol){
