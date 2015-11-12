@@ -441,10 +441,7 @@ void FTSound::setFiltered(bool filtered){
             wavtoplay = &wav;
             m_giWavForWaveform->setSignal(wavtoplay);
             m_filteredmaxamp = 0.0;
-            gMW->m_gvSpectrumAmplitude->m_filterresponse.clear();
-            gMW->m_gvWaveform->m_giFilteredSelection->hide();
             needDFTUpdate();
-            gMW->m_gvSpectrumAmplitude->updateDFTs();
         }
         m_isfiltered = filtered;
         updateClippedState();
@@ -681,7 +678,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
 
             setFiltered(true);
 
-            // The filter response has been computed here above.
+            // The filter response has been computed
             // Convert it to dB and multiply by 2 bcs the filtfilt doubled the effect.
             for(size_t k=0; k<gMW->m_gvSpectrumAmplitude->m_filterresponse.size(); k++)
                 gMW->m_gvSpectrumAmplitude->m_filterresponse[k] = 2*20*log10(gMW->m_gvSpectrumAmplitude->m_filterresponse[k]);

@@ -608,11 +608,15 @@ void WMainWindow::keyPressEvent(QKeyEvent* event){
                          , event->modifiers().testFlag(Qt::ControlModifier) || (event && event->key()==Qt::Key_Control));
 
     if(event->key()==Qt::Key_Escape){
-        FTSound* currentftsound = gFL->getCurrentFTSound(true);
-        if(currentftsound && currentftsound->isFiltered()) {
-            currentftsound->setFiltered(false);
-            gFL->fileInfoUpdate();
-        }
+        resetFiltering();
+//        FTSound* currentftsound = gFL->getCurrentFTSound(true);
+//        if(currentftsound && currentftsound->isFiltered()) {
+//            currentftsound->setFiltered(false);
+//            m_gvWaveform->m_giFilteredSelection->hide();
+//            m_gvSpectrumAmplitude->m_filterresponse.clear();
+//            m_gvSpectrumAmplitude->updateDFTs();
+//            gFL->fileInfoUpdate();
+//        }
     }
 }
 
@@ -1037,7 +1041,10 @@ void WMainWindow::audioStateChanged(QAudio::State state){
 
 void WMainWindow::resetFiltering(){
     if(m_lastFilteredSound){
-        gMW->m_lastFilteredSound->setFiltered(false);
+        m_lastFilteredSound->setFiltered(false);
+        m_gvWaveform->m_giFilteredSelection->hide();
+        m_gvSpectrumAmplitude->m_filterresponse.clear();
+        m_gvSpectrumAmplitude->updateDFTs();
         m_lastFilteredSound = NULL;
     }
 }
