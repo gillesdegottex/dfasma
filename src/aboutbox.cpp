@@ -51,12 +51,11 @@ AboutBox::AboutBox(QWidget *parent) :
     txt += "<p>To suggest a new functionality or report a bug, do not hesitate to <a href='https://github.com/gillesdegottex/dfasma/issues'>raise an issue on GitHub.</a></p>";
 
     txt += "<h4>Legal</h4>\
-            This software is basically under the <a href=\"http://www.gnu.org/licenses/gpl.html\">GPL (v3) License</a>.\
+            The core of this software is under the <a href=\"http://www.gnu.org/licenses/gpl.html\">GPL (v3) License</a>.\
             All original source files of any kind (code source and any ressources) are under the same license, except\
             the content of the \"external\" directory of the source code which contains imported source code under various licenses.\
-            <br/><br/>\
-            The icons are under the <a href=\"http://creativecommons.org/licenses/by/3.0/us/\">Creative Commons License</a>.<br/>\
-            Special acknowledgment to Dimitry Sunseifer for some of the icons.\
+            <br/>\
+            The icons are under the <a href=\"http://creativecommons.org/licenses/by/3.0/us/\">Creative Commons License</a>.\
             <br/><br/>\
             Copyright &copy; 2014 Gilles Degottex <a href='mailto:gilles.degottex@gmail.com'>&lt;gilles.degottex@gmail.com&gt;</a><br/>\
             <i>DFasma</i> is coded in C++/<a href='http://qt-project.org'>Qt</a>.\
