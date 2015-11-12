@@ -79,6 +79,7 @@ int main(int argc, char *argv[])
     #endif
 
     QApplication a(argc, argv);
+    QApplication::setQuitOnLastWindowClosed(true);
 
     // The following is also necessary for QSettings
     QCoreApplication::setOrganizationName("DFasma");
@@ -119,10 +120,13 @@ int main(int argc, char *argv[])
     #endif
 
     DFLAG
+    QCoreApplication::exit(0);
+    DFLAG
     QCoreApplication::processEvents(); // Process all events before exit
 //    DCOUT << "exit(" << ret << ")" << std::endl;
     DFLAG
     exit(0); // WORKAROUND?: need this to avoid remaining background process on some platform (e.g. bouzouki) TODO This is surely related to some seg fault on exit #179
+    DFLAG
 
     return 0;
 }
