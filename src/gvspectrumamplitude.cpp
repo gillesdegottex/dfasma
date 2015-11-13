@@ -145,17 +145,16 @@ GVSpectrumAmplitude::GVSpectrumAmplitude(WMainWindow* parent)
     m_giCursorVert->setPen(cursorPen);
     m_giCursorVert->setZValue(100);
     m_scene->addItem(m_giCursorVert);
-    QFont font("Helvetica", 10);
     m_giCursorPositionXTxt = new QGraphicsSimpleTextItem();
     m_giCursorPositionXTxt->hide();
     m_giCursorPositionXTxt->setBrush(QColor(64, 64, 64));
-    m_giCursorPositionXTxt->setFont(font);
+    m_giCursorPositionXTxt->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
     m_giCursorPositionXTxt->setZValue(100);
     m_scene->addItem(m_giCursorPositionXTxt);
     m_giCursorPositionYTxt = new QGraphicsSimpleTextItem();
     m_giCursorPositionYTxt->hide();
     m_giCursorPositionYTxt->setBrush(QColor(64, 64, 64));
-    m_giCursorPositionYTxt->setFont(font);
+    m_giCursorPositionYTxt->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
     m_giCursorPositionYTxt->setZValue(100);
     m_scene->addItem(m_giCursorPositionYTxt);
 
@@ -168,7 +167,7 @@ GVSpectrumAmplitude::GVSpectrumAmplitude(WMainWindow* parent)
     m_giSelectionTxt = new QGraphicsSimpleTextItem();
     m_giSelectionTxt->hide();
     m_giSelectionTxt->setBrush(QColor(64, 64, 64));
-    m_giSelectionTxt->setFont(font);
+    m_giSelectionTxt->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
     m_scene->addItem(m_giSelectionTxt);
     QPen selectionPen(QColor(64, 64, 64));
     selectionPen.setWidth(0);
@@ -1145,7 +1144,6 @@ void GVSpectrumAmplitude::selectionSet(QRectF selection, bool forwardsync) {
     m_giShownSelection->show();
 
     m_giSelectionTxt->setText(QString("%1Hz,%2dB").arg(m_selection.width()).arg(m_selection.height()));
-//    m_giSelectionTxt->show();
     viewUpdateTexts();
 
     selectionSetTextInForm();
