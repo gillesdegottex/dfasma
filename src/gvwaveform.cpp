@@ -106,8 +106,7 @@ GVWaveform::GVWaveform(WMainWindow* parent)
     m_scene->addItem(m_giMouseCursorLine);
     m_giMouseCursorTxt = new QGraphicsSimpleTextItem();
     m_giMouseCursorTxt->setBrush(QColor(64, 64, 64));
-    QFont font("Helvetica", 10); // TODO
-    m_giMouseCursorTxt->setFont(font);
+    m_giMouseCursorTxt->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
     m_giMouseCursorLine->setZValue(100);
     m_giMouseCursorTxt->setZValue(100);
     m_scene->addItem(m_giMouseCursorTxt);
