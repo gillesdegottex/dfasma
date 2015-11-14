@@ -489,7 +489,7 @@ void GVWaveform::wheelEvent(QWheelEvent* event){
 
     QPoint numDegrees = event->angleDelta() / 8;
 
-//    COUTD << "GVWaveform::wheelEvent " << numDegrees.y() << endl;
+//    DCOUT << "GVWaveform::wheelEvent " << numDegrees.y() << endl;
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
@@ -502,7 +502,7 @@ void GVWaveform::wheelEvent(QWheelEvent* event){
     }
     else if((viewrect.width()>10.0/gFL->getFs() && numDegrees.y()>0) || numDegrees.y()<0) {
         double gx = double(mapToScene(event->pos()).x()-viewrect.left())/viewrect.width();
-        double gy = double(mapToScene(event->pos()).x()-viewrect.left())/viewrect.width();
+        double gy = double(mapToScene(event->pos()).y()-viewrect.top())/viewrect.height();
         QRectF newrect = mapToScene(viewport()->rect()).boundingRect();
         newrect.setLeft(newrect.left()+gx*0.01*viewrect.width()*numDegrees.y());
         newrect.setRight(newrect.right()-(1-gx)*0.01*viewrect.width()*numDegrees.y());
