@@ -206,6 +206,7 @@ GVWaveform::GVWaveform(WMainWindow* parent)
     m_aZoomXOnly->setCheckable(true);
     m_aZoomXOnly->setChecked(true);
     gMW->m_settings.add(m_aZoomXOnly);
+    connect(m_aZoomXOnly, SIGNAL(toggled(bool)), this, SLOT(setZoomXOnly(bool)));
     m_aZoomOut = new QAction(tr("Zoom Out"), this);
     m_aZoomOut->setStatusTip(tr("Zoom Out"));
     m_aZoomOut->setShortcut(Qt::Key_Minus);
@@ -268,7 +269,6 @@ GVWaveform::GVWaveform(WMainWindow* parent)
 void GVWaveform::showScrollBars(bool show) {
     if(show) {
         setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-        verticalScrollBar()->setEnabled(false);
         setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     }
     else {
@@ -399,6 +399,16 @@ void GVWaveform::aunzoom(){
     m_aZoomOut->setEnabled(false);
 //    m_aUnZoom->setEnabled(false);
     m_aZoomOnSelection->setEnabled(m_selection.width()>0);
+}
+
+void GVWaveform::setZoomXOnly(bool zoomxonly)
+{
+    if(zoomxonly){
+        QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+        viewrect.setBottom(m_scene->sceneRect().bottom());
+        viewrect.setTop(m_scene->sceneRect().top());
+        viewSet(viewrect);
+    }
 }
 
 void GVWaveform::setMouseCursorPosition(double position, bool forwardsync) {
