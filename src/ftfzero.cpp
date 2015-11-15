@@ -200,10 +200,17 @@ void FTFZero::load() {
         if(!std::getline(fin, line))
             throw QString("FTFZero:FFAutoDetect: There is not a single line in this file.");
 
+        DFLAG
         // Check: <number> <number>
         std::istringstream iss(line);
         if((iss >> t >> t) && iss.eof())
-            m_fileformat = FFAsciiTimeValue;
+            m_fileformat = FFAsciiTimeValue;        
+        else{
+            DFLAG
+            std::istringstream iss(line);
+            if((iss >> t) && iss.eof())
+                m_fileformat = FFAsciiValue;
+        }
     }
 
     if(m_fileformat==FFAutoDetect)
@@ -221,6 +228,21 @@ void FTFZero::load() {
             std::istringstream(line) >> t >> value;
             ts.push_back(t);
             f0s.push_back(value);
+        }
+    }
+    else if(m_fileformat==FFAsciiValue){
+        ifstream fin(fileFullPath.toLatin1().constData());
+        if(!fin.is_open())
+            throw QString("FTFZero:FFAsciiValue: Cannot open file");
+
+        double t=0.0;
+        double value;
+        string line, text;
+        while(std::getline(fin, line)) {
+            std::istringstream(line) >> value;
+            ts.push_back(t);
+            f0s.push_back(value);
+            t += gMW->m_dlgSettings->ui->sbEstimationStepSize->value();
         }
     }
     else if(m_fileformat==FFSDIF){

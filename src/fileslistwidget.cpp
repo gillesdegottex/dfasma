@@ -208,8 +208,7 @@ void FilesListWidget::addExistingFile(const QString& filepath, FileType::FType t
 
         // This should be always "guessable"
         FileType::FileContainer container = FileType::guessContainer(filepath);
-
-        // can be replaced by an autodetect or "forced mode" in the future
+        DCOUT << type << " " << container << std::endl;
 
         // Then, guess the type of the data in the file, if no specified yet
         if(type==FileType::FTUNSET){
@@ -241,15 +240,22 @@ void FilesListWidget::addExistingFile(const QString& filepath, FileType::FType t
                 if(!std::getline(fin, line))
                     throw QString("There is not a single line in this file");
                 // Check: <number> <number>
+//                std::istringstream iss;
                 std::istringstream iss(line);
                 // Check if first two values are real numbers
                 // TODO This will NOT work to distinguish F0 from VUF !!
                 if((iss >> t >> t) && iss.eof())
                     type = FileType::FTFZERO;
-                else // Otherwise, assume this is a label
-                    type = FileType::FTLABELS;
+                else{
+                    std::istringstream iss(line);
+                    if((iss >> t) && iss.eof())
+                        type = FileType::FTFZERO;
+                    else // Otherwise, assume this is a label
+                        type = FileType::FTLABELS;
+                }
             }
         }
+        DCOUT << type << " " << FileType::FTFZERO << std::endl;
 
         if(type==FileType::FTUNSET)
             throw QString("Cannot find any data or audio channel in this file that is handled by this distribution of DFasma.");
@@ -288,10 +294,14 @@ void FilesListWidget::addExistingFile(const QString& filepath, FileType::FType t
                 gMW->m_gvWaveform->fitViewToSoundsAmplitude();
             }
         }
-        else if(type == FileType::FTFZERO)
+        else if(type == FileType::FTFZERO){
+            DCOUT << type << std::endl;
             addItem(new FTFZero(filepath, this, container));
-        else if(type == FileType::FTLABELS)
+        }
+        else if(type == FileType::FTLABELS){
+            DCOUT << type << std::endl;
             addItem(new FTLabels(filepath, this, container));
+        }
     }
     catch (QString err)
     {
