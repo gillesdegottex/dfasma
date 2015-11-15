@@ -242,7 +242,7 @@ void FTFZero::load() {
             std::istringstream(line) >> value;
             ts.push_back(t);
             f0s.push_back(value);
-            t += gMW->m_dlgSettings->ui->sbEstimationStepSize->value();
+            t += gMW->m_dlgSettings->ui->sbF0DefaultStepSize->value();
         }
     }
     else if(m_fileformat==FFSDIF){
