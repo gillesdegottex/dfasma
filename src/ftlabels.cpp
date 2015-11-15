@@ -206,7 +206,7 @@ FTLabels::FTLabels(const FTLabels& ft)
 
     int starti=0;
     for(std::deque<FTGraphicsLabelItem*>::const_iterator it=ft.waveform_labels.begin(); it!=ft.waveform_labels.end(); ++it, ++starti)
-        addLabel(ft.starts[starti], (*it)->toPlainText());
+        addLabel(ft.starts[starti], (*it)->toolTip(), (*it)->toPlainText());
 
     m_lastreadtime = ft.m_lastreadtime;
     m_modifiedtime = ft.m_modifiedtime;
@@ -314,7 +314,7 @@ void FTLabels::load() {
         line = stream.readLine();
         do {
             QTextStream(&line) >> t >> text;
-            addLabel(t, text);
+            addLabel(t, text, extractCenterLabel(text));
 
             line = stream.readLine();
         } while (!line.isNull());
@@ -331,7 +331,7 @@ void FTLabels::load() {
         line = stream.readLine();
         do {
             QTextStream(&line) >> startt >> endt >> text;
-            addLabel(startt, text);
+            addLabel(startt, text, extractCenterLabel(text));
 
             line = stream.readLine();
         } while (!line.isNull());
@@ -356,7 +356,7 @@ void FTLabels::load() {
             startt /= fs;
             endt /= fs;
 //                COUTD << startt << " " << '"' << text << '"' << endl;
-            addLabel(startt, text);
+            addLabel(startt, text, extractCenterLabel(text));
 
             line = stream.readLine();
         } while (!line.isNull());
@@ -382,7 +382,7 @@ void FTLabels::load() {
             QTextStream(&line) >> startt >> endt >> text;
             startt *= 1e-7;
             endt *= 1e-7;
-            addLabel(startt, text);
+            addLabel(startt, text, extractCenterLabel(text));
 
             line = stream.readLine();
         } while (!line.isNull());
@@ -446,8 +446,9 @@ void FTLabels::load() {
                                 // No char given, assume an ending marker closing the previous segment
                                 // ends.push_back(t);
                             }
-                            else
-                                addLabel(position, str);
+                            else{
+                                addLabel(position, str, extractCenterLabel(str));
+                            }
                         }
                     }
 
@@ -809,7 +810,9 @@ void FTLabels::updateTextsGeometry(){
     }
 }
 
-void FTLabels::addLabel(double position, const QString& text){
+void FTLabels::addLabel(double position, const QString& text, QString showntxt){
+    if(showntxt.isEmpty())
+        showntxt = text;
 
     QPen pen(getColor());
     pen.setWidth(0);
@@ -819,19 +822,21 @@ void FTLabels::addLabel(double position, const QString& text){
 
     starts.push_back(position);
 
-    waveform_labels.push_back(new FTGraphicsLabelItem(this, text));
+    waveform_labels.push_back(new FTGraphicsLabelItem(this, showntxt));
     waveform_labels.back()->setPos(position, 0);
     waveform_labels.back()->setDefaultTextColor(getColor());
+    waveform_labels.back()->setToolTip(text);
     if(gMW->ui->actionEditMode->isChecked())
         waveform_labels.back()->setTextInteractionFlags(Qt::TextEditable);
     else
         waveform_labels.back()->setTextInteractionFlags(Qt::NoTextInteraction);
     gMW->m_gvWaveform->m_scene->addItem(waveform_labels.back());
 
-    spectrogram_labels.push_back(new QGraphicsSimpleTextItem(text));
+    spectrogram_labels.push_back(new QGraphicsSimpleTextItem(showntxt));
     spectrogram_labels.back()->setPos(position, 0);
     spectrogram_labels.back()->setBrush(brush);
     spectrogram_labels.back()->setPen(whitepen);
+    spectrogram_labels.back()->setToolTip(text);
     gMW->m_gvSpectrogram->m_scene->addItem(spectrogram_labels.back());
     // TODO set Brush and pen for the outline!
 
@@ -988,7 +993,17 @@ void FTLabels::sort(){
 //        cout << starts[u] << " ";
 //    cout << endl;
 
-//    cout << "FTLabels::~sort" << endl;
+    //    cout << "FTLabels::~sort" << endl;
+}
+
+QString FTLabels::extractCenterLabel(const QString &txt) {
+    QRegularExpression re("[^-]+-(?<center>[^+]+)\\+.*");
+    QRegularExpressionMatch match = re.match(txt);
+    //    DCOUT << "'" << txt << "' '" << match.captured("center") << "'" << std::endl;
+    if(match.captured("center").isEmpty())
+        return txt;
+    else
+        return match.captured("center");
 }
 
 FTLabels::~FTLabels() {

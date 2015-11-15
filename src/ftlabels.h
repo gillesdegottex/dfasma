@@ -71,6 +71,7 @@ private:
     void constructor_external();
     void load();
     void sort(); // For keeping files in ascending order
+    QString extractCenterLabel(const QString& txt);
 
     QAction* m_actionSave;
     QAction* m_actionSaveAs;
@@ -115,7 +116,7 @@ public slots:
     void saveAs();
     void clear();
     void removeLabel(int index);
-    void addLabel(double position, const QString& text);
+    void addLabel(double position, const QString& text, QString showntxt="");
     void setVisible(bool shown);
 };
 
