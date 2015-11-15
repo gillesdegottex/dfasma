@@ -200,13 +200,11 @@ void FTFZero::load() {
         if(!std::getline(fin, line))
             throw QString("FTFZero:FFAutoDetect: There is not a single line in this file.");
 
-        DFLAG
         // Check: <number> <number>
         std::istringstream iss(line);
         if((iss >> t >> t) && iss.eof())
             m_fileformat = FFAsciiTimeValue;        
         else{
-            DFLAG
             std::istringstream iss(line);
             if((iss >> t) && iss.eof())
                 m_fileformat = FFAsciiValue;

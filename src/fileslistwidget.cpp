@@ -208,7 +208,6 @@ void FilesListWidget::addExistingFile(const QString& filepath, FileType::FType t
 
         // This should be always "guessable"
         FileType::FileContainer container = FileType::guessContainer(filepath);
-        DCOUT << type << " " << container << std::endl;
 
         // Then, guess the type of the data in the file, if no specified yet
         if(type==FileType::FTUNSET){
@@ -255,7 +254,6 @@ void FilesListWidget::addExistingFile(const QString& filepath, FileType::FType t
                 }
             }
         }
-        DCOUT << type << " " << FileType::FTFZERO << std::endl;
 
         if(type==FileType::FTUNSET)
             throw QString("Cannot find any data or audio channel in this file that is handled by this distribution of DFasma.");
@@ -295,11 +293,9 @@ void FilesListWidget::addExistingFile(const QString& filepath, FileType::FType t
             }
         }
         else if(type == FileType::FTFZERO){
-            DCOUT << type << std::endl;
             addItem(new FTFZero(filepath, this, container));
         }
         else if(type == FileType::FTLABELS){
-            DCOUT << type << std::endl;
             addItem(new FTLabels(filepath, this, container));
         }
     }
