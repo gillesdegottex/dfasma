@@ -56,9 +56,6 @@ script:
     - ls .
     #- echo $TRAVIS_TAG
 
-#after_success:
-    #- if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$CC" = "gcc" ]; then curl --ftp-create-dirs -T DFasma-$PROJECTGITVERSION.dmg -u $FTP_USER:$FTP_PASSWORD ftp://gillesdegottex.eu/; fi
-
 deploy:
   skip_cleanup: true
   provider: releases
