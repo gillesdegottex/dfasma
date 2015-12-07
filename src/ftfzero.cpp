@@ -58,6 +58,7 @@ FTFZero::ClassConstructor::ClassConstructor(){
         FTFZero::s_formatstrings.push_back("Auto");
         FTFZero::s_formatstrings.push_back("Text - Auto");
         FTFZero::s_formatstrings.push_back("Text - Time Value (*.f0.txt)");
+        FTFZero::s_formatstrings.push_back("Text - Value (single column) (*.f0.txt)");
         FTFZero::s_formatstrings.push_back("SDIF - 1FQ0/1FQ0 (*.sdif)");
     }
 }
