@@ -339,11 +339,13 @@ WMainWindow::~WMainWindow() {
     delete gFL;
 
     DFLAG
-    // The audio player
-    if(m_audioengine){
-        delete m_audioengine;
-        m_audioengine=NULL;
-    }
+//    // The audio player
+//    if(m_audioengine){ // This seems to be called automatically by the parent (WMainWindow) on deletion
+//        delete m_audioengine;
+//        DFLAG
+//        m_audioengine=NULL;
+//        DFLAG
+//    }
 
     DFLAG
     // Delete views
