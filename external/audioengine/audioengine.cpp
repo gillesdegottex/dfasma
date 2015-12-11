@@ -153,7 +153,7 @@ void AudioEngine::stopPlayback()
 {
     if (m_audioOutput && m_state!=QAudio::StoppedState) {
         m_audioOutput->stop();
-        QCoreApplication::instance()->processEvents(); // Crashes (extremely rarely) What was the purpose of this call ?
+        QCoreApplication::instance()->processEvents(); // What was the purpose of this call ? Crashes when called from audioNotify (extremely rarely)
 //        if(m_dssound) m_dssound->stop();
         m_tobeplayed = 0.0;
         m_rtinfo_timer.stop();
@@ -213,6 +213,7 @@ void AudioEngine::audioNotify()
     if (m_audioOutput->processedUSecs()/1000000.0 > m_tobeplayed + 0.5){
         // Stop everything
         // Do not move the following in stopPlayback();
+        // Calling QCoreApplication::instance()->processEvents(); Crashes (extremely rarely)
         m_audioOutput->stop();
         m_tobeplayed = 0.0;
         m_rtinfo_timer.stop();
