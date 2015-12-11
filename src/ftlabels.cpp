@@ -46,6 +46,7 @@ using namespace Easdif;
 #include <QTextCursor>
 #include <QTextStream>
 #include <QTextCodec>
+#include <QRegularExpressionMatch>
 
 #include "qaehelpers.h"
 
