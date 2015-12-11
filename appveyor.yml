@@ -162,12 +162,3 @@ deploy:
     appveyor_repo_tag: true        # deploy on tag push only
     #branch: /v\d+\.\d+\.\d+/      # Doesn't work anymore
 
-- provider: FTP
-  protocol: ftp
-  host: gillesdegottex.eu
-  username:
-    secure: hyevsAk3rL4taNeuyDilFw==
-  password:
-    secure: 9k6UaZicpsZM6atbF6rmjoLT7PcqQweV8jj1KyFYxIfqemPQTplIDlAMX3hr9LMoZyJ/f36PKV/b2ZDkMtFxqxiHCEIRfsvPEt1+YnrCORk=
-  folder: /
-  artifact: newinstallers

@@ -205,6 +205,7 @@ GVWaveform::GVWaveform(WMainWindow* parent)
     m_aZoomXOnly->setCheckable(true);
     m_aZoomXOnly->setChecked(true);
     gMW->m_settings.add(m_aZoomXOnly);
+    connect(m_aZoomXOnly, SIGNAL(toggled(bool)), this, SLOT(setZoomXOnly(bool)));
     m_aZoomOut = new QAction(tr("Zoom Out"), this);
     m_aZoomOut->setStatusTip(tr("Zoom Out"));
     m_aZoomOut->setShortcut(Qt::Key_Minus);
@@ -267,7 +268,6 @@ GVWaveform::GVWaveform(WMainWindow* parent)
 void GVWaveform::showScrollBars(bool show) {
     if(show) {
         setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-        verticalScrollBar()->setEnabled(false);
         setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     }
     else {
@@ -400,6 +400,16 @@ void GVWaveform::aunzoom(){
     m_aZoomOnSelection->setEnabled(m_selection.width()>0);
 }
 
+void GVWaveform::setZoomXOnly(bool zoomxonly)
+{
+    if(zoomxonly){
+        QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+        viewrect.setBottom(m_scene->sceneRect().bottom());
+        viewrect.setTop(m_scene->sceneRect().top());
+        viewSet(viewrect);
+    }
+}
+
 void GVWaveform::setMouseCursorPosition(double position, bool forwardsync) {
     if(position==-1){
         m_giMouseCursorLine->hide();
@@ -478,7 +488,7 @@ void GVWaveform::wheelEvent(QWheelEvent* event){
 
     QPoint numDegrees = event->angleDelta() / 8;
 
-//    COUTD << "GVWaveform::wheelEvent " << numDegrees.y() << endl;
+//    DCOUT << "GVWaveform::wheelEvent " << numDegrees.y() << endl;
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
@@ -491,7 +501,7 @@ void GVWaveform::wheelEvent(QWheelEvent* event){
     }
     else if((viewrect.width()>10.0/gFL->getFs() && numDegrees.y()>0) || numDegrees.y()<0) {
         double gx = double(mapToScene(event->pos()).x()-viewrect.left())/viewrect.width();
-        double gy = double(mapToScene(event->pos()).x()-viewrect.left())/viewrect.width();
+        double gy = double(mapToScene(event->pos()).y()-viewrect.top())/viewrect.height();
         QRectF newrect = mapToScene(viewport()->rect()).boundingRect();
         newrect.setLeft(newrect.left()+gx*0.01*viewrect.width()*numDegrees.y());
         newrect.setRight(newrect.right()-(1-gx)*0.01*viewrect.width()*numDegrees.y());

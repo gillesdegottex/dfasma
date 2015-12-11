@@ -128,6 +128,7 @@ public slots:
     void azoomin();
     void azoomout();
     void aunzoom();
+    void setZoomXOnly(bool zoomxonly);
     void selectionSet(QRectF selection, bool forwardsync=true);
     void selectionClear(bool forwardsync=true);
     void selectionZoomOn();
