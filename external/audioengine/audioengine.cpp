@@ -153,12 +153,12 @@ void AudioEngine::stopPlayback()
 {
     if (m_audioOutput && m_state!=QAudio::StoppedState) {
         m_audioOutput->stop();
-        QCoreApplication::instance()->processEvents();
+        QCoreApplication::instance()->processEvents(); // Crashes (extremely rarely) What was the purpose of this call ?
 //        if(m_dssound) m_dssound->stop();
         m_tobeplayed = 0.0;
         m_rtinfo_timer.stop();
         emit playPositionChanged(-1);
-        emit localEnergyChanged(0);
+        emit localEnergyChanged(0.0);
     }
 }
 
@@ -211,7 +211,13 @@ void AudioEngine::audioNotify()
 
     // Add 0.5s in order to give time to the lowest level buffer to be played completely
     if (m_audioOutput->processedUSecs()/1000000.0 > m_tobeplayed + 0.5){
-        stopPlayback();
+        // Stop everything
+        // Do not move the following in stopPlayback();
+        m_audioOutput->stop();
+        m_tobeplayed = 0.0;
+        m_rtinfo_timer.stop();
+        emit playPositionChanged(-1);
+        emit localEnergyChanged(0.0);
     }
 }
 
