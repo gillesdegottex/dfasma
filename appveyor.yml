@@ -12,7 +12,9 @@ branches:
     - master
 
 install:
+  - git fetch --tags
   - echo APPVEYOR_REPO_TAG_NAME %APPVEYOR_REPO_TAG_NAME%
+  - echo appveyor_repo_tag_name %appveyor_repo_tag_name%
   - ps: echo $env:platform
   - ps: if ($env:platform -eq 'x64') {$env:QTDIR = "C:\Qt\5.4\msvc2013_64_opengl"}
   - ps: if ($env:platform -eq 'x86') {$env:QTDIR = "C:\Qt\5.4\msvc2013_opengl"}
@@ -140,6 +142,7 @@ build_script:
   #- ps: $GITPROJECTVERSION = $GITPROJECTVERSION -replace "`n|`r"
   #- ps: echo "Version $GITPROJECTVERSION"
   - echo APPVEYOR_REPO_TAG_NAME %APPVEYOR_REPO_TAG_NAME%
+  - echo appveyor_repo_tag_name %appveyor_repo_tag_name%
   - if defined APPVEYOR_REPO_TAG_NAME set RELEASEVERSION=%APPVEYOR_REPO_TAG_NAME:~1%
   - echo Version %RELEASEVERSION%
 
