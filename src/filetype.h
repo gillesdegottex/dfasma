@@ -33,7 +33,7 @@ class WMainWindow;
 class FileType : public QListWidgetItem
 {
 public:
-    enum FType {FTUNSET=0, FTSOUND, FTFZERO, FTLABELS}; // Names corresponding to possible classes
+    enum FType {FTUNSET=0, FTSOUND, FTFZERO, FTLABELS, FTGENTIMEVALUE}; // Names corresponding to possible classes
 
 private:
     FType m_type;
@@ -60,7 +60,7 @@ public:
     inline FType getType() const {return m_type;}
     inline static QString getTypeNameAndExtensions(FType type){return s_types_name_and_extensions[type];}
     inline bool is(FType type) const {return m_type==type;}
-    enum FileContainer {FCUNSET=0, FCANYSOUND, FCTEXT, FCASCII, FCSDIF}; // File Containers (not format !)
+    enum FileContainer {FCUNSET=0, FCANYSOUND, FCTEXT, FCASCII, FCBINARY, FCSDIF}; // File Containers (not format !)
     static QColor getNextColor();
     static const std::deque<QColor>& availableColors();
 

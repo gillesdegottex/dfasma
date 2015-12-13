@@ -22,9 +22,11 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
-
 #include "wdialogsettings.h"
 #include "ui_wdialogsettings.h"
+
+#include "ftsound.h"
+#include "ftlabels.h"
 
 #include "gvspectrumamplitude.h"
 #include "gvspectrumamplitudewdialogsettings.h"
@@ -32,8 +34,8 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "gvspectrumphase.h"
 #include "gvspectrumgroupdelay.h"
 #include "gvspectrogram.h"
-#include "ftsound.h"
-#include "ftlabels.h"
+#include "wgenerictimevalue.h"
+#include "gvgenerictimevalue.h"
 
 #include <iostream>
 using namespace std;
@@ -168,7 +170,7 @@ GVWaveform::GVWaveform(WMainWindow* parent)
     connect(m_aWaveformShowSTFTWindowCenters, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
     m_contextmenu.addAction(m_aWaveformShowSTFTWindowCenters);
 
-    m_aWaveformStickToSTFTWindows = new QAction(tr("Stick to STFT windows postion"), this);
+    m_aWaveformStickToSTFTWindows = new QAction(tr("Stick window to STFT windows' postion"), this);
     m_aWaveformStickToSTFTWindows->setObjectName("m_aWaveformStickToSTFTWindows");
     m_aWaveformStickToSTFTWindows->setStatusTip(tr("Set the window length and position according to the STFT's analysis instants"));
     m_aWaveformStickToSTFTWindows->setCheckable(true);
@@ -333,6 +335,17 @@ void GVWaveform::viewSet(QRectF viewrect, bool sync) {
                 spectrorect.setLeft(viewrect.left());
                 spectrorect.setRight(viewrect.right());
                 gMW->m_gvSpectrogram->viewSet(spectrorect, false);
+            }
+
+            if(gMW->ui->actionAddGenericTimeValue->isChecked()){
+                for(int i=0; i<gMW->m_wGenericTimeValues.size(); ++i){
+                    if(gMW->m_wGenericTimeValues.at(i)) {
+                        QRectF rect = gMW->m_wGenericTimeValues.at(i)->gview()->mapToScene(gMW->m_wGenericTimeValues.at(i)->gview()->viewport()->rect()).boundingRect();
+                        rect.setLeft(viewrect.left());
+                        rect.setRight(viewrect.right());
+                        gMW->m_wGenericTimeValues.at(i)->gview()->viewSet(rect, false);
+                    }
+                }
             }
         }
     }

@@ -32,7 +32,7 @@ CONFIG += file_audio_libsndfile
 
 # Additional file format support
 # SDIF (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
-#CONFIG += file_sdif
+CONFIG += file_sdif
 
 # Numerical precision. Chose among: precision_double, precision_float
 CONFIG += precision_double
@@ -247,7 +247,9 @@ FORMS     += src/wmainwindow.ui \
              src/wdialogsettings.ui \
              src/gvspectrumamplitudewdialogsettings.ui \
              src/gvspectrogramwdialogsettings.ui \
-             src/aboutbox.ui
+             src/aboutbox.ui \
+             src/wgenerictimevalue.ui \
+             src/wdialogfiletypechoosertxt.ui
 
 INCLUDEPATH += external/REAPER
 INCLUDEPATH += external/libqaudioextra/include
@@ -255,7 +257,7 @@ INCLUDEPATH += external/libqaudioextra/include
 SOURCES   += src/main.cpp\
              src/wmainwindow.cpp \
              src/wdialogsettings.cpp \
-             src/fileslistwidget.cpp \
+             src/wfileslist.cpp \
              src/aboutbox.cpp \
              src/filetype.cpp \
              src/ftsound.cpp \
@@ -271,6 +273,10 @@ SOURCES   += src/main.cpp\
              src/gvspectrogram.cpp \
              src/stftcomputethread.cpp \
              src/gvspectrogramwdialogsettings.cpp \
+             src/ftgenerictimevalue.cpp \
+             src/gvgenerictimevalue.cpp \
+             src/wgenerictimevalue.cpp \
+             src/wdialogfiletypechoosertxt.cpp \
              external/libqxt/qxtspanslider.cpp \
              external/audioengine/audioengine.cpp \
              external/libqaudioextra/src/qaesigproc.cpp \
@@ -287,7 +293,7 @@ SOURCES   += src/main.cpp\
 
 HEADERS   += src/wmainwindow.h \
              src/wdialogsettings.h \
-             src/fileslistwidget.h \
+             src/wfileslist.h \
              src/aboutbox.h \
              src/filetype.h \
              src/ftsound.h \
@@ -303,6 +309,10 @@ HEADERS   += src/wmainwindow.h \
              src/gvspectrogram.h \
              src/stftcomputethread.h \
              src/gvspectrogramwdialogsettings.h \
+             src/ftgenerictimevalue.h \
+             src/gvgenerictimevalue.h \
+             src/wgenerictimevalue.h \
+             src/wdialogfiletypechoosertxt.h \
              external/libqxt/qxtglobal.h \
              external/libqxt/qxtnamespace.h \
              external/libqxt/qxtspanslider.h \

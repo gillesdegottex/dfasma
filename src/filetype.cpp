@@ -440,6 +440,9 @@ void FileType::setStatus() {
 }
 
 FileType::~FileType() {
+    if(gFL->m_prevSelectedFile==this)
+        gFL->m_prevSelectedFile = NULL;
+
     gFL->m_present_files.erase(this);
 
     s_colors.push_front(m_color);

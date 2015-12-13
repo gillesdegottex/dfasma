@@ -843,6 +843,9 @@ qint64 FTSound::writeData(const char *data, qint64 askedlen){
 }
 
 FTSound::~FTSound(){
+    if(gFL->m_prevSelectedSound==this)
+        gFL->m_prevSelectedSound = NULL;
+
     stopPlay();
     if(gMW->m_gvSpectrogram) gMW->m_gvSpectrogram->m_stftcomputethread->cancelComputation(this);
     QIODevice::close();

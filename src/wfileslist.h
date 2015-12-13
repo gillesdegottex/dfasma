@@ -26,14 +26,21 @@ file provided in the source code of DFasma. Another copy can be found at
 class QProgressDialog;
 
 #include "filetype.h"
-#include "ftsound.h"
-#include "ftfzero.h"
-#include "ftlabels.h"
+class FTSound;
+class FTFZero;
+class FTLabels;
+class FTGenericTimeValue;
 
-class FilesListWidget;
-extern FilesListWidget* gFL; // Global accessor of the file list
+#ifdef SIGPROC_FLOAT
+#define WAVTYPE float
+#else
+#define WAVTYPE double
+#endif
 
-class FilesListWidget : public QListWidget
+class WFilesList;
+extern WFilesList* gFL; // Global accessor of the file list
+
+class WFilesList : public QListWidget
 {
     Q_OBJECT
 
@@ -43,8 +50,6 @@ class FilesListWidget : public QListWidget
     // I cannot find a way to do it already from the Qt5 library.
     // (FilesListWidget::hasItem returns NULL)
     std::map<FileType*,bool> m_present_files;
-    FileType* m_prevSelectedFile;
-    FTSound* m_prevSelectedSound;
     void addExistingFilesRecursive(const QStringList& files, FileType::FType type=FileType::FTUNSET);
 
     std::deque<FileType*> m_current_sourced;
@@ -53,14 +58,13 @@ class FilesListWidget : public QListWidget
     QProgressDialog* m_prgdlg;
     void stopFileProgressDialog();
 
-
     enum CurrentAction {CANothing, CASetSource};
     CurrentAction m_currentAction;
 
     virtual void keyPressEvent(QKeyEvent * event);
 
 public:
-    explicit FilesListWidget(QMainWindow *parent = 0);
+    explicit WFilesList(QMainWindow *parent = 0);
 
     std::deque<FTSound*> ftsnds;
     int m_nb_snds_in_selection;
@@ -68,6 +72,7 @@ public:
     int m_nb_fzeros_in_selection;
     std::deque<FTLabels*> ftlabels;
     int m_nb_labels_in_selection;
+    std::deque<FTGenericTimeValue*> ftgenerictimevalues;
     bool hasFile(FileType *ft) const;
 
     void addExistingFiles(const QStringList& files, FileType::FType type=FileType::FTUNSET);
@@ -77,6 +82,8 @@ public:
     FTSound* getCurrentFTSound(bool forceselect=false);
     FTLabels* getCurrentFTLabels(bool forceselect=false);
     FTFZero* getCurrentFTFZero(bool forceselect=false);
+    FileType* m_prevSelectedFile;
+    FTSound* m_prevSelectedSound;
 
     double getFs() const;
     unsigned int getMaxWavSize();
@@ -100,6 +107,7 @@ public slots:
     void setSource(FileType *file=NULL);
 
     void fileSelectionChanged();
+
     void selectedFilesClose();
     void selectedFilesReload();
     void selectedFilesToggleShown();

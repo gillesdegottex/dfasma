@@ -55,6 +55,7 @@ using namespace Easdif;
 #include "ui_wdialogsettings.h"
 #include "gvwaveform.h"
 #include "gvspectrogram.h"
+#include "ftfzero.h"
 
 bool FTGraphicsLabelItem::s_isEditing = false;
 

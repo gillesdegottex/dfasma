@@ -28,15 +28,18 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "wdialogsettings.h"
 #include "ui_wdialogsettings.h"
 
+#include "ftsound.h"
+#include "ftlabels.h"
+#include "ftfzero.h"
+
 #include "gvwaveform.h"
 #include "gvspectrumamplitude.h"
 #include "gvspectrumamplitudewdialogsettings.h"
 #include "ui_gvspectrumamplitudewdialogsettings.h"
 #include "gvspectrumphase.h"
 #include "gvspectrumgroupdelay.h"
-#include "ftsound.h"
-#include "ftlabels.h"
-#include "ftfzero.h"
+#include "wgenerictimevalue.h"
+#include "gvgenerictimevalue.h"
 
 #include <iostream>
 #include <algorithm>
@@ -527,6 +530,17 @@ void GVSpectrogram::viewSet(QRectF viewrect, bool forwardsync) {
                 currect.setLeft(viewrect.left());
                 currect.setRight(viewrect.right());
                 gMW->m_gvWaveform->viewSet(currect, false);
+            }
+
+            if(gMW->ui->actionAddGenericTimeValue->isChecked()){
+                for(int i=0; i<gMW->m_wGenericTimeValues.size(); ++i){
+                    if(gMW->m_wGenericTimeValues.at(i)) {
+                        QRectF rect = gMW->m_wGenericTimeValues.at(i)->gview()->mapToScene(gMW->m_wGenericTimeValues.at(i)->gview()->viewport()->rect()).boundingRect();
+                        rect.setLeft(viewrect.left());
+                        rect.setRight(viewrect.right());
+                        gMW->m_wGenericTimeValues.at(i)->gview()->viewSet(rect, false);
+                    }
+                }
             }
         }
     }

@@ -15,15 +15,6 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout_6">
-    <property name="spacing">
-     <number>0</number>
-    </property>
-    <property name="topMargin">
-     <number>0</number>
-    </property>
-    <property name="bottomMargin">
-     <number>0</number>
-    </property>
     <item>
      <widget class="QSplitter" name="splitterMain">
       <property name="orientation">
@@ -814,6 +805,7 @@
    <addaction name="actionSelectionMode"/>
    <addaction name="actionEditMode"/>
    <addaction name="separator"/>
+   <addaction name="actionAddGenericTimeValue"/>
    <addaction name="actionShowSpectrogram"/>
    <addaction name="actionShowAmplitudeSpectrum"/>
    <addaction name="actionShowPhaseSpectrum"/>
@@ -824,6 +816,17 @@
    <addaction name="actionAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
   <action name="actionSelectedFilesClose">
    <property name="text">
     <string>Close</string>
@@ -1090,6 +1093,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+V</string>
+   </property>
+  </action>
+  <action name="actionAddGenericTimeValue">
+   <property name="text">
+    <string>Add Generic TimeValue</string>
+   </property>
+   <property name="toolTip">
+    <string>Add Generic Time/Value</string>
    </property>
   </action>
  </widget>

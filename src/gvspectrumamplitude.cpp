@@ -1182,8 +1182,6 @@ void GVSpectrumAmplitude::selectionSet(QRectF selection, bool forwardsync) {
             gMW->m_gvSpectrogram->selectionSet(rect, false);
         }
     }
-
-    selectionSetTextInForm();
 }
 
 void GVSpectrumAmplitude::viewUpdateTexts() {

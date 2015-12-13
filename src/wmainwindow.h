@@ -34,10 +34,18 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QTimer>
 #include <QSettings>
 
-#include "fileslistwidget.h"
+#include "wfileslist.h"
 #include "qaesettingsauto.h"
 #include "wdialogsettings.h"
 #include "filetype.h"
+
+class QSplitter;
+class QHBoxLayout;
+class QProgressBar;
+class QProgressDialog;
+class QLabel;
+class QVBoxLayout;
+class QxtSpanSlider;
 
 class FTSound;
 class FTFZero;
@@ -48,11 +56,8 @@ class GVSpectrumAmplitude;
 class GVSpectrumPhase;
 class GVSpectrumGroupDelay;
 class GVSpectrogram;
-class QHBoxLayout;
-class QProgressBar;
-class QProgressDialog;
-class QLabel;
-class QxtSpanSlider;
+class WidgetGenericTimeValue;
+class GVGenericTimeValue;
 
 namespace Ui {
 class WMainWindow;
@@ -120,6 +125,8 @@ public slots:
     void setEditing(FileType* ft);
     void checkEditHiddenFile();
     void updateMouseCursorState(bool kshift, bool kcontrol);
+    WidgetGenericTimeValue* addWidgetGenericTimeValue();
+    void removeWidgetGenericTimeValue(WidgetGenericTimeValue* fgtv);
 
 public:
     explicit WMainWindow(QStringList files, QWidget* parent=0);
@@ -145,6 +152,7 @@ public:
     GVSpectrumGroupDelay* m_gvSpectrumGroupDelay;
     GVSpectrogram* m_gvSpectrogram;
     QxtSpanSlider* m_qxtSpectrogramSpanSlider;
+    QList<WidgetGenericTimeValue*> m_wGenericTimeValues;
 
     // Audio
     AudioEngine* m_audioengine;
