@@ -1,5 +1,5 @@
 #include "wgenerictimevalue.h"
-#include "ui_widgetgenerictimevalue.h"
+#include "ui_wgenerictimevalue.h"
 
 #include <QToolBar>
 
@@ -31,10 +31,11 @@ void WidgetGenericTimeValue::removeThisGenericTimeValue(){
 WidgetGenericTimeValue::~WidgetGenericTimeValue(){
 
     while(m_gview->m_ftgenerictimevalues.size()>0)
-        delete m_gview->m_ftgenerictimevalues.front();
+        delete m_gview->m_ftgenerictimevalues.front(); // The destructor removes the item from the list
 
     delete m_gview;
     m_gview = NULL;
 
     delete ui;
 }
+
