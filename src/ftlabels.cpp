@@ -57,6 +57,8 @@ using namespace Easdif;
 #include "gvspectrogram.h"
 #include "ftfzero.h"
 
+extern QString DFasmaVersion();
+
 bool FTGraphicsLabelItem::s_isEditing = false;
 
 FTGraphicsLabelItem::FTGraphicsLabelItem(FTLabels* ftl, const QString & text)
@@ -709,7 +711,7 @@ void FTLabels::save() {
             info += "NumChannels\t"+QString::number(1)+"\n";
 //            if(gFL->hasFile(m_src_snd))
 //                info += "Soundfile\t"+m_src_snd->fileFullPath+"\n";
-            info += "Version\t"+gMW->version().mid(8)+"\n";
+            info += "Version\t"+DFasmaVersion()+"\n";
             info += "Creator\tDFasma\n";
             tmpMatrix.Set(info.toLatin1().constData());
             frameToWrite.AddMatrix(tmpMatrix);

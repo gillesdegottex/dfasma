@@ -1340,7 +1340,7 @@ void GVSpectrumAmplitude::setMouseCursorPosition(QPointF p, bool forwardsync) {
 }
 
 void GVSpectrumAmplitude::drawBackground(QPainter* painter, const QRectF& rect){
-//    COUTD << "QGVAmplitudeSpectrum::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
+//    DCOUT << "QGVAmplitudeSpectrum::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
     double fs = gFL->getFs();
 

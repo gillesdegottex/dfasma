@@ -129,10 +129,9 @@ public slots:
     void removeWidgetGenericTimeValue(WidgetGenericTimeValue* fgtv);
 
 public:
-    explicit WMainWindow(QStringList files, QWidget* parent=0);
+    explicit WMainWindow(QStringList filestoload, QStringList genfilestoload=QStringList(), QWidget* parent=0);
     ~WMainWindow();
     bool isLoading() const {return m_loading;}
-    QString version();
 
     QAESettingsAuto m_settings;
     WDialogSettings* m_dlgSettings;

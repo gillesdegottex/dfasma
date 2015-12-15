@@ -241,9 +241,9 @@ void GVGenericTimeValue::updateSceneRect() {
     values_min -= 0.05*(values_max-values_min);
     values_max += 0.05*(values_max-values_min);
     if(std::isinf(values_min))
-        values_min = -1000.0;
+        values_min = -1000.0;// This happens only if none of the data has a valid range
     if(std::isinf(values_max))
-        values_max = 1000.0;
+        values_max = 1000.0; // This happens only if none of the data has a valid range
     m_scene->setSceneRect(-1.0/gFL->getFs(), -values_max, gFL->getMaxDuration()+1.0/gFL->getFs(), (values_max-values_min));
 }
 

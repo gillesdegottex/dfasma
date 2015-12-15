@@ -187,10 +187,6 @@ void WFilesList::addExistingFilesRecursive(const QStringList& files, FileType::F
 }
 
 void WFilesList::addExistingFiles(const QStringList& files, FileType::FType type) {
-//    COUTD << "WMainWindow::addFiles " << files.size() << endl;
-
-//    for(size_t i=0; i<files.size(); ++i)
-//        COUTD << files[i] << endl;
 
     // These progress dialogs HAVE to be built on the stack otherwise ghost dialogs appear.
     QProgressDialog prgdlg("Opening files...", "Abort", 0, files.size(), this);
@@ -204,23 +200,23 @@ void WFilesList::addExistingFiles(const QStringList& files, FileType::FType type
 }
 
 void WFilesList::addExistingFile(const QString& filepath, FileType::FType type) {
-//    cout << "INFO: Add file: " << filepath.toLocal8Bit().constData() << endl;
-
-    if(QFileInfo(filepath).isDir())
-        throw QString("Shoudn't use WMainWindow::addFile for directories, use WMainWindow::addFiles instead (with an 's')");
+    // Not used for directories, use addExistingFiles instead
 
     try{
         bool isfirsts = ftsnds.size()==0;
-        int viewid=0; // The view where the file will be added to (only for generic file types)
+        int viewid=-1; // The view where the file will be added to (only for generic file types)
+                       // By default, create a new view
 
         // Attention: There is the type of data stored in DFasma (FILETYPE) (ex. FileType::FTSOUND)
         //  and the format of the file (ex. FFSOUND)
         //  and the file container (sdif, any sound, text)
 
-        // This should be always "guessable"
-        FileType::FileContainer container = FileType::guessContainer(filepath);
+//        DCOUT << filepath << " " << type << std::endl;
 
-        // Then, guess the type of the data in the file, if no specified yet
+        // This should be always "guessable"
+        FileType::FileContainer container = FileType::guessContainer(FileType::removeDataSelectors(filepath));
+
+        // Then, guess the type of the data in the file, if not specified yet
         if(type==FileType::FTUNSET){
             // The format and the DFasma's type have to correspond
             if(container==FileType::FCANYSOUND) {
@@ -314,6 +310,8 @@ void WFilesList::addExistingFile(const QString& filepath, FileType::FType type) 
         }
         else if(type==FileType::FTGENTIMEVALUE){
             WidgetGenericTimeValue* widget = NULL;
+//            if(viewid==-2)
+//                throw QString("A view has not been selected for "+filepath);
             if(viewid==-1)
                 widget = gMW->addWidgetGenericTimeValue();
             else
@@ -428,7 +426,7 @@ void WFilesList::showFileContextMenu(const QPoint& pos) {
 }
 
 void WFilesList::fileSelectionChanged() {
-//    COUTD << "WMainWindow::fileSelectionChanged" << endl;
+//    DCOUT << "WFilesList::fileSelectionChanged" << endl;
 
     if(m_currentAction==CASetSource){
         setSource(currentFile());
@@ -513,7 +511,7 @@ void WFilesList::fileSelectionChanged() {
         gMW->checkEditHiddenFile();
     }
 
-//    COUTD << "WMainWindow::~fileSelectionChanged" << endl;
+//    DCOUT << "WFilesList::~fileSelectionChanged" << endl;
 }
 void WFilesList::fileInfoUpdate() {
     QList<QListWidgetItem*> list = selectedItems();

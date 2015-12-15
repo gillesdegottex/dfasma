@@ -53,6 +53,7 @@ FileType::ClassConstructor::ClassConstructor(){
         FileType::s_types_name_and_extensions.push_back("Sound (*.wav *.aiff *.pcm *.snd *.flac *.ogg)");
         FileType::s_types_name_and_extensions.push_back("F0 (*.f0.txt *.bpf *.sdif)");
         FileType::s_types_name_and_extensions.push_back("Label (*.lab *.sdif)");
+        FileType::s_types_name_and_extensions.push_back("Generic Time/Value (*.*)");
     }
 }
 FileType::ClassConstructor FileType::s_class_constructor;
@@ -240,6 +241,14 @@ bool FileType::SDIF_hasFrame(const QString& filename, const QString& framesignat
 }
 #endif
 
+// Discard or keep file data selectors, following SDIF syntax
+// [filename][::[#stream][:frame][/matrix][.column][_row][@time]]
+QString FileType::removeDataSelectors(QString str){
+    return str.remove(QRegExp("::.*$"));
+}
+QString FileType::getDataSelectors(QString str){
+    return str.remove(QRegExp("^.*::"));
+}
 
 // Instance-related ============================================================
 
@@ -329,8 +338,7 @@ bool FileType::checkFileStatus(CHECKFILESTATUSMGT cfsmgt){
         return false;
     }
     else{
-        QFileInfo fi(fileFullPath);
-        m_modifiedtime = fi.lastModified();
+        m_modifiedtime = fileInfo.lastModified();
         setStatus();
     }
     return true;

@@ -83,7 +83,7 @@ using namespace std;
 
 WMainWindow* gMW = NULL;
 
-WMainWindow::WMainWindow(QStringList files, QWidget *parent)
+WMainWindow::WMainWindow(QStringList filestoload, QStringList genericfilestoload, QWidget *parent)
     : QMainWindow(parent)
     , m_last_file_editing(NULL)
     , m_dlgSettings(NULL)
@@ -316,14 +316,17 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     // This one seems able to open distant files because file paths arrive in gvfs format
     // in the main.
     // Doesn't work any more (at least with sftp). The gvfs "miracle" might not be very reliable.
-    gFL->addExistingFiles(files);
+
+    gFL->addExistingFiles(filestoload);
+    if(!genericfilestoload.isEmpty())
+        gFL->addExistingFiles(genericfilestoload, FileType::FTGENTIMEVALUE);
     updateViewsAfterAddFile(true);
 
-    if(files.size()>0)
+    if(gFL->ftsnds.size()>0)
         m_gvSpectrogram->updateSTFTSettings(); // This will update the window computation AND trigger the STFT computation
     gMW->ui->actionSelectedFilesClose->setEnabled(gFL->selectedItems().size()>0);
 
-    connect(ui->actionFileOpen, SIGNAL(triggered()), this, SLOT(openFile())); // Alow this only at the end
+    connect(ui->actionFileOpen, SIGNAL(triggered()), this, SLOT(openFile())); // Allow this only at the end
 
     m_loading = false;
 }
@@ -389,42 +392,6 @@ void WMainWindow::updateWindowTitle() {
     int count = gFL->count();
     if(count>0) setWindowTitle("DFasma ("+QString::number(count)+")");
     else        setWindowTitle("DFasma");
-}
-
-QString WMainWindow::version(){
-    if(!m_version.isEmpty())
-        return m_version;
-
-    QString dfasmaversiongit(STR(DFASMAVERSIONGIT));
-    QString dfasmabranchgit(STR(DFASMABRANCHGIT));
-
-//    QTextStream(stdout) << "'" << dfasmaversiongit << "'" << endl;
-
-    QString	dfasmaversion;
-    if(!dfasmaversiongit.isEmpty()) {
-        dfasmaversion = QString("Version ") + dfasmaversiongit;
-        if(dfasmabranchgit!="master")
-            dfasmaversion += "-" + dfasmabranchgit;
-    }
-    else {
-        QFile readmefile(":/README.txt");
-        readmefile.open(QFile::ReadOnly | QFile::Text);
-        QTextStream readmefilestream(&readmefile);
-        readmefilestream.readLine();
-        readmefilestream.readLine();
-        dfasmaversion = readmefilestream.readLine().simplified();
-    }
-    QString m_version = dfasmaversion;
-
-    m_version += "\nCompiled by "+getCompilerVersion()+" for ";
-    #ifdef Q_PROCESSOR_X86_32
-      m_version += "32bits";
-    #endif
-    #ifdef Q_PROCESSOR_X86_64
-      m_version += "64bits";
-    #endif
-
-    return m_version;
 }
 
 void WMainWindow::execAbout(){
@@ -503,6 +470,7 @@ void WMainWindow::openFile() {
     filters += ";;"+FileType::getTypeNameAndExtensions(FileType::FTSOUND);
     filters += ";;"+FileType::getTypeNameAndExtensions(FileType::FTFZERO);
     filters += ";;"+FileType::getTypeNameAndExtensions(FileType::FTLABELS);
+    filters += ";;"+FileType::getTypeNameAndExtensions(FileType::FTGENTIMEVALUE);
 
     QString selectedFilter;
     QStringList files = QFileDialog::getOpenFileNames(this, "Open File(s)...", QString(), filters, &selectedFilter, QFileDialog::ReadOnly);
@@ -515,6 +483,8 @@ void WMainWindow::openFile() {
         type = FileType::FTFZERO;
     else if(selectedFilter==FileType::getTypeNameAndExtensions(FileType::FTLABELS))
         type = FileType::FTLABELS;
+    else if(selectedFilter==FileType::getTypeNameAndExtensions(FileType::FTGENTIMEVALUE))
+        type = FileType::FTGENTIMEVALUE;
 
 //    COUTD << selectedFilter.toLatin1().constData() << ": " << type << endl;
 

@@ -49,6 +49,8 @@ using namespace Easdif;
 #include "qaegisampledsignal.h"
 #include "qaehelpers.h"
 
+extern QString DFasmaVersion();
+
 std::deque<QString> FTFZero::s_formatstrings;
 FTFZero::ClassConstructor::ClassConstructor(){
     // Attention ! It has to correspond to FType definition's order.
@@ -160,6 +162,7 @@ FTFZero::FTFZero(const FTFZero& ft)
     : QObject(ft.parent())
     , FileType(FTFZERO, ft.fileFullPath, this)
 {
+    DFLAG
     FTFZero::constructor_internal();
 
     ts = ft.ts;
@@ -438,7 +441,7 @@ void FTFZero::save() {
             info += "NumChannels\t"+QString::number(1)+"\n";
             if(gFL->hasFile(m_src_snd))
                 info += "Soundfile\t"+m_src_snd->fileFullPath+"\n";
-            info += "Version\t"+gMW->version().mid(8)+"\n";
+            info += "Version\t"+DFasmaVersion()+"\n";
             info += "Creator\tDFasma\n";
             tmpMatrix.Set(info.toLatin1().constData());
             frameToWrite.AddMatrix(tmpMatrix);

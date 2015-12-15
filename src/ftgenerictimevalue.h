@@ -44,6 +44,8 @@ class FTGenericTimeValue : public QObject, public FileType
     double m_valuemin;
     double m_valuemax;
 
+    QString m_dataselectors;
+
 public:
     enum FileFormat {FFNotSpecified=0, FFAutoDetect, FFAsciiAutoDetect, FFAsciiTimeValue, FFAsciiValue, FFSDIF};
     static std::deque<QString> s_formatstrings;

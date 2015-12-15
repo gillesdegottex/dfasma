@@ -114,7 +114,7 @@ void FTGenericTimeValue::constructor_external(){
     m_giGenericTimeValue = new QAEGISampledSignal(&ts, &values, m_view);
     QPen spectro_pen(getColor());
     spectro_pen.setCosmetic(true);
-    spectro_pen.setWidth(3);
+    spectro_pen.setWidth(1);
     m_giGenericTimeValue->setPen(spectro_pen);
 
     m_view->m_scene->addItem(m_giGenericTimeValue);
@@ -125,11 +125,12 @@ void FTGenericTimeValue::constructor_external(){
 
 FTGenericTimeValue::FTGenericTimeValue(const QString& _fileName, WidgetGenericTimeValue *parent, FileType::FileContainer container, FileFormat fileformat)
     : QObject(gFL)
-    , FileType(FTFZERO, _fileName, this)
+    , FileType(FTGENTIMEVALUE, FileType::removeDataSelectors(_fileName), this)
 {
-
     if(fileFullPath.isEmpty())
-        throw QString("This ctor is for existing files. Use the empty ctor for empty F0 object.");
+        throw QString("This ctor is for existing files. Use the empty ctor for empty FTGenericTimeValue object.");
+
+    m_dataselectors = FileType::getDataSelectors(_fileName);
 
     FTGenericTimeValue::constructor_internal(parent->gview());
 
@@ -149,7 +150,7 @@ FTGenericTimeValue::FTGenericTimeValue(const QString& _fileName, WidgetGenericTi
 
 FTGenericTimeValue::FTGenericTimeValue(const FTGenericTimeValue& ft)
     : QObject(ft.parent())
-    , FileType(FTFZERO, ft.fileFullPath, this)
+    , FileType(FTGENTIMEVALUE, ft.fileFullPath, this)
 {
     FTGenericTimeValue::constructor_internal(ft.m_view);
 
@@ -261,7 +262,8 @@ void FTGenericTimeValue::load(){
             throw QString("SDIF: bad header");
         }
 
-        readentity.ChangeSelection("/1FQ0.1_1"); // Select directly the f0 values
+//        DCOUT << m_dataselectors << std::endl;
+        readentity.ChangeSelection(m_dataselectors.toLatin1().constData()); // Select directly the f0 values
 
         SDIFFrame frame;
         try{
@@ -535,6 +537,9 @@ QString FTGenericTimeValue::info() const {
         str += "Average sampling: " + QString("%1").arg(m_meandts, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()) + "s<br/>";
         str += QString("Values in [%1, %2]").arg(m_valuemin, 0,'g',3).arg(m_valuemax, 0,'g',5);
         str += QString("<br/>Mean Value=%1").arg(m_meanvalue, 0,'g',5);
+
+        if(!m_dataselectors.isEmpty())
+            str += QString("<br/>Data selector: ")+m_dataselectors;
     }
     return str;
 }
