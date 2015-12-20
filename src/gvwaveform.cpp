@@ -337,14 +337,12 @@ void GVWaveform::viewSet(QRectF viewrect, bool sync) {
                 gMW->m_gvSpectrogram->viewSet(spectrorect, false);
             }
 
-            if(gMW->ui->actionAddGenericTimeValue->isChecked()){
-                for(int i=0; i<gMW->m_wGenericTimeValues.size(); ++i){
-                    if(gMW->m_wGenericTimeValues.at(i)) {
-                        QRectF rect = gMW->m_wGenericTimeValues.at(i)->gview()->mapToScene(gMW->m_wGenericTimeValues.at(i)->gview()->viewport()->rect()).boundingRect();
-                        rect.setLeft(viewrect.left());
-                        rect.setRight(viewrect.right());
-                        gMW->m_wGenericTimeValues.at(i)->gview()->viewSet(rect, false);
-                    }
+            for(int i=0; i<gMW->m_wGenericTimeValues.size(); ++i){
+                if(gMW->m_wGenericTimeValues.at(i)) {
+                    QRectF rect = gMW->m_wGenericTimeValues.at(i)->gview()->mapToScene(gMW->m_wGenericTimeValues.at(i)->gview()->viewport()->rect()).boundingRect();
+                    rect.setLeft(viewrect.left());
+                    rect.setRight(viewrect.right());
+                    gMW->m_wGenericTimeValues.at(i)->gview()->viewSet(rect, false);
                 }
             }
         }

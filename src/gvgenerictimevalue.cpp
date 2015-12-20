@@ -198,8 +198,13 @@ GVGenericTimeValue::GVGenericTimeValue(WidgetGenericTimeValue *parent)
 
     connect(gMW->m_gvWaveform->horizontalScrollBar(), SIGNAL(valueChanged(int)), horizontalScrollBar(), SLOT(setValue(int)));
     connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), gMW->m_gvWaveform->horizontalScrollBar(), SLOT(setValue(int)));
-//    connect(gMW->m_gvSpectrogram->horizontalScrollBar(), SIGNAL(valueChanged(int)), horizontalScrollBar(), SLOT(setValue(int)));
-//    connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), gMW->m_gvSpectrogram->horizontalScrollBar(), SLOT(setValue(int)));
+    connect(gMW->m_gvSpectrogram->horizontalScrollBar(), SIGNAL(valueChanged(int)), horizontalScrollBar(), SLOT(setValue(int)));
+    connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), gMW->m_gvSpectrogram->horizontalScrollBar(), SLOT(setValue(int)));
+
+    for(int gvi=0; gvi<gMW->m_wGenericTimeValues.size(); ++gvi){
+        connect(gMW->m_wGenericTimeValues[gvi]->gview()->horizontalScrollBar(), SIGNAL(valueChanged(int)), horizontalScrollBar(), SLOT(setValue(int)));
+        connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), gMW->m_wGenericTimeValues[gvi]->gview()->horizontalScrollBar(), SLOT(setValue(int)));
+    }
 }
 
 void GVGenericTimeValue::gridSetVisible(bool visible){m_giGrid->setVisible(visible);}
@@ -302,6 +307,15 @@ void GVGenericTimeValue::viewSet(QRectF viewrect, bool sync) {
                 spectrorect.setLeft(viewrect.left());
                 spectrorect.setRight(viewrect.right());
                 gMW->m_gvSpectrogram->viewSet(spectrorect, false);
+            }
+
+            for(int i=0; i<gMW->m_wGenericTimeValues.size(); ++i){
+                if(gMW->m_wGenericTimeValues.at(i)) {
+                    QRectF rect = gMW->m_wGenericTimeValues.at(i)->gview()->mapToScene(gMW->m_wGenericTimeValues.at(i)->gview()->viewport()->rect()).boundingRect();
+                    rect.setLeft(viewrect.left());
+                    rect.setRight(viewrect.right());
+                    gMW->m_wGenericTimeValues.at(i)->gview()->viewSet(rect, false);
+                }
             }
         }
     }
