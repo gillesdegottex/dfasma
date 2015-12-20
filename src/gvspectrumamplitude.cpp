@@ -128,7 +128,6 @@ GVSpectrumAmplitude::GVSpectrumAmplitude(WMainWindow* parent)
     m_aAmplitudeSpectrumShowSQNRs->setChecked(false);
     gMW->m_settings.add(m_aAmplitudeSpectrumShowSQNRs);
     connect(m_aAmplitudeSpectrumShowSQNRs, SIGNAL(toggled(bool)), this, SLOT(sqnrSetVisible(bool)));
-//    connect(m_aAmplitudeSpectrumShowSQNRs, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
 
     m_aFollowPlayCursor = new QAction(tr("Follow the play cursor"), this);
     m_aFollowPlayCursor->setObjectName("m_aFollowPlayCursor");

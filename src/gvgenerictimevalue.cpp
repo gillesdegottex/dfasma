@@ -84,7 +84,7 @@ GVGenericTimeValue::GVGenericTimeValue(WidgetGenericTimeValue *parent)
     m_aShowGrid->setIcon(QIcon(":/icons/grid.svg"));
     m_aShowGrid->setCheckable(true);
     m_aShowGrid->setChecked(true);
-    gMW->m_settings.add(m_aShowGrid);
+//    gMW->m_settings.setValue("GVGenericTimeValue::m_aShowGrid", m_aShowGrid->isChecked());
     m_giGrid = new QAEGIGrid(this, "s", "");
     m_giGrid->setMathYAxis(true);
     m_giGrid->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
@@ -807,11 +807,6 @@ void GVGenericTimeValue::setMouseCursorPosition(QPointF p, bool forwardsync) {
     if(forwardsync){
         // TODO
     }
-}
-
-void GVGenericTimeValue::drawBackground(QPainter* painter, const QRectF& rect){
-//    COUTD << "QGVAmplitudeSpectrum::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
-
 }
 
 GVGenericTimeValue::~GVGenericTimeValue(){

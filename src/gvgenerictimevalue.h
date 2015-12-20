@@ -94,7 +94,6 @@ public:
 
     void viewSet(QRectF viewrect=QRectF(), bool sync=true);
     void viewUpdateTexts();
-    void drawBackground(QPainter* painter, const QRectF& rect);
 
     ~GVGenericTimeValue();
 
