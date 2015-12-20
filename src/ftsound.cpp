@@ -138,6 +138,9 @@ void FTSound::constructor_internal() {
     m_stft_min = std::numeric_limits<FFTTYPE>::infinity();
     m_stft_max = -std::numeric_limits<FFTTYPE>::infinity();
 
+    m_giSQNRForSpectrumAmplitude = new QGraphicsLineItem(0.0, 0.0, 44100.0/2, 0.0);
+    m_giSQNRForSpectrumAmplitude->setVisible(false);
+
     connect(m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setVisible(bool)));
 
     m_actionInvPolarity = new QAction("Inverse polarity", this);
@@ -182,6 +185,8 @@ void FTSound::constructor_external() {
     m_giWavForSpectrumAmplitude = new QAEGIUniformlySampledSignal(&m_dftamp, 1.0, gMW->m_gvSpectrumAmplitude);
     m_giWavForSpectrumAmplitude->setPen(pen);
     gMW->m_gvSpectrumAmplitude->m_scene->addItem(m_giWavForSpectrumAmplitude);
+    m_giSQNRForSpectrumAmplitude->setPen(pen);
+    gMW->m_gvSpectrumAmplitude->m_scene->addItem(m_giSQNRForSpectrumAmplitude);
 
     m_giWavForSpectrumPhase = new QAEGIUniformlySampledSignal(&m_dftphase, 1.0, gMW->m_gvSpectrumPhase);
     m_giWavForSpectrumPhase->setPen(pen);
@@ -189,7 +194,6 @@ void FTSound::constructor_external() {
 
     m_giWavForSpectrumGroupDelay = new QAEGIUniformlySampledSignal(&m_dftgd, 1.0, gMW->m_gvSpectrumGroupDelay);
     m_giWavForSpectrumGroupDelay->setPen(pen);
-//    m_giWavForSpectrumGroupDelay
     gMW->m_gvSpectrumGroupDelay->m_scene->addItem(m_giWavForSpectrumGroupDelay);
 }
 
@@ -231,6 +235,8 @@ FTSound::FTSound(const FTSound& ft)
     m_fileaudioformat.setSampleType(QAudioFormat::Float);
     m_fileaudioformat.setSampleSize(8*sizeof(WAVTYPE));
 
+    m_giSQNRForSpectrumAmplitude->setPos(0.0, 20*std::log10(std::pow(2.0,m_fileaudioformat.sampleSize())));
+
     m_lastreadtime = ft.m_lastreadtime;
     m_modifiedtime = ft.m_modifiedtime;
 
@@ -242,6 +248,8 @@ void FTSound::load_finalize() {
         FTSound::setAvoidClicksWindowDuration(gMW->m_dlgSettings->ui->sbPlaybackAvoidClicksWindowDuration->value());
 
 //    std::cout << "INFO: " << wav.size() << " samples loaded (" << wav.size()/fs << "s max amplitude=" << m_wavmaxamp << ")" << endl;
+
+    m_giSQNRForSpectrumAmplitude->setPos(0.0, 20*std::log10(std::pow(2.0,m_fileaudioformat.sampleSize())));
 
     m_lastreadtime = QDateTime::currentDateTime();
     needDFTUpdate();
@@ -282,6 +290,7 @@ void FTSound::setColor(const QColor &_color){
     m_giWavForSpectrumAmplitude->setPen(pen);
     m_giWavForSpectrumPhase->setPen(pen);
     m_giWavForSpectrumGroupDelay->setPen(pen);
+    m_giSQNRForSpectrumAmplitude->setPen(pen);
 }
 
 void FTSound::zposReset(){
@@ -289,12 +298,14 @@ void FTSound::zposReset(){
     m_giWavForSpectrumAmplitude->setZValue(0.0);
     m_giWavForSpectrumPhase->setZValue(0.0);
     m_giWavForSpectrumGroupDelay->setZValue(0.0);
+    m_giSQNRForSpectrumAmplitude->setZValue(0.0);
 }
 void FTSound::zposBringForward(){
     m_giWavForWaveform->setZValue(1.0);
     m_giWavForSpectrumAmplitude->setZValue(1.0);
     m_giWavForSpectrumPhase->setZValue(1.0);
     m_giWavForSpectrumGroupDelay->setZValue(1.0);
+    m_giSQNRForSpectrumAmplitude->setZValue(1.0);
 }
 
 bool FTSound::reload() {

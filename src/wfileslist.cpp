@@ -664,6 +664,7 @@ void WFilesList::selectedFilesReload() {
 
     if(didanysucceed && reloadSelectedSound) {
         gMW->m_gvWaveform->m_scene->update();
+        gMW->m_gvSpectrumAmplitude->updateAmplitudeExtent();
         gMW->m_gvSpectrumAmplitude->updateDFTs();
         gMW->m_gvSpectrogram->updateSTFTPlot(true); // Force the STFT computation
     }
@@ -681,6 +682,7 @@ void WFilesList::selectedFilesDuplicate() {
         if(ft){
             addItem(ft);
             gMW->m_gvWaveform->updateSceneRect();
+            gMW->m_gvSpectrumAmplitude->updateAmplitudeExtent();
             gMW->allSoundsChanged();
             gMW->ui->actionSelectedFilesClose->setEnabled(true);
             gMW->ui->actionSelectedFilesReload->setEnabled(true);

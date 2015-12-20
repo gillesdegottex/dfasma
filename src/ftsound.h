@@ -44,8 +44,6 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #define BUTTERRESPONSEDFTLEN 2048
 
-
-class CFFTW3;
 #include "stftcomputethread.h"
 
 class GIWaveform;
@@ -134,6 +132,7 @@ public:
 
     std::vector<FFTTYPE> m_dftamp; // [dB]
     QAEGIUniformlySampledSignal* m_giWavForSpectrumAmplitude;
+    QGraphicsLineItem* m_giSQNRForSpectrumAmplitude;
 
     std::vector<FFTTYPE> m_dftphase; // [rad]
     QAEGIUniformlySampledSignal* m_giWavForSpectrumPhase;

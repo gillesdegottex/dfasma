@@ -115,6 +115,7 @@ public:
     QAction* m_aAmplitudeSpectrumShowGrid;
     QAction* m_aAmplitudeSpectrumShowWindow;
     QAction* m_aAmplitudeSpectrumShowLoudnessCurve;
+    QAction* m_aAmplitudeSpectrumShowSQNRs;
     QAction* m_aZoomOnSelection;
     QAction* m_aSelectionClear;
     QAction* m_aZoomIn;
@@ -128,6 +129,7 @@ protected slots:
     void gridSetVisible(bool visible);
     void windowSetVisible(bool visible);
     void elcSetVisible(bool visible);
+    void sqnrSetVisible(bool visible);
 
 public slots:
     void updateScrollBars();
