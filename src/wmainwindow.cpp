@@ -24,6 +24,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "wdialogsettings.h"
 #include "ui_wdialogsettings.h"
 
+#include "wdialogfilecreate.h"
 #include "wdialogselectchannel.h"
 #include "ui_wdialogselectchannel.h"
 
@@ -345,8 +346,6 @@ WMainWindow::~WMainWindow() {
     DFLAG
     delete gFL;
 
-    DFLAG
-//    // The audio player
 // This seems to be called automatically by the parent (WMainWindow) on deletion
 //    if(m_audioengine){
 //        delete m_audioengine;
@@ -456,9 +455,13 @@ void WMainWindow::removeWidgetGenericTimeValue(WidgetGenericTimeValue* fgtv){
 // File management =============================================================
 
 void WMainWindow::newFile(){
-    QMessageBox::StandardButton btn = QMessageBox::question(this, "Create a new file ...", "Do you want to create an empty label file?", QMessageBox::Yes | QMessageBox::No);
-    if(btn==QMessageBox::Yes){
-        gFL->addItem(new FTLabels(this));
+    WDialogFileCreate dlg(this);
+    int res = dlg.exec();
+    if(res==QDialog::Accepted){
+        if(dlg.selectedFileType()==FileType::FTLABELS)
+            gFL->addItem(new FTLabels(this));
+        else if(dlg.selectedFileType()==FileType::FTFZERO)
+            gFL->addItem(new FTFZero(this));
     }
 }
 

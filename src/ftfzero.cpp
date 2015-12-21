@@ -133,6 +133,25 @@ void FTFZero::constructor_external(){
     gMW->m_gvSpectrogram->m_scene->addItem(m_giHarmonicForSpectrogram);
 }
 
+// Construct an empty FZero object
+FTFZero::FTFZero(QObject *parent)
+    : QObject(parent)
+    , FileType(FTFZERO, "", this)
+{
+    Q_UNUSED(parent);
+
+    FTFZero::constructor_internal();
+
+    if(gMW->m_dlgSettings->ui->cbF0DefaultFormat->currentIndex()+FFAsciiTimeValue==FFSDIF)
+        setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.f0.sdif");
+    else
+        setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.f0.txt");
+    m_fileformat = FFNotSpecified;
+
+    FTFZero::constructor_external();
+}
+
+// Construct from an existing file
 FTFZero::FTFZero(const QString& _fileName, QObject* parent, FileType::FileContainer container, FileFormat fileformat)
     : QObject(parent)
     , FileType(FTFZERO, _fileName, this)
@@ -162,7 +181,6 @@ FTFZero::FTFZero(const FTFZero& ft)
     : QObject(ft.parent())
     , FileType(FTFZERO, ft.fileFullPath, this)
 {
-    DFLAG
     FTFZero::constructor_internal();
 
     ts = ft.ts;
@@ -594,10 +612,14 @@ void FTFZero::setColor(const QColor& color){
 
 void FTFZero::zposReset(){
     m_giF0ForSpectrogram->setZValue(0.0);
+    m_giHarmonicForSpectrogram->setZValue(0.0);
+    m_aspec_txt->setZValue(0.0);
 }
 
 void FTFZero::zposBringForward(){
     m_giF0ForSpectrogram->setZValue(1.0);
+    m_giHarmonicForSpectrogram->setZValue(1.0);
+    m_aspec_txt->setZValue(1.0);
 }
 
 double FTFZero::getLastSampleTime() const {
@@ -608,20 +630,73 @@ double FTFZero::getLastSampleTime() const {
 }
 
 void FTFZero::edit(double t, double f0){
+    if(t<0.0)
+        return;
     if(f0<0)
         f0 = 0.0;
 
-//    COUTD << "FTFZero::edit " << t << " " << f0 << endl;
+    double step = -1.0;
+//    if(ts.size()>1)
+//        step = qae::min(qae::diff(ts)); // TODO Speed up: Pre-compute TODO Really good idea ??
+//    else
+    step = gMW->m_dlgSettings->ui->sbF0DefaultStepSize->value();
 
-    double step = qae::median(qae::diff(ts)); // TODO Speed up: Pre-compute
+    if(step==-1.0 || step==0.0)
+        step = gMW->m_dlgSettings->ui->sbF0DefaultStepSize->value();
 
-    std::vector<double>::iterator itlb = std::lower_bound(ts.begin(), ts.end(), t+step/2);
-    int ri = itlb-ts.begin()-1;
+    int ri = -1;
+    double smallestdistance = std::numeric_limits<double>::infinity();
+    if(!ts.empty()){
+        ri = 0;
+        smallestdistance = std::abs(ts[ri]-t);
+        for(size_t n=1; n<ts.size(); ++n){
+            if(std::abs(ts[n]-t)<smallestdistance){
+                ri = n;
+                smallestdistance = std::abs(ts[n]-t);
+            }
+        }
+    }
 
-    if(ri>=0 && ri<int(ts.size())){
-        f0s[ri] = f0;
-        if(m_giF0ForSpectrogram)
-            m_giF0ForSpectrogram->updateGeometry();
+//    DCOUT << "FTFZero::edit " << t << " " << f0 << " " << step << endl;
+
+    if(ts.empty()
+        || (t<ts.front()-step/2 || t>ts.back()+step/2)
+        || (smallestdistance>step/2)){
+        // Add a new value
+        double tt = step*int(t/step+0.5);
+        if(ts.empty()){
+            ts.push_back(tt);
+            f0s.push_back(f0);
+        }
+        else if(t<ts.front()-step/2){
+            ts.insert(ts.begin(), tt);
+            f0s.insert(f0s.begin(), f0);
+        }
+        else if(t>ts.back()+step/2){
+            ts.push_back(tt);
+            f0s.push_back(f0);
+        }
+        else if(smallestdistance>step/2){
+            if(t-ts[ri]>0){
+                ts.insert(ts.begin()+ri+1, tt);
+                f0s.insert(f0s.begin()+ri+1, f0);
+            }
+            if(t-ts[ri]<0){
+                ts.insert(ts.begin()+ri, tt);
+                f0s.insert(f0s.begin()+ri, f0);
+            }
+        }
+//        DCOUT << "FTFZero::edit add t=" << ts.back() << " f0=" << f0s.back() << " step=" << step << endl;
+    }
+    else{
+        // Modify an existing value (i.e. keeping the same times ts)
+        if(ri>=0 && ri<int(ts.size()))
+            f0s[ri] = f0;
+    }
+
+    if(m_giF0ForSpectrogram){
+        m_giF0ForSpectrogram->updateMinMaxValues();
+        m_giF0ForSpectrogram->updateGeometry();
     }
 
     m_is_edited = true;

@@ -805,7 +805,6 @@
    <addaction name="actionSelectionMode"/>
    <addaction name="actionEditMode"/>
    <addaction name="separator"/>
-   <addaction name="actionAddGenericTimeValue"/>
    <addaction name="actionShowSpectrogram"/>
    <addaction name="actionShowAmplitudeSpectrum"/>
    <addaction name="actionShowPhaseSpectrum"/>
@@ -814,6 +813,7 @@
    <addaction name="actionPlay"/>
    <addaction name="actionSettings"/>
    <addaction name="actionAbout"/>
+   <addaction name="separator"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="toolBar">

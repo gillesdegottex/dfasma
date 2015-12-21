@@ -48,7 +48,6 @@ class GVSpectrogram : public QGraphicsView
     QTime m_progresswidgets_lastup;
 
     FTFZero* m_editing_fzero;
-//    std::deque<QPointF> m_editing_fzero_newvalues; // TODO DELETE
 
 protected:
     void contextMenuEvent(QContextMenuEvent * event);

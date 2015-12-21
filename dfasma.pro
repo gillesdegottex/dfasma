@@ -244,6 +244,7 @@ win32: msvc: CONFIG += embed_manifest_exe
 
 FORMS     += src/wmainwindow.ui \
              src/wdialogselectchannel.ui \
+             src/wdialogfilecreate.ui \
              src/wdialogsettings.ui \
              src/gvspectrumamplitudewdialogsettings.ui \
              src/gvspectrogramwdialogsettings.ui \
@@ -259,6 +260,7 @@ SOURCES   += src/main.cpp\
              src/wdialogsettings.cpp \
              src/wfileslist.cpp \
              src/aboutbox.cpp \
+             src/wdialogfilecreate.cpp \
              src/filetype.cpp \
              src/ftsound.cpp \
              src/wdialogselectchannel.cpp \
@@ -295,6 +297,7 @@ HEADERS   += src/wmainwindow.h \
              src/wdialogsettings.h \
              src/wfileslist.h \
              src/aboutbox.h \
+             src/wdialogfilecreate.h \
              src/filetype.h \
              src/ftsound.h \
              src/wdialogselectchannel.h \

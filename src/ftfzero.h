@@ -55,6 +55,7 @@ private:
     FileFormat m_fileformat;
 
 public:
+    FTFZero(QObject* parent);
     FTFZero(const QString& _fileName, QObject* parent, FileType::FileContainer container=FileType::FCUNSET, FileFormat fileformat=FFNotSpecified);
     virtual FileType* duplicate();
     FTFZero(const FTFZero& ft);  // Duplicate
