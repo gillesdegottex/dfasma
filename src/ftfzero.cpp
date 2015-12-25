@@ -363,9 +363,8 @@ bool FTFZero::reload() {
 
     // ... and reload the data from the file
     load();
-
-    m_giF0ForSpectrogram->update();
-    m_giHarmonicForSpectrogram->update();
+    if(m_giF0ForSpectrogram) m_giF0ForSpectrogram->update();
+    if(m_giHarmonicForSpectrogram) m_giHarmonicForSpectrogram->update();
 
     return true;
 }
@@ -581,9 +580,9 @@ void FTFZero::setVisible(bool shown){
     if(shown)
         updateTextsGeometry();
 
-    m_aspec_txt->setVisible(shown);
-    m_giF0ForSpectrogram->setVisible(shown);
-    m_giHarmonicForSpectrogram->setVisible(shown);
+    if(m_aspec_txt) m_aspec_txt->setVisible(shown);
+    if(m_giF0ForSpectrogram) m_giF0ForSpectrogram->setVisible(shown);
+    if(m_giHarmonicForSpectrogram) m_giHarmonicForSpectrogram->setVisible(shown);
 }
 
 void FTFZero::setSource(FileType *src){
@@ -601,8 +600,10 @@ void FTFZero::setColor(const QColor& color){
     pen.setWidth(0);
     QBrush brush(getColor());
 
-    m_aspec_txt->setPen(pen);
-    m_aspec_txt->setBrush(brush);
+    if(m_aspec_txt){
+        m_aspec_txt->setPen(pen);
+        m_aspec_txt->setBrush(brush);
+    }
 
     pen = m_giF0ForSpectrogram->getPen();
     pen.setColor(color);
@@ -636,15 +637,19 @@ void FTFZero::edit(double t, double f0){
         f0 = 0.0;
 
     double step = -1.0;
-//    if(ts.size()>1)
-//        step = qae::min(qae::diff(ts)); // TODO Speed up: Pre-compute TODO Really good idea ??
-//    else
+    // step from current data is far from reliable because there might be
+    //      gaps from one value to the next.
+    //      Also, The smallest can be far too small.
+    //      Thus, use the default value
+    //    if(ts.size()>1)
+    //        step = qae::median(qae::diff(ts));
+    //    else
     step = gMW->m_dlgSettings->ui->sbF0DefaultStepSize->value();
 
     if(step==-1.0 || step==0.0)
         step = gMW->m_dlgSettings->ui->sbF0DefaultStepSize->value();
 
-    int ri = -1;
+    int ri = -1; // Index to the closest values wrt time
     double smallestdistance = std::numeric_limits<double>::infinity();
     if(!ts.empty()){
         ri = 0;
