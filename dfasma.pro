@@ -32,7 +32,7 @@ CONFIG += file_audio_libsndfile
 
 # Additional file format support
 # SDIF (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
-CONFIG += file_sdif
+#CONFIG += file_sdif
 
 # Numerical precision. Chose among: precision_double, precision_float
 CONFIG += precision_double
@@ -151,9 +151,9 @@ CONFIG(file_audio_libav, file_audio_libsndfile|file_audio_libsox|file_audio_buil
 # This can be useful when using the flag FFTW_MEASURE for plan construction
 # because the resize can take quite a lot of time in this case.
 # However, this flag is likely to generate non-deterministic runs.
-# This, I prefer to use the flag FFTW_ESTIMATE.
-# Plan construction is atctuall very fast with FFTW_ESTIMATE so that it
-# is not necessary to limit the plan construction time.
+# Thus, I prefer to use the flag FFTW_ESTIMATE.
+# Plan construction is actually very fast with FFTW_ESTIMATE so that it
+# is not really necessary to limit the plan construction time.
 #DEFINES += FFTW3RESIZINGMAXTIMESPENT
 
 CONFIG(fft_fftw3, fft_fftw3|fft_builtin_fftreal){
