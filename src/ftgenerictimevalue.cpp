@@ -131,6 +131,7 @@ FTGenericTimeValue::FTGenericTimeValue(const QString& _fileName, WidgetGenericTi
         throw QString("This ctor is for existing files. Use the empty ctor for empty FTGenericTimeValue object.");
 
     m_dataselectors = FileType::getDataSelectors(_fileName);
+//    DCOUT << '"' << m_dataselectors << '"' << std::endl;
 
     FTGenericTimeValue::constructor_internal(parent->gview());
 
@@ -262,8 +263,9 @@ void FTGenericTimeValue::load(){
             throw QString("SDIF: bad header");
         }
 
-//        DCOUT << m_dataselectors << std::endl;
-        readentity.ChangeSelection(m_dataselectors.toLatin1().constData()); // Select directly the f0 values
+//        DCOUT << '"' << m_dataselectors << '"' << std::endl;
+        if(!m_dataselectors.isEmpty())
+            readentity.ChangeSelection(m_dataselectors.toLatin1().constData()); // Select directly the f0 values
 
         SDIFFrame frame;
         try{
