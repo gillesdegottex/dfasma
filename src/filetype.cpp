@@ -247,7 +247,10 @@ QString FileType::removeDataSelectors(QString str){
     return str.remove(QRegExp("::.*$"));
 }
 QString FileType::getDataSelectors(QString str){
-    return str.remove(QRegExp("^.*::"));
+    if(str.indexOf("::")==-1)
+        return "";
+    else
+        return str.remove(QRegExp("^.*::"));
 }
 
 // Instance-related ============================================================
