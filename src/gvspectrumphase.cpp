@@ -728,11 +728,16 @@ void GVSpectrumPhase::drawBackground(QPainter* painter, const QRectF& rect){
             painter->setPen(outlinePen);
             painter->setBrush(QBrush(gFL->ftfzeros[fi]->getColor()));
 
-            double ct = 0.5*(gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.nl+gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.nr)/gFL->getFs();
-            double cf0 = qae::nearest<double>(gFL->ftfzeros[fi]->ts, gFL->ftfzeros[fi]->f0s, ct, -1.0);
+            double ct = 0.0; // The time where the f0 curve has to be sampled
+            if(gMW->m_gvWaveform->hasSelection())
+                ct = 0.5*(gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.nl+gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.nr)/gFL->getFs();
+            else
+                ct = gMW->m_gvWaveform->getPlayCursorPosition();
+            double cf0 = qae::interp_stepatzeros<double>(gFL->ftfzeros[fi]->ts, gFL->ftfzeros[fi]->f0s, ct);
 
             // cout << ct << ":" << cf0 << endl;
-            if(cf0==-1) continue;
+            if(cf0<=0.0)
+                continue;
 
             QColor c = gFL->ftfzeros[fi]->getColor();
             c.setAlphaF(1.0);

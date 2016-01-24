@@ -1057,6 +1057,7 @@ void GVWaveform::selectionClear(bool forwardsync){
     gMW->ui->lblSelectionTxt->setText("No selection");
     gMW->m_gvSpectrumAmplitude->m_scene->update();
     gMW->m_gvSpectrumPhase->m_scene->update();
+    gMW->m_gvSpectrumGroupDelay->m_scene->update();
 
     m_aZoomOnSelection->setEnabled(false);
     m_aSelectionClear->setEnabled(false);

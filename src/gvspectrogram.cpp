@@ -828,7 +828,8 @@ void GVSpectrogram::mouseMoveEvent(QMouseEvent* event){
                 if(curfzero && gMW->m_gvSpectrogram->m_aSpectrogramShowHarmonics->isChecked()){
                     // Get the clostest harmonic
                     double ct = p.x();
-                    double cf0 = qae::nearest<double>(curfzero->ts, curfzero->f0s, ct, -1.0);
+//                    double cf0 = qae::nearest<double>(curfzero->ts, curfzero->f0s, ct);
+                    double cf0 = qae::interp_stepatzeros<double>(curfzero->ts, curfzero->f0s, ct);
                     if(cf0>0){
                         int h = int(-p.y()/cf0 +0.5);
                         curfzero->m_giHarmonicForSpectrogram->setGain(h);

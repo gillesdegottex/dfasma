@@ -741,9 +741,9 @@ void FTFZero::draw_freq_amp(QPainter* painter, const QRectF& rect){
         ct = 0.5*(gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.nl+gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.nr)/gFL->getFs();
     else
         ct = gMW->m_gvWaveform->getPlayCursorPosition();
-    double cf0 = qae::nearest<double>(ts, f0s, ct, -1.0);
+    double cf0 = qae::interp_stepatzeros<double>(ts, f0s, ct);
 
-    if(cf0==-1)
+    if(cf0<=0.0)
         return;
 
     // Draw the f0 vertical line
