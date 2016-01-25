@@ -119,6 +119,8 @@ FileType::FileContainer FileType::guessContainer(const QString& filepath){
     else if(FileType::isFileSDIF(filepath))
         return FCSDIF;
     #endif
+    else if(FileType::isFileEST(filepath))
+        return FCEST;
     else if(FileType::isFileTEXT(filepath))// This detection is not 100% accurate
         return FCTEXT;
 //    else if(FileType::isFileASCII(filepath))// This detection is not 100% accurate
@@ -128,7 +130,7 @@ FileType::FileContainer FileType::guessContainer(const QString& filepath){
         throw QString("Support of SDIF files not compiled in this distribution of DFasma.");
     #endif
     else
-        throw QString("The container(format) of this file is not managed by DFasma.");
+        throw QString("The container of this file is not managed by DFasma.");
 
     return FileType::FCUNSET;
 }
@@ -151,6 +153,9 @@ bool FileType::isFileASCII(const QString& filename) {
     int c;
     // COUTD << "EOF='" << EOF << "'" << endl;
     std::ifstream a(filename.toLatin1().constData());
+    if(!a.is_open())
+        throw QString("FileType:isFileASCII: Cannot open the file.");
+
     int n = 0;
     // Assume the first Ko is sufficient for testing ASCII content
     while((c = a.get()) != EOF && n<1000){
@@ -174,6 +179,9 @@ bool FileType::isFileTEXT(const QString& filename) {
     int c;
     // COUTD << "EOF='" << EOF << "'" << endl;
     std::ifstream a(filename.toLatin1().constData());
+    if(!a.is_open())
+        throw QString("FileType:isFileTEXT: Cannot open the file.");
+
     int n = 0;
     // Assume the first Ko is sufficient for testing ASCII content
     while((c = a.get()) != EOF && n<1000){
@@ -183,6 +191,18 @@ bool FileType::isFileTEXT(const QString& filename) {
     }
 
     return true;
+}
+
+bool FileType::isFileEST(const QString& filename){
+    std::ifstream fin(filename.toLatin1().constData());
+    if(!fin.is_open())
+        throw QString("FileType:isFileEST: Cannot open the file.");
+
+    string line;
+    if(!std::getline(fin, line))
+        return false;
+
+    return line.find("EST_File")==0;
 }
 
 #ifdef SUPPORT_SDIF

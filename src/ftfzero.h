@@ -39,7 +39,7 @@ class FTFZero : public QObject, public FileType
     Q_OBJECT
 
 public:
-    enum FileFormat {FFNotSpecified=0, FFAutoDetect, FFAsciiAutoDetect, FFAsciiTimeValue, FFAsciiValue, FFSDIF};
+    enum FileFormat {FFNotSpecified=0, FFAutoDetect, FFAsciiAutoDetect, FFAsciiTimeValue, FFAsciiValue, FFSDIF, FFEST};
     static std::deque<QString> s_formatstrings;
 
 private:

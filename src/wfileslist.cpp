@@ -260,6 +260,10 @@ void WFilesList::addExistingFile(const QString& filepath, FileType::FType type) 
                     }
                 }
             }
+            else if(container==FileType::FCEST) {
+                // Currently support only F0 data
+                type = FileType::FTFZERO;
+            }
             else if(container==FileType::FCBINARY) {
                 // TODO
             }

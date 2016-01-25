@@ -204,29 +204,34 @@ void FTFZero::load() {
         m_fileformat = FFAutoDetect;
 
     #ifdef SUPPORT_SDIF
-    if(m_fileformat==FFAutoDetect)
+    if(m_fileformat==FFAutoDetect){
         if(FileType::isFileSDIF(fileFullPath))
             m_fileformat = FFSDIF;
+        else if(FileType::isFileEST(fileFullPath))
+            m_fileformat = FFEST;
+    }
     #endif
 
     // Check for text/ascii formats
     if(m_fileformat==FFAutoDetect || m_fileformat==FFAsciiAutoDetect){
-        // Find the format using grammar check
 
         std::ifstream fin(fileFullPath.toLatin1().constData());
         if(!fin.is_open())
             throw QString("FTFZero:FFAutoDetect: Cannot open the file.");
-        double t;
-        string line, text;
+        string line;
         // Check the first line only (Assuming it is enough)
         if(!std::getline(fin, line))
             throw QString("FTFZero:FFAutoDetect: There is not a single line in this file.");
 
+        // Guess the format using grammar check
+
+        double t;
         // Check: <number> <number>
         std::istringstream iss(line);
         if((iss >> t >> t) && iss.eof())
-            m_fileformat = FFAsciiTimeValue;        
+            m_fileformat = FFAsciiTimeValue;
         else{
+            // Check: <number>
             std::istringstream iss(line);
             if((iss >> t) && iss.eof())
                 m_fileformat = FFAsciiValue;
@@ -243,7 +248,7 @@ void FTFZero::load() {
             throw QString("FTFZero:FFAsciiTimeValue: Cannot open file");
 
         double t, value;
-        string line, text;
+        string line;
         while(std::getline(fin, line)) {
             std::istringstream(line) >> t >> value;
             ts.push_back(t);
@@ -257,12 +262,34 @@ void FTFZero::load() {
 
         double t=0.0;
         double value;
-        string line, text;
+        string line;
         while(std::getline(fin, line)) {
             std::istringstream(line) >> value;
             ts.push_back(t);
             f0s.push_back(value);
             t += gMW->m_dlgSettings->ui->sbF0DefaultStepSize->value();
+        }
+    }
+    else if(m_fileformat==FFEST){
+        ifstream fin(fileFullPath.toLatin1().constData());
+        if(!fin.is_open())
+            throw QString("FTFZero:FFEST: Cannot open file");
+
+        double t = 0.0;
+        double voiced = false;
+        double value;
+        string line;
+        bool skippingheader = true;
+        while(skippingheader && std::getline(fin, line)) {
+            if(line.find("EST_Header_End")==0)
+                skippingheader = false;
+        }
+        while(std::getline(fin, line)) {
+            std::istringstream(line) >> t >> voiced >> value;
+            ts.push_back(t);
+            if(!voiced || value<0.0)
+                value = 0.0;
+            f0s.push_back(value);
         }
     }
     else if(m_fileformat==FFSDIF){

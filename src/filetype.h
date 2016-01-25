@@ -60,7 +60,7 @@ public:
     inline FType getType() const {return m_type;}
     inline static QString getTypeNameAndExtensions(FType type){return s_types_name_and_extensions[type];}
     inline bool is(FType type) const {return m_type==type;}
-    enum FileContainer {FCUNSET=0, FCANYSOUND, FCTEXT, FCASCII, FCBINARY, FCSDIF}; // File Containers (not format !)
+    enum FileContainer {FCUNSET=0, FCANYSOUND, FCTEXT, FCASCII, FCBINARY, FCSDIF, FCEST}; // File Containers (not format !)
     static QColor getNextColor();
     static const std::deque<QColor>& availableColors();
 
@@ -82,6 +82,7 @@ public:
     static FileContainer guessContainer(const QString& filepath);
     #ifdef SUPPORT_SDIF
     static bool isFileSDIF(const QString& filename);
+    static bool isFileEST(const QString& filename);
     static bool SDIF_hasFrame(const QString& filename, const QString& framesignature);
     #endif
     static QString removeDataSelectors(QString str);
