@@ -533,7 +533,11 @@ void WMainWindow::dragEnterEvent(QDragEnterEvent *event){
 }
 
 void WMainWindow::changeColor(){
-    QColorDialog colordialog(this);
+    FileType* ft = gFL->currentFile();
+    if(ft==NULL)
+        return;
+
+    QColorDialog colordialog(ft->getColor(), this);
     QObject::connect(&colordialog, SIGNAL(colorSelected(const QColor &)), gFL, SLOT(colorSelected(const QColor &)));
 //    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), gFL, SLOT(colorSelected(const QColor &)));
     // Add the available Matlab colors to the custom colors

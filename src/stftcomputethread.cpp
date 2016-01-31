@@ -342,8 +342,6 @@ void STFTComputeThread::run() {
                     QAEColorMap& cmap = QAEColorMap::getAt(params_running.colormap_index);
                     cmap.setColor(params_running.stftparams.snd->getColor());
 
-                    if(cmap.isTransparent())
-                        params_running.imgstft->fill(Qt::white);
                     QRgb* pimgb = (QRgb*)(params_running.imgstft->bits());
 
                     FFTTYPE ymin = 0.0; // Init shouldn't be used
@@ -384,7 +382,7 @@ void STFTComputeThread::run() {
                             }
                             else {
                                 v = *pstft;
-                                if(uselw) v += elc[n]; // Correct according to the loudness curve
+                                if(uselw) v += elc[n]; // Modification according to loudness curve
                                 y = (v-ymin)*divmaxmmin;
 
                                 if(y<=0.0)

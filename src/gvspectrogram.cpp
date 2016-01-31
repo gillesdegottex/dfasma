@@ -1232,10 +1232,17 @@ void GVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 
     // Draw the sound's spectrogram
     if(QAEColorMap::getAt(m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex()).isTransparent()){
+        QPainter::CompositionMode compmode = painter->compositionMode();
+        painter->setCompositionMode(QPainter::CompositionMode_Source);
+        painter->fillRect(viewrect, Qt::transparent);
+//        painter->fillRect(viewrect, Qt::black);
+        painter->setCompositionMode(QPainter::CompositionMode_Plus);
         // If the color mapping is partly transparent, draw the spectro of all sounds
-        for(size_t fi=0; fi<gFL->ftsnds.size(); ++fi){
+        for(size_t fi=0; fi<gFL->ftsnds.size(); ++fi)
             draw_spectrogram(painter, rect, viewrect, gFL->ftsnds[fi]);
-        }
+        painter->setCompositionMode(QPainter::CompositionMode_DestinationOver);
+        painter->fillRect(viewrect, Qt::white);
+        painter->setCompositionMode(compmode);
     }
     else{
         // If the color mapping is opaque, draw only the spectro of the current sound
@@ -1249,7 +1256,6 @@ void GVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 
 void GVSpectrogram::draw_spectrogram(QPainter* painter, const QRectF& rect, const QRectF& viewrect, FTSound* snd){
     Q_UNUSED(rect)
-    //        double bin2hz = fs*1/csnd->m_stftparams.dftlen;
 
     gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.lock();
     if(snd==NULL
@@ -1283,17 +1289,17 @@ void GVSpectrogram::draw_spectrogram(QPainter* painter, const QRectF& rect, cons
 
     // This one is the basic synchronized version,
     // but it creates flickering when zooming
-//        QRectF srcrect = m_imgSTFT.rect();
-//        QRectF trgrect = m_scene->sceneRect();
-//        trgrect.setLeft(csnd->m_stftts.front()-0.5*csnd->m_stftparams.stepsize/csnd->fs);
-//        trgrect.setRight(csnd->m_stftts.back()+0.5*csnd->m_stftparams.stepsize/csnd->fs);
-//        double bin2hz = fs*1/csnd->m_stftparams.dftlen;
-//        trgrect.setTop(-bin2hz/2);// Hard to verify because of the flickering
-//        trgrect.setBottom(fs/2+bin2hz/2);// Hard to verify because of the flickering
+    //QRectF srcrect = m_imgSTFT.rect();
+    //QRectF trgrect = m_scene->sceneRect();
+    //trgrect.setLeft(csnd->m_stftts.front()-0.5*csnd->m_stftparams.stepsize/csnd->fs);
+    //trgrect.setRight(csnd->m_stftts.back()+0.5*csnd->m_stftparams.stepsize/csnd->fs);
+    //double bin2hz = fs*1/csnd->m_stftparams.dftlen;
+    //trgrect.setTop(-bin2hz/2);// Hard to verify because of the flickering
+    //trgrect.setBottom(fs/2+bin2hz/2);// Hard to verify because of the flickering
 
-//        COUTD << "Scene: " << m_scene->sceneRect() << " " << m_scene->sceneRect().width() << "x" << m_scene->sceneRect().height() << endl;
-//        COUTD << "SRC: " << srcrect << " " << srcrect.width() << "x" << srcrect.height() << endl;
-//        COUTD << "TRG: " << trgrect << " " << trgrect.width() << "x" << trgrect.height() << endl;
+    //COUTD << "Scene: " << m_scene->sceneRect() << " " << m_scene->sceneRect().width() << "x" << m_scene->sceneRect().height() << endl;
+    //COUTD << "SRC: " << srcrect << " " << srcrect.width() << "x" << srcrect.height() << endl;
+    //COUTD << "TRG: " << trgrect << " " << trgrect.width() << "x" << trgrect.height() << endl;
 
     gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.unlock();
 
