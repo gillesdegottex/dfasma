@@ -736,7 +736,7 @@ void GVSpectrumGroupDelay::drawBackground(QPainter* painter, const QRectF& rect)
             painter->setBrush(QBrush(gFL->ftfzeros[fi]->getColor()));
 
             double ct = 0.5*(gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.nl+gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.nr)/gFL->getFs();
-            double cf0 = qae::nearest<double>(gFL->ftfzeros[fi]->ts, gFL->ftfzeros[fi]->f0s, ct, -1.0);
+            double cf0 = qae::nearest<double>(gFL->ftfzeros[fi]->ts, gFL->ftfzeros[fi]->f0s, ct);
 
             // cout << ct << ":" << cf0 << endl;
             if(cf0==-1) continue;
