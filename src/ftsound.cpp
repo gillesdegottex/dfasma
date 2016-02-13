@@ -341,6 +341,7 @@ bool FTSound::reload() {
     try{
         load();
         load_finalize();
+        m_giWavForWaveform->updateMinMaxValues();
 
         if(fs_prev!=fs)
             throw QString("The sampling rate of the file has changed. This is currently not supported. Please open the file with another instance of DFasma.");
