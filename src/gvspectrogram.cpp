@@ -512,6 +512,8 @@ void GVSpectrogram::viewSet(QRectF viewrect, bool forwardsync) {
         if(viewrect==QRectF())
             viewrect = currentviewrect;
 
+//        DCOUT << m_scene->sceneRect() << endl;
+
         if(viewrect.top()<=m_scene->sceneRect().top())
             viewrect.setTop(m_scene->sceneRect().top());
         if(viewrect.bottom()>=m_scene->sceneRect().bottom())
@@ -522,6 +524,8 @@ void GVSpectrogram::viewSet(QRectF viewrect, bool forwardsync) {
             viewrect.setRight(m_scene->sceneRect().right());
 
         fitInView(removeHiddenMargin(this, viewrect));
+
+        updateTextsGeometry();
         m_giGrid->updateLines();
 
         if(forwardsync){
@@ -576,10 +580,9 @@ void GVSpectrogram::resizeEvent(QResizeEvent* event){
 }
 
 void GVSpectrogram::scrollContentsBy(int dx, int dy) {
-//    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << " GVSpectrogram::scrollContentsBy" << endl;
+//    DCOUT << "GVSpectrogram::scrollContentsBy " << dx << " " << dy << endl;
 
-    setMouseCursorPosition(QPointF(-1,0), false);
-    updateTextsGeometry();
+    setMouseCursorPosition(QPointF(-1,0), false); // TODO Not sure it's safe to call this here. E.g. updateGeometry is not welcomed here.
 
     QGraphicsView::scrollContentsBy(dx, dy);
 
@@ -749,6 +752,7 @@ void GVSpectrogram::mouseMoveEvent(QMouseEvent* event){
         newrect.setBottom(m_selection_pressedp.y()+(m_pressed_viewrect.bottom()-m_selection_pressedp.y())*exp(dy));
         viewSet(newrect);
 
+        DCOUT << "GVSpectrogram::mouseMoveEvent" << endl;
         updateTextsGeometry();
 
         setMouseCursorPosition(m_selection_pressedp, true);
@@ -991,6 +995,7 @@ void GVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
     m_giShownSelection->setRect(m_selection.left()-0.5/fs, m_selection.top(), m_selection.width()+1.0/fs, m_selection.height());
     m_giShownSelection->show();
 
+    DCOUT << "GVSpectrogram::selectionSet" << endl;
     updateTextsGeometry();
 
     selectionSetTextInForm();
@@ -1072,7 +1077,7 @@ void GVSpectrogram::updateTextsGeometry() {
         if(!gFL->ftlabels[fi]->m_actionShow->isChecked())
             continue;
 
-        gFL->ftlabels[fi]->updateTextsGeometry();
+        gFL->ftlabels[fi]->updateTextsGeometrySpectrogram();
     }
 }
 
@@ -1112,6 +1117,7 @@ void GVSpectrogram::azoomin(){
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
 }
 void GVSpectrogram::azoomout(){
+    DFLAG
     QTransform trans = transform();
     qreal h11 = trans.m11();
     qreal h22 = trans.m22();
@@ -1225,6 +1231,8 @@ void GVSpectrogram::playCursorSet(double t, bool forwardsync){
 void GVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
     Q_UNUSED(rect)
 //    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": GVSpectrogram::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
+
+    updateTextsGeometry(); // TODO Since called here, can be removed from many other places
 
     // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
 

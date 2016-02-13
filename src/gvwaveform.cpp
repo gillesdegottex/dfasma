@@ -331,7 +331,9 @@ void GVWaveform::viewSet(QRectF viewrect, bool sync) {
 
         if(sync){
             if(gMW->m_gvSpectrogram && gMW->ui->actionShowSpectrogram->isChecked()) {
+//                DCOUT << gMW->m_gvSpectrogram->viewport()->rect() << endl;
                 QRectF spectrorect = gMW->m_gvSpectrogram->mapToScene(gMW->m_gvSpectrogram->viewport()->rect()).boundingRect();
+//                DCOUT << spectrorect << endl;
                 spectrorect.setLeft(viewrect.left());
                 spectrorect.setRight(viewrect.right());
                 gMW->m_gvSpectrogram->viewSet(spectrorect, false);
@@ -432,21 +434,18 @@ void GVWaveform::setMouseCursorPosition(double position, bool forwardsync) {
 
         m_giMouseCursorLine->setPos(position, 0.0);
 
+        m_giMouseCursorTxt->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
         QString txt = QString("%1s").arg(position, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value());
         m_giMouseCursorTxt->setText(txt);
 
         QTransform trans = transform();
         QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+        QRectF br = m_giMouseCursorTxt->boundingRect();
+        position = min(position, double(viewrect.right()-br.width()/trans.m11()));
+        m_giMouseCursorTxt->setPos(position+1/trans.m11(), viewrect.top()+3/trans.m22());
         QTransform txttrans;
         txttrans.scale(1.0/trans.m11(),1.0/trans.m22());
         m_giMouseCursorTxt->setTransform(txttrans);
-        m_giMouseCursorTxt->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
-        QRectF br = m_giMouseCursorTxt->boundingRect();
-//        QRectF viewrect = mapToScene(QRect(QPoint(0,0), QSize(viewport()->rect().width(), viewport()->rect().height()))).boundingRect();
-        position = min(position, double(viewrect.right()-br.width()/trans.m11()));
-//        if(x+br.width()/trans.m11()>viewrect.right())
-//            x = x - br.width()/trans.m11();
-        m_giMouseCursorTxt->setPos(position+1/trans.m11(), viewrect.top()-3/trans.m22());
 
         if(forwardsync){
             if(gMW->m_gvSpectrogram)
@@ -1254,17 +1253,22 @@ void GVWaveform::selectionZoomOn(){
 
 void GVWaveform::updateTextsGeometry(){
     QTransform trans = transform();
-    QTransform cursortrans = QTransform::fromScale(1.0/trans.m11(), 1.0);
-    m_giMouseCursorTxt->setTransform(cursortrans);
+    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+    m_giMouseCursorTxt->setPos(m_giMouseCursorTxt->pos().x(), viewrect.top()+3/trans.m22());
+    QTransform txttrans;
+    txttrans.scale(1.0/trans.m11(),1.0/trans.m22());
+    m_giMouseCursorTxt->setTransform(txttrans);
 
     // Tell the labels to update their texts
     for(size_t fi=0; fi<gFL->ftlabels.size(); fi++)
-        gFL->ftlabels[fi]->updateTextsGeometry();
+        gFL->ftlabels[fi]->updateTextsGeometryWaveform();
 }
 
 void GVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
     Q_UNUSED(rect)
     // COUTD << "GVWaveform::drawBackground rect:" << rect << endl;
+
+    updateTextsGeometry(); // TODO Since called here, can be removed from many other places
 
     m_giWindow->setVisible(m_aWaveformShowWindow->isChecked() && m_selection.width()>0.0); // TODO Put elsewhere?
 
