@@ -442,7 +442,7 @@ void GVWaveform::setMouseCursorPosition(double position, bool forwardsync) {
         QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
         QRectF br = m_giMouseCursorTxt->boundingRect();
         position = min(position, double(viewrect.right()-br.width()/trans.m11()));
-        m_giMouseCursorTxt->setPos(position+1/trans.m11(), viewrect.top()+3/trans.m22());
+        m_giMouseCursorTxt->setPos(position+1/trans.m11(), viewrect.top()+0/trans.m22());
         QTransform txttrans;
         txttrans.scale(1.0/trans.m11(),1.0/trans.m22());
         m_giMouseCursorTxt->setTransform(txttrans);
@@ -1254,7 +1254,7 @@ void GVWaveform::selectionZoomOn(){
 void GVWaveform::updateTextsGeometry(){
     QTransform trans = transform();
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
-    m_giMouseCursorTxt->setPos(m_giMouseCursorTxt->pos().x(), viewrect.top()+3/trans.m22());
+    m_giMouseCursorTxt->setPos(m_giMouseCursorTxt->pos().x(), viewrect.top()+0/trans.m22());
     QTransform txttrans;
     txttrans.scale(1.0/trans.m11(),1.0/trans.m22());
     m_giMouseCursorTxt->setTransform(txttrans);
