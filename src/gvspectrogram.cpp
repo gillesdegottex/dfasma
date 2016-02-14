@@ -100,7 +100,7 @@ GVSpectrogram::GVSpectrogram(WMainWindow* parent)
     m_scene->addItem(m_giGrid);
     connect(m_aSpectrogramShowGrid, SIGNAL(toggled(bool)), this, SLOT(gridSetVisible(bool)));
 
-    m_aSpectrogramShowHarmonics = new QAction(tr("Show &Harmonics"), this);
+    m_aSpectrogramShowHarmonics = new QAction(tr("Show F0 &harmonic"), this);
     m_aSpectrogramShowHarmonics->setObjectName("m_aSpectrogramShowHarmonics"); // For auto settings
     m_aSpectrogramShowHarmonics->setStatusTip(tr("Show the harmonics of the fundamental frequency curves"));
     m_aSpectrogramShowHarmonics->setCheckable(true);
@@ -322,7 +322,7 @@ void GVSpectrogram::amplitudeExtentSlidersChangesEnded() {
 
 
 void GVSpectrogram::updateSTFTSettings(){
-//    COUTD << "GVSpectrogram::updateSTFTSettings fs=" << gMW->getFs() << endl;
+//    DCOUT << "GVSpectrogram::updateSTFTSettings" << endl;
 
     gMW->ui->pbSpectrogramSTFTUpdate->hide();
     m_dlgSettings->checkImageSize();
@@ -382,6 +382,7 @@ void GVSpectrogram::updateSTFTSettings(){
 
 
 void GVSpectrogram::stftComputingStateChanged(int state){
+//    DCOUT << "GVSpectrogram::stftComputingStateChanged " << state << std::endl;
     if(state==STFTComputeThread::SCSDFT){
 //        COUTD << "SCSDFT" << endl;
         gMW->ui->pgbSpectrogramSTFTCompute->setValue(0);
@@ -430,9 +431,13 @@ void GVSpectrogram::stftComputingStateChanged(int state){
         gMW->ui->pbSTFTComputingCancel->setChecked(false);
         gMW->ui->pbSTFTComputingCancel->hide();
         gMW->ui->pgbSpectrogramSTFTCompute->hide();
-        gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT Canceled"));
-        gMW->ui->pbSpectrogramSTFTUpdate->show();
-        gMW->ui->wSpectrogramProgressWidgets->show();
+        // Use the visibility of lblSpectrogramInfoTxt to know if the canceled message has to be shown or not
+        // TODO ... very dirty
+        if(gMW->ui->lblSpectrogramInfoTxt->isVisible()){
+            gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT Canceled"));
+            gMW->ui->pbSpectrogramSTFTUpdate->show();
+            gMW->ui->wSpectrogramProgressWidgets->show();
+        }
         gMW->m_gvSpectrogram->m_scene->update();
     }
     else if(state==STFTComputeThread::SCSMemoryFull){
@@ -454,7 +459,7 @@ void GVSpectrogram::autoUpdate(bool autoupdate){
 }
 
 void GVSpectrogram::updateSTFTPlot(bool force){
-//    COUTD << "GVSpectrogram::updateSTFTPlot" << endl;
+//    DCOUT << "GVSpectrogram::updateSTFTPlot" << endl;
 
     if(!gMW->ui->actionShowSpectrogram->isChecked())
         return;

@@ -454,27 +454,27 @@ void STFTComputeThread::run() {
 
     m_mutex_computing.unlock();
 
-    if(canceled)
+    if(canceled){
+        gMW->ui->lblSpectrogramInfoTxt->show();
         emit stftComputingStateChanged(SCSCanceled);
+    }
     else
         emit stftComputingStateChanged(SCSFinished);
 
 //    DCOUT << "STFTComputeThread::~run" << std::endl;
 }
 
-void STFTComputeThread::cancelComputation(bool waittoend) {
-//    COUTD << "STFTComputeThread::cancelComputation" << std::endl;
+void STFTComputeThread::cancelCurrentComputation(bool waittoend) {
+//    DCOUT << "STFTComputeThread::cancelCurrentComputation" << std::endl;
     gMW->ui->pbSTFTComputingCancel->setChecked(true);
     if(waittoend){
-//        COUTD << "waittoend..." << std::endl;
         m_mutex_computing.lock();
-//        COUTD << "GOT IT !" << std::endl;
         m_mutex_computing.unlock();
     }
-//    COUTD << "STFTComputeThread::~cancelComputation" << std::endl;
 }
 
-void STFTComputeThread::cancelComputation(FTSound* snd) {
+void STFTComputeThread::cancelComputation(FTSound* snd, bool closing) {
+//    DCOUT << "STFTComputeThread::cancelComputation" << std::endl;
     // Remove it from the STFT waiting queue
     m_mutex_changingparams.lock();
     if(!m_params_todo.isEmpty()
@@ -482,11 +482,15 @@ void STFTComputeThread::cancelComputation(FTSound* snd) {
         m_params_todo.clear();
     }
     m_mutex_changingparams.unlock();
+
     // Or cancel its STFT computation
     while(isRunning()
           && getCurrentParameters().stftparams.snd==snd){
-        cancelComputation(true);
+        cancelCurrentComputation(true);
+        if(closing){
+            gMW->ui->lblSpectrogramInfoTxt->hide();
+            emit stftComputingStateChanged(SCSFinished);
+        }
 //        QThread::msleep(20);
     }
-
 }

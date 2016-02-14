@@ -39,7 +39,7 @@ class STFTComputeThread : public QThread
 
 public:
     enum STFTComputingState {SCSIdle, SCSDFT, SCSIMG, SCSFinished, SCSCanceled, SCSMemoryFull};
-    void cancelComputation(FTSound* snd);
+    void cancelComputation(FTSound* snd, bool closing=false);
 
     inline bool isComputing() const {return m_computing;}
 
@@ -48,7 +48,7 @@ signals:
     void stftProgressing(int);
 
 public slots:
-    void cancelComputation(bool waittoend=false);
+    void cancelCurrentComputation(bool waittoend=false);
 
 public:
     STFTComputeThread(QObject* parent);

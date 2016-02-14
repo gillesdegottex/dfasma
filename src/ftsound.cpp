@@ -864,7 +864,8 @@ FTSound::~FTSound(){
         gFL->m_prevSelectedSound = NULL;
 
     stopPlay();
-    if(gMW->m_gvSpectrogram) gMW->m_gvSpectrogram->m_stftcomputethread->cancelComputation(this);
+    if(gMW->m_gvSpectrogram)
+        gMW->m_gvSpectrogram->m_stftcomputethread->cancelComputation(this, true);
     QIODevice::close();
 
     delete m_giWavForWaveform;

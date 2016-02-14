@@ -335,8 +335,8 @@ WMainWindow::WMainWindow(QStringList filestoload, QStringList genericfilestoload
 WMainWindow::~WMainWindow() {
 //    DCOUT << "WMainWindow::~WMainWindow()" << std::endl;
 
-    m_gvSpectrogram->m_stftcomputethread->cancelComputation(true);
-    m_gvSpectrumAmplitude->m_fftresizethread->cancelComputation(true);
+    m_gvSpectrogram->m_stftcomputethread->cancelCurrentComputation(true);
+    m_gvSpectrumAmplitude->m_fftresizethread->cancelCurrentComputation(true);
 
     gFL->selectAll();
     gFL->selectedFilesClose();

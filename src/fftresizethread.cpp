@@ -34,7 +34,7 @@ FFTResizeThread::FFTResizeThread(qae::FFTwrapper* fft, QObject* parent)
 //    setPriority(QThread::IdlePriority);
 }
 
-void FFTResizeThread::cancelComputation(bool waittoend) {
+void FFTResizeThread::cancelCurrentComputation(bool waittoend) {
     if(waittoend) {
         m_mutex_resizing.lock();
         m_mutex_resizing.unlock();
