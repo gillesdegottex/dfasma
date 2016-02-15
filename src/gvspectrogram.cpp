@@ -757,7 +757,6 @@ void GVSpectrogram::mouseMoveEvent(QMouseEvent* event){
         newrect.setBottom(m_selection_pressedp.y()+(m_pressed_viewrect.bottom()-m_selection_pressedp.y())*exp(dy));
         viewSet(newrect);
 
-        DCOUT << "GVSpectrogram::mouseMoveEvent" << endl;
         updateTextsGeometry();
 
         setMouseCursorPosition(m_selection_pressedp, true);
@@ -1000,7 +999,6 @@ void GVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
     m_giShownSelection->setRect(m_selection.left()-0.5/fs, m_selection.top(), m_selection.width()+1.0/fs, m_selection.height());
     m_giShownSelection->show();
 
-    DCOUT << "GVSpectrogram::selectionSet" << endl;
     updateTextsGeometry();
 
     selectionSetTextInForm();
