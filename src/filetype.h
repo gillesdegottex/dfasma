@@ -79,10 +79,10 @@ public:
     static bool hasFileExtension(const QString& filepath, const QString& ext);
     static bool isFileASCII(const QString& filename);
     static bool isFileTEXT(const QString& filename);
+    static bool isFileEST(const QString& filename);
     static FileContainer guessContainer(const QString& filepath);
     #ifdef SUPPORT_SDIF
     static bool isFileSDIF(const QString& filename);
-    static bool isFileEST(const QString& filename);
     static bool SDIF_hasFrame(const QString& filename, const QString& framesignature);
     #endif
     static QString removeDataSelectors(QString str);
