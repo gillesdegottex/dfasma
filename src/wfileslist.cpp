@@ -587,7 +587,8 @@ void WFilesList::selectedFilesToggleShown() {
     QList<QListWidgetItem*> list = selectedItems();
     for(int i=0; i<list.size(); i++){
         ((FileType*)list.at(i))->setVisible(!((FileType*)list.at(i))->m_actionShow->isChecked());
-        if(((FileType*)list.at(i))==m_prevSelectedSound)
+        if(((FileType*)list.at(i))==m_prevSelectedSound
+            && m_prevSelectedSound->isVisible())
             gMW->m_gvSpectrogram->updateSTFTPlot();
     }
     gMW->m_gvWaveform->m_scene->update();

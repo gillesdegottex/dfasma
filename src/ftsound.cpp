@@ -335,6 +335,7 @@ bool FTSound::reload() {
     gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.lock();
     m_stftts.clear();
     gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.unlock();
+    m_imgSTFTParams.clear();
     m_stftparams.clear();
 
     // ... and reload the data from the file
