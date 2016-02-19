@@ -49,6 +49,8 @@ class GVSpectrogram : public QGraphicsView
 
     FTFZero* m_editing_fzero;
 
+    QGraphicsSimpleTextItem* m_info_txt;
+
 protected:
     void contextMenuEvent(QContextMenuEvent * event);
 

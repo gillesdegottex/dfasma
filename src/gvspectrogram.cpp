@@ -157,6 +157,13 @@ GVSpectrogram::GVSpectrogram(WMainWindow* parent)
     m_giMouseCursorTxtFreq->hide();
     m_scene->addItem(m_giMouseCursorTxtFreq);
 
+    m_info_txt = new QGraphicsSimpleTextItem();
+    m_info_txt->hide();
+    m_info_txt->setBrush(QColor(128, 128, 128));
+    m_info_txt->setZValue(0.0);
+    m_info_txt->setText("");
+    m_scene->addItem(m_info_txt);
+
     // Play Cursor
     m_giPlayCursor = new QGraphicsLineItem(0.0, 0.0, 0.0, -100000, NULL);
     QPen playCursorPen(QColor(255, 0, 0));
@@ -999,6 +1006,7 @@ void GVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
     m_giShownSelection->setRect(m_selection.left()-0.5/fs, m_selection.top(), m_selection.width()+1.0/fs, m_selection.height());
     m_giShownSelection->show();
 
+//    DCOUT << "GVSpectrogram::selectionSet" << endl;
     updateTextsGeometry();
 
     selectionSetTextInForm();
@@ -1074,6 +1082,12 @@ void GVSpectrogram::updateTextsGeometry() {
     // Mouse Cursor
     m_giMouseCursorTxtTime->setTransform(txttrans);
     m_giMouseCursorTxtFreq->setTransform(txttrans);
+
+    m_info_txt->setTransform(txttrans);
+    QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
+    m_info_txt->setPos(currentviewrect.center()-QPointF(0.5*m_info_txt->boundingRect().width()/trans.m11(), 0.5*m_info_txt->boundingRect().height()/trans.m22()));
+//    m_info_txt->prepareGeometryChange();
+
 
     // Labels
     for(size_t fi=0; fi<gFL->ftlabels.size(); fi++){
@@ -1235,14 +1249,13 @@ void GVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
     Q_UNUSED(rect)
 //    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": GVSpectrogram::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
-    updateTextsGeometry(); // TODO Since called here, can be removed from many other places
-
     // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
 
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
     // Draw the sound's spectrogram
     if(QAEColorMap::getAt(m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex()).isTransparent()){
+        m_info_txt->hide();
         QPainter::CompositionMode compmode = painter->compositionMode();
         painter->setCompositionMode(QPainter::CompositionMode_Source);
         painter->fillRect(viewrect, Qt::transparent);
@@ -1258,9 +1271,24 @@ void GVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
     else{
         // If the color mapping is opaque, draw only the spectro of the current sound
         FTSound* csnd = gFL->getCurrentFTSound(true);
-        if(csnd && csnd->m_actionShow->isChecked())
-            draw_spectrogram(painter, rect, viewrect, csnd);
+        if(csnd==NULL){
+            m_info_txt->show();
+            m_info_txt->setText("There is no sound file selected");
+        }
+        else {
+            if(csnd->m_actionShow->isChecked()){
+                m_info_txt->hide();
+                draw_spectrogram(painter, rect, viewrect, csnd);
+            }
+            else{
+                m_info_txt->show();
+                m_info_txt->setText("This file is hidden");
+            }
+        }
+
     }
+
+    updateTextsGeometry(); // TODO Since called here, can be removed from many other places
 
 //    cout << "GVSpectrogram::~drawBackground" << endl;
 }
