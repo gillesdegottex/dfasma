@@ -770,6 +770,11 @@ void FTFZero::draw_freq_amp(QPainter* painter, const QRectF& rect){
         ct = gMW->m_gvWaveform->getPlayCursorPosition();
     double cf0 = qae::interp_stepatzeros<double>(ts, f0s, ct);
 
+    // Update the f0 text
+    // TODO Should be moved to setWindowRange (need to move the cf0 computation there too)
+    m_aspec_txt->setPos(cf0, 0.0);
+    m_aspec_txt->setText(QString("%1Hz").arg(cf0));
+
     if(cf0<=0.0)
         return;
 
@@ -780,11 +785,6 @@ void FTFZero::draw_freq_amp(QPainter* painter, const QRectF& rect){
     outlinePen.setWidth(0);
     painter->setPen(outlinePen);
     painter->drawLine(QLineF(cf0, -3000, cf0, 3000));
-
-    // Update the f0 text
-    // TODO Should be moved to setWindowRange (need to move the cf0 computation there too)
-    m_aspec_txt->setPos(cf0, 0.0);
-    m_aspec_txt->setText(QString("%1Hz").arg(cf0));
 
     // Draw harmonics up to Nyquist
     c.setAlphaF(0.5);
