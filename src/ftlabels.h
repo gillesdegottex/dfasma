@@ -93,7 +93,8 @@ public:
     virtual QString info() const;
     virtual double getLastSampleTime() const;
     virtual void fillContextMenu(QMenu& contextmenu);
-    void updateTextsGeometry();
+    void updateTextsGeometryWaveform();
+    void updateTextsGeometrySpectrogram();
 
     int getNbLabels() const                      {return int(starts.size());}
     void moveLabel(int index, double position);

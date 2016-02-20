@@ -151,9 +151,9 @@ CONFIG(file_audio_libav, file_audio_libsndfile|file_audio_libsox|file_audio_buil
 # This can be useful when using the flag FFTW_MEASURE for plan construction
 # because the resize can take quite a lot of time in this case.
 # However, this flag is likely to generate non-deterministic runs.
-# This, I prefer to use the flag FFTW_ESTIMATE.
-# Plan construction is atctuall very fast with FFTW_ESTIMATE so that it
-# is not necessary to limit the plan construction time.
+# Thus, I prefer to use the flag FFTW_ESTIMATE.
+# Plan construction is actually very fast with FFTW_ESTIMATE so that it
+# is not really necessary to limit the plan construction time.
 #DEFINES += FFTW3RESIZINGMAXTIMESPENT
 
 CONFIG(fft_fftw3, fft_fftw3|fft_builtin_fftreal){
@@ -244,10 +244,13 @@ win32: msvc: CONFIG += embed_manifest_exe
 
 FORMS     += src/wmainwindow.ui \
              src/wdialogselectchannel.ui \
+             src/wdialogfilecreate.ui \
              src/wdialogsettings.ui \
              src/gvspectrumamplitudewdialogsettings.ui \
              src/gvspectrogramwdialogsettings.ui \
-             src/aboutbox.ui
+             src/aboutbox.ui \
+             src/wgenerictimevalue.ui \
+             src/wdialogfiletypechoosertxt.ui
 
 INCLUDEPATH += external/REAPER
 INCLUDEPATH += external/libqaudioextra/include
@@ -255,8 +258,9 @@ INCLUDEPATH += external/libqaudioextra/include
 SOURCES   += src/main.cpp\
              src/wmainwindow.cpp \
              src/wdialogsettings.cpp \
-             src/fileslistwidget.cpp \
+             src/wfileslist.cpp \
              src/aboutbox.cpp \
+             src/wdialogfilecreate.cpp \
              src/filetype.cpp \
              src/ftsound.cpp \
              src/wdialogselectchannel.cpp \
@@ -271,6 +275,10 @@ SOURCES   += src/main.cpp\
              src/gvspectrogram.cpp \
              src/stftcomputethread.cpp \
              src/gvspectrogramwdialogsettings.cpp \
+             src/ftgenerictimevalue.cpp \
+             src/gvgenerictimevalue.cpp \
+             src/wgenerictimevalue.cpp \
+             src/wdialogfiletypechoosertxt.cpp \
              external/libqxt/qxtspanslider.cpp \
              external/audioengine/audioengine.cpp \
              external/libqaudioextra/src/qaesigproc.cpp \
@@ -287,8 +295,9 @@ SOURCES   += src/main.cpp\
 
 HEADERS   += src/wmainwindow.h \
              src/wdialogsettings.h \
-             src/fileslistwidget.h \
+             src/wfileslist.h \
              src/aboutbox.h \
+             src/wdialogfilecreate.h \
              src/filetype.h \
              src/ftsound.h \
              src/wdialogselectchannel.h \
@@ -303,6 +312,10 @@ HEADERS   += src/wmainwindow.h \
              src/gvspectrogram.h \
              src/stftcomputethread.h \
              src/gvspectrogramwdialogsettings.h \
+             src/ftgenerictimevalue.h \
+             src/gvgenerictimevalue.h \
+             src/wgenerictimevalue.h \
+             src/wdialogfiletypechoosertxt.h \
              external/libqxt/qxtglobal.h \
              external/libqxt/qxtnamespace.h \
              external/libqxt/qxtspanslider.h \

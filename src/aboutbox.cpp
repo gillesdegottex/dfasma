@@ -33,13 +33,23 @@ file provided in the source code of DFasma. Another copy can be found at
     #include <easdif/easdif.h>
 #endif
 
+extern QString DFasmaVersion();
+
 AboutBox::AboutBox(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::AboutBox)
 {
     ui->setupUi(this);
 
-    ui->lblVersion->setText(gMW->version());
+    QString fullversion = "Version "+DFasmaVersion();
+    fullversion += "\nCompiled by "+getCompilerVersion()+" for ";
+    #ifdef Q_PROCESSOR_X86_32
+      fullversion += "32bits";
+    #endif
+    #ifdef Q_PROCESSOR_X86_64
+      fullversion += "64bits";
+    #endif
+    ui->lblVersion->setText(fullversion);
 
     QString txt = "";
 

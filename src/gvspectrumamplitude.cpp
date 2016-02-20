@@ -121,6 +121,14 @@ GVSpectrumAmplitude::GVSpectrumAmplitude(WMainWindow* parent)
     connect(m_aAmplitudeSpectrumShowLoudnessCurve, SIGNAL(toggled(bool)), this, SLOT(elcSetVisible(bool)));
     connect(m_aAmplitudeSpectrumShowLoudnessCurve, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
 
+    m_aAmplitudeSpectrumShowSQNRs = new QAction(tr("Show SQNR"), this);
+    m_aAmplitudeSpectrumShowSQNRs->setObjectName("m_aAmplitudeSpectrumShowSQNRs");
+    m_aAmplitudeSpectrumShowSQNRs->setStatusTip(tr("Show the Signal to Quantization Noise Ratio (SQNR)."));
+    m_aAmplitudeSpectrumShowSQNRs->setCheckable(true);
+    m_aAmplitudeSpectrumShowSQNRs->setChecked(false);
+    gMW->m_settings.add(m_aAmplitudeSpectrumShowSQNRs);
+    connect(m_aAmplitudeSpectrumShowSQNRs, SIGNAL(toggled(bool)), this, SLOT(sqnrSetVisible(bool)));
+
     m_aFollowPlayCursor = new QAction(tr("Follow the play cursor"), this);
     m_aFollowPlayCursor->setObjectName("m_aFollowPlayCursor");
     m_aFollowPlayCursor->setStatusTip(tr("Update the DFT view according to the play cursor position"));
@@ -255,6 +263,7 @@ GVSpectrumAmplitude::GVSpectrumAmplitude(WMainWindow* parent)
 //    m_contextmenu.addAction(gMW->m_gvWaveform->m_aShowSelectedWaveformOnTop);
     m_contextmenu.addAction(m_aAmplitudeSpectrumShowWindow);
     m_contextmenu.addAction(m_aAmplitudeSpectrumShowLoudnessCurve);
+    m_contextmenu.addAction(m_aAmplitudeSpectrumShowSQNRs);
     m_contextmenu.addSeparator();
     m_contextmenu.addAction(m_aAutoUpdateDFT);
     m_contextmenu.addAction(m_aFollowPlayCursor);
@@ -271,6 +280,11 @@ void GVSpectrumAmplitude::gridSetVisible(bool visible){m_giGrid->setVisible(visi
 void GVSpectrumAmplitude::windowSetVisible(bool visible){m_giWindow->setVisible(visible);}
 
 void GVSpectrumAmplitude::elcSetVisible(bool visible){m_giLoudnessCurve->setVisible(visible);}
+
+void GVSpectrumAmplitude::sqnrSetVisible(bool visible){
+    for(size_t fi=0; fi<gFL->ftsnds.size(); ++fi)
+        gFL->ftsnds[fi]->m_giSQNRForSpectrumAmplitude->setVisible(visible);
+}
 
 void GVSpectrumAmplitude::updateScrollBars(){
     if(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow->isChecked()){
@@ -299,34 +313,25 @@ void GVSpectrumAmplitude::updateScrollBars(){
 }
 
 void GVSpectrumAmplitude::settingsModified(){
-//    COUTD << "QGVAmplitudeSpectrum::settingsModified " << gMW->m_gvWaveform->m_mouseSelection << endl;
     if(gMW->m_gvWaveform)
         gMW->m_gvWaveform->selectionSet(gMW->m_gvWaveform->m_mouseSelection, true);
 }
 
 void GVSpectrumAmplitude::updateAmplitudeExtent(){
-//    COUTD << "QGVAmplitudeSpectrum::updateAmplitudeExtent" << endl;
-
     if(gFL->ftsnds.size()>0){
         gMW->ui->sldAmplitudeSpectrumMin->setMaximum(0);
         gMW->ui->sldAmplitudeSpectrumMin->setMinimum(-3*gFL->getMaxSQNR()); // to give a margin
 
         updateSceneRect();
     }
-
-//    COUTD << "QGVAmplitudeSpectrum::~updateAmplitudeExtent" << endl;
 }
 
 void GVSpectrumAmplitude::amplitudeMinChanged() {
-//    COUTD << "QGVSpectrumAmplitude::amplitudeMinChanged " << gMW->ui->sldAmplitudeSpectrumMin->value() << endl;
-
     if(!gMW->isLoading())
         QToolTip::showText(QCursor::pos(), QString("%1dB").arg(gMW->ui->sldAmplitudeSpectrumMin->value()), this);
 
     updateSceneRect();
     viewSet(m_scene->sceneRect(), false);
-
-//    cout << "QGVAmplitudeSpectrum::~amplitudeMinChanged" << endl;
 }
 
 void GVSpectrumAmplitude::updateSceneRect() {
@@ -353,6 +358,9 @@ void GVSpectrumAmplitude::setSamplingRate(double fs)
     for(size_t u=0; u<m_elc.size(); ++u)
         m_elc[u] = -qae::equalloudnesscurvesISO226(fs*double(u)/dftlen, 0);
     m_giLoudnessCurve->updateMinMaxValues();
+
+    for(size_t fi=0; fi<gFL->ftsnds.size(); ++fi)
+        gFL->ftsnds[fi]->m_giSQNRForSpectrumAmplitude->setLine(0.0, 0.0, fs/2, 0.0);
 }
 
 void GVSpectrumAmplitude::setWindowRange(qreal tstart, qreal tend){
@@ -1182,8 +1190,6 @@ void GVSpectrumAmplitude::selectionSet(QRectF selection, bool forwardsync) {
             gMW->m_gvSpectrogram->selectionSet(rect, false);
         }
     }
-
-    selectionSetTextInForm();
 }
 
 void GVSpectrumAmplitude::viewUpdateTexts() {
@@ -1342,7 +1348,7 @@ void GVSpectrumAmplitude::setMouseCursorPosition(QPointF p, bool forwardsync) {
 }
 
 void GVSpectrumAmplitude::drawBackground(QPainter* painter, const QRectF& rect){
-//    COUTD << "QGVAmplitudeSpectrum::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
+//    DCOUT << "QGVAmplitudeSpectrum::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
     double fs = gFL->getFs();
 

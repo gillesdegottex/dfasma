@@ -19,11 +19,14 @@ file provided in the source code of DFasma. Another copy can be found at
 */
 
 #include "wmainwindow.h"
+
 #include <QApplication>
 #include <QObject>
 #include <QIcon>
 #include <QTextStream>
 #include <QFileDialog>
+#include <QString>
+#include <QCommandLineParser>
 
 #ifdef FILE_AUDIO_LIBAV
 extern "C" {
@@ -58,12 +61,64 @@ void DFasmaMessageHandler(QtMsgType type, const QMessageLogContext &context, con
 }
 #endif
 
+QString g_version;
+QString DFasmaVersion(){
+    if(!g_version.isEmpty())
+        return g_version;
+
+    QString dfasmaversiongit(STR(DFASMAVERSIONGIT));
+    QString dfasmabranchgit(STR(DFASMABRANCHGIT));
+
+    QString	dfasmaversion;
+    if(!dfasmaversiongit.isEmpty()) {
+        dfasmaversion = dfasmaversiongit;
+        if(dfasmabranchgit!="master")
+            dfasmaversion += "-" + dfasmabranchgit;
+    }
+    else {
+        QFile readmefile(":/README.txt");
+        readmefile.open(QFile::ReadOnly | QFile::Text);
+        QTextStream readmefilestream(&readmefile);
+        readmefilestream.readLine();
+        readmefilestream.readLine();
+        dfasmaversion = readmefilestream.readLine().simplified();
+        dfasmaversion = dfasmaversion.mid(8);
+    }
+    g_version = dfasmaversion;
+
+    return g_version;
+}
+
 int main(int argc, char *argv[])
 {
     #ifdef DEBUG_LOGFILE
     qInstallMessageHandler(DFasmaMessageHandler);
     #endif
 
+    QApplication app(argc, argv);
+    QApplication::setQuitOnLastWindowClosed(true);
+
+    // The following is also necessary for QSettings
+    QCoreApplication::setOrganizationName("DFasma");
+    QCoreApplication::setOrganizationDomain("gillesdegottex.eu");
+    QCoreApplication::setApplicationName("DFasma");
+    QCoreApplication::setApplicationVersion(DFasmaVersion());
+    app.setWindowIcon(QIcon(":/icons/dfasma.svg"));
+
+    QCommandLineParser parser;
+    parser.setApplicationDescription("DFasma: A tool to analyse and compare audio files in time and frequency");
+    parser.addHelpOption();
+    parser.addVersionOption();
+    parser.addPositionalArgument("files", "Files to load", "[files...]");
+    QCommandLineOption gentimevalueOption(QStringList() << "g" << "gentimevalue", "Load the <file> as generic time/value", "file");
+    parser.addOption(gentimevalueOption);
+
+    parser.process(app); // Process the actual command line arguments
+    QStringList filestoload = parser.positionalArguments();
+    QStringList genfilestoload = parser.values("g");
+
+
+    // Initialize some external libraries
     #ifdef FILE_AUDIO_LIBAV
         // This call is necessarily done once in your app to initialize
         // libavformat to register all the muxers, demuxers and protocols.
@@ -78,28 +133,18 @@ int main(int argc, char *argv[])
         Easdif::EasdifInit();
     #endif
 
-    QApplication a(argc, argv);
-    QApplication::setQuitOnLastWindowClosed(true);
-
-    // The following is also necessary for QSettings
-    QCoreApplication::setOrganizationName("DFasma");
-    QCoreApplication::setOrganizationDomain("gillesdegottex.eu");
-    QCoreApplication::setApplicationName("DFasma");
-    a.setWindowIcon(QIcon(":/icons/dfasma.svg"));
-
-    QStringList filestoload = QApplication::arguments();
-    filestoload.removeAt(0);
-
-    WMainWindow* w = new WMainWindow(filestoload);
-    QObject::connect(&a, SIGNAL(focusWindowChanged(QWindow*)), w, SLOT(focusWindowChanged(QWindow*)));
+    // Create the main window and run it
+    WMainWindow* w = new WMainWindow(filestoload, genfilestoload);
+    QObject::connect(&app, SIGNAL(focusWindowChanged(QWindow*)), w, SLOT(focusWindowChanged(QWindow*)));
     w->show();
 
-    a.exec();
-    DFLAG
+    app.exec();
+
+    // The user requested to exit the application
 
     delete w;
 
-    DFLAG
+    // Unload some external libraries
     #ifdef SUPPORT_SDIF
         Easdif::EasdifEnd();
     #endif
@@ -107,7 +152,6 @@ int main(int argc, char *argv[])
         sox_quit();
     #endif   
 
-    DFLAG
     // If asked, drop some log information in a file
     #ifdef DEBUG_LOGFILE
         QString logfilename = QFileDialog::getSaveFileName(NULL, "Save log file as...");
@@ -119,14 +163,9 @@ int main(int argc, char *argv[])
         logfile.close();
     #endif
 
-    DFLAG
-    QCoreApplication::exit(0);
-    DFLAG
-    QCoreApplication::processEvents(); // Process all events before exit
-//    DCOUT << "exit(" << ret << ")" << std::endl;
-    DFLAG
+//    QCoreApplication::exit(0);
+//    QCoreApplication::processEvents(); // Process all events before exit
     exit(0); // WORKAROUND?: need this to avoid remaining background process on some platform (e.g. bouzouki) TODO This is surely related to some seg fault on exit #179
-    DFLAG
 
     return 0;
 }

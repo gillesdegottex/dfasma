@@ -39,6 +39,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "gvspectrumgroupdelay.h"
 #include "gvspectrogramwdialogsettings.h"
 #include "ftlabels.h"
+#include "ftfzero.h"
 
 WDialogSettings::WDialogSettings(QWidget *parent) :
     QDialog(parent),

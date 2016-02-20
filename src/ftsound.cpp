@@ -121,7 +121,7 @@ bool FTSound::DFTParameters::operator==(const DFTParameters& param) const {
 
 void FTSound::constructor_internal() {
     m_imgSTFT = QImage(1, 1, QImage::Format_ARGB32);
-    m_imgSTFT.fill(Qt::white);
+    m_imgSTFT.fill(Qt::black);
 
     m_giWavForWaveform = NULL;
     m_channelid = 0;
@@ -137,6 +137,9 @@ void FTSound::constructor_internal() {
 
     m_stft_min = std::numeric_limits<FFTTYPE>::infinity();
     m_stft_max = -std::numeric_limits<FFTTYPE>::infinity();
+
+    m_giSQNRForSpectrumAmplitude = new QGraphicsLineItem(0.0, 0.0, 44100.0/2, 0.0);
+    m_giSQNRForSpectrumAmplitude->setVisible(false);
 
     connect(m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setVisible(bool)));
 
@@ -182,6 +185,8 @@ void FTSound::constructor_external() {
     m_giWavForSpectrumAmplitude = new QAEGIUniformlySampledSignal(&m_dftamp, 1.0, gMW->m_gvSpectrumAmplitude);
     m_giWavForSpectrumAmplitude->setPen(pen);
     gMW->m_gvSpectrumAmplitude->m_scene->addItem(m_giWavForSpectrumAmplitude);
+    m_giSQNRForSpectrumAmplitude->setPen(pen);
+    gMW->m_gvSpectrumAmplitude->m_scene->addItem(m_giSQNRForSpectrumAmplitude);
 
     m_giWavForSpectrumPhase = new QAEGIUniformlySampledSignal(&m_dftphase, 1.0, gMW->m_gvSpectrumPhase);
     m_giWavForSpectrumPhase->setPen(pen);
@@ -189,7 +194,6 @@ void FTSound::constructor_external() {
 
     m_giWavForSpectrumGroupDelay = new QAEGIUniformlySampledSignal(&m_dftgd, 1.0, gMW->m_gvSpectrumGroupDelay);
     m_giWavForSpectrumGroupDelay->setPen(pen);
-//    m_giWavForSpectrumGroupDelay
     gMW->m_gvSpectrumGroupDelay->m_scene->addItem(m_giWavForSpectrumGroupDelay);
 }
 
@@ -206,8 +210,7 @@ FTSound::FTSound(const QString& _fileName, QObject *parent, int channelid)
             load_finalize();
         }
         catch(std::bad_alloc err){
-            QMessageBox::critical(NULL, "Memory full!", "There is not enough free memory for loading this file.");
-            throw QString("Memory cannot hold this file!");
+            throw QString("There is not enough free memory to hold this file!");
         }
     }
     FTSound::constructor_external();
@@ -231,6 +234,8 @@ FTSound::FTSound(const FTSound& ft)
     m_fileaudioformat.setSampleType(QAudioFormat::Float);
     m_fileaudioformat.setSampleSize(8*sizeof(WAVTYPE));
 
+    m_giSQNRForSpectrumAmplitude->setPos(0.0, 20*std::log10(std::pow(2.0,m_fileaudioformat.sampleSize())));
+
     m_lastreadtime = ft.m_lastreadtime;
     m_modifiedtime = ft.m_modifiedtime;
 
@@ -242,6 +247,8 @@ void FTSound::load_finalize() {
         FTSound::setAvoidClicksWindowDuration(gMW->m_dlgSettings->ui->sbPlaybackAvoidClicksWindowDuration->value());
 
 //    std::cout << "INFO: " << wav.size() << " samples loaded (" << wav.size()/fs << "s max amplitude=" << m_wavmaxamp << ")" << endl;
+
+    m_giSQNRForSpectrumAmplitude->setPos(0.0, 20*std::log10(std::pow(2.0,m_fileaudioformat.sampleSize())));
 
     m_lastreadtime = QDateTime::currentDateTime();
     needDFTUpdate();
@@ -282,6 +289,7 @@ void FTSound::setColor(const QColor &_color){
     m_giWavForSpectrumAmplitude->setPen(pen);
     m_giWavForSpectrumPhase->setPen(pen);
     m_giWavForSpectrumGroupDelay->setPen(pen);
+    m_giSQNRForSpectrumAmplitude->setPen(pen);
 }
 
 void FTSound::zposReset(){
@@ -289,12 +297,14 @@ void FTSound::zposReset(){
     m_giWavForSpectrumAmplitude->setZValue(0.0);
     m_giWavForSpectrumPhase->setZValue(0.0);
     m_giWavForSpectrumGroupDelay->setZValue(0.0);
+    m_giSQNRForSpectrumAmplitude->setZValue(0.0);
 }
 void FTSound::zposBringForward(){
     m_giWavForWaveform->setZValue(1.0);
     m_giWavForSpectrumAmplitude->setZValue(1.0);
     m_giWavForSpectrumPhase->setZValue(1.0);
     m_giWavForSpectrumGroupDelay->setZValue(1.0);
+    m_giSQNRForSpectrumAmplitude->setZValue(1.0);
 }
 
 bool FTSound::reload() {
@@ -305,6 +315,8 @@ bool FTSound::reload() {
 
     if(!checkFileStatus(CFSMMESSAGEBOX))
         return false;
+
+    double fs_prev = fs;
 
     // Reset everything ...
     wavtoplay = &wav;
@@ -318,21 +330,26 @@ bool FTSound::reload() {
     wav.clear();
     wavfiltered.clear();
     setFiltered(false);
+    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.lock();
     m_stft.clear();
-    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.lock();
     m_stftts.clear();
-    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.unlock();
+    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.unlock();
+    m_imgSTFTParams.clear();
     m_stftparams.clear();
 
     // ... and reload the data from the file
     try{
         load();
         load_finalize();
+        m_giWavForWaveform->updateMinMaxValues();
+
+        if(fs_prev!=fs)
+            throw QString("The sampling rate of the file has changed. This is currently not supported. Please open the file with another instance of DFasma.");
     }
     catch(std::bad_alloc err){
         QMessageBox::critical(NULL, "Memory full!", "There is not enough free memory for re-loading this file.");
 
-        throw QString("Memory cannot hold this file!");
+        throw QString("The is not enough free memory for re-loading this file!");
     }
 
     m_giWavForWaveform->clearCache();
@@ -843,8 +860,12 @@ qint64 FTSound::writeData(const char *data, qint64 askedlen){
 }
 
 FTSound::~FTSound(){
+    if(gFL->m_prevSelectedSound==this)
+        gFL->m_prevSelectedSound = NULL;
+
     stopPlay();
-    if(gMW->m_gvSpectrogram) gMW->m_gvSpectrogram->m_stftcomputethread->cancelComputation(this);
+    if(gMW->m_gvSpectrogram)
+        gMW->m_gvSpectrogram->m_stftcomputethread->cancelComputation(this, true);
     QIODevice::close();
 
     delete m_giWavForWaveform;

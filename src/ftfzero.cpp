@@ -49,6 +49,8 @@ using namespace Easdif;
 #include "qaegisampledsignal.h"
 #include "qaehelpers.h"
 
+extern QString DFasmaVersion();
+
 std::deque<QString> FTFZero::s_formatstrings;
 FTFZero::ClassConstructor::ClassConstructor(){
     // Attention ! It has to correspond to FType definition's order.
@@ -58,6 +60,7 @@ FTFZero::ClassConstructor::ClassConstructor(){
         FTFZero::s_formatstrings.push_back("Auto");
         FTFZero::s_formatstrings.push_back("Text - Auto");
         FTFZero::s_formatstrings.push_back("Text - Time Value (*.f0.txt)");
+        FTFZero::s_formatstrings.push_back("Text - Value (single column) (*.f0.txt)");
         FTFZero::s_formatstrings.push_back("SDIF - 1FQ0/1FQ0 (*.sdif)");
     }
 }
@@ -84,7 +87,7 @@ void FTFZero::constructor_internal(){
 
     connect(m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setVisible(bool)));
 
-    m_aspec_txt = new QGraphicsSimpleTextItem("unset"); // TODO delete ?
+    m_aspec_txt = new QGraphicsSimpleTextItem("unset"); // TODO delete done ?
     gMW->m_gvSpectrumAmplitude->m_scene->addItem(m_aspec_txt);
     setColor(getColor()); // Indirectly set the proper color to the m_aspec_txt
 
@@ -130,6 +133,25 @@ void FTFZero::constructor_external(){
     gMW->m_gvSpectrogram->m_scene->addItem(m_giHarmonicForSpectrogram);
 }
 
+// Construct an empty FZero object
+FTFZero::FTFZero(QObject *parent)
+    : QObject(parent)
+    , FileType(FTFZERO, "", this)
+{
+    Q_UNUSED(parent);
+
+    FTFZero::constructor_internal();
+
+    if(gMW->m_dlgSettings->ui->cbF0DefaultFormat->currentIndex()+FFAsciiTimeValue==FFSDIF)
+        setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.f0.sdif");
+    else
+        setFullPath(QDir::currentPath()+QDir::separator()+"unnamed.f0.txt");
+    m_fileformat = FFNotSpecified;
+
+    FTFZero::constructor_external();
+}
+
+// Construct from an existing file
 FTFZero::FTFZero(const QString& _fileName, QObject* parent, FileType::FileContainer container, FileFormat fileformat)
     : QObject(parent)
     , FileType(FTFZERO, _fileName, this)
@@ -182,28 +204,38 @@ void FTFZero::load() {
         m_fileformat = FFAutoDetect;
 
     #ifdef SUPPORT_SDIF
-    if(m_fileformat==FFAutoDetect)
+    if(m_fileformat==FFAutoDetect){
         if(FileType::isFileSDIF(fileFullPath))
             m_fileformat = FFSDIF;
+        else if(FileType::isFileEST(fileFullPath))
+            m_fileformat = FFEST;
+    }
     #endif
 
     // Check for text/ascii formats
     if(m_fileformat==FFAutoDetect || m_fileformat==FFAsciiAutoDetect){
-        // Find the format using grammar check
 
         std::ifstream fin(fileFullPath.toLatin1().constData());
         if(!fin.is_open())
             throw QString("FTFZero:FFAutoDetect: Cannot open the file.");
-        double t;
-        string line, text;
+        string line;
         // Check the first line only (Assuming it is enough)
         if(!std::getline(fin, line))
             throw QString("FTFZero:FFAutoDetect: There is not a single line in this file.");
 
+        // Guess the format using grammar check
+
+        double t;
         // Check: <number> <number>
         std::istringstream iss(line);
         if((iss >> t >> t) && iss.eof())
             m_fileformat = FFAsciiTimeValue;
+        else{
+            // Check: <number>
+            std::istringstream iss(line);
+            if((iss >> t) && iss.eof())
+                m_fileformat = FFAsciiValue;
+        }
     }
 
     if(m_fileformat==FFAutoDetect)
@@ -216,10 +248,47 @@ void FTFZero::load() {
             throw QString("FTFZero:FFAsciiTimeValue: Cannot open file");
 
         double t, value;
-        string line, text;
+        string line;
         while(std::getline(fin, line)) {
             std::istringstream(line) >> t >> value;
             ts.push_back(t);
+            f0s.push_back(value);
+        }
+    }
+    else if(m_fileformat==FFAsciiValue){
+        ifstream fin(fileFullPath.toLatin1().constData());
+        if(!fin.is_open())
+            throw QString("FTFZero:FFAsciiValue: Cannot open file");
+
+        double t=0.0;
+        double value;
+        string line;
+        while(std::getline(fin, line)) {
+            std::istringstream(line) >> value;
+            ts.push_back(t);
+            f0s.push_back(value);
+            t += gMW->m_dlgSettings->ui->sbF0DefaultStepSize->value();
+        }
+    }
+    else if(m_fileformat==FFEST){
+        ifstream fin(fileFullPath.toLatin1().constData());
+        if(!fin.is_open())
+            throw QString("FTFZero:FFEST: Cannot open file");
+
+        double t = 0.0;
+        double voiced = false;
+        double value;
+        string line;
+        bool skippingheader = true;
+        while(skippingheader && std::getline(fin, line)) {
+            if(line.find("EST_Header_End")==0)
+                skippingheader = false;
+        }
+        while(std::getline(fin, line)) {
+            std::istringstream(line) >> t >> voiced >> value;
+            ts.push_back(t);
+            if(!voiced || value<0.0)
+                value = 0.0;
             f0s.push_back(value);
         }
     }
@@ -321,9 +390,8 @@ bool FTFZero::reload() {
 
     // ... and reload the data from the file
     load();
-
-    m_giF0ForSpectrogram->update();
-    m_giHarmonicForSpectrogram->update();
+    if(m_giF0ForSpectrogram) m_giF0ForSpectrogram->update();
+    if(m_giHarmonicForSpectrogram) m_giHarmonicForSpectrogram->update();
 
     return true;
 }
@@ -417,7 +485,7 @@ void FTFZero::save() {
             info += "NumChannels\t"+QString::number(1)+"\n";
             if(gFL->hasFile(m_src_snd))
                 info += "Soundfile\t"+m_src_snd->fileFullPath+"\n";
-            info += "Version\t"+gMW->version().mid(8)+"\n";
+            info += "Version\t"+DFasmaVersion()+"\n";
             info += "Creator\tDFasma\n";
             tmpMatrix.Set(info.toLatin1().constData());
             frameToWrite.AddMatrix(tmpMatrix);
@@ -539,9 +607,9 @@ void FTFZero::setVisible(bool shown){
     if(shown)
         updateTextsGeometry();
 
-    m_aspec_txt->setVisible(shown);
-    m_giF0ForSpectrogram->setVisible(shown);
-    m_giHarmonicForSpectrogram->setVisible(shown);
+    if(m_aspec_txt) m_aspec_txt->setVisible(shown);
+    if(m_giF0ForSpectrogram) m_giF0ForSpectrogram->setVisible(shown);
+    if(m_giHarmonicForSpectrogram) m_giHarmonicForSpectrogram->setVisible(shown);
 }
 
 void FTFZero::setSource(FileType *src){
@@ -559,8 +627,10 @@ void FTFZero::setColor(const QColor& color){
     pen.setWidth(0);
     QBrush brush(getColor());
 
-    m_aspec_txt->setPen(pen);
-    m_aspec_txt->setBrush(brush);
+    if(m_aspec_txt){
+        m_aspec_txt->setPen(pen);
+        m_aspec_txt->setBrush(brush);
+    }
 
     pen = m_giF0ForSpectrogram->getPen();
     pen.setColor(color);
@@ -570,10 +640,14 @@ void FTFZero::setColor(const QColor& color){
 
 void FTFZero::zposReset(){
     m_giF0ForSpectrogram->setZValue(0.0);
+    m_giHarmonicForSpectrogram->setZValue(0.0);
+    m_aspec_txt->setZValue(0.0);
 }
 
 void FTFZero::zposBringForward(){
     m_giF0ForSpectrogram->setZValue(1.0);
+    m_giHarmonicForSpectrogram->setZValue(1.0);
+    m_aspec_txt->setZValue(1.0);
 }
 
 double FTFZero::getLastSampleTime() const {
@@ -584,20 +658,77 @@ double FTFZero::getLastSampleTime() const {
 }
 
 void FTFZero::edit(double t, double f0){
+    if(t<0.0)
+        return;
     if(f0<0)
         f0 = 0.0;
 
-//    COUTD << "FTFZero::edit " << t << " " << f0 << endl;
+    double step = -1.0;
+    // step from current data is far from reliable because there might be
+    //      gaps from one value to the next.
+    //      Also, The smallest can be far too small.
+    //      Thus, use the default value
+    //    if(ts.size()>1)
+    //        step = qae::median(qae::diff(ts));
+    //    else
+    step = gMW->m_dlgSettings->ui->sbF0DefaultStepSize->value();
 
-    double step = qae::median(qae::diff(ts)); // TODO Speed up: Pre-compute
+    if(step==-1.0 || step==0.0)
+        step = gMW->m_dlgSettings->ui->sbF0DefaultStepSize->value();
 
-    std::vector<double>::iterator itlb = std::lower_bound(ts.begin(), ts.end(), t+step/2);
-    int ri = itlb-ts.begin()-1;
+    int ri = -1; // Index to the closest values wrt time
+    double smallestdistance = std::numeric_limits<double>::infinity();
+    if(!ts.empty()){
+        ri = 0;
+        smallestdistance = std::abs(ts[ri]-t);
+        for(size_t n=1; n<ts.size(); ++n){
+            if(std::abs(ts[n]-t)<smallestdistance){
+                ri = n;
+                smallestdistance = std::abs(ts[n]-t);
+            }
+        }
+    }
 
-    if(ri>=0 && ri<int(ts.size())){
-        f0s[ri] = f0;
-        if(m_giF0ForSpectrogram)
-            m_giF0ForSpectrogram->updateGeometry();
+//    DCOUT << "FTFZero::edit " << t << " " << f0 << " " << step << endl;
+
+    if(ts.empty()
+        || (t<ts.front()-step/2 || t>ts.back()+step/2)
+        || (smallestdistance>step/2)){
+        // Add a new value
+        double tt = step*int(t/step+0.5);
+        if(ts.empty()){
+            ts.push_back(tt);
+            f0s.push_back(f0);
+        }
+        else if(t<ts.front()-step/2){
+            ts.insert(ts.begin(), tt);
+            f0s.insert(f0s.begin(), f0);
+        }
+        else if(t>ts.back()+step/2){
+            ts.push_back(tt);
+            f0s.push_back(f0);
+        }
+        else if(smallestdistance>step/2){
+            if(t-ts[ri]>0){
+                ts.insert(ts.begin()+ri+1, tt);
+                f0s.insert(f0s.begin()+ri+1, f0);
+            }
+            if(t-ts[ri]<0){
+                ts.insert(ts.begin()+ri, tt);
+                f0s.insert(f0s.begin()+ri, f0);
+            }
+        }
+//        DCOUT << "FTFZero::edit add t=" << ts.back() << " f0=" << f0s.back() << " step=" << step << endl;
+    }
+    else{
+        // Modify an existing value (i.e. keeping the same times ts)
+        if(ri>=0 && ri<int(ts.size()))
+            f0s[ri] = f0;
+    }
+
+    if(m_giF0ForSpectrogram){
+        m_giF0ForSpectrogram->updateMinMaxValues();
+        m_giF0ForSpectrogram->updateGeometry();
     }
 
     m_is_edited = true;
@@ -637,9 +768,15 @@ void FTFZero::draw_freq_amp(QPainter* painter, const QRectF& rect){
         ct = 0.5*(gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.nl+gMW->m_gvSpectrumAmplitude->m_trgDFTParameters.nr)/gFL->getFs();
     else
         ct = gMW->m_gvWaveform->getPlayCursorPosition();
-    double cf0 = qae::nearest<double>(ts, f0s, ct);
 
-    if(cf0==-1)
+    double cf0 = qae::interp_stepatzeros<double>(ts, f0s, ct);
+
+    // Update the f0 text
+    // TODO Should be moved to setWindowRange (need to move the cf0 computation there too)
+    m_aspec_txt->setPos(cf0, 0.0);
+    m_aspec_txt->setText(QString("%1Hz").arg(cf0));
+
+    if(cf0<=0.0)
         return;
 
     // Draw the f0 vertical line
@@ -649,11 +786,6 @@ void FTFZero::draw_freq_amp(QPainter* painter, const QRectF& rect){
     outlinePen.setWidth(0);
     painter->setPen(outlinePen);
     painter->drawLine(QLineF(cf0, -3000, cf0, 3000));
-
-    // Update the f0 text
-    // TODO Should be moved to setWindowRange (need to move the cf0 computation there too)
-    m_aspec_txt->setPos(cf0, 0.0);
-    m_aspec_txt->setText(QString("%1Hz").arg(cf0));
 
     // Draw harmonics up to Nyquist
     c.setAlphaF(0.5);

@@ -22,9 +22,11 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
-
 #include "wdialogsettings.h"
 #include "ui_wdialogsettings.h"
+
+#include "ftsound.h"
+#include "ftlabels.h"
 
 #include "gvspectrumamplitude.h"
 #include "gvspectrumamplitudewdialogsettings.h"
@@ -32,8 +34,8 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "gvspectrumphase.h"
 #include "gvspectrumgroupdelay.h"
 #include "gvspectrogram.h"
-#include "ftsound.h"
-#include "ftlabels.h"
+#include "wgenerictimevalue.h"
+#include "gvgenerictimevalue.h"
 
 #include <iostream>
 using namespace std;
@@ -168,7 +170,7 @@ GVWaveform::GVWaveform(WMainWindow* parent)
     connect(m_aWaveformShowSTFTWindowCenters, SIGNAL(toggled(bool)), m_scene, SLOT(update()));
     m_contextmenu.addAction(m_aWaveformShowSTFTWindowCenters);
 
-    m_aWaveformStickToSTFTWindows = new QAction(tr("Stick to STFT windows postion"), this);
+    m_aWaveformStickToSTFTWindows = new QAction(tr("Stick window to STFT windows' postion"), this);
     m_aWaveformStickToSTFTWindows->setObjectName("m_aWaveformStickToSTFTWindows");
     m_aWaveformStickToSTFTWindows->setStatusTip(tr("Set the window length and position according to the STFT's analysis instants"));
     m_aWaveformStickToSTFTWindows->setCheckable(true);
@@ -329,10 +331,21 @@ void GVWaveform::viewSet(QRectF viewrect, bool sync) {
 
         if(sync){
             if(gMW->m_gvSpectrogram && gMW->ui->actionShowSpectrogram->isChecked()) {
+//                DCOUT << gMW->m_gvSpectrogram->viewport()->rect() << endl;
                 QRectF spectrorect = gMW->m_gvSpectrogram->mapToScene(gMW->m_gvSpectrogram->viewport()->rect()).boundingRect();
+//                DCOUT << spectrorect << endl;
                 spectrorect.setLeft(viewrect.left());
                 spectrorect.setRight(viewrect.right());
                 gMW->m_gvSpectrogram->viewSet(spectrorect, false);
+            }
+
+            for(int i=0; i<gMW->m_wGenericTimeValues.size(); ++i){
+                if(gMW->m_wGenericTimeValues.at(i)) {
+                    QRectF rect = gMW->m_wGenericTimeValues.at(i)->gview()->mapToScene(gMW->m_wGenericTimeValues.at(i)->gview()->viewport()->rect()).boundingRect();
+                    rect.setLeft(viewrect.left());
+                    rect.setRight(viewrect.right());
+                    gMW->m_wGenericTimeValues.at(i)->gview()->viewSet(rect, false);
+                }
             }
         }
     }
@@ -421,21 +434,18 @@ void GVWaveform::setMouseCursorPosition(double position, bool forwardsync) {
 
         m_giMouseCursorLine->setPos(position, 0.0);
 
+        m_giMouseCursorTxt->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
         QString txt = QString("%1s").arg(position, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value());
         m_giMouseCursorTxt->setText(txt);
 
         QTransform trans = transform();
         QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+        QRectF br = m_giMouseCursorTxt->boundingRect();
+        position = min(position, double(viewrect.right()-br.width()/trans.m11()));
+        m_giMouseCursorTxt->setPos(position+1/trans.m11(), viewrect.top()+0/trans.m22());
         QTransform txttrans;
         txttrans.scale(1.0/trans.m11(),1.0/trans.m22());
         m_giMouseCursorTxt->setTransform(txttrans);
-        m_giMouseCursorTxt->setFont(gMW->m_dlgSettings->ui->lblGridFontSample->font());
-        QRectF br = m_giMouseCursorTxt->boundingRect();
-//        QRectF viewrect = mapToScene(QRect(QPoint(0,0), QSize(viewport()->rect().width(), viewport()->rect().height()))).boundingRect();
-        position = min(position, double(viewrect.right()-br.width()/trans.m11()));
-//        if(x+br.width()/trans.m11()>viewrect.right())
-//            x = x - br.width()/trans.m11();
-        m_giMouseCursorTxt->setPos(position+1/trans.m11(), viewrect.top()-3/trans.m22());
 
         if(forwardsync){
             if(gMW->m_gvSpectrogram)
@@ -1046,6 +1056,7 @@ void GVWaveform::selectionClear(bool forwardsync){
     gMW->ui->lblSelectionTxt->setText("No selection");
     gMW->m_gvSpectrumAmplitude->m_scene->update();
     gMW->m_gvSpectrumPhase->m_scene->update();
+    gMW->m_gvSpectrumGroupDelay->m_scene->update();
 
     m_aZoomOnSelection->setEnabled(false);
     m_aSelectionClear->setEnabled(false);
@@ -1122,9 +1133,9 @@ void GVWaveform::fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseSe
 //            selection.setRight(selection.right()+dt);
 
             int si = int((selection.center().x()*gFL->getFs()-1 - (cursnd->m_stftparams.win.size()-1)/2.0) / cursnd->m_stftparams.stepsize + 0.5);
-            gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.lock();
+            gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.lock();
             si = std::min(std::max(0, si), int(cursnd->m_stftts.size())-1);
-            gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.unlock();
+            gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.unlock();
             selection.setLeft((si*cursnd->m_stftparams.stepsize)/gFL->getFs());
             selection.setRight((si*cursnd->m_stftparams.stepsize + cursnd->m_stftparams.win.size()-1)/gFL->getFs());
         }
@@ -1242,17 +1253,22 @@ void GVWaveform::selectionZoomOn(){
 
 void GVWaveform::updateTextsGeometry(){
     QTransform trans = transform();
-    QTransform cursortrans = QTransform::fromScale(1.0/trans.m11(), 1.0);
-    m_giMouseCursorTxt->setTransform(cursortrans);
+    QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
+    m_giMouseCursorTxt->setPos(m_giMouseCursorTxt->pos().x(), viewrect.top()+0/trans.m22());
+    QTransform txttrans;
+    txttrans.scale(1.0/trans.m11(),1.0/trans.m22());
+    m_giMouseCursorTxt->setTransform(txttrans);
 
     // Tell the labels to update their texts
     for(size_t fi=0; fi<gFL->ftlabels.size(); fi++)
-        gFL->ftlabels[fi]->updateTextsGeometry();
+        gFL->ftlabels[fi]->updateTextsGeometryWaveform();
 }
 
 void GVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
     Q_UNUSED(rect)
     // COUTD << "GVWaveform::drawBackground rect:" << rect << endl;
+
+    updateTextsGeometry(); // TODO Since called here, can be removed from many other places
 
     m_giWindow->setVisible(m_aWaveformShowWindow->isChecked() && m_selection.width()>0.0); // TODO Put elsewhere?
 
@@ -1265,10 +1281,10 @@ void GVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
             outlinePen.setWidth(0);
             painter->setPen(outlinePen);
 
-            gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.lock();
+            gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.lock();
             for(size_t wci=0; wci<cursnd->m_stftts.size(); wci++)
                 painter->drawLine(QLineF(cursnd->m_stftts[wci], -1.0, cursnd->m_stftts[wci], 1.0));
-            gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.unlock();
+            gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.unlock();
         }
     }
 }

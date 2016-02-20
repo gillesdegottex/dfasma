@@ -24,12 +24,13 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "wdialogsettings.h"
 #include "ui_wdialogsettings.h"
 
+#include "wdialogfilecreate.h"
 #include "wdialogselectchannel.h"
 #include "ui_wdialogselectchannel.h"
 
 #include "../external/libqxt/qxtspanslider.h"
 
-#include "fileslistwidget.h"
+#include "wfileslist.h"
 #include "gvwaveform.h"
 #include "gvspectrumamplitude.h"
 #include "gvspectrumphase.h"
@@ -37,11 +38,13 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "gvspectrogram.h"
 #include "gvspectrogramwdialogsettings.h"
 #include "ui_gvspectrogramwdialogsettings.h"
+#include "gvgenerictimevalue.h"
 #include "ftsound.h"
 #include "ftfzero.h"
 #include "ftlabels.h"
 #include "../external/audioengine/audioengine.h"
 #include "aboutbox.h"
+#include "wgenerictimevalue.h"
 
 #include <math.h>
 #include <iostream>
@@ -71,6 +74,7 @@ using namespace std;
 #include <QProgressDialog>
 #include <QtDebug>
 #include <QColorDialog>
+#include <QSplitter>
 
 #include "qaehelpers.h"
 
@@ -80,7 +84,7 @@ using namespace std;
 
 WMainWindow* gMW = NULL;
 
-WMainWindow::WMainWindow(QStringList files, QWidget *parent)
+WMainWindow::WMainWindow(QStringList filestoload, QStringList genericfilestoload, QWidget *parent)
     : QMainWindow(parent)
     , m_last_file_editing(NULL)
     , m_dlgSettings(NULL)
@@ -111,7 +115,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 
     m_dlgSettings = new WDialogSettings(this);
 
-    gFL = new FilesListWidget(this);
+    gFL = new WFilesList(this);
     ui->vlFilesList->addWidget(gFL);
     ui->lblFileInfo->hide();
 
@@ -220,7 +224,6 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     m_gvSpectrumAmplitude->updateScrollBars();
     connect(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow, SIGNAL(toggled(bool)), m_gvSpectrumAmplitude, SLOT(updateScrollBars()));
 
-
     // Link axis' views
     connect(m_gvSpectrumAmplitude->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrumPhase->horizontalScrollBar(), SLOT(setValue(int)));
     connect(m_gvSpectrumAmplitude->horizontalScrollBar(), SIGNAL(valueChanged(int)), m_gvSpectrumGroupDelay->horizontalScrollBar(), SLOT(setValue(int)));
@@ -239,6 +242,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     connect(ui->actionShowGroupDelaySpectrum, SIGNAL(toggled(bool)), ui->wSpectrumGroupDelay, SLOT(setVisible(bool)));
     connect(ui->actionShowGroupDelaySpectrum, SIGNAL(toggled(bool)), ui->lblSpectrumGroupDelay, SLOT(setVisible(bool)));
     connect(ui->actionShowSpectrogram, SIGNAL(toggled(bool)), ui->wSpectrogram, SLOT(setVisible(bool)));
+    connect(ui->actionAddGenericTimeValue, SIGNAL(triggered()), gMW, SLOT(addWidgetGenericTimeValue()));
     connect(ui->actionShowAmplitudeSpectrum, SIGNAL(toggled(bool)), this, SLOT(viewsDisplayedChanged()));
     connect(ui->actionShowPhaseSpectrum, SIGNAL(toggled(bool)), this, SLOT(viewsDisplayedChanged()));
     connect(ui->actionShowGroupDelaySpectrum, SIGNAL(toggled(bool)), this, SLOT(viewsDisplayedChanged()));
@@ -266,6 +270,7 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
         sizesViews.append(onesize);
     }
     if(sizesViews.count()==0) {
+        sizesViews.append(100);
         sizesViews.append(100);
         sizesViews.append(100);
         sizesViews.append(100);
@@ -312,14 +317,17 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
     // This one seems able to open distant files because file paths arrive in gvfs format
     // in the main.
     // Doesn't work any more (at least with sftp). The gvfs "miracle" might not be very reliable.
-    gFL->addExistingFiles(files);
+
+    gFL->addExistingFiles(filestoload);
+    if(!genericfilestoload.isEmpty())
+        gFL->addExistingFiles(genericfilestoload, FileType::FTGENTIMEVALUE);
     updateViewsAfterAddFile(true);
 
-    if(files.size()>0)
+    if(gFL->ftsnds.size()>0)
         m_gvSpectrogram->updateSTFTSettings(); // This will update the window computation AND trigger the STFT computation
     gMW->ui->actionSelectedFilesClose->setEnabled(gFL->selectedItems().size()>0);
 
-    connect(ui->actionFileOpen, SIGNAL(triggered()), this, SLOT(openFile())); // Alow this only at the end
+    connect(ui->actionFileOpen, SIGNAL(triggered()), this, SLOT(openFile())); // Allow this only at the end
 
     m_loading = false;
 }
@@ -327,45 +335,32 @@ WMainWindow::WMainWindow(QStringList files, QWidget *parent)
 WMainWindow::~WMainWindow() {
 //    DCOUT << "WMainWindow::~WMainWindow()" << std::endl;
 
-    DFLAG
-    m_gvSpectrogram->m_stftcomputethread->cancelComputation(true);
-    m_gvSpectrumAmplitude->m_fftresizethread->cancelComputation(true);
+    m_gvSpectrogram->m_stftcomputethread->cancelCurrentComputation(true);
+    m_gvSpectrumAmplitude->m_fftresizethread->cancelCurrentComputation(true);
 
-    DFLAG
     gFL->selectAll();
     gFL->selectedFilesClose();
 
-    DFLAG
     delete gFL;
 
-    DFLAG
-//    // The audio player
-//    if(m_audioengine){ // This seems to be called automatically by the parent (WMainWindow) on deletion
+// This seems to be called automatically by the parent (WMainWindow) on deletion
+//    if(m_audioengine){
 //        delete m_audioengine;
-//        DFLAG
 //        m_audioengine=NULL;
-//        DFLAG
 //    }
 
-    DFLAG
     // Delete views
     delete m_gvWaveform; m_gvWaveform=NULL;
-    DFLAG
     delete m_gvSpectrumAmplitude; m_gvSpectrumAmplitude=NULL;
-    DFLAG
     delete m_gvSpectrumPhase; m_gvSpectrumPhase=NULL;
-    DFLAG
     delete m_gvSpectrumGroupDelay; m_gvSpectrumGroupDelay=NULL;
-    DFLAG
     delete m_gvSpectrogram; m_gvSpectrogram=NULL;
-    DFLAG
     delete m_dlgSettings; m_dlgSettings=NULL;
-    DFLAG
     // The GUI
     delete ui;
     ui = NULL;
 
-    DFLAG
+//    DFLAG
 }
 
 // Interface ===================================================================
@@ -374,6 +369,7 @@ void WMainWindow::changeToolBarSizes(int size) {
     gMW->m_gvWaveform->m_toolBar->setIconSize(QSize(size,size));
     gMW->m_gvSpectrumAmplitude->m_toolBar->setIconSize(QSize(size,size));
     gMW->m_gvSpectrogram->m_toolBar->setIconSize(QSize(size,size));
+    // TODO Set in all GenericTimeValue views
     ui->mainToolBar->setIconSize(QSize(1.5*size,1.5*size));
     m_pbVolume->setMaximumWidth(m_dlgSettings->ui->sbViewsToolBarSizes->value()/2);
     m_pbVolume->setMaximumHeight(1.5*size);
@@ -383,42 +379,6 @@ void WMainWindow::updateWindowTitle() {
     int count = gFL->count();
     if(count>0) setWindowTitle("DFasma ("+QString::number(count)+")");
     else        setWindowTitle("DFasma");
-}
-
-QString WMainWindow::version(){
-    if(!m_version.isEmpty())
-        return m_version;
-
-    QString dfasmaversiongit(STR(DFASMAVERSIONGIT));
-    QString dfasmabranchgit(STR(DFASMABRANCHGIT));
-
-//    QTextStream(stdout) << "'" << dfasmaversiongit << "'" << endl;
-
-    QString	dfasmaversion;
-    if(!dfasmaversiongit.isEmpty()) {
-        dfasmaversion = QString("Version ") + dfasmaversiongit;
-        if(dfasmabranchgit!="master")
-            dfasmaversion += "-" + dfasmabranchgit;
-    }
-    else {
-        QFile readmefile(":/README.txt");
-        readmefile.open(QFile::ReadOnly | QFile::Text);
-        QTextStream readmefilestream(&readmefile);
-        readmefilestream.readLine();
-        readmefilestream.readLine();
-        dfasmaversion = readmefilestream.readLine().simplified();
-    }
-    QString m_version = dfasmaversion;
-
-    m_version += "\nCompiled by "+getCompilerVersion()+" for ";
-    #ifdef Q_PROCESSOR_X86_32
-      m_version += "32bits";
-    #endif
-    #ifdef Q_PROCESSOR_X86_64
-      m_version += "64bits";
-    #endif
-
-    return m_version;
 }
 
 void WMainWindow::execAbout(){
@@ -466,12 +426,30 @@ void WMainWindow::statusBarSetText(const QString &text, int timeout, QColor colo
     }
 }
 
-// File management =======================================================
+// Generic Time/Value ----------------------------------------------------------
+
+WidgetGenericTimeValue* WMainWindow::addWidgetGenericTimeValue(){
+    WidgetGenericTimeValue* fgtv = new WidgetGenericTimeValue(this);
+    ui->splitterViews->insertWidget(m_wGenericTimeValues.size(), fgtv);
+    m_wGenericTimeValues.append(fgtv);
+    return fgtv;
+}
+
+void WMainWindow::removeWidgetGenericTimeValue(WidgetGenericTimeValue* fgtv){
+    m_wGenericTimeValues.removeAt(m_wGenericTimeValues.indexOf(fgtv));
+    delete fgtv;
+}
+
+// File management =============================================================
 
 void WMainWindow::newFile(){
-    QMessageBox::StandardButton btn = QMessageBox::question(this, "Create a new file ...", "Do you want to create an empty label file?", QMessageBox::Yes | QMessageBox::No);
-    if(btn==QMessageBox::Yes){
-        gFL->addItem(new FTLabels(this));
+    WDialogFileCreate dlg(this);
+    int res = dlg.exec();
+    if(res==QDialog::Accepted){
+        if(dlg.selectedFileType()==FileType::FTLABELS)
+            gFL->addItem(new FTLabels(this));
+        else if(dlg.selectedFileType()==FileType::FTFZERO)
+            gFL->addItem(new FTFZero(this));
     }
 }
 
@@ -483,6 +461,7 @@ void WMainWindow::openFile() {
     filters += ";;"+FileType::getTypeNameAndExtensions(FileType::FTSOUND);
     filters += ";;"+FileType::getTypeNameAndExtensions(FileType::FTFZERO);
     filters += ";;"+FileType::getTypeNameAndExtensions(FileType::FTLABELS);
+    filters += ";;"+FileType::getTypeNameAndExtensions(FileType::FTGENTIMEVALUE);
 
     QString selectedFilter;
     QStringList files = QFileDialog::getOpenFileNames(this, "Open File(s)...", QString(), filters, &selectedFilter, QFileDialog::ReadOnly);
@@ -495,6 +474,8 @@ void WMainWindow::openFile() {
         type = FileType::FTFZERO;
     else if(selectedFilter==FileType::getTypeNameAndExtensions(FileType::FTLABELS))
         type = FileType::FTLABELS;
+    else if(selectedFilter==FileType::getTypeNameAndExtensions(FileType::FTGENTIMEVALUE))
+        type = FileType::FTGENTIMEVALUE;
 
 //    COUTD << selectedFilter.toLatin1().constData() << ": " << type << endl;
 
@@ -540,7 +521,11 @@ void WMainWindow::dragEnterEvent(QDragEnterEvent *event){
 }
 
 void WMainWindow::changeColor(){
-    QColorDialog colordialog(this);
+    FileType* ft = gFL->currentFile();
+    if(ft==NULL)
+        return;
+
+    QColorDialog colordialog(ft->getColor(), this);
     QObject::connect(&colordialog, SIGNAL(colorSelected(const QColor &)), gFL, SLOT(colorSelected(const QColor &)));
 //    QObject::connect(colordialog, SIGNAL(currentColorChanged(const QColor &)), gFL, SLOT(colorSelected(const QColor &)));
     // Add the available Matlab colors to the custom colors
@@ -606,8 +591,7 @@ void WMainWindow::viewsSpectrogramToggled(bool show)
 void WMainWindow::keyPressEvent(QKeyEvent* event){
     QMainWindow::keyPressEvent(event);
 
-    updateMouseCursorState(event->modifiers().testFlag(Qt::ShiftModifier) || (event && event->key()==Qt::Key_Shift)
-                         , event->modifiers().testFlag(Qt::ControlModifier) || (event && event->key()==Qt::Key_Control));
+    updateMouseCursorState(event->modifiers().testFlag(Qt::ShiftModifier) || (event && event->key()==Qt::Key_Shift), event->modifiers().testFlag(Qt::ControlModifier) || (event && event->key()==Qt::Key_Control));
 
     if(event->key()==Qt::Key_Escape)
         resetFiltering();
@@ -620,6 +604,8 @@ void WMainWindow::updateMouseCursorState(bool kshift, bool kcontrol){
 
     if(ui->actionSelectionMode->isChecked()){
         if(kshift && !kcontrol){
+            for(int i=0; i<m_wGenericTimeValues.size(); ++i)
+                m_wGenericTimeValues.at(i)->gview()->setDragMode(QGraphicsView::ScrollHandDrag);
             m_gvWaveform->setDragMode(QGraphicsView::ScrollHandDrag);
             m_gvSpectrogram->setDragMode(QGraphicsView::ScrollHandDrag);
             m_gvSpectrumAmplitude->setDragMode(QGraphicsView::ScrollHandDrag);
@@ -627,6 +613,9 @@ void WMainWindow::updateMouseCursorState(bool kshift, bool kcontrol){
             m_gvSpectrumGroupDelay->setDragMode(QGraphicsView::ScrollHandDrag);
         }
         else if(!kshift && kcontrol){
+            for(int i=0; i<m_wGenericTimeValues.size(); ++i)
+                if(m_wGenericTimeValues.at(i)->gview()->m_selection.width()>0)
+                    m_wGenericTimeValues.at(i)->gview()->setCursor(Qt::OpenHandCursor);
             if(m_gvWaveform->m_selection.width()>0)
                 m_gvWaveform->setCursor(Qt::OpenHandCursor);
             if(m_gvSpectrogram->m_selection.width()*m_gvSpectrogram->m_selection.height()>0)
@@ -639,6 +628,10 @@ void WMainWindow::updateMouseCursorState(bool kshift, bool kcontrol){
                 m_gvSpectrumGroupDelay->setCursor(Qt::OpenHandCursor);
         }
         else if(kshift && kcontrol){
+            for(int i=0; i<m_wGenericTimeValues.size(); ++i){
+                m_wGenericTimeValues.at(i)->gview()->setDragMode(QGraphicsView::NoDrag);
+                m_wGenericTimeValues.at(i)->gview()->setCursor(Qt::CrossCursor);
+            }
             m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
             m_gvWaveform->setCursor(Qt::CrossCursor);
             m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);
@@ -651,6 +644,10 @@ void WMainWindow::updateMouseCursorState(bool kshift, bool kcontrol){
             m_gvSpectrumGroupDelay->setCursor(Qt::OpenHandCursor); // For the window's pos control
         }
         else if(!kshift && !kcontrol){
+            for(int i=0; i<m_wGenericTimeValues.size(); ++i){
+                m_wGenericTimeValues.at(i)->gview()->setDragMode(QGraphicsView::NoDrag);
+                m_wGenericTimeValues.at(i)->gview()->setCursor(Qt::CrossCursor);
+            }
             m_gvWaveform->setDragMode(QGraphicsView::NoDrag);
             m_gvWaveform->setCursor(Qt::CrossCursor);
             m_gvSpectrogram->setDragMode(QGraphicsView::NoDrag);

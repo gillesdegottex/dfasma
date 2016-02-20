@@ -104,15 +104,10 @@ void AudioEngine::selectAudioOutputDevice(const QString& devicename) {
 
 AudioEngine::~AudioEngine()
 {
-    DFLAG
     if(m_audioOutput) {
-        DFLAG
         m_audioOutput->stop();
-        DFLAG
         delete m_audioOutput;
-        DFLAG
     }
-    DFLAG
 }
 
 //-----------------------------------------------------------------------------

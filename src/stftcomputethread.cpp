@@ -76,6 +76,7 @@ STFTComputeThread::STFTComputeThread(QObject* parent)
 }
 
 void STFTComputeThread::compute(ImageParameters reqImgSTFTParams) {
+//    DCOUT << "STFTComputeThread::compute" << std::endl;
 
     if(reqImgSTFTParams.stftparams.win.size()<2)
         throw QString("Window's length is too short");
@@ -106,7 +107,7 @@ void STFTComputeThread::compute(ImageParameters reqImgSTFTParams) {
         start(); // Start computing
     }
     else {
-        // Currently already computing something
+        // Currently computing something
         // So cancel it and run the new params
         if(reqImgSTFTParams!=m_params_current && reqImgSTFTParams!=m_params_todo) {
             m_params_todo = reqImgSTFTParams;  // Ask to compute a new one, once the current computation is finished
@@ -115,6 +116,8 @@ void STFTComputeThread::compute(ImageParameters reqImgSTFTParams) {
     }
 
     m_mutex_changingparams.unlock();
+
+//    DCOUT << "STFTComputeThread::~compute" << std::endl;
 }
 
 STFTComputeThread::~STFTComputeThread(){
@@ -140,9 +143,7 @@ void STFTComputeThread::run() {
 
                 m_fft->resize(params_running.stftparams.dftlen);
 
-                qreal gain = params_running.stftparams.ampscale;
-
-                std::vector<WAVTYPE>* wav = &params_running.stftparams.snd->wav;
+                m_mutex_changingstft.lock();
 
                 int stepsize = params_running.stftparams.stepsize;
                 int dftlen = params_running.stftparams.dftlen;
@@ -151,14 +152,11 @@ void STFTComputeThread::run() {
                 int fs = params_running.stftparams.snd->fs;
                 FFTTYPE stftmin = std::numeric_limits<FFTTYPE>::infinity();
                 FFTTYPE stftmax = -std::numeric_limits<FFTTYPE>::infinity();
+                qreal gain = params_running.stftparams.ampscale;
                 qint64 snddelay = params_running.stftparams.snd->m_giWavForWaveform->delay();
                 std::deque<std::vector<WAVTYPE> >& stft = params_running.stftparams.snd->m_stft;
-
-                stft.clear();
-                m_mutex_stftts.lock();
-                params_running.stftparams.snd->m_stftts.clear();
-                m_mutex_stftts.unlock();
-                std::deque<FFTTYPE> stftts;
+                std::deque<FFTTYPE>& stftts = params_running.stftparams.snd->m_stftts;
+                std::vector<WAVTYPE>* wav = &params_running.stftparams.snd->wav;
 
                 int maxsampleindex = int(wav->size())-1 + int(params_running.stftparams.snd->m_giWavForWaveform->delay());
                 maxsampleindex = std::min(maxsampleindex, int(gFL->getFs()*gFL->getMaxLastSampleTime()));
@@ -167,13 +165,19 @@ void STFTComputeThread::run() {
                 minsampleindex = std::max(minsampleindex, 0);
                 int minsi = int(minsampleindex/stepsize);
 
-                WAVTYPE value;
-                int ni=0;
-                for(int si=minsi; int(si*stepsize)<maxsampleindex && !gMW->ui->pbSTFTComputingCancel->isChecked(); ++si){
-
+                // Allocate everything
+                stftts.clear();
+                stft.clear();
+                for(int si=minsi; int(si*stepsize)<maxsampleindex; ++si){
                     // Add a new frame to the STFT
                     stft.push_back(std::vector<WAVTYPE>(dftlen/2+1));
                     stftts.push_back((si*stepsize+(winlen-1)/2.0)/fs);
+                }
+                m_mutex_changingstft.unlock();
+
+                WAVTYPE value;
+                int ni=0;
+                for(int si=minsi; int(si*stepsize)<maxsampleindex && !gMW->ui->pbSTFTComputingCancel->isChecked(); ++si){
 
                     // Set the DFT's input
                     int n = 0;
@@ -310,14 +314,12 @@ void STFTComputeThread::run() {
                     else if(qIsInf(stftmax))
                         stftmax = stftmin + 1.0;
 
+                    m_mutex_changingstft.lock();
                     params_running.stftparams.snd->m_stft_min = stftmin;
                     params_running.stftparams.snd->m_stft_max = stftmax;
+                    m_mutex_changingstft.unlock();
 
                     m_mutex_changingparams.unlock();
-
-                    m_mutex_stftts.lock();
-                    params_running.stftparams.snd->m_stftts = stftts;
-                    m_mutex_stftts.unlock();
                 }
             }
 
@@ -342,8 +344,6 @@ void STFTComputeThread::run() {
                     QAEColorMap& cmap = QAEColorMap::getAt(params_running.colormap_index);
                     cmap.setColor(params_running.stftparams.snd->getColor());
 
-                    if(cmap.isTransparent())
-                        params_running.imgstft->fill(Qt::white);
                     QRgb* pimgb = (QRgb*)(params_running.imgstft->bits());
 
                     FFTTYPE ymin = 0.0; // Init shouldn't be used
@@ -384,7 +384,7 @@ void STFTComputeThread::run() {
                             }
                             else {
                                 v = *pstft;
-                                if(uselw) v += elc[n]; // Correct according to the loudness curve
+                                if(uselw) v += elc[n]; // Modification according to loudness curve
                                 y = (v-ymin)*divmaxmmin;
 
                                 if(y<=0.0)
@@ -411,28 +411,35 @@ void STFTComputeThread::run() {
         //            m_params_current.stftparams.snd->m_stft_min = std::max(FFTTYPE(-2.0*20*std::log10(std::pow(2.0,m_params_current.stftparams.snd->format().sampleSize()))), m_params_current.stftparams.snd->m_stft_min); Why doing this ??
         //            COUTD << "Image Spent: " << starttime.elapsed() << std::endl;
                 }
+
+                m_mutex_changingparams.lock();
+                params_running.stftparams.snd->m_imgSTFTParams = m_params_current;
+                m_mutex_changingparams.unlock();
             }
         }
         catch(std::bad_alloc err){
             params_running.stftparams.snd->m_stft.clear();
-            m_mutex_stftts.lock();
+            m_mutex_changingstft.lock();
             params_running.stftparams.snd->m_stftts.clear();
-            m_mutex_stftts.unlock();
+            m_mutex_changingstft.unlock();
 
             emit stftComputingStateChanged(SCSMemoryFull);
             gMW->ui->pbSTFTComputingCancel->setChecked(true);
         }
 
         canceled = gMW->ui->pbSTFTComputingCancel->isChecked();
-        if(gMW->ui->pbSTFTComputingCancel->isChecked()){
+        if(canceled){
             m_mutex_changingparams.lock();
-            m_params_last.clear();
             if(params_running.stftparams.snd->m_stftparams != params_running.stftparams) {
-                params_running.stftparams.snd->m_stft.clear();
-                m_mutex_stftts.lock();
+                m_mutex_changingstft.lock();
                 params_running.stftparams.snd->m_stftts.clear();
-                m_mutex_stftts.unlock();
+                params_running.stftparams.snd->m_stft.clear();
                 params_running.stftparams.snd->m_stftparams.clear();
+                m_mutex_changingstft.unlock();
+                m_mutex_imageallocation.lock();
+                *(params_running.imgstft) = QImage(1, 1, QImage::Format_ARGB32);
+                params_running.imgstft->fill(Qt::black);
+                m_mutex_imageallocation.unlock();
             }
             m_mutex_changingparams.unlock();
             gMW->ui->pbSTFTComputingCancel->setChecked(false);
@@ -443,40 +450,38 @@ void STFTComputeThread::run() {
         if(!m_params_todo.isEmpty()){
             m_params_current = m_params_todo;
             m_params_todo.clear();
-            m_mutex_changingparams.unlock();
         }
         else{
-            m_params_last = m_params_current;
             m_params_current.clear();
-            m_mutex_changingparams.unlock();
             m_computing = false;
         }
+        m_mutex_changingparams.unlock();
     }
     while(m_computing);
 
     m_mutex_computing.unlock();
 
-    if(canceled)
+    if(canceled){
+        gMW->ui->lblSpectrogramInfoTxt->show();
         emit stftComputingStateChanged(SCSCanceled);
+    }
     else
         emit stftComputingStateChanged(SCSFinished);
 
 //    DCOUT << "STFTComputeThread::~run" << std::endl;
 }
 
-void STFTComputeThread::cancelComputation(bool waittoend) {
-//    COUTD << "STFTComputeThread::cancelComputation" << std::endl;
+void STFTComputeThread::cancelCurrentComputation(bool waittoend) {
+//    DCOUT << "STFTComputeThread::cancelCurrentComputation" << std::endl;
     gMW->ui->pbSTFTComputingCancel->setChecked(true);
     if(waittoend){
-//        COUTD << "waittoend..." << std::endl;
         m_mutex_computing.lock();
-//        COUTD << "GOT IT !" << std::endl;
         m_mutex_computing.unlock();
     }
-//    COUTD << "STFTComputeThread::~cancelComputation" << std::endl;
 }
 
-void STFTComputeThread::cancelComputation(FTSound* snd) {
+void STFTComputeThread::cancelComputation(FTSound* snd, bool closing) {
+//    DCOUT << "STFTComputeThread::cancelComputation" << std::endl;
     // Remove it from the STFT waiting queue
     m_mutex_changingparams.lock();
     if(!m_params_todo.isEmpty()
@@ -484,11 +489,15 @@ void STFTComputeThread::cancelComputation(FTSound* snd) {
         m_params_todo.clear();
     }
     m_mutex_changingparams.unlock();
+
     // Or cancel its STFT computation
     while(isRunning()
           && getCurrentParameters().stftparams.snd==snd){
-        cancelComputation(true);
+        cancelCurrentComputation(true);
+        if(closing){
+            gMW->ui->lblSpectrogramInfoTxt->hide();
+            emit stftComputingStateChanged(SCSFinished);
+        }
 //        QThread::msleep(20);
     }
-
 }

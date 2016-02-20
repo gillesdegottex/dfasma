@@ -28,15 +28,18 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "wdialogsettings.h"
 #include "ui_wdialogsettings.h"
 
+#include "ftsound.h"
+#include "ftlabels.h"
+#include "ftfzero.h"
+
 #include "gvwaveform.h"
 #include "gvspectrumamplitude.h"
 #include "gvspectrumamplitudewdialogsettings.h"
 #include "ui_gvspectrumamplitudewdialogsettings.h"
 #include "gvspectrumphase.h"
 #include "gvspectrumgroupdelay.h"
-#include "ftsound.h"
-#include "ftlabels.h"
-#include "ftfzero.h"
+#include "wgenerictimevalue.h"
+#include "gvgenerictimevalue.h"
 
 #include <iostream>
 #include <algorithm>
@@ -97,7 +100,7 @@ GVSpectrogram::GVSpectrogram(WMainWindow* parent)
     m_scene->addItem(m_giGrid);
     connect(m_aSpectrogramShowGrid, SIGNAL(toggled(bool)), this, SLOT(gridSetVisible(bool)));
 
-    m_aSpectrogramShowHarmonics = new QAction(tr("Show &Harmonics"), this);
+    m_aSpectrogramShowHarmonics = new QAction(tr("Show F0 &harmonic"), this);
     m_aSpectrogramShowHarmonics->setObjectName("m_aSpectrogramShowHarmonics"); // For auto settings
     m_aSpectrogramShowHarmonics->setStatusTip(tr("Show the harmonics of the fundamental frequency curves"));
     m_aSpectrogramShowHarmonics->setCheckable(true);
@@ -153,6 +156,13 @@ GVSpectrogram::GVSpectrogram(WMainWindow* parent)
     m_giMouseCursorTxtFreq->setBrush(cursorcolor);
     m_giMouseCursorTxtFreq->hide();
     m_scene->addItem(m_giMouseCursorTxtFreq);
+
+    m_info_txt = new QGraphicsSimpleTextItem();
+    m_info_txt->hide();
+    m_info_txt->setBrush(QColor(128, 128, 128));
+    m_info_txt->setZValue(0.0);
+    m_info_txt->setText("");
+    m_scene->addItem(m_info_txt);
 
     // Play Cursor
     m_giPlayCursor = new QGraphicsLineItem(0.0, 0.0, 0.0, -100000, NULL);
@@ -319,7 +329,7 @@ void GVSpectrogram::amplitudeExtentSlidersChangesEnded() {
 
 
 void GVSpectrogram::updateSTFTSettings(){
-//    COUTD << "GVSpectrogram::updateSTFTSettings fs=" << gMW->getFs() << endl;
+//    DCOUT << "GVSpectrogram::updateSTFTSettings" << endl;
 
     gMW->ui->pbSpectrogramSTFTUpdate->hide();
     m_dlgSettings->checkImageSize();
@@ -379,6 +389,7 @@ void GVSpectrogram::updateSTFTSettings(){
 
 
 void GVSpectrogram::stftComputingStateChanged(int state){
+//    DCOUT << "GVSpectrogram::stftComputingStateChanged " << state << std::endl;
     if(state==STFTComputeThread::SCSDFT){
 //        COUTD << "SCSDFT" << endl;
         gMW->ui->pgbSpectrogramSTFTCompute->setValue(0);
@@ -407,7 +418,6 @@ void GVSpectrogram::stftComputingStateChanged(int state){
         gMW->ui->pbSTFTComputingCancel->hide();
         gMW->ui->pgbSpectrogramSTFTCompute->hide();
         gMW->ui->wSpectrogramProgressWidgets->hide();
-        m_stftcomputethread->m_params_last.stftparams.snd->m_imgSTFTParams = m_stftcomputethread->m_params_last;
 //        COUTD << m_imgSTFTParams.stftparams.dftlen << endl;
 //        gMW->ui->lblSpectrogramInfoTxt->setText(" ");
 //        gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT: size %1, %2s step").arg(m_imgSTFTParams.stftparams.dftlen).arg(m_imgSTFTParams.stftparams.stepsize/gMW->getFs()));
@@ -427,9 +437,13 @@ void GVSpectrogram::stftComputingStateChanged(int state){
         gMW->ui->pbSTFTComputingCancel->setChecked(false);
         gMW->ui->pbSTFTComputingCancel->hide();
         gMW->ui->pgbSpectrogramSTFTCompute->hide();
-        gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT Canceled"));
-        gMW->ui->pbSpectrogramSTFTUpdate->show();
-        gMW->ui->wSpectrogramProgressWidgets->show();
+        // Use the visibility of lblSpectrogramInfoTxt to know if the canceled message has to be shown or not
+        // TODO ... very dirty
+        if(gMW->ui->lblSpectrogramInfoTxt->isVisible()){
+            gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT Canceled"));
+            gMW->ui->pbSpectrogramSTFTUpdate->show();
+            gMW->ui->wSpectrogramProgressWidgets->show();
+        }
         gMW->m_gvSpectrogram->m_scene->update();
     }
     else if(state==STFTComputeThread::SCSMemoryFull){
@@ -451,7 +465,7 @@ void GVSpectrogram::autoUpdate(bool autoupdate){
 }
 
 void GVSpectrogram::updateSTFTPlot(bool force){
-//    COUTD << "GVSpectrogram::updateSTFTPlot" << endl;
+//    DCOUT << "GVSpectrogram::updateSTFTPlot" << endl;
 
     if(!gMW->ui->actionShowSpectrogram->isChecked())
         return;
@@ -509,6 +523,8 @@ void GVSpectrogram::viewSet(QRectF viewrect, bool forwardsync) {
         if(viewrect==QRectF())
             viewrect = currentviewrect;
 
+//        DCOUT << m_scene->sceneRect() << endl;
+
         if(viewrect.top()<=m_scene->sceneRect().top())
             viewrect.setTop(m_scene->sceneRect().top());
         if(viewrect.bottom()>=m_scene->sceneRect().bottom())
@@ -519,6 +535,8 @@ void GVSpectrogram::viewSet(QRectF viewrect, bool forwardsync) {
             viewrect.setRight(m_scene->sceneRect().right());
 
         fitInView(removeHiddenMargin(this, viewrect));
+
+        updateTextsGeometry();
         m_giGrid->updateLines();
 
         if(forwardsync){
@@ -527,6 +545,15 @@ void GVSpectrogram::viewSet(QRectF viewrect, bool forwardsync) {
                 currect.setLeft(viewrect.left());
                 currect.setRight(viewrect.right());
                 gMW->m_gvWaveform->viewSet(currect, false);
+            }
+
+            for(int i=0; i<gMW->m_wGenericTimeValues.size(); ++i){
+                if(gMW->m_wGenericTimeValues.at(i)) {
+                    QRectF rect = gMW->m_wGenericTimeValues.at(i)->gview()->mapToScene(gMW->m_wGenericTimeValues.at(i)->gview()->viewport()->rect()).boundingRect();
+                    rect.setLeft(viewrect.left());
+                    rect.setRight(viewrect.right());
+                    gMW->m_wGenericTimeValues.at(i)->gview()->viewSet(rect, false);
+                }
             }
         }
     }
@@ -564,10 +591,9 @@ void GVSpectrogram::resizeEvent(QResizeEvent* event){
 }
 
 void GVSpectrogram::scrollContentsBy(int dx, int dy) {
-//    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << " GVSpectrogram::scrollContentsBy" << endl;
+//    DCOUT << "GVSpectrogram::scrollContentsBy " << dx << " " << dy << endl;
 
-    setMouseCursorPosition(QPointF(-1,0), false);
-    updateTextsGeometry();
+    setMouseCursorPosition(QPointF(-1,0), false); // TODO Not sure it's safe to call this here. E.g. updateGeometry is not welcomed here.
 
     QGraphicsView::scrollContentsBy(dx, dy);
 
@@ -816,7 +842,7 @@ void GVSpectrogram::mouseMoveEvent(QMouseEvent* event){
                 if(curfzero && gMW->m_gvSpectrogram->m_aSpectrogramShowHarmonics->isChecked()){
                     // Get the clostest harmonic
                     double ct = p.x();
-                    double cf0 = qae::nearest<double>(curfzero->ts, curfzero->f0s, ct);
+                    double cf0 = qae::interp_stepatzeros<double>(curfzero->ts, curfzero->f0s, ct);
                     if(cf0>0){
                         int h = int(-p.y()/cf0 +0.5);
                         curfzero->m_giHarmonicForSpectrogram->setGain(h);
@@ -978,6 +1004,7 @@ void GVSpectrogram::selectionSet(QRectF selection, bool forwardsync) {
     m_giShownSelection->setRect(m_selection.left()-0.5/fs, m_selection.top(), m_selection.width()+1.0/fs, m_selection.height());
     m_giShownSelection->show();
 
+//    DCOUT << "GVSpectrogram::selectionSet" << endl;
     updateTextsGeometry();
 
     selectionSetTextInForm();
@@ -1054,12 +1081,18 @@ void GVSpectrogram::updateTextsGeometry() {
     m_giMouseCursorTxtTime->setTransform(txttrans);
     m_giMouseCursorTxtFreq->setTransform(txttrans);
 
+    m_info_txt->setTransform(txttrans);
+    QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
+    m_info_txt->setPos(currentviewrect.center()-QPointF(0.5*m_info_txt->boundingRect().width()/trans.m11(), 0.5*m_info_txt->boundingRect().height()/trans.m22()));
+//    m_info_txt->prepareGeometryChange();
+
+
     // Labels
     for(size_t fi=0; fi<gFL->ftlabels.size(); fi++){
         if(!gFL->ftlabels[fi]->m_actionShow->isChecked())
             continue;
 
-        gFL->ftlabels[fi]->updateTextsGeometry();
+        gFL->ftlabels[fi]->updateTextsGeometrySpectrogram();
     }
 }
 
@@ -1213,38 +1246,58 @@ void GVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
     Q_UNUSED(rect)
 //    cout << QTime::currentTime().toString("hh:mm:ss.zzz").toLocal8Bit().constData() << ": GVSpectrogram::drawBackground " << rect.left() << " " << rect.right() << " " << rect.top() << " " << rect.bottom() << endl;
 
-    // QGraphicsView::drawBackground(painter, rect);// TODO Need this ??
-
     QRectF viewrect = mapToScene(viewport()->rect()).boundingRect();
 
     // Draw the sound's spectrogram
     if(QAEColorMap::getAt(m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex()).isTransparent()){
+        m_info_txt->hide();
+        QPainter::CompositionMode compmode = painter->compositionMode();
+        painter->setCompositionMode(QPainter::CompositionMode_Source);
+        painter->fillRect(viewrect, Qt::transparent);
+//        painter->fillRect(viewrect, Qt::black);
+        painter->setCompositionMode(QPainter::CompositionMode_Plus);
         // If the color mapping is partly transparent, draw the spectro of all sounds
-        for(size_t fi=0; fi<gFL->ftsnds.size(); ++fi){
+        for(size_t fi=0; fi<gFL->ftsnds.size(); ++fi)
             draw_spectrogram(painter, rect, viewrect, gFL->ftsnds[fi]);
-        }
+        painter->setCompositionMode(QPainter::CompositionMode_DestinationOver);
+        painter->fillRect(viewrect, Qt::white);
+        painter->setCompositionMode(compmode);
     }
     else{
         // If the color mapping is opaque, draw only the spectro of the current sound
         FTSound* csnd = gFL->getCurrentFTSound(true);
-        if(csnd && csnd->m_actionShow->isChecked())
-            draw_spectrogram(painter, rect, viewrect, csnd);
+        if(csnd==NULL){
+            m_info_txt->show();
+            m_info_txt->setText("There is no sound file selected");
+        }
+        else {
+            if(csnd->m_actionShow->isChecked()){
+                m_info_txt->hide();
+                draw_spectrogram(painter, rect, viewrect, csnd);
+            }
+            else{
+                m_info_txt->show();
+                m_info_txt->setText("This file is hidden");
+            }
+        }
+
     }
+
+    updateTextsGeometry(); // TODO Since called here, can be removed from many other places
 
 //    cout << "GVSpectrogram::~drawBackground" << endl;
 }
 
 void GVSpectrogram::draw_spectrogram(QPainter* painter, const QRectF& rect, const QRectF& viewrect, FTSound* snd){
     Q_UNUSED(rect)
-    //        double bin2hz = fs*1/csnd->m_stftparams.dftlen;
 
-    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.lock();
+    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.lock();
     if(snd==NULL
       || !snd->m_actionShow->isChecked()
       || snd->m_imgSTFT.isNull()
       || snd->m_stftts.empty()) // First need to be computed
     {
-        gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.unlock();
+        gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.unlock();
         return;
     }
 
@@ -1270,19 +1323,19 @@ void GVSpectrogram::draw_spectrogram(QPainter* painter, const QRectF& rect, cons
 
     // This one is the basic synchronized version,
     // but it creates flickering when zooming
-//        QRectF srcrect = m_imgSTFT.rect();
-//        QRectF trgrect = m_scene->sceneRect();
-//        trgrect.setLeft(csnd->m_stftts.front()-0.5*csnd->m_stftparams.stepsize/csnd->fs);
-//        trgrect.setRight(csnd->m_stftts.back()+0.5*csnd->m_stftparams.stepsize/csnd->fs);
-//        double bin2hz = fs*1/csnd->m_stftparams.dftlen;
-//        trgrect.setTop(-bin2hz/2);// Hard to verify because of the flickering
-//        trgrect.setBottom(fs/2+bin2hz/2);// Hard to verify because of the flickering
+    //QRectF srcrect = m_imgSTFT.rect();
+    //QRectF trgrect = m_scene->sceneRect();
+    //trgrect.setLeft(csnd->m_stftts.front()-0.5*csnd->m_stftparams.stepsize/csnd->fs);
+    //trgrect.setRight(csnd->m_stftts.back()+0.5*csnd->m_stftparams.stepsize/csnd->fs);
+    //double bin2hz = fs*1/csnd->m_stftparams.dftlen;
+    //trgrect.setTop(-bin2hz/2);// Hard to verify because of the flickering
+    //trgrect.setBottom(fs/2+bin2hz/2);// Hard to verify because of the flickering
 
-//        COUTD << "Scene: " << m_scene->sceneRect() << " " << m_scene->sceneRect().width() << "x" << m_scene->sceneRect().height() << endl;
-//        COUTD << "SRC: " << srcrect << " " << srcrect.width() << "x" << srcrect.height() << endl;
-//        COUTD << "TRG: " << trgrect << " " << trgrect.width() << "x" << trgrect.height() << endl;
+    //COUTD << "Scene: " << m_scene->sceneRect() << " " << m_scene->sceneRect().width() << "x" << m_scene->sceneRect().height() << endl;
+    //COUTD << "SRC: " << srcrect << " " << srcrect.width() << "x" << srcrect.height() << endl;
+    //COUTD << "TRG: " << trgrect << " " << trgrect.width() << "x" << trgrect.height() << endl;
 
-    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.unlock();
+    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.unlock();
 
     if(m_stftcomputethread->m_mutex_imageallocation.tryLock()) {
         painter->drawImage(trgrect, snd->m_imgSTFT, srcrect);

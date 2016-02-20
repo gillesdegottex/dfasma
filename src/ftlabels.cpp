@@ -55,6 +55,9 @@ using namespace Easdif;
 #include "ui_wdialogsettings.h"
 #include "gvwaveform.h"
 #include "gvspectrogram.h"
+#include "ftfzero.h"
+
+extern QString DFasmaVersion();
 
 bool FTGraphicsLabelItem::s_isEditing = false;
 
@@ -212,7 +215,8 @@ FTLabels::FTLabels(const FTLabels& ft)
     m_lastreadtime = ft.m_lastreadtime;
     m_modifiedtime = ft.m_modifiedtime;
 
-    updateTextsGeometry();
+    updateTextsGeometryWaveform();
+    updateTextsGeometrySpectrogram();
 
     FTLabels::constructor_external();
 }
@@ -493,7 +497,8 @@ void FTLabels::load() {
         throw QString("File format not recognized for loading this label file.");
     }
 
-    updateTextsGeometry();
+    updateTextsGeometryWaveform();
+    updateTextsGeometrySpectrogram();
 
     m_lastreadtime = QDateTime::currentDateTime();
     m_is_edited = false;
@@ -708,7 +713,7 @@ void FTLabels::save() {
             info += "NumChannels\t"+QString::number(1)+"\n";
 //            if(gFL->hasFile(m_src_snd))
 //                info += "Soundfile\t"+m_src_snd->fileFullPath+"\n";
-            info += "Version\t"+gMW->version().mid(8)+"\n";
+            info += "Version\t"+DFasmaVersion()+"\n";
             info += "Creator\tDFasma\n";
             tmpMatrix.Set(info.toLatin1().constData());
             frameToWrite.AddMatrix(tmpMatrix);
@@ -782,16 +787,14 @@ double FTLabels::getLastSampleTime() const {
         return starts.back();
 }
 
-void FTLabels::updateTextsGeometry(){
+void FTLabels::updateTextsGeometryWaveform(){
+//    DCOUT << "FTLabels::updateTextsGeometryWaveform" <<endl;
 
     if(!m_actionShow->isChecked())
         return;
 
     QRectF waveform_viewrect = gMW->m_gvWaveform->mapToScene(gMW->m_gvWaveform->viewport()->rect()).boundingRect();
     QTransform waveform_trans = gMW->m_gvWaveform->transform();
-
-    QRectF spectrogram_viewrect = gMW->m_gvSpectrogram->mapToScene(gMW->m_gvSpectrogram->viewport()->rect()).boundingRect();
-    QTransform spectrogram_trans = gMW->m_gvSpectrogram->transform();
 
     for(size_t u=0; u<starts.size(); ++u){
 
@@ -800,12 +803,29 @@ void FTLabels::updateTextsGeometry(){
             x = -(waveform_labels[u]->boundingRect().width()-4)/waveform_trans.m11();
 
         QTransform mat1;
-        mat1.translate(x-2.0/waveform_trans.m11(), waveform_viewrect.top()+10/waveform_trans.m22());
+        mat1.translate(x-2.0/waveform_trans.m11(), waveform_viewrect.top()+10.0/waveform_trans.m22());
         mat1.scale(1.0/waveform_trans.m11(), 1.0/waveform_trans.m22());
         waveform_labels[u]->setTransform(mat1);
+    }
+}
+
+void FTLabels::updateTextsGeometrySpectrogram(){
+//    DCOUT << "FTLabels::updateTextsGeometrySpectrogram" <<endl;
+
+    if(!m_actionShow->isChecked())
+        return;
+
+    QRectF spectrogram_viewrect = gMW->m_gvSpectrogram->mapToScene(gMW->m_gvSpectrogram->viewport()->rect()).boundingRect();
+    QTransform spectrogram_trans = gMW->m_gvSpectrogram->transform();
+
+    for(size_t u=0; u<starts.size(); ++u){
+
+        double x = 0.0;
+        if(starts[u]>gFL->getMaxLastSampleTime()-24.0/spectrogram_trans.m11())
+            x = -(spectrogram_labels[u]->boundingRect().width()-4)/spectrogram_trans.m11();
 
         QTransform mat2;
-        mat2.translate(x+2.0/spectrogram_trans.m11(), spectrogram_viewrect.top()+10/spectrogram_trans.m22());
+        mat2.translate(x+2.0/spectrogram_trans.m11(), spectrogram_viewrect.top()+10.0/spectrogram_trans.m22());
         mat2.scale(1.0/spectrogram_trans.m11(), 1.0/spectrogram_trans.m22());
         spectrogram_labels[u]->setTransform(mat2);
     }
@@ -818,8 +838,6 @@ void FTLabels::addLabel(double position, const QString& text, QString showntxt){
     QPen pen(getColor());
     pen.setWidth(0);
     QBrush brush(getColor());
-    QPen whitepen(Qt::white);
-    whitepen.setWidth(1);
 
     starts.push_back(position);
 
@@ -836,7 +854,6 @@ void FTLabels::addLabel(double position, const QString& text, QString showntxt){
     spectrogram_labels.push_back(new QGraphicsSimpleTextItem(showntxt));
     spectrogram_labels.back()->setPos(position, 0);
     spectrogram_labels.back()->setBrush(brush);
-    spectrogram_labels.back()->setPen(whitepen);
     spectrogram_labels.back()->setToolTip(text);
     gMW->m_gvSpectrogram->m_scene->addItem(spectrogram_labels.back());
     // TODO set Brush and pen for the outline!
@@ -893,8 +910,10 @@ void FTLabels::setVisible(bool shown){
 //    cout << "FTLabels::setVisible" << endl;
     FileType::setVisible(shown);
 
-    if(shown)
-        updateTextsGeometry();
+    if(shown){
+        updateTextsGeometryWaveform();
+        updateTextsGeometrySpectrogram();
+    }
 
     for(size_t u=0; u<starts.size(); ++u){
         waveform_labels[u]->setVisible(shown);
@@ -909,8 +928,6 @@ void FTLabels::setColor(const QColor& color) {
     QPen pen(getColor());
     pen.setWidth(0);
     QBrush brush(getColor());
-    QPen whitepen(Qt::white);
-    whitepen.setWidth(1);
 
     for(size_t u=0; u<starts.size(); ++u){
         waveform_labels[u]->setDefaultTextColor(getColor());
@@ -1087,7 +1104,8 @@ void FTLabels::estimate(FTFZero *ftfzero, double tstart, double tend) {
         }
     }
 
-    updateTextsGeometry();
+    updateTextsGeometryWaveform();
+    updateTextsGeometrySpectrogram();
 
     m_is_edited = true;
     setStatus();

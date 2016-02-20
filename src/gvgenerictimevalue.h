@@ -18,60 +18,50 @@ file provided in the source code of DFasma. Another copy can be found at
 <http://www.gnu.org/licenses/>.
 */
 
-#ifndef QGVSPECTRUMAMPLITUDE_H
-#define QGVSPECTRUMAMPLITUDE_H
+#ifndef QGVGENERICTIMEVALUE_H
+#define QGVGENERICTIMEVALUE_H
 
 #include <vector>
 #include <deque>
 
 #include <QGraphicsView>
 #include <QMenu>
-#include <QTime>
+//#include <QTime>
 
 #include "qaesigproc.h"
 #include "qaegigrid.h"
 
 #include "wmainwindow.h"
-#include "fftresizethread.h"
-#include "ftsound.h"
 
-class GVAmplitudeSpectrumWDialogSettings;
+//class GVAmplitudeSpectrumWDialogSettings;
 class MainWindow;
 class QSpinBox;
+class WidgetGenericTimeValue;
 
-class GVSpectrumAmplitude : public QGraphicsView
+class GVGenericTimeValue : public QGraphicsView
 {
     Q_OBJECT
 
-    QTime m_last_parameters_change;
-
-    std::vector<FFTTYPE> m_win; // Keep one here to limit allocations
+    WidgetGenericTimeValue* m_fgtv;
 
 protected:
     void contextMenuEvent(QContextMenuEvent * event);
 
 public:
-    explicit GVSpectrumAmplitude(WMainWindow* parent);
+    explicit GVGenericTimeValue(WidgetGenericTimeValue* parent);
 
-    GVAmplitudeSpectrumWDialogSettings* m_dlgSettings;
+//    GVAmplitudeSpectrumWDialogSettings* m_dlgSettings;
 
-    qae::FFTwrapper* m_fft;
-    FFTResizeThread* m_fftresizethread;
+    QList<FTGenericTimeValue*> m_ftgenerictimevalues;
+
+    WidgetGenericTimeValue* widget() const {return m_fgtv;}
 
     QGraphicsScene* m_scene;
 
     QToolBar* m_toolBar;
     QMenu m_contextmenu;
 
-    FTSound::DFTParameters m_trgDFTParameters;
-
     QAEGIGrid* m_giGrid;
-    std::vector<FFTTYPE> m_windft; // Window spectrum
-    QAEGIUniformlySampledSignal* m_giWindow;
-    std::vector<FFTTYPE> m_elc;
-    QAEGIUniformlySampledSignal* m_giLoudnessCurve;
-
-    std::vector<FFTTYPE> m_filterresponse;
 
     // Cursor
     QGraphicsLineItem* m_giCursorHoriz;
@@ -84,7 +74,7 @@ public:
     QPointF m_selection_pressedp;
     QPointF m_pressed_mouseinviewport;
     QRectF m_pressed_viewrect;
-    enum CurrentAction {CANothing, CAMoving, CAZooming, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight, CAModifSelectionTop, CAModifSelectionBottom, CAWaveformScale};
+    enum CurrentAction {CANothing, CAMoving, CAZooming, CASelecting, CAMovingSelection, CAModifSelectionLeft, CAModifSelectionRight, CAModifSelectionTop, CAModifSelectionBottom};
     int m_currentAction;
 
     QRectF m_selection, m_mouseSelection;
@@ -93,10 +83,6 @@ public:
     void selectionSet(QRectF selection, bool forwardsync);
     void selectionSetTextInForm();
     bool hasSelection(){return m_selection.width()>0.0;}
-
-    // Min and max limits of the color range
-    QGraphicsLineItem* m_giSpectrogramMax;
-    QGraphicsLineItem* m_giSpectrogramMin;
 
     void scrollContentsBy(int dx, int dy);
     void wheelEvent(QWheelEvent* event);
@@ -108,41 +94,25 @@ public:
 
     void viewSet(QRectF viewrect=QRectF(), bool sync=true);
     void viewUpdateTexts();
-    void drawBackground(QPainter* painter, const QRectF& rect);
 
-    ~GVSpectrumAmplitude();
+    ~GVGenericTimeValue();
 
-    QAction* m_aAmplitudeSpectrumShowGrid;
-    QAction* m_aAmplitudeSpectrumShowWindow;
-    QAction* m_aAmplitudeSpectrumShowLoudnessCurve;
-    QAction* m_aAmplitudeSpectrumShowSQNRs;
+    QAction* m_aShowGrid;
     QAction* m_aZoomOnSelection;
     QAction* m_aSelectionClear;
     QAction* m_aZoomIn;
     QAction* m_aZoomOut;
     QAction* m_aUnZoom;
     QAction* m_aShowProperties;
-    QAction* m_aAutoUpdateDFT;
-    QAction* m_aFollowPlayCursor;
 
 protected slots:
     void gridSetVisible(bool visible);
-    void windowSetVisible(bool visible);
-    void elcSetVisible(bool visible);
-    void sqnrSetVisible(bool visible);
 
 public slots:
-    void updateScrollBars();
-
-    void setWindowRange(double tstart, double tend);
+    void showScrollBars(bool show);
     void updateSceneRect(); // To call when fs has changed and limits in dB
-    void updateAmplitudeExtent();
-    void amplitudeMinChanged();
-    void settingsModified();
-    void updateDFTs();
-    void fftResizing(int prevSize, int newSize);
-
-    void setSamplingRate(double fs);
+//    void updateAmplitudeExtent();
+//    void settingsModified();
 
     void selectionZoomOn();
     void selectionClear(bool forwardsync=true);
@@ -151,4 +121,4 @@ public slots:
     void aunzoom();
 };
 
-#endif // QGVSPECTRUMAMPLITUDE_H
+#endif // QGVGENERICTIMEVALUE_H
