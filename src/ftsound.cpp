@@ -330,8 +330,8 @@ bool FTSound::reload() {
     wav.clear();
     wavfiltered.clear();
     setFiltered(false);
-    m_stft.clear();
     gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.lock();
+    m_stft.clear();
     m_stftts.clear();
     gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.unlock();
     m_imgSTFTParams.clear();
