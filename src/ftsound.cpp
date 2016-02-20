@@ -210,8 +210,7 @@ FTSound::FTSound(const QString& _fileName, QObject *parent, int channelid)
             load_finalize();
         }
         catch(std::bad_alloc err){
-            QMessageBox::critical(NULL, "Memory full!", "There is not enough free memory for loading this file.");
-            throw QString("Memory cannot hold this file!");
+            throw QString("There is not enough free memory to hold this file!");
         }
     }
     FTSound::constructor_external();
@@ -350,7 +349,7 @@ bool FTSound::reload() {
     catch(std::bad_alloc err){
         QMessageBox::critical(NULL, "Memory full!", "There is not enough free memory for re-loading this file.");
 
-        throw QString("Memory cannot hold this file!");
+        throw QString("The is not enough free memory for re-loading this file!");
     }
 
     m_giWavForWaveform->clearCache();
