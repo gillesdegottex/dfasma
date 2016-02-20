@@ -74,6 +74,7 @@ class FilesListWidgetDelegate : public QItemDelegate {
 WFilesList::WFilesList(QMainWindow *parent)
     : QListWidget(parent)
     , m_prgdlg(NULL)
+    , m_loadingmsgbox(NULL)
     , m_prevSelectedFile(NULL)
     , m_prevSelectedSound(NULL)
 {
@@ -211,7 +212,22 @@ void WFilesList::addExistingFile(const QString& filepath, FileType::FType type) 
         //  and the format of the file (ex. FFSOUND)
         //  and the file container (sdif, any sound, text)
 
-//        DCOUT << filepath << " " << type << std::endl;
+        QFileInfo fileinfo(filepath);
+        int filesize = fileinfo.size()/std::pow(2.0, 20.0); // File size in [MB]
+//        DCOUT << filepath << " size: " << filesize << "MB" << std::endl;
+
+        if(filesize>50){ // If bigger than X MB
+            m_loadingmsgbox = new QMessageBox(gMW);
+            m_loadingmsgbox->setWindowTitle("DFasma");
+            m_loadingmsgbox->setText("Loading big file ...");
+            m_loadingmsgbox->setWindowModality(Qt::NonModal);
+            m_loadingmsgbox->setStandardButtons(QMessageBox::NoButton);
+            m_loadingmsgbox->show();
+            for(int nsilly=0; nsilly<3; ++nsilly){
+                QThread::msleep(10);
+                QCoreApplication::processEvents(); // To show the progress
+            }
+        }
 
         // This should be always "guessable"
         FileType::FileContainer container = FileType::guessContainer(FileType::removeDataSelectors(filepath));
@@ -330,6 +346,12 @@ void WFilesList::addExistingFile(const QString& filepath, FileType::FType type) 
         if(ret==QMessageBox::Abort)
             if(m_prgdlg)
                 m_prgdlg->cancel();
+    }
+
+    if(m_loadingmsgbox){
+        m_loadingmsgbox->close();
+        delete m_loadingmsgbox;
+        m_loadingmsgbox = NULL;
     }
 }
 

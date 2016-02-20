@@ -30,6 +30,7 @@ class FTSound;
 class FTFZero;
 class FTLabels;
 class FTGenericTimeValue;
+class QMessageBox;
 
 #ifdef SIGPROC_FLOAT
 #define WAVTYPE float
@@ -56,6 +57,7 @@ class WFilesList : public QListWidget
 
     // The progress dialog when loading a lot of files
     QProgressDialog* m_prgdlg;
+    QMessageBox* m_loadingmsgbox;
     void stopFileProgressDialog();
 
     enum CurrentAction {CANothing, CASetSource};
