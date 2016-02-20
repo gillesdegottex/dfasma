@@ -87,7 +87,7 @@ void FTFZero::constructor_internal(){
 
     connect(m_actionShow, SIGNAL(toggled(bool)), this, SLOT(setVisible(bool)));
 
-    m_aspec_txt = new QGraphicsSimpleTextItem("unset"); // TODO delete ?
+    m_aspec_txt = new QGraphicsSimpleTextItem("unset"); // TODO delete done ?
     gMW->m_gvSpectrumAmplitude->m_scene->addItem(m_aspec_txt);
     setColor(getColor()); // Indirectly set the proper color to the m_aspec_txt
 
