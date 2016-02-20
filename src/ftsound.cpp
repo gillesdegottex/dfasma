@@ -121,7 +121,7 @@ bool FTSound::DFTParameters::operator==(const DFTParameters& param) const {
 
 void FTSound::constructor_internal() {
     m_imgSTFT = QImage(1, 1, QImage::Format_ARGB32);
-    m_imgSTFT.fill(Qt::white);
+    m_imgSTFT.fill(Qt::black);
 
     m_giWavForWaveform = NULL;
     m_channelid = 0;
@@ -331,9 +331,9 @@ bool FTSound::reload() {
     wavfiltered.clear();
     setFiltered(false);
     m_stft.clear();
-    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.lock();
+    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.lock();
     m_stftts.clear();
-    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.unlock();
+    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.unlock();
     m_imgSTFTParams.clear();
     m_stftparams.clear();
 

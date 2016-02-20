@@ -1133,9 +1133,9 @@ void GVWaveform::fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseSe
 //            selection.setRight(selection.right()+dt);
 
             int si = int((selection.center().x()*gFL->getFs()-1 - (cursnd->m_stftparams.win.size()-1)/2.0) / cursnd->m_stftparams.stepsize + 0.5);
-            gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.lock();
+            gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.lock();
             si = std::min(std::max(0, si), int(cursnd->m_stftts.size())-1);
-            gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.unlock();
+            gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.unlock();
             selection.setLeft((si*cursnd->m_stftparams.stepsize)/gFL->getFs());
             selection.setRight((si*cursnd->m_stftparams.stepsize + cursnd->m_stftparams.win.size()-1)/gFL->getFs());
         }
@@ -1281,10 +1281,10 @@ void GVWaveform::drawBackground(QPainter* painter, const QRectF& rect){
             outlinePen.setWidth(0);
             painter->setPen(outlinePen);
 
-            gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.lock();
+            gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.lock();
             for(size_t wci=0; wci<cursnd->m_stftts.size(); wci++)
                 painter->drawLine(QLineF(cursnd->m_stftts[wci], -1.0, cursnd->m_stftts[wci], 1.0));
-            gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.unlock();
+            gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.unlock();
         }
     }
 }

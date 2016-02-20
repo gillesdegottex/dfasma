@@ -159,16 +159,15 @@ public:
 
     void compute(ImageParameters reqImgParams);     // Entry point
 
-    mutable QMutex m_mutex_computing;      // To protect the access to the FFT and external variables
-    mutable QMutex m_mutex_changingparams; // To protect the access to the parameters below
-    mutable QMutex m_mutex_stftts;         // To protect the access to the STFT times
+    mutable QMutex m_mutex_computing;       // To protect the access to the FFT and external variables
+    mutable QMutex m_mutex_changingparams;  // To protect the access to the parameters below
+    mutable QMutex m_mutex_changingstft;    // To protect the access to the STFT (times, values, etc.)
     mutable QMutex m_mutex_imageallocation; // To protect the access to the image when allocating
 
     inline const ImageParameters& getCurrentParameters() const {return m_params_current;}
 
     ImageParameters m_params_todo;      // The params which has to be done by the thread
     ImageParameters m_params_current;   // The params which is in preparation by the thread
-    ImageParameters m_params_last;      // The last params which have been done
 
     ~STFTComputeThread();
 };

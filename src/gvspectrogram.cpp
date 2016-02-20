@@ -418,7 +418,6 @@ void GVSpectrogram::stftComputingStateChanged(int state){
         gMW->ui->pbSTFTComputingCancel->hide();
         gMW->ui->pgbSpectrogramSTFTCompute->hide();
         gMW->ui->wSpectrogramProgressWidgets->hide();
-        m_stftcomputethread->m_params_last.stftparams.snd->m_imgSTFTParams = m_stftcomputethread->m_params_last;
 //        COUTD << m_imgSTFTParams.stftparams.dftlen << endl;
 //        gMW->ui->lblSpectrogramInfoTxt->setText(" ");
 //        gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT: size %1, %2s step").arg(m_imgSTFTParams.stftparams.dftlen).arg(m_imgSTFTParams.stftparams.stepsize/gMW->getFs()));
@@ -1134,7 +1133,6 @@ void GVSpectrogram::azoomin(){
     m_aZoomOnSelection->setEnabled(m_selection.width()>0 && m_selection.height()>0);
 }
 void GVSpectrogram::azoomout(){
-    DFLAG
     QTransform trans = transform();
     qreal h11 = trans.m11();
     qreal h22 = trans.m22();
@@ -1294,13 +1292,13 @@ void GVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 void GVSpectrogram::draw_spectrogram(QPainter* painter, const QRectF& rect, const QRectF& viewrect, FTSound* snd){
     Q_UNUSED(rect)
 
-    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.lock();
+    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.lock();
     if(snd==NULL
       || !snd->m_actionShow->isChecked()
       || snd->m_imgSTFT.isNull()
       || snd->m_stftts.empty()) // First need to be computed
     {
-        gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.unlock();
+        gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.unlock();
         return;
     }
 
@@ -1338,7 +1336,7 @@ void GVSpectrogram::draw_spectrogram(QPainter* painter, const QRectF& rect, cons
     //COUTD << "SRC: " << srcrect << " " << srcrect.width() << "x" << srcrect.height() << endl;
     //COUTD << "TRG: " << trgrect << " " << trgrect.width() << "x" << trgrect.height() << endl;
 
-    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_stftts.unlock();
+    gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.unlock();
 
     if(m_stftcomputethread->m_mutex_imageallocation.tryLock()) {
         painter->drawImage(trgrect, snd->m_imgSTFT, srcrect);
