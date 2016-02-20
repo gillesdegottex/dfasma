@@ -343,15 +343,11 @@ WMainWindow::~WMainWindow() {
 
     delete gFL;
 
-//    DFLAG
 // This seems to be called automatically by the parent (WMainWindow) on deletion
 //    if(m_audioengine){
 //        delete m_audioengine;
-//        DFLAG
 //        m_audioengine=NULL;
-//        DFLAG
 //    }
-//    DFLAG
 
     // Delete views
     delete m_gvWaveform; m_gvWaveform=NULL;
