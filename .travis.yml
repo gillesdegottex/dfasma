@@ -46,6 +46,12 @@ install:
     - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH=/usr/local/opt/qt5/bin:$PATH; fi
 
 script:
+    - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+          QTDIR="/opt/qt54"
+          && PATH="$QTDIR/bin:$PATH"
+          && qt54-env.sh
+      ;
+      fi
     # Compile first SDIF itself
     - bash distrib/compile_sdif.sh
     - echo $TRAVIS_BUILD_DIR
