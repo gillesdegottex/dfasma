@@ -47,7 +47,7 @@ install:
 
 script:
     - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-          QTDIR="/opt/qt54"
+          QTDIR="/opt/qt52"
           && PATH="$QTDIR/bin:$PATH"
           && qt52-env.sh
       ;
