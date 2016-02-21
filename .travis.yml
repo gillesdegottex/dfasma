@@ -49,7 +49,7 @@ script:
     - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
           QTDIR="/opt/qt54"
           && PATH="$QTDIR/bin:$PATH"
-          && qt54-env.sh
+          && qt52-env.sh
       ;
       fi
     # Compile first SDIF itself
