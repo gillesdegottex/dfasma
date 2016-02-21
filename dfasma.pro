@@ -48,7 +48,7 @@ message(CONFIG=$$CONFIG)
 # Generate the version number from git
 # (if fail, fall back on the version present in the README.txt file)
 DFASMAVERSIONGITPRO = $$system(git describe --tags --always)
-message(Git: Version: $$DFASMAVERSIONGITPRO)
+message(Git: DFasma version: $$DFASMAVERSIONGITPRO)
 DFASMABRANCHGITPRO = $$system(git rev-parse --abbrev-ref HEAD)
 message(Git: Branch: $$DFASMABRANCHGITPRO)
 DEFINES += DFASMAVERSIONGIT=$$system(git describe --tags --always)
