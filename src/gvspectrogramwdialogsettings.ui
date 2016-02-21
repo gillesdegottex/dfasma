@@ -333,7 +333,7 @@
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Length of the DFT.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
-           <string>Size</string>
+           <string>DFT size</string>
           </property>
          </widget>
         </item>

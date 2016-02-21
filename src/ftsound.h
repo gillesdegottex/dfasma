@@ -143,8 +143,9 @@ public:
     DFTParameters m_dftparams;
 
     // Spectrogram
-    std::deque<std::vector<WAVTYPE> > m_stft;
-    std::deque<FFTTYPE> m_stftts;
+//    std::vector<std::vector<WAVTYPE> > m_stft;
+    WAVTYPE* m_stftpa;
+    std::vector<FFTTYPE> m_stftts;
     STFTComputeThread::STFTParameters m_stftparams;
     FFTTYPE m_stft_min;
     FFTTYPE m_stft_max;

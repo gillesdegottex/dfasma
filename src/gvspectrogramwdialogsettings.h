@@ -35,6 +35,8 @@ class GVSpectrogramWDialogSettings : public QDialog
 {
     Q_OBJECT
 
+    long int m_lastimgsize;
+
     GVSpectrogram* m_spectrogram;
 
     QAEColorMapGray cmapgray;
@@ -48,6 +50,8 @@ public:
     Ui::GVSpectrogramWDialogSettings *ui;
 
     void settingsSave();
+
+    long int getLastImgSize() const {return m_lastimgsize;}
 
 private:
 

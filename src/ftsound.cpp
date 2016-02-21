@@ -121,7 +121,7 @@ bool FTSound::DFTParameters::operator==(const DFTParameters& param) const {
 
 void FTSound::constructor_internal() {
     m_imgSTFT = QImage(1, 1, QImage::Format_ARGB32);
-    m_imgSTFT.fill(Qt::black);
+    m_imgSTFT.fill(Qt::white);
 
     m_giWavForWaveform = NULL;
     m_channelid = 0;
@@ -135,6 +135,7 @@ void FTSound::constructor_internal() {
     m_end = 0;
     m_avoidclickswinpos = 0;
 
+    m_stftpa = NULL;
     m_stft_min = std::numeric_limits<FFTTYPE>::infinity();
     m_stft_max = -std::numeric_limits<FFTTYPE>::infinity();
 
@@ -331,7 +332,11 @@ bool FTSound::reload() {
     wavfiltered.clear();
     setFiltered(false);
     gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.lock();
-    m_stft.clear();
+//    m_stft.clear();
+    if(m_stftpa){
+        delete m_stftpa;
+        m_stftpa = NULL;
+    }
     m_stftts.clear();
     gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.unlock();
     m_imgSTFTParams.clear();
@@ -874,6 +879,11 @@ FTSound::~FTSound(){
     delete m_giWavForSpectrumGroupDelay;
 
     gFL->ftsnds.erase(std::find(gFL->ftsnds.begin(), gFL->ftsnds.end(), this));
+
+    if(m_stftpa){
+        delete m_stftpa;
+        m_stftpa = NULL;
+    }
 
     delete m_actionResetFiltering;
     delete m_actionResetDelay;

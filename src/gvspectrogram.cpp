@@ -157,12 +157,12 @@ GVSpectrogram::GVSpectrogram(WMainWindow* parent)
     m_giMouseCursorTxtFreq->hide();
     m_scene->addItem(m_giMouseCursorTxtFreq);
 
-    m_info_txt = new QGraphicsSimpleTextItem();
-    m_info_txt->hide();
-    m_info_txt->setBrush(QColor(128, 128, 128));
-    m_info_txt->setZValue(0.0);
-    m_info_txt->setText("");
-    m_scene->addItem(m_info_txt);
+    m_giInfoTxtInCenter = new QGraphicsSimpleTextItem();
+    m_giInfoTxtInCenter->hide();
+    m_giInfoTxtInCenter->setBrush(QColor(128, 128, 128));
+    m_giInfoTxtInCenter->setZValue(0.0);
+    m_giInfoTxtInCenter->setText("");
+    m_scene->addItem(m_giInfoTxtInCenter);
 
     // Play Cursor
     m_giPlayCursor = new QGraphicsLineItem(0.0, 0.0, 0.0, -100000, NULL);
@@ -400,6 +400,8 @@ void GVSpectrogram::stftComputingStateChanged(int state){
         gMW->ui->wSpectrogramProgressWidgets->hide();
         m_progresswidgets_lastup = QTime::currentTime();
         QTimer::singleShot(125, this, SLOT(showProgressWidgets()));
+        m_giInfoTxtInCenter->setText("Computing STFT...");
+        m_giInfoTxtInCenter->show();
     }
     else if(state==STFTComputeThread::SCSIMG){
 //        COUTD << "SCSIMG" << endl;
@@ -411,6 +413,8 @@ void GVSpectrogram::stftComputingStateChanged(int state){
         gMW->ui->wSpectrogramProgressWidgets->hide();
         m_progresswidgets_lastup = QTime::currentTime();
         QTimer::singleShot(125, this, SLOT(showProgressWidgets()));
+        m_giInfoTxtInCenter->setText("Updating Image...");
+        m_giInfoTxtInCenter->show();
     }
     else if(state==STFTComputeThread::SCSFinished){
 //        COUTD << "SCSFinished" << endl;
@@ -421,7 +425,6 @@ void GVSpectrogram::stftComputingStateChanged(int state){
 //        COUTD << m_imgSTFTParams.stftparams.dftlen << endl;
 //        gMW->ui->lblSpectrogramInfoTxt->setText(" ");
 //        gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT: size %1, %2s step").arg(m_imgSTFTParams.stftparams.dftlen).arg(m_imgSTFTParams.stftparams.stepsize/gMW->getFs()));
-        m_scene->update();
         if(gMW->m_gvWaveform->m_aWaveformShowSTFTWindowCenters->isChecked())
             gMW->m_gvWaveform->update();
 
@@ -431,6 +434,10 @@ void GVSpectrogram::stftComputingStateChanged(int state){
         else if(m_dlgSettings->ui->cbSpectrogramColorRangeMode->currentIndex()==1)
             tt = QString("[%1,%2]dB of amplitude").arg(gMW->m_qxtSpectrogramSpanSlider->lowerValue()).arg(gMW->m_qxtSpectrogramSpanSlider->upperValue());
         gMW->m_qxtSpectrogramSpanSlider->setToolTip(tt);
+
+        m_giInfoTxtInCenter->hide();
+
+        m_scene->update();
     }
     else if(state==STFTComputeThread::SCSCanceled){
 //        COUTD << "SCSCanceled" << endl;
@@ -443,12 +450,13 @@ void GVSpectrogram::stftComputingStateChanged(int state){
             gMW->ui->lblSpectrogramInfoTxt->setText(QString("STFT Canceled"));
             gMW->ui->pbSpectrogramSTFTUpdate->show();
             gMW->ui->wSpectrogramProgressWidgets->show();
+            m_giInfoTxtInCenter->setText("STFT Canceled.");
+            m_giInfoTxtInCenter->show();
         }
-        gMW->m_gvSpectrogram->m_scene->update();
     }
     else if(state==STFTComputeThread::SCSMemoryFull){
-//        COUTD << "SCSMemoryFull" << endl;
-        QMessageBox::critical(NULL, "Memory full!", "There is not enough free memory for computing this STFT");
+        m_giInfoTxtInCenter->setText("There is not enough free memory for computing this STFT.\nThe image itself is "+qae::humanReadableSize(m_dlgSettings->getLastImgSize())+"\nTry reducing the DFT size and/or increasing the time step size.");
+        m_giInfoTxtInCenter->show();
     }
 //    COUTD << "GVSpectrogram::~stftComputingStateChanged" << endl;
 }
@@ -1081,9 +1089,9 @@ void GVSpectrogram::updateTextsGeometry() {
     m_giMouseCursorTxtTime->setTransform(txttrans);
     m_giMouseCursorTxtFreq->setTransform(txttrans);
 
-    m_info_txt->setTransform(txttrans);
+    m_giInfoTxtInCenter->setTransform(txttrans);
     QRectF currentviewrect = mapToScene(viewport()->rect()).boundingRect();
-    m_info_txt->setPos(currentviewrect.center()-QPointF(0.5*m_info_txt->boundingRect().width()/trans.m11(), 0.5*m_info_txt->boundingRect().height()/trans.m22()));
+    m_giInfoTxtInCenter->setPos(currentviewrect.center()-QPointF(0.5*m_giInfoTxtInCenter->boundingRect().width()/trans.m11(), 0.5*m_giInfoTxtInCenter->boundingRect().height()/trans.m22()));
 //    m_info_txt->prepareGeometryChange();
 
 
@@ -1250,7 +1258,7 @@ void GVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
 
     // Draw the sound's spectrogram
     if(QAEColorMap::getAt(m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex()).isTransparent()){
-        m_info_txt->hide();
+        m_giInfoTxtInCenter->hide();
         QPainter::CompositionMode compmode = painter->compositionMode();
         painter->setCompositionMode(QPainter::CompositionMode_Source);
         painter->fillRect(viewrect, Qt::transparent);
@@ -1267,17 +1275,17 @@ void GVSpectrogram::drawBackground(QPainter* painter, const QRectF& rect){
         // If the color mapping is opaque, draw only the spectro of the current sound
         FTSound* csnd = gFL->getCurrentFTSound(true);
         if(csnd==NULL){
-            m_info_txt->show();
-            m_info_txt->setText("There is no sound file selected");
+            m_giInfoTxtInCenter->show();
+            m_giInfoTxtInCenter->setText("There is no sound file selected");
         }
         else {
             if(csnd->m_actionShow->isChecked()){
-                m_info_txt->hide();
+//                m_giInfoTxtInCenter->hide();
                 draw_spectrogram(painter, rect, viewrect, csnd);
             }
             else{
-                m_info_txt->show();
-                m_info_txt->setText("This file is hidden");
+                m_giInfoTxtInCenter->show();
+                m_giInfoTxtInCenter->setText("This file is hidden");
             }
         }
 

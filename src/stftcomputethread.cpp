@@ -128,7 +128,8 @@ void STFTComputeThread::run() {
 //    DCOUT << "STFTComputeThread::run" << std::endl;
 
     // Prepare some usefull variables
-    std::vector<WAVTYPE>::iterator pstft;
+//    std::vector<WAVTYPE>::iterator pstft;
+    WAVTYPE* pstft;
 
     bool canceled = false;
     do{
@@ -137,6 +138,12 @@ void STFTComputeThread::run() {
         m_mutex_changingparams.unlock();
 
         try{
+            int stepsize = params_running.stftparams.stepsize;
+            int dftlen = params_running.stftparams.dftlen;
+            int dftsize = int(params_running.stftparams.dftlen/2+1);
+            WAVTYPE* &stftpa = params_running.stftparams.snd->m_stftpa;
+            WAVTYPE* stftfrpa = NULL; // Pointer to a single frame
+
             // If asked, update the STFT
             if(params_running.stftparams.computestft){
                 emit stftComputingStateChanged(SCSDFT);
@@ -145,8 +152,6 @@ void STFTComputeThread::run() {
 
                 m_mutex_changingstft.lock();
 
-                int stepsize = params_running.stftparams.stepsize;
-                int dftlen = params_running.stftparams.dftlen;
                 std::vector<FFTTYPE>& win = params_running.stftparams.win;
                 int winlen = int(win.size());
                 int fs = params_running.stftparams.snd->fs;
@@ -154,8 +159,7 @@ void STFTComputeThread::run() {
                 FFTTYPE stftmax = -std::numeric_limits<FFTTYPE>::infinity();
                 qreal gain = params_running.stftparams.ampscale;
                 qint64 snddelay = params_running.stftparams.snd->m_giWavForWaveform->delay();
-                std::deque<std::vector<WAVTYPE> >& stft = params_running.stftparams.snd->m_stft;
-                std::deque<FFTTYPE>& stftts = params_running.stftparams.snd->m_stftts;
+                std::vector<FFTTYPE>& stftts = params_running.stftparams.snd->m_stftts;
                 std::vector<WAVTYPE>* wav = &params_running.stftparams.snd->wav;
 
                 int maxsampleindex = int(wav->size())-1 + int(params_running.stftparams.snd->m_giWavForWaveform->delay());
@@ -166,13 +170,18 @@ void STFTComputeThread::run() {
                 int minsi = int(minsampleindex/stepsize);
 
                 // Allocate everything
-                stftts.clear();
-                stft.clear();
+                int stftlen = 0;
+                for(int si=minsi; int(si*stepsize)<maxsampleindex; ++si)
+                    stftlen++;
+                stftts.resize(stftlen);
+                int stfttsi = 0;
                 for(int si=minsi; int(si*stepsize)<maxsampleindex; ++si){
-                    // Add a new frame to the STFT
-                    stft.push_back(std::vector<WAVTYPE>(dftlen/2+1));
-                    stftts.push_back((si*stepsize+(winlen-1)/2.0)/fs);
+                    stftts[stfttsi] = (si*stepsize+(winlen-1)/2.0)/fs;
+                    stfttsi++;
                 }
+                if(stftpa)
+                    delete stftpa;
+                stftpa = new WAVTYPE[stftlen*dftsize];
                 m_mutex_changingstft.unlock();
 
                 WAVTYPE value;
@@ -208,10 +217,11 @@ void STFTComputeThread::run() {
                         m_fft->execute(false); // Compute the DFT
 
                         // Retrieve DFT's output
-                        stft[ni][0] = std::log(std::abs(m_fft->getDCOutput()));
-                        for(n=1; n<dftlen/2; ++n)
-                            stft[ni][n] = std::log(std::abs(m_fft->getMidOutput(n)));
-                        stft[ni][dftlen/2] = std::log(std::abs(m_fft->getNyquistOutput()));
+                        stftfrpa = stftpa+ni*dftsize;
+                        *stftfrpa = std::log(std::abs(m_fft->getDCOutput()));
+                        for(n=1; n<dftlen/2; ++n, stftfrpa++)
+                            *stftfrpa = std::log(std::abs(m_fft->getMidOutput(n)));
+                        *stftfrpa = std::log(std::abs(m_fft->getNyquistOutput()));
 
     //                    for(n=0; n<=m_params_current.stftparams.dftlen/2; n++)
     //                        m_params_current.stftparams.snd->m_stft[ni][n] = std::log(std::abs(m_fft->out[n]));
@@ -222,11 +232,11 @@ void STFTComputeThread::run() {
                             std::vector<FFTTYPE> win = qae::hamming(params_running.stftparams.cepliftorder*2+1);
                             std::vector<FFTTYPE> cc;
                             // First, fix possible Inf amplitudes to avoid ending up with NaNs.
-                            if(qIsInf(stft[ni][0]))
-                                stft[ni][0] = stft[ni][1];
+                            if(qIsInf(stftpa[ni*dftsize+0]))
+                                stftpa[ni*dftsize+0] = stftpa[ni*dftsize+1]; // TOOD Use extrap ??
                             for(int n=1; n<dftlen/2+1; ++n) {
-                                if(qIsInf(stft[ni][n]))
-                                    stft[ni][n] = stft[ni][n-1];
+                                if(qIsInf(stftpa[ni*dftsize+n]))
+                                    stftpa[ni*dftsize+n] = stftpa[ni*dftsize+n-1]; // TOOD Use extrap ??
                             }
 //                            // If we need to compute less coefficients than log(N),
 //                            // don't use the FFT, just compute these coefs.
@@ -263,23 +273,27 @@ void STFTComputeThread::run() {
 //                                }
 //                            }
 //                            else{
-                                hspec2rcc(stft[ni], m_fft, cc);
+                                std::vector<FFTTYPE> values(stftpa+ni*dftsize, stftpa+ni*dftsize+dftsize);
+                                hspec2rcc(values, m_fft, cc);
                                 for(int cci=1; cci<1+params_running.stftparams.cepliftorder && cci<int(cc.size()); ++cci)
                                     cc[cci] *= win[cci-1];
                                 if(!params_running.stftparams.cepliftpresdc)
                                     cc[0] = 0.0;
-                                rcc2hspec(cc, m_fft, stft[ni]);
+                                rcc2hspec(cc, m_fft, values);
+                                for(int n=0; n<dftlen/2+1; n++)
+                                    stftpa[ni*dftsize+n] = values[n];
 //                            }
                         }
 
                         // Convert to [dB] and compute min and max magnitudes[dB]
-                        for(n=0; n<dftlen/2+1; n++) {
-                            FFTTYPE value = qae::log2db*stft[ni][n];
+                        stftfrpa = stftpa+ni*dftsize;
+                        for(n=0; n<dftlen/2+1; n++, stftfrpa++) {
+                            FFTTYPE value = qae::log2db*(*stftfrpa);
 
                             if(qIsNaN(value))
                                 value = -std::numeric_limits<FFTTYPE>::infinity();
 
-                            stft[ni][n] = value;
+                            *stftfrpa = value;
 
                             // Do not consider Inf values as well as DC and Nyquist (Too easy to degenerate)
                             if(n!=0 && n!=dftlen/2 && !qIsInf(value)) {
@@ -289,9 +303,9 @@ void STFTComputeThread::run() {
                         }
                     }
                     else{
-                        pstft = stft[ni].begin();
-                        for(n=0; n<dftlen/2+1; n++, pstft++)
-                            *pstft = -std::numeric_limits<FFTTYPE>::infinity();
+                        stftfrpa = stftpa+ni*dftsize;
+                        for(n=0; n<dftsize; n++, stftfrpa++)
+                            *stftfrpa = -std::numeric_limits<FFTTYPE>::infinity();
                     }
 
                     emit stftProgressing(int(100*double(ni*stepsize)/(maxsampleindex-minsampleindex)));
@@ -300,7 +314,7 @@ void STFTComputeThread::run() {
                 }
 
                 if(!gMW->ui->pbSTFTComputingCancel->isChecked()){
-                    // The STFT is done
+                    // The STFT is done, update the min & max
                     m_mutex_changingparams.lock();
 
                     params_running.stftparams.snd->m_stftparams = params_running.stftparams;
@@ -332,13 +346,12 @@ void STFTComputeThread::run() {
                     m_mutex_imageallocation.unlock();
                 }
                 else{
-                    *(params_running.imgstft) = QImage(int(params_running.stftparams.snd->m_stft.size()), int(params_running.stftparams.snd->m_stft[0].size()), QImage::Format_ARGB32);
+                    int stftlen = int(params_running.stftparams.snd->m_stftts.size());
+                    int halfdftlen = params_running.stftparams.dftlen/2;
+                    *(params_running.imgstft) = QImage(stftlen, dftsize, QImage::Format_ARGB32);
                     m_mutex_imageallocation.unlock();
                     if(params_running.imgstft->isNull())
                         throw std::bad_alloc();
-                    int halfdftlen = params_running.stftparams.dftlen/2;
-                    int dftsize = int(params_running.stftparams.snd->m_stft[0].size());
-                    int stftlen = int(params_running.stftparams.snd->m_stft.size());
                     bool colormap_reversed = params_running.colormap_reversed;
 
                     QAEColorMap& cmap = QAEColorMap::getAt(params_running.colormap_index);
@@ -369,21 +382,21 @@ void STFTComputeThread::run() {
                     // Prepare the loudness curve
                     std::vector<WAVTYPE> elc;
                     if(uselw) {
-                        elc = std::vector<WAVTYPE>(params_running.stftparams.dftlen/2+1, 0.0);
+                        elc = std::vector<WAVTYPE>(dftsize, 0.0);
                         for(size_t u=0; u<elc.size(); ++u) {
                             elc[u] = -qae::equalloudnesscurvesISO226(params_running.stftparams.snd->fs*double(u)/params_running.stftparams.dftlen, 0);
                         }
                     }
 
                     for(int si=0; si<stftlen && !gMW->ui->pbSTFTComputingCancel->isChecked(); si++, pimgb++){
-                        pstft = params_running.stftparams.snd->m_stft[si].begin();
-                        for(int n=0; n<dftsize; n++, pstft++) {
+                        stftfrpa = stftpa+si*dftsize;
+                        for(int n=0; n<dftsize; n++, pstft++, stftfrpa++) {
 
-                            if(qIsInf(*pstft)){
+                            if(qIsInf(*stftfrpa)){
                                 c = c0;
                             }
                             else {
-                                v = *pstft;
+                                v = *stftfrpa;
                                 if(uselw) v += elc[n]; // Modification according to loudness curve
                                 y = (v-ymin)*divmaxmmin;
 
@@ -418,9 +431,12 @@ void STFTComputeThread::run() {
             }
         }
         catch(std::bad_alloc err){
-            params_running.stftparams.snd->m_stft.clear();
+            m_mutex_changingstft.unlock();
             m_mutex_changingstft.lock();
             params_running.stftparams.snd->m_stftts.clear();
+//            params_running.stftparams.snd->m_stft.clear();
+            delete params_running.stftparams.snd->m_stftpa;
+            params_running.stftparams.snd->m_stftpa = NULL;
             m_mutex_changingstft.unlock();
 
             emit stftComputingStateChanged(SCSMemoryFull);
@@ -433,12 +449,12 @@ void STFTComputeThread::run() {
             if(params_running.stftparams.snd->m_stftparams != params_running.stftparams) {
                 m_mutex_changingstft.lock();
                 params_running.stftparams.snd->m_stftts.clear();
-                params_running.stftparams.snd->m_stft.clear();
+//                params_running.stftparams.snd->m_stft.clear();
                 params_running.stftparams.snd->m_stftparams.clear();
                 m_mutex_changingstft.unlock();
                 m_mutex_imageallocation.lock();
                 *(params_running.imgstft) = QImage(1, 1, QImage::Format_ARGB32);
-                params_running.imgstft->fill(Qt::black);
+                params_running.imgstft->fill(Qt::white);
                 m_mutex_imageallocation.unlock();
             }
             m_mutex_changingparams.unlock();
