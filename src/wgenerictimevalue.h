@@ -13,7 +13,7 @@ class WidgetGenericTimeValue : public QWidget
 {
     Q_OBJECT
 
-    friend GVGenericTimeValue;
+    friend class GVGenericTimeValue;
 
     GVGenericTimeValue* m_gview;
 
