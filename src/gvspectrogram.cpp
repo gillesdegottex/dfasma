@@ -400,8 +400,8 @@ void GVSpectrogram::stftComputingStateChanged(int state){
         gMW->ui->wSpectrogramProgressWidgets->hide();
         m_progresswidgets_lastup = QTime::currentTime();
         QTimer::singleShot(125, this, SLOT(showProgressWidgets()));
-        m_giInfoTxtInCenter->setText("Computing STFT...");
-        m_giInfoTxtInCenter->show();
+//        m_giInfoTxtInCenter->setText("Computing STFT...");
+//        m_giInfoTxtInCenter->show();
     }
     else if(state==STFTComputeThread::SCSIMG){
 //        COUTD << "SCSIMG" << endl;
@@ -413,8 +413,8 @@ void GVSpectrogram::stftComputingStateChanged(int state){
         gMW->ui->wSpectrogramProgressWidgets->hide();
         m_progresswidgets_lastup = QTime::currentTime();
         QTimer::singleShot(125, this, SLOT(showProgressWidgets()));
-        m_giInfoTxtInCenter->setText("Updating Image...");
-        m_giInfoTxtInCenter->show();
+//        m_giInfoTxtInCenter->setText("Updating Image...");
+//        m_giInfoTxtInCenter->show();
     }
     else if(state==STFTComputeThread::SCSFinished){
 //        COUTD << "SCSFinished" << endl;
