@@ -14,9 +14,9 @@ It is stored as a GitHub project (https://github.com/gillesdegottex/dfasma).
 
 
 Goals
-    * The interface and the audio files have to be loaded as quick as possible.
-    * Any kind of lossless audio files should be easily loaded (it can
-      currently use libsndfile or libsox which support ~25 different formats).
+    * The interface and the audio files should be loaded as quickly as possible.
+    * Any kind of lossless audio files should be easily loaded (it currently
+      uses libsndfile, which support ~25 different formats).
     * All features should run on Linux, OS X and Windows operating systems.
     * Manage mono audio files (tracks of multi-channel files (e.g. stereo) can
       be loaded separately. A more advanced management of multi-channel files
