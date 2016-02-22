@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>DFasma</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../ressources.qrc">
+    <normaloff>:/icons/dfasma.svg</normaloff>:/icons/dfasma.svg</iconset>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout_6">
     <item>
@@ -783,7 +787,7 @@
      <x>0</x>
      <y>0</y>
      <width>831</width>
-     <height>25</height>
+     <height>29</height>
     </rect>
    </property>
   </widget>
@@ -813,20 +817,8 @@
    <addaction name="actionPlay"/>
    <addaction name="actionSettings"/>
    <addaction name="actionAbout"/>
-   <addaction name="separator"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <widget class="QToolBar" name="toolBar">
-   <property name="windowTitle">
-    <string>toolBar</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
   <action name="actionSelectedFilesClose">
    <property name="text">
     <string>Close</string>
