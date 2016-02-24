@@ -466,10 +466,9 @@ void FTSound::setFiltered(bool filtered){
             needDFTUpdate();
         }
         m_isfiltered = filtered;
-        updateClippedState();
-        gFL->fileInfoUpdate();
-        setStatus();
     }
+    setStatus();
+    gFL->fileInfoUpdate();
 }
 
 void FTSound::resetAmpScale(){
@@ -698,6 +697,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
 
             // It seems the filtering went well, we can use the filtered sound and update the views
 
+            m_giWavForWaveform->updateMinMaxValues();
             setFiltered(true);
 
             // The filter response has been computed
