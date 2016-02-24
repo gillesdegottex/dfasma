@@ -329,13 +329,11 @@ void GVSpectrogram::amplitudeExtentSlidersChangesEnded() {
 
 
 void GVSpectrogram::updateSTFTSettings(){
-//    DCOUT << "GVSpectrogram::updateSTFTSettings" << endl;
 
     gMW->ui->pbSpectrogramSTFTUpdate->hide();
     m_dlgSettings->checkImageSize();
 
     int winlen = std::floor(0.5+gFL->getFs()*m_dlgSettings->ui->sbSpectrogramWindowSize->value());
-    //    cout << "GVSpectrogram::updateSTFTSettings winlen=" << winlen << endl;
 
     if(winlen%2==0 && m_dlgSettings->ui->cbSpectrogramWindowSizeForcedOdd->isChecked())
         winlen++;
@@ -473,7 +471,6 @@ void GVSpectrogram::autoUpdate(bool autoupdate){
 }
 
 void GVSpectrogram::updateSTFTPlot(bool force){
-//    DCOUT << "GVSpectrogram::updateSTFTPlot" << endl;
 
     if(!gMW->ui->actionShowSpectrogram->isChecked())
         return;
@@ -482,12 +479,11 @@ void GVSpectrogram::updateSTFTPlot(bool force){
     FTSound* csnd = gFL->getCurrentFTSound(true);
     if(csnd){
         if(csnd->m_actionShow->isChecked()) {
-    //        cout << "GVSpectrogram::updateSTFTPlot " << csnd->fileFullPath.toLatin1().constData() << endl;
-
             if(force)
                 csnd->m_imgSTFTParams.clear();
 
             int stepsize = std::floor(0.5+gFL->getFs()*m_dlgSettings->ui->sbSpectrogramStepSize->value());//[samples]
+
             int dftlen = -1;
             if(m_dlgSettings->ui->cbSpectrogramDFTSizeType->currentIndex()==0)
                 dftlen = m_dlgSettings->ui->sbSpectrogramDFTSize->value();
@@ -508,8 +504,6 @@ void GVSpectrogram::updateSTFTPlot(bool force){
         }
         // m_scene->update(); // Should not be called here, otherwise creates intermediate black background
     }
-
-//    COUTD << "GVSpectrogram::~updateSTFTPlot" << endl;
 }
 
 
