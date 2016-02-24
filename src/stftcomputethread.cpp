@@ -181,6 +181,10 @@ void STFTComputeThread::run() {
                 }
                 if(stftpa)
                     delete stftpa;
+                // Allocate it at once, to be sure the OS will reject it if it's too big
+                // (Linux tends to overcommit small memory allocations,
+                //  and ends up killing the app when it understands, too late,
+                //  that it doesn't have the memory)
                 stftpa = new WAVTYPE[stftlen*dftsize];
                 m_mutex_changingstft.unlock();
 
@@ -219,6 +223,7 @@ void STFTComputeThread::run() {
                         // Retrieve DFT's output
                         stftfrpa = stftpa+ni*dftsize;
                         *stftfrpa = std::log(std::abs(m_fft->getDCOutput()));
+                        stftfrpa++;
                         for(n=1; n<dftlen/2; ++n, stftfrpa++)
                             *stftfrpa = std::log(std::abs(m_fft->getMidOutput(n)));
                         *stftfrpa = std::log(std::abs(m_fft->getNyquistOutput()));

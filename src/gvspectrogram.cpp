@@ -1313,6 +1313,10 @@ void GVSpectrogram::draw_spectrogram(QPainter* painter, const QRectF& rect, cons
 
     QRect imgrect = snd->m_imgSTFT.rect();
 
+//    DCOUT << imgrect.width() << ":" << imgrect.height() << std::endl;
+//    QRectF fullviewrect = mapToScene(viewport()->rect()).boundingRect();
+//    DCOUT << "Full view: " << fullviewrect << std::endl;
+
     // Build the piece of STFT which will be drawn in the view
     QRectF srcrect;
     srcrect.setLeft(0.5+(imgrect.width()-1)*(viewrect.left()-snd->m_stftts.front())/stftwidth);
@@ -1331,17 +1335,18 @@ void GVSpectrogram::draw_spectrogram(QPainter* painter, const QRectF& rect, cons
 
     // This one is the basic synchronized version,
     // but it creates flickering when zooming
-    //QRectF srcrect = m_imgSTFT.rect();
-    //QRectF trgrect = m_scene->sceneRect();
-    //trgrect.setLeft(csnd->m_stftts.front()-0.5*csnd->m_stftparams.stepsize/csnd->fs);
-    //trgrect.setRight(csnd->m_stftts.back()+0.5*csnd->m_stftparams.stepsize/csnd->fs);
-    //double bin2hz = fs*1/csnd->m_stftparams.dftlen;
-    //trgrect.setTop(-bin2hz/2);// Hard to verify because of the flickering
-    //trgrect.setBottom(fs/2+bin2hz/2);// Hard to verify because of the flickering
+    //    double fs = gFL->getFs();
+    //    QRectF srcrect = imgrect;
+    //    QRectF trgrect = m_scene->sceneRect();
+    //    trgrect.setLeft(snd->m_stftts.front()-0.5*snd->m_stftparams.stepsize/fs);
+    //    trgrect.setRight(snd->m_stftts.back()+0.5*snd->m_stftparams.stepsize/fs);
+    //    double bin2hz = fs*1/snd->m_stftparams.dftlen;
+    //    DCOUT << bin2hz << std::endl;
+    //    trgrect.setTop(-fs/2-bin2hz/2);// Hard to verify because of the flickering
+    //    trgrect.setBottom(+bin2hz/2);// Hard to verify because of the flickering
 
-    //COUTD << "Scene: " << m_scene->sceneRect() << " " << m_scene->sceneRect().width() << "x" << m_scene->sceneRect().height() << endl;
-    //COUTD << "SRC: " << srcrect << " " << srcrect.width() << "x" << srcrect.height() << endl;
-    //COUTD << "TRG: " << trgrect << " " << trgrect.width() << "x" << trgrect.height() << endl;
+    //    DCOUT << "Src: " << srcrect << std::endl;
+    //    DCOUT << "Trg: " << trgrect << std::endl;
 
     gMW->m_gvSpectrogram->m_stftcomputethread->m_mutex_changingstft.unlock();
 
