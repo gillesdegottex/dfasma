@@ -1223,6 +1223,9 @@ void GVSpectrogram::setMouseCursorPosition(QPointF p, bool forwardsync) {
         m_giMouseCursorTxtFreq->show();
 
         if(forwardsync){
+            for(int i=0; i<gMW->m_wGenericTimeValues.size(); ++i)
+                if(gMW->m_wGenericTimeValues.at(i))
+                    gMW->m_wGenericTimeValues.at(i)->gview()->setMouseCursorPosition(QPointF(p.x(), -1.0), false);
             if(gMW->m_gvWaveform)
                 gMW->m_gvWaveform->setMouseCursorPosition(p.x(), false);
             if(gMW->m_gvSpectrumAmplitude)

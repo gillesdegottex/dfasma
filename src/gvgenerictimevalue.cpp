@@ -805,7 +805,13 @@ void GVGenericTimeValue::setMouseCursorPosition(QPointF p, bool forwardsync) {
     }
 
     if(forwardsync){
-        // TODO
+        for(int i=0; i<gMW->m_wGenericTimeValues.size(); ++i)
+            if(gMW->m_wGenericTimeValues.at(i))
+                gMW->m_wGenericTimeValues.at(i)->gview()->setMouseCursorPosition(QPointF(p.x(), -1.0), false);
+        if(gMW->m_gvWaveform)
+            gMW->m_gvWaveform->setMouseCursorPosition(p.x(), false);
+        if(gMW->m_gvSpectrogram)
+            gMW->m_gvSpectrogram->setMouseCursorPosition(QPointF(p.x(), -1.0), false);
     }
 }
 
