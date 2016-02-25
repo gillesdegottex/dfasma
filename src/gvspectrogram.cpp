@@ -478,6 +478,8 @@ void GVSpectrogram::updateSTFTPlot(bool force){
     // Fix limits between min and max sliders
     FTSound* csnd = gFL->getCurrentFTSound(true);
     if(csnd){
+        m_giInfoTxtInCenter->setVisible(!csnd->m_actionShow->isChecked());
+
         if(csnd->m_actionShow->isChecked()) {
             if(force)
                 csnd->m_imgSTFTParams.clear();
