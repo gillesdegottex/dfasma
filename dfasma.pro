@@ -45,9 +45,8 @@ message(CONFIG=$$CONFIG)
 # Generate the version number from git
 # (if fail, fall back on the version present in the README.txt file)
 DFASMAVERSIONGITPRO = $$system(git describe --tags --always)
-message(Git: DFasma version: $$DFASMAVERSIONGITPRO)
 DFASMABRANCHGITPRO = $$system(git rev-parse --abbrev-ref HEAD)
-message(Git: Branch: $$DFASMABRANCHGITPRO)
+message(Git: DFasma version: $$DFASMAVERSIONGITPRO Branch: $$DFASMABRANCHGITPRO)
 DEFINES += DFASMAVERSIONGIT=$$system(git describe --tags --always)
 DEFINES += DFASMABRANCHGIT=$$system(git rev-parse --abbrev-ref HEAD)
 
@@ -69,12 +68,14 @@ message(PREFIX=$$PREFIX)
 message(PREFIXSHORTCUT=$$PREFIXSHORTCUT)
 
 # Manage Architecture
-win32:message(For Windows)
-unix:message(For Linux)
-msvc:message(Using MSVC compiler)
-gcc:message(Using GCC compiler)
-contains(QT_ARCH, i386):message(For 32bits)
-contains(QT_ARCH, x86_64):message(For 64bits)
+win32:message(OS: Windows)
+unix:message(OS: UNIX)
+COMPILERMSG=""
+msvc:COMPILERMSG+="MSVC"
+gcc:COMPILERMSG+="GCC"
+contains(QT_ARCH, i386):COMPILERMSG+=" for 32bits"
+contains(QT_ARCH, x86_64):COMPILERMSG+=" for 64bits"
+message(Compiler: $$COMPILERMSG)
 message(Qt: Version: $$QT_VERSION)
 
 
