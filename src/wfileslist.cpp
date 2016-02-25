@@ -876,7 +876,7 @@ double WFilesList::getMaxLastSampleTime(){
 }
 
 WAVTYPE WFilesList::getMaxSQNR() const {
-    WAVTYPE maxsqnr = -std::numeric_limits<WAVTYPE>::infinity();
+    WAVTYPE maxsqnr = 20*log10(std::numeric_limits<WAVTYPE>::min()); // -Inf would create issues in defining spectrogram range slider
     for(unsigned int si=0; si<ftsnds.size(); si++){
         if(ftsnds[si]->format().sampleSize()==-1)
             maxsqnr = std::max(maxsqnr, 20*std::log10(std::pow(2.0, int(8*sizeof(WAVTYPE)))));
