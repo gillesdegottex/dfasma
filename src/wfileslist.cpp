@@ -75,6 +75,7 @@ WFilesList::WFilesList(QMainWindow *parent)
     : QListWidget(parent)
     , m_prgdlg(NULL)
     , m_loadingmsgbox(NULL)
+    , m_currentAction(CANothing)
     , m_prevSelectedFile(NULL)
     , m_prevSelectedSound(NULL)
 {
@@ -452,7 +453,7 @@ void WFilesList::showFileContextMenu(const QPoint& pos) {
 }
 
 void WFilesList::fileSelectionChanged() {
-//    DCOUT << "WFilesList::fileSelectionChanged" << endl;
+//    DCOUT << "WFilesList::fileSelectionChanged " << m_currentAction << endl;
 
     if(m_currentAction==CASetSource){
         setSource(currentFile());
