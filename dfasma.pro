@@ -34,9 +34,6 @@ CONFIG += file_audio_libsndfile
 # SDIF (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
 #CONFIG += file_sdif
 
-# Numerical precision. Chose among: precision_double, precision_float
-CONFIG += precision_double
-
 # Activate this line for logging some information into a txt file
 #CONFIG += debug_logfile
 
@@ -80,14 +77,6 @@ contains(QT_ARCH, i386):message(For 32bits)
 contains(QT_ARCH, x86_64):message(For 64bits)
 message(Qt: Version: $$QT_VERSION)
 
-
-# Manage Precision
-CONFIG(precision_float, precision_double|precision_float) {
-    DEFINES += SIGPROC_FLOAT
-    message(With single precision)
-} else {
-    message(With double precision)
-}
 
 CONFIG(debug_logfile) {
     message(Information will be dropped in a log file)
