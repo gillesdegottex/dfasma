@@ -792,7 +792,8 @@ void WMainWindow::setEditMode(bool checked){
 void WMainWindow::setEditing(FileType *ft){
     if(ft)
         ft->setEditing(true);
-    else if(m_last_file_editing)
+
+    if(m_last_file_editing)
         m_last_file_editing->setEditing(false);
 
     m_last_file_editing = ft;
