@@ -129,8 +129,8 @@ void GVSpectrogramWDialogSettings::colorRangeModeCurrentIndexChanged(int index){
         // Relative %
         gMW->m_qxtSpectrogramSpanSlider->setMinimum(0);
         gMW->m_qxtSpectrogramSpanSlider->setMaximum(100);
-        gMW->m_qxtSpectrogramSpanSlider->setLowerValue(30);
-        gMW->m_qxtSpectrogramSpanSlider->setUpperValue(90);
+        gMW->m_qxtSpectrogramSpanSlider->setUpperValue(90); // Has to set upper first...
+        gMW->m_qxtSpectrogramSpanSlider->setLowerValue(30); // ... then lower (don't ask)
     }
     else if(index==1){
         // Absolute dB
