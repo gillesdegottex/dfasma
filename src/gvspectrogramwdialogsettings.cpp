@@ -67,6 +67,7 @@ GVSpectrogramWDialogSettings::GVSpectrogramWDialogSettings(GVSpectrogram *parent
     connect(ui->cbSpectrogramDFTSizeType, SIGNAL(currentIndexChanged(int)), this, SLOT(DFTSizeTypeChanged(int)));
     connect(ui->sbSpectrogramDFTSize, SIGNAL(valueChanged(int)), this, SLOT(DFTSizeChanged(int)));
     connect(ui->sbSpectrogramOversamplingFactor, SIGNAL(valueChanged(int)), this, SLOT(DFTSizeChanged(int)));
+    gMW->m_settings.add(ui->cbSpectrogramTransform);
 
     gMW->m_settings.add(ui->gbSpectrogramCepstralLiftering);
     gMW->m_settings.add(ui->sbSpectrogramCepstralLifteringOrder);

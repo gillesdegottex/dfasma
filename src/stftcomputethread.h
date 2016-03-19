@@ -64,6 +64,7 @@ public:
         std::vector<FFTTYPE> win;
         int stepsize;
         int dftlen;
+        int timefreqtrans;
         int cepliftorder;
         bool cepliftpresdc;
 
@@ -82,7 +83,7 @@ public:
         STFTParameters(){
             clear();
         }
-        STFTParameters(FTSound* reqnd, const std::vector<FFTTYPE>& reqwin, int reqstepsize, int reqdftlen, int reqcepliftorder, bool reqcepliftpresdc);
+        STFTParameters(FTSound* reqnd, const std::vector<FFTTYPE>& reqwin, int reqstepsize, int reqdftlen, int reqtimefreqtrans, int reqcepliftorder, bool reqcepliftpresdc);
 
 //        bool is_stftpart_equal(const Parameters& param) const;
         bool operator==(const STFTParameters& param) const;

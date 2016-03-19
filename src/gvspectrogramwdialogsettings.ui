@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>441</width>
-    <height>606</height>
+    <height>650</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -322,9 +322,6 @@
       <string>Short-Time Fourier Transform (STFT)</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
@@ -446,6 +443,31 @@
           <property name="value">
            <double>0.005000000000000</double>
           </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <item>
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Transform</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="cbSpectrogramTransform">
+          <item>
+           <property name="text">
+            <string>DFT</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>FChT</string>
+           </property>
+          </item>
          </widget>
         </item>
        </layout>

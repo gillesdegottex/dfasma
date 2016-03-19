@@ -25,13 +25,15 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "wmainwindow.h"
 #include "ui_wmainwindow.h"
 #include "ftsound.h"
+#include "ftfzero.h"
 #include "../external/libqxt/qxtspanslider.h"
 
 #include "qaecolormap.h"
 #include "qaesigproc.h"
+#include "qaemath.h"
 #include "qaehelpers.h"
 
-STFTComputeThread::STFTParameters::STFTParameters(FTSound* reqnd, const std::vector<FFTTYPE>& reqwin, int reqstepsize, int reqdftlen, int reqcepliftorder, bool reqcepliftpresdc){
+STFTComputeThread::STFTParameters::STFTParameters(FTSound* reqnd, const std::vector<FFTTYPE>& reqwin, int reqstepsize, int reqdftlen, int reqtimefreqtrans, int reqcepliftorder, bool reqcepliftpresdc){
     clear();
 
     snd = reqnd;
@@ -40,6 +42,7 @@ STFTComputeThread::STFTParameters::STFTParameters(FTSound* reqnd, const std::vec
     win = reqwin;
     stepsize = reqstepsize;
     dftlen = reqdftlen;
+    timefreqtrans = reqtimefreqtrans;
     cepliftorder = reqcepliftorder;
     cepliftpresdc = reqcepliftpresdc;
 }
@@ -54,6 +57,8 @@ bool STFTComputeThread::STFTParameters::operator==(const STFTParameters& param) 
     if(stepsize!=param.stepsize)
         return false;
     if(dftlen!=param.dftlen)
+        return false;
+    if(timefreqtrans!=param.timefreqtrans)
         return false;
     if(cepliftorder!=param.cepliftorder)
         return false;
@@ -127,6 +132,8 @@ STFTComputeThread::~STFTComputeThread(){
 void STFTComputeThread::run() {
 //    DCOUT << "STFTComputeThread::run" << std::endl;
 
+    qae::tltrig_init(1024*1024);
+
     // Prepare some usefull variables
 //    std::vector<WAVTYPE>::iterator pstft;
     WAVTYPE* pstft;
@@ -141,8 +148,13 @@ void STFTComputeThread::run() {
             int stepsize = params_running.stftparams.stepsize;
             int dftlen = params_running.stftparams.dftlen;
             int dftsize = int(params_running.stftparams.dftlen/2+1);
+            int timefreqtrans = params_running.stftparams.timefreqtrans; // 0:DFT; 1:FChT
             WAVTYPE* &stftpa = params_running.stftparams.snd->m_stftpa;
             WAVTYPE* stftfrpa = NULL; // Pointer to a single frame
+
+//            params_running.stftparams.computestft = true; // TODO DEBUG REMOVE
+
+//            qint64 tstart = QDateTime::currentMSecsSinceEpoch();
 
             // If asked, update the STFT
             if(params_running.stftparams.computestft){
@@ -161,6 +173,9 @@ void STFTComputeThread::run() {
                 qint64 snddelay = params_running.stftparams.snd->m_giWavForWaveform->delay();
                 std::vector<FFTTYPE>& stftts = params_running.stftparams.snd->m_stftts;
                 std::vector<WAVTYPE>* wav = &params_running.stftparams.snd->wav;
+                std::vector<WAVTYPE> windowedwavseg; // The windowed signal segment to analyse
+                FTFZero* ff0 = params_running.stftparams.snd->m_f0;
+                std::vector<double> ahats; // For the FChT
 
                 int maxsampleindex = int(wav->size())-1 + int(params_running.stftparams.snd->m_giWavForWaveform->delay());
                 maxsampleindex = std::min(maxsampleindex, int(gFL->getFs()*gFL->getMaxLastSampleTime()));
@@ -186,6 +201,22 @@ void STFTComputeThread::run() {
                 //  and ends up killing the app when it understands, too late,
                 //  that it doesn't have the memory)
                 stftpa = new WAVTYPE[stftlen*dftsize];
+
+                if(timefreqtrans==1){ // If ask for FChT...
+                    // ...estimate the slope factor
+                    // DCOUT << "Estimate the slope factor from " << ff0 << std::endl;
+                    if(ff0){
+                        ahats.resize(ff0->ts.size());
+                        for(int f0i=1; f0i<int(ff0->ts.size()-1); f0i++){
+                            // 1st order centered derivative approximation
+                            double a = (1.0/ff0->f0s[f0i])*(ff0->f0s[f0i+1]-ff0->f0s[f0i-1])/(ff0->ts[f0i+1]-ff0->ts[f0i-1]);
+                            a /= fs;
+                            ahats[f0i] = a;
+                        }
+                        ahats[0] = ahats[1];
+                        ahats[ahats.size()-1] = ahats[ahats.size()-2];
+                    }
+                }
                 m_mutex_changingstft.unlock();
 
                 WAVTYPE value;
@@ -196,6 +227,7 @@ void STFTComputeThread::run() {
                     int n = 0;
                     int wn = 0;
                     bool hasnonzerovalues = false;
+                    windowedwavseg.resize(dftlen);
                     for(; n<int(win.size()); ++n){
                         wn = si*stepsize+n - snddelay;
                         value = 0.0;
@@ -211,26 +243,71 @@ void STFTComputeThread::run() {
                                 hasnonzerovalues = true;
                         }
                         m_fft->setInput(n, value);
+                        windowedwavseg[n] = value;
                     }
 
                     if(hasnonzerovalues){
                         // Zero-pad the DFT's input
-                        for(; n<dftlen; ++n)
+                        for(; n<dftlen; ++n){
                             m_fft->setInput(n, 0.0);
+                            windowedwavseg[n] = 0.0;
+                        }
 
-                        m_fft->execute(false); // Compute the DFT
+                        if (timefreqtrans==0) {
+                            // Use DFT
 
-                        // Retrieve DFT's output
-                        stftfrpa = stftpa+ni*dftsize;
-                        *stftfrpa = std::log(std::abs(m_fft->getDCOutput()));
-                        stftfrpa++;
-                        for(n=1; n<dftlen/2; ++n, stftfrpa++)
-                            *stftfrpa = std::log(std::abs(m_fft->getMidOutput(n)));
-                        *stftfrpa = std::log(std::abs(m_fft->getNyquistOutput()));
+                            // TODO Use windowedwavseg instead of m_fft->setInput ?
 
-    //                    for(n=0; n<=m_params_current.stftparams.dftlen/2; n++)
-    //                        m_params_current.stftparams.snd->m_stft[ni][n] = std::log(std::abs(m_fft->out[n]));
-    //                        m_params_current.stftparams.snd->m_stft[ni][n] = std::log(std::abs(m_fft->getMidOutput(n)));
+                            m_fft->execute(false); // Compute the DFT
+
+                            // Retrieve DFT's output
+                            stftfrpa = stftpa+ni*dftsize;
+                            *stftfrpa = std::log(std::abs(m_fft->getDCOutput()));
+                            stftfrpa++;
+                            for(n=1; n<dftlen/2; ++n, stftfrpa++)
+                                *stftfrpa = std::log(std::abs(m_fft->getMidOutput(n)));
+                            *stftfrpa = std::log(std::abs(m_fft->getNyquistOutput()));
+
+        //                    for(n=0; n<=m_params_current.stftparams.dftlen/2; n++)
+        //                        m_params_current.stftparams.snd->m_stft[ni][n] = std::log(std::abs(m_fft->out[n]));
+        //                        m_params_current.stftparams.snd->m_stft[ni][n] = std::log(std::abs(m_fft->getMidOutput(n)));
+                        }
+                        else if(timefreqtrans==1) {
+                            if(ff0){
+                                // Use FChT
+                                double ahat = qae::interp_stepatzeros<double>(ff0->ts, ahats, stftts[ni]);
+                                if(std::isnan(ahat))
+                                    ahat = 0.0;
+                                if(std::isinf(ahat))
+                                    ahat = 0.0;
+//                                DCOUT << "wavsize=" << windowedwavseg.size() << " ahatsize=" << ahats.size() << " ahat=" << ahat << std::endl;
+
+                                // Clip ahat values
+                                if(ahat>2.0/winlen)
+                                    ahat = 2.0/winlen;
+                                if(ahat<-2.0/winlen)
+                                    ahat = -2.0/winlen;
+
+                                // Compute the FChT
+                                // TODO Needs look up table to speed up exp(jx) otherwise unusable
+                                WAVTYPE c = -2.0*M_PI/dftlen;
+                                WAVTYPE phi, cki;
+                                std::complex<WAVTYPE> a;
+                                for(int ki=0; ki<dftlen/2+1; ki++){
+                                    a = std::complex<WAVTYPE>(0.0,0.0);
+                                    cki = c*ki;
+                                    int xii = 0-(winlen-1)/2; // Not only for the window's delay !
+                                    for(int xi=0; xi<winlen; ++xi, ++xii){
+                                        phi = cki*((1.0+0.5*ahat*xii)*xii);
+                                        a += windowedwavseg[xi]*std::sqrt(std::abs(1.0+ahat*xii))*qae::tlexpi(phi);
+
+                                        // DFT
+//                                        a += windowedwavseg[xi]*std::complex<WAVTYPE>(std::cos(phi), std::sin(phi));
+                                    }
+                                    stftpa[ni*dftsize+ki] = 0.5*std::log(a.real()*a.real()+a.imag()*a.imag());
+                                }
+                            }
+                        }
 
                         if(params_running.stftparams.cepliftorder>0){
                             // Prepare the window for cepstral smoothing
@@ -341,6 +418,9 @@ void STFTComputeThread::run() {
                     m_mutex_changingparams.unlock();
                 }
             }
+
+//            qint64 telapsed = QDateTime::currentMSecsSinceEpoch()-tstart;
+//            DCOUT << "Spectrogram spent: " << telapsed/1000.0 << "s" << std::endl;
 
             // Update the STFT image
             if(!gMW->ui->pbSTFTComputingCancel->isChecked()){

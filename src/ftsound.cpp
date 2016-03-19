@@ -130,6 +130,7 @@ void FTSound::constructor_internal() {
     m_isplaying = false;
     wavtoplay  = &wav;
     m_filteredmaxamp = 0.0;
+    m_f0 = NULL;
     m_start = 0;
     m_pos = 0;
     m_end = 0;

@@ -265,6 +265,7 @@ SOURCES   += src/main.cpp\
              src/wdialogfiletypechoosertxt.cpp \
              external/libqxt/qxtspanslider.cpp \
              external/audioengine/audioengine.cpp \
+             external/libqaudioextra/src/qaemath.cpp \
              external/libqaudioextra/src/qaesigproc.cpp \
              external/libqaudioextra/src/qaecolormap.cpp \
              external/libqaudioextra/src/qaesettingsauto.cpp \
@@ -305,6 +306,7 @@ HEADERS   += src/wmainwindow.h \
              external/libqxt/qxtspanslider.h \
              external/libqxt/qxtspanslider_p.h \
              external/audioengine/audioengine.h \
+             external/libqaudioextra/include/qaemath.h \
              external/libqaudioextra/include/qaesigproc.h \
              external/libqaudioextra/include/qaecolormap.h \
              external/libqaudioextra/include/qaesettingsauto.h \

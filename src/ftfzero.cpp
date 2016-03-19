@@ -613,8 +613,10 @@ void FTFZero::setVisible(bool shown){
 }
 
 void FTFZero::setSource(FileType *src){
-    if(src->is(FTSOUND))
+    if(src->is(FTSOUND)){
         m_src_snd = (FTSound*)src;
+        ((FTSound*)src)->m_f0 = this;
+    }
 }
 
 void FTFZero::setColor(const QColor& color){
@@ -736,6 +738,9 @@ void FTFZero::edit(double t, double f0){
 }
 
 FTFZero::~FTFZero() {
+    if(m_src_snd)
+        m_src_snd->m_f0 = NULL;
+
     delete m_giF0ForSpectrogram;
     delete m_giHarmonicForSpectrogram;
     delete m_aspec_txt;
@@ -825,6 +830,9 @@ void FTFZero::estimate(FTSound *ftsnd, double f0min, double f0max, double tstart
         QMessageBox::warning(gMW, "Missing Source file", "The source file used for updating the F0 is not listed in the application anymore.");
         return;
     }
+
+    if(m_src_snd)
+        m_src_snd->m_f0 = this;
 
     double fs = gFL->getFs();
 

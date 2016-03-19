@@ -48,6 +48,7 @@ file provided in the source code of DFasma. Another copy can be found at
 
 class GIWaveform;
 class GISpectrumAmplitude;
+class FTFZero;
 
 class FTSound : public QIODevice, public FileType
 {
@@ -86,6 +87,8 @@ public:
     std::vector<WAVTYPE>* wavtoplay;
     WAVTYPE m_filteredmaxamp;
     QAEGIUniformlySampledSignal* m_giWavForWaveform;
+
+    FTFZero* m_f0; // Corresponding f0 file
 
     // Spectra
     class DFTParameters{

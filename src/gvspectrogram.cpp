@@ -491,12 +491,13 @@ void GVSpectrogram::updateSTFTPlot(bool force){
                 dftlen = m_dlgSettings->ui->sbSpectrogramDFTSize->value();
             else if(m_dlgSettings->ui->cbSpectrogramDFTSizeType->currentIndex()==1)
                 dftlen = std::pow(2.0, std::ceil(log2(float(m_win.size())))+m_dlgSettings->ui->sbSpectrogramOversamplingFactor->value());//[samples]
+            int transform = gMW->m_gvSpectrogram->m_dlgSettings->ui->cbSpectrogramTransform->currentIndex();
             int cepliftorder = -1;//[samples]
             if(gMW->m_gvSpectrogram->m_dlgSettings->ui->gbSpectrogramCepstralLiftering->isChecked())
                 cepliftorder = gMW->m_gvSpectrogram->m_dlgSettings->ui->sbSpectrogramCepstralLifteringOrder->value();
             bool cepliftpresdc = gMW->m_gvSpectrogram->m_dlgSettings->ui->cbSpectrogramCepstralLifteringPreserveDC->isChecked();
 
-            STFTComputeThread::STFTParameters reqSTFTParams(csnd, m_win, stepsize, dftlen, cepliftorder, cepliftpresdc);
+            STFTComputeThread::STFTParameters reqSTFTParams(csnd, m_win, stepsize, dftlen, transform, cepliftorder, cepliftpresdc);
             STFTComputeThread::ImageParameters reqImgSTFTParams(reqSTFTParams, &(csnd->m_imgSTFT), m_dlgSettings->ui->cbSpectrogramColorMaps->currentIndex(), m_dlgSettings->ui->cbSpectrogramColorMapReversed->isChecked(), gMW->m_qxtSpectrogramSpanSlider->lowerValue()/100.0, gMW->m_qxtSpectrogramSpanSlider->upperValue()/100.0, m_dlgSettings->ui->cbSpectrogramLoudnessWeighting->isChecked(), m_dlgSettings->ui->cbSpectrogramColorRangeMode->currentIndex());
 
             if(csnd->m_imgSTFTParams.isEmpty() || reqImgSTFTParams!=csnd->m_imgSTFTParams) {
