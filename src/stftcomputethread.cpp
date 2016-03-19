@@ -299,10 +299,12 @@ void STFTComputeThread::run() {
                                     int xii = 0-(winlen-1)/2; // Not only for the window's delay !
                                     for(int xi=0; xi<winlen; ++xi, ++xii){
                                         phi = cki*((1.0+0.5*ahat*xii)*xii);
-                                        a += windowedwavseg[xi]*std::sqrt(std::abs(1.0+ahat*xii))*qae::tlexpi(phi);
+//                                        a += windowedwavseg[xi]*std::sqrt(std::abs(1.0+ahat*xii))*qae::tlexpi(phi);
+                                        a += windowedwavseg[xi]*std::sqrt(std::abs(1.0+ahat*xii))*std::complex<WAVTYPE>(std::cos(phi), std::sin(phi));
 
                                         // DFT
-//                                        a += windowedwavseg[xi]*std::complex<WAVTYPE>(std::cos(phi), std::sin(phi));
+                                        // phi = cki*xii;
+                                        // a += windowedwavseg[xi]*std::complex<WAVTYPE>(std::cos(phi), std::sin(phi));
                                     }
                                     stftpa[ni*dftsize+ki] = 0.5*std::log(a.real()*a.real()+a.imag()*a.imag());
                                 }
