@@ -221,7 +221,7 @@ void FTSound::load(int channelid){
 //    connect(decoder, SIGNAL(bufferReady()), this, SLOT(readBuffer()));
     decoder->start();
 
-//    qDebug() << format;
+//    DCOUT << format;
 
     // Now wait for bufferReady() signal and call decoder->read()
 

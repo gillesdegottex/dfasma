@@ -1014,8 +1014,6 @@ void WMainWindow::enablePlay(){
 }
 
 void WMainWindow::audioStateChanged(QAudio::State state){
-//    DEBUGSTRING << "MainWindow::stateChanged " << state << endl;
-
     if(state==QAudio::ActiveState){
         // Started playing
         ui->actionPlay->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
@@ -1026,8 +1024,6 @@ void WMainWindow::audioStateChanged(QAudio::State state){
         if(m_playingftsound)
             m_playingftsound->stopPlay();
     }
-
-//    DEBUGSTRING << "~MainWindow::stateChanged " << state << endl;
 }
 
 void WMainWindow::resetFiltering(){

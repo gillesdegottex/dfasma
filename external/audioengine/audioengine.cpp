@@ -317,7 +317,7 @@ void AudioEngine::setState(QAudio::State state)
 }
 
 void AudioEngine::readChannelFinished(){
-//    DEBUGSTRING << "AudioTest::readChannelFinished" << endl;
+//    DCOUT << "AudioTest::readChannelFinished" << endl;
 //    static bool runonce=true;
 //    if(runonce){
 //        runonce = false;
@@ -325,5 +325,5 @@ void AudioEngine::readChannelFinished(){
 //        m_audioOutput->stop();
 ////        m_audioOutput->disconnect(this);
 //    }
-//    DEBUGSTRING << "~AudioTest::readChannelFinished" << endl;
+//    DCOUT << "~AudioTest::readChannelFinished" << endl;
 }
