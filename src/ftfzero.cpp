@@ -776,13 +776,13 @@ void FTFZero::draw_freq_amp(QPainter* painter, const QRectF& rect){
 
     double cf0 = qae::interp_stepatzeros<double>(ts, f0s, ct);
 
+    if(cf0<=0.0)
+        return;
+
     // Update the f0 text
     // TODO Should be moved to setWindowRange (need to move the cf0 computation there too)
     m_aspec_txt->setPos(cf0, 0.0);
     m_aspec_txt->setText(QString("%1Hz").arg(cf0));
-
-    if(cf0<=0.0)
-        return;
 
     // Draw the f0 vertical line
     QColor c = getColor();
