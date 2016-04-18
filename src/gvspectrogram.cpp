@@ -57,6 +57,8 @@ using namespace std;
 #include <QTime>
 #include <QToolTip>
 #include <QScrollBar>
+#include <QImageWriter>
+#include <QFileDialog>
 #include "../external/libqxt/qxtspanslider.h"
 
 #include "qaesigproc.h"
@@ -215,6 +217,10 @@ GVSpectrogram::GVSpectrogram(WMainWindow* parent)
     m_aSelectionClear->setEnabled(false);
     connect(m_aSelectionClear, SIGNAL(triggered()), this, SLOT(selectionClear()));
 
+    m_aSavePicture = new QAction(tr("Save as picture..."), this);
+    m_aSavePicture->setStatusTip(tr("Save the spectrogram in a picture file"));
+    connect(m_aSavePicture, SIGNAL(triggered()), this, SLOT(savePicture()));
+
     gMW->ui->lblSpectrogramSelectionTxt->setText("No selection");
 
     showScrollBars(gMW->m_dlgSettings->ui->cbViewsScrollBarsShow->isChecked());
@@ -247,6 +253,7 @@ GVSpectrogram::GVSpectrogram(WMainWindow* parent)
     // Build the context menu
     m_contextmenu.addAction(m_aSpectrogramShowGrid);
     m_contextmenu.addAction(m_aSpectrogramShowHarmonics);
+    m_contextmenu.addAction(m_aSavePicture);
     m_contextmenu.addSeparator();
     m_contextmenu.addAction(m_aAutoUpdate);
     m_contextmenu.addSeparator();
@@ -509,6 +516,39 @@ void GVSpectrogram::updateSTFTPlot(bool force){
     }
 }
 
+void GVSpectrogram::savePicture(){
+
+    FTSound* csnd = gFL->getCurrentFTSound(true);
+    if(csnd==NULL){
+        QMessageBox::critical(NULL, "Nothing to save!", "There is no spectrogram to save in a picture file. Please, select a sound and be sure the spectrogram is visible first.");
+        return;
+    }
+
+    // Build the filter string
+    QString filters;
+    filters += "*.*";
+    QList<QByteArray> supportedformats = QImageWriter::supportedImageFormats();
+    for(int fi=0; fi<supportedformats.size(); ++fi){
+        QString format(supportedformats[fi]);
+        filters += ";;*."+format;
+    }
+    QString selectedFilter;
+
+    QString fp = QFileDialog::getSaveFileName(gMW, "Save spectrogram as...", "", filters, &selectedFilter, QFileDialog::DontUseNativeDialog);
+
+    if(!fp.isEmpty()){
+        bool saved = false;
+        if(selectedFilter!="*.*"){
+            selectedFilter = selectedFilter.remove(0,2);
+            saved = csnd->m_imgSTFT.save(fp, selectedFilter.toLatin1().constData());
+        }
+        else{
+            saved = csnd->m_imgSTFT.save(fp);
+        }
+        if(!saved)
+            QMessageBox::critical(NULL, "Saving failed!", "An error occured when saving the picture. Please verify you have written permission in the destination and the selectd format is supported.");
+    }
+}
 
 void GVSpectrogram::updateSceneRect() {
     m_scene->setSceneRect(-1.0/gFL->getFs(), -gFL->getFs()/2.0, gFL->getMaxDuration()+1.0/gFL->getFs(), gFL->getFs()/2.0);
