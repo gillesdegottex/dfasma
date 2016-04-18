@@ -120,6 +120,7 @@ public:
     QAction* m_aZoomOut;
     QAction* m_aUnZoom;
     QAction* m_aShowProperties;
+    QAction* m_aSavePicture;
 
 signals:
 
@@ -127,6 +128,7 @@ public slots:
     void showScrollBars(bool show);
     void gridSetVisible(bool visible);
     void showHarmonics(bool show);
+    void savePicture();
 
     void allSoundsChanged();
     void playCursorSet(double t, bool forwardsync);
