@@ -86,6 +86,7 @@ public:
     FTFZero* getCurrentFTFZero(bool forceselect=false);
     FileType* m_prevSelectedFile;
     FTSound* m_prevSelectedSound;
+    FTFZero* m_prevSelectedFZero;
 
     double getFs() const;
     unsigned int getMaxWavSize();

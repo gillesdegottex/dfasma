@@ -1118,7 +1118,7 @@ void GVWaveform::fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseSe
     if(selection.right()>gFL->getMaxLastSampleTime()) selection.setRight(gFL->getMaxLastSampleTime());
 
     double twinend = selection.right();
-    if(gMW->m_gvSpectrumAmplitude->m_dlgSettings->ui->cbAmplitudeSpectrumLimitWindowDuration->isChecked()
+    if(gMW->m_gvSpectrumAmplitude->m_dlgSettings->ui->cbAmplitudeSpectrumWindowDurationLimit->isChecked()
        && (twinend-selection.left())>gMW->m_gvSpectrumAmplitude->m_dlgSettings->ui->sbAmplitudeSpectrumWindowDurationLimit->value())
         twinend = selection.left()+gMW->m_gvSpectrumAmplitude->m_dlgSettings->ui->sbAmplitudeSpectrumWindowDurationLimit->value();
 

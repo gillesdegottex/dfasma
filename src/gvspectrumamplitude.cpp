@@ -363,13 +363,39 @@ void GVSpectrumAmplitude::setSamplingRate(double fs)
         gFL->ftsnds[fi]->m_giSQNRForSpectrumAmplitude->setLine(0.0, 0.0, fs/2, 0.0);
 }
 
+bool neqzero(double v){
+    return v!=0.0;
+}
+
 void GVSpectrumAmplitude::setWindowRange(qreal tstart, qreal tend){
 //    DCOUT << "GVSpectrumAmplitude::setWindowRange " << tstart << "," << tend << endl;
 
     if(tstart==tend)
         return;
 
-    if(m_dlgSettings->ui->cbAmplitudeSpectrumLimitWindowDuration->isChecked() && (tend-tstart)>m_dlgSettings->ui->sbAmplitudeSpectrumWindowDurationLimit->value())
+    if(m_dlgSettings->ui->cbAmplitudeSpectrumLimitWindowDurationNumberPeriod->isChecked()){
+        FTFZero* ftf0 = gFL->getCurrentFTFZero(true);
+        if(ftf0){
+            double nbper = m_dlgSettings->ui->sbAmplitudeSpectrumLimitWindowDurationNumberPeriod->value();
+            double mf0 = qae::mean(ftf0->f0s, neqzero);
+            double tf0 = tstart;
+            double cf0 = qae::interp_stepatzeros<double>(ftf0->ts, ftf0->f0s, tf0);
+            if(cf0<0.0) cf0=-cf0;
+            if(cf0==0.0) cf0=mf0;
+            qreal tendper = tstart + nbper/cf0;
+            for(size_t iter=0; iter<3; ++iter){
+                tf0 = 0.5*(tstart+tendper);
+                cf0 = qae::interp_stepatzeros<double>(ftf0->ts, ftf0->f0s, tf0);
+                if(cf0<0.0) cf0=-cf0;
+                if(cf0==0.0) cf0=mf0;
+                tendper = tstart + nbper/cf0;
+            }
+            if(!isnan(tendper) && !isinf(tendper))
+                tend = tendper;
+        }
+    }
+
+    if(m_dlgSettings->ui->cbAmplitudeSpectrumWindowDurationLimit->isChecked() && (tend-tstart)>m_dlgSettings->ui->sbAmplitudeSpectrumWindowDurationLimit->value())
         tend = tstart+m_dlgSettings->ui->sbAmplitudeSpectrumWindowDurationLimit->value();
 
     unsigned int nl = std::max(0, int(0.5+tstart*gFL->getFs()));

@@ -738,6 +738,9 @@ void FTFZero::edit(double t, double f0){
 }
 
 FTFZero::~FTFZero() {
+    if(gFL->m_prevSelectedFZero==this)
+        gFL->m_prevSelectedFZero = NULL;
+
     if(m_src_snd)
         m_src_snd->m_f0 = NULL;
 

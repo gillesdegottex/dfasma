@@ -78,6 +78,7 @@ WFilesList::WFilesList(QMainWindow *parent)
     , m_currentAction(CANothing)
     , m_prevSelectedFile(NULL)
     , m_prevSelectedSound(NULL)
+    , m_prevSelectedFZero(NULL)
 {
     gFL = this;
 
@@ -399,8 +400,12 @@ FTFZero* WFilesList::getCurrentFTFZero(bool forceselect) {
     if(currenItem && currenItem->is(FileType::FTFZERO))
         return (FTFZero*)currenItem;
 
-    if(forceselect)
-        return ftfzeros[0];
+    if(forceselect){
+        if(m_prevSelectedFZero)
+            return m_prevSelectedFZero;
+        else
+            return ftfzeros[0];
+    }
 
     return NULL;
 }
@@ -485,8 +490,10 @@ void WFilesList::fileSelectionChanged() {
             if(ft->is(FileType::FTLABELS))
                 m_nb_labels_in_selection++;
 
-            if(ft->is(FileType::FTFZERO))
+            if(ft->is(FileType::FTFZERO)){
                 m_nb_fzeros_in_selection++;
+                m_prevSelectedFZero = (FTFZero*)ft;
+            }
         }
 
         // Update the spectrogram to current selected signal

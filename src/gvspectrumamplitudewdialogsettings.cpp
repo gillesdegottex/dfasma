@@ -34,6 +34,8 @@ GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(GVSpectru
 
     ui->lblAmplitudeSpectrumFFTW3MaxTimeForPlanPreparation->hide();
     ui->sbAmplitudeSpectrumFFTW3MaxTimeForPlanPreparation->hide();
+    connect(ui->cbAmplitudeSpectrumWindowDurationLimit, SIGNAL(toggled(bool)), ui->sbAmplitudeSpectrumWindowDurationLimit, SLOT(setEnabled(bool)));
+    connect(ui->cbAmplitudeSpectrumLimitWindowDurationNumberPeriod, SIGNAL(toggled(bool)), ui->sbAmplitudeSpectrumLimitWindowDurationNumberPeriod, SLOT(setEnabled(bool)));
 
     m_ampspec = parent;
 
@@ -44,8 +46,10 @@ GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(GVSpectru
     gMW->m_settings.add(ui->sbAmplitudeSpectrumFFTW3MaxTimeForPlanPreparation);
     #endif
     gMW->m_settings.add(ui->cbAmplitudeSpectrumWindowSizeForcedOdd);
-    gMW->m_settings.add(ui->cbAmplitudeSpectrumLimitWindowDuration);
+    gMW->m_settings.add(ui->cbAmplitudeSpectrumWindowDurationLimit);
     gMW->m_settings.add(ui->sbAmplitudeSpectrumWindowDurationLimit);
+    gMW->m_settings.add(ui->cbAmplitudeSpectrumLimitWindowDurationNumberPeriod);
+    gMW->m_settings.add(ui->sbAmplitudeSpectrumLimitWindowDurationNumberPeriod);
     gMW->m_settings.add(ui->cbAmplitudeSpectrumWindowType);
     gMW->m_settings.add(ui->spAmplitudeSpectrumWindowNormPower);
     gMW->m_settings.add(ui->spAmplitudeSpectrumWindowNormSigma);
@@ -68,8 +72,10 @@ GVAmplitudeSpectrumWDialogSettings::GVAmplitudeSpectrumWDialogSettings(GVSpectru
     connect(ui->cbAmplitudeSpectrumDFTSizeType, SIGNAL(currentIndexChanged(int)), this, SLOT(DFTSizeTypeChanged(int)));
 
     // Update the DFT view automatically
-    connect(ui->cbAmplitudeSpectrumLimitWindowDuration, SIGNAL(toggled(bool)), m_ampspec, SLOT(settingsModified()));
+    connect(ui->cbAmplitudeSpectrumWindowDurationLimit, SIGNAL(toggled(bool)), m_ampspec, SLOT(settingsModified()));
     connect(ui->sbAmplitudeSpectrumWindowDurationLimit, SIGNAL(valueChanged(double)), m_ampspec, SLOT(settingsModified()));
+    connect(ui->cbAmplitudeSpectrumLimitWindowDurationNumberPeriod, SIGNAL(toggled(bool)), m_ampspec, SLOT(settingsModified()));
+    connect(ui->sbAmplitudeSpectrumLimitWindowDurationNumberPeriod, SIGNAL(valueChanged(double)), m_ampspec, SLOT(settingsModified()));
     connect(ui->cbAmplitudeSpectrumDFTSizeType, SIGNAL(currentIndexChanged(int)), m_ampspec, SLOT(settingsModified()));
     connect(ui->sbAmplitudeSpectrumDFTSize, SIGNAL(valueChanged(int)), m_ampspec, SLOT(settingsModified()));
     connect(ui->sbAmplitudeSpectrumOversamplingFactor, SIGNAL(valueChanged(int)), m_ampspec, SLOT(settingsModified()));
