@@ -234,6 +234,14 @@ GVWaveform::GVWaveform(WMainWindow* parent)
     m_aSelectionClear->setIcon(selectionclearicon);
     m_aSelectionClear->setEnabled(false);
     connect(m_aSelectionClear, SIGNAL(triggered()), this, SLOT(selectionClear()));
+    m_aSelectionAll = new QAction(tr("Select all"), this);
+    m_aSelectionAll->setStatusTip(tr("Select all the waveform"));
+    m_aSelectionAll->setShortcut(QKeySequence("Ctrl+A"));
+//    QIcon selectionclearicon(":/icons/selectionclear.svg");
+//    m_aSelectionAll->setIcon(selectionclearicon);
+    connect(m_aSelectionAll, SIGNAL(triggered()), this, SLOT(selectionAll()));
+    addAction(m_aSelectionAll);
+
     m_aFitViewToSoundsAmplitude = new QAction(tr("Fit the view's amplitude to the max value"), this);
     m_aFitViewToSoundsAmplitude->setIcon(QIcon(":/icons/unzoomy.svg"));
     m_aFitViewToSoundsAmplitude->setStatusTip(tr("Change the amplitude zoom so that to fit to the maximum of amplitude among all sounds"));
@@ -258,6 +266,7 @@ GVWaveform::GVWaveform(WMainWindow* parent)
 //    m_toolBar->addAction(m_aFitViewToSoundsAmplitude);
 //    m_toolBar->addSeparator();
     m_toolBar->addAction(m_aZoomOnSelection);
+//    m_toolBar->addAction(m_aSelectionAll); // TODO
     m_toolBar->addAction(m_aSelectionClear);
     m_toolBar->setIconSize(QSize(gMW->m_dlgSettings->ui->sbViewsToolBarSizes->value(),gMW->m_dlgSettings->ui->sbViewsToolBarSizes->value()));
 //    gMW->ui->lWaveformToolBar->addWidget(m_toolBar);
@@ -1083,6 +1092,12 @@ void GVWaveform::selectionClear(bool forwardsync){
 
 //        if(gMW->m_gvSpectrogram) gMW->m_gvSpectrogram->selectionClear(false);
     }
+}
+
+void GVWaveform::selectionAll(){
+    m_mouseSelection.setLeft(m_scene->sceneRect().left());
+    m_mouseSelection.setRight(m_scene->sceneRect().right());
+    selectionSet(m_mouseSelection);
 }
 
 void GVWaveform::fixTimeLimitsToSamples(QRectF& selection, const QRectF& mouseSelection, int action) {

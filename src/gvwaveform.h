@@ -81,6 +81,7 @@ public:
     QAction* m_aWaveformStickToSTFTWindows;
     QAction* m_aZoomOnSelection;
     QAction* m_aSelectionClear;
+    QAction* m_aSelectionAll;
     QAction* m_aZoomIn;
     QAction* m_aZoomXOnly;
     QAction* m_aZoomOut;
@@ -132,6 +133,7 @@ public slots:
     void selectionSet(QRectF selection, bool forwardsync=true);
     void selectionClear(bool forwardsync=true);
     void selectionZoomOn();
+    void selectionAll();
     void setMouseCursorPosition(double position, bool forwardsync);
     void playCursorSet(double t, bool forwardsync=true);
 
