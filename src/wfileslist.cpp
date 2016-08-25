@@ -264,9 +264,12 @@ void WFilesList::addExistingFile(const QString& filepath, FileType::FType type) 
                     throw QString("There is not a single line in this file");
 
                 // Check for a label: <number> <number> <txt>
-                std::istringstream iss(line);
-                if((iss >> t >> t >> text) && iss.eof())
+                std::istringstream iss1(line);
+                std::istringstream iss2(line);
+                if(((iss1 >> t >> t >> text) && iss1.eof())
+                    || ((iss2 >> t >> t >> text >> text) && iss2.eof())){
                     type = FileType::FTLABELS;
+                }
                 else{
                     stopFileProgressDialog();
                     WDialogFileTypeChooserTxt dlg(this, filepath);
