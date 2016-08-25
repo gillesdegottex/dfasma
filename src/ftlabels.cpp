@@ -291,11 +291,23 @@ void FTLabels::load() {
                     m_fileformat = FFTEXTSegmentsHTK;     // ... otherwise it is 100[ns]
             }
             else {
-                // Check: <number> <number> <text>
+                // Check state-aligned HTK Label: <integer> <integer> <text> <text>
                 QTextStream linestr(&line);
-                linestr >> t >> t >> text;
+                linestr >> i >> i >> text >> text;
                 if(linestr.atEnd()){
-                    m_fileformat = FFTEXTSegmentsFloat;
+                    QRegExp rx(".*[0-9]+$"); // If the extension ends with a number...
+                    if(rx.indexIn(fileFullPath)!=-1)
+                        m_fileformat = FFTEXTSegmentsSample; // ... it is samples
+                    else
+                        m_fileformat = FFTEXTSegmentsHTK;     // ... otherwise it is 100[ns]
+                }
+                else{
+                    // Check: <number> <number> <text>
+                    QTextStream linestr(&line);
+                    linestr >> t >> t >> text;
+                    if(linestr.atEnd()){
+                        m_fileformat = FFTEXTSegmentsFloat;
+                    }
                 }
             }
         }
