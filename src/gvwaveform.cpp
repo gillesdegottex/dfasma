@@ -237,6 +237,7 @@ GVWaveform::GVWaveform(WMainWindow* parent)
     m_aSelectionAll = new QAction(tr("Select all"), this);
     m_aSelectionAll->setStatusTip(tr("Select all the waveform"));
     m_aSelectionAll->setShortcut(QKeySequence("Ctrl+A"));
+    m_aSelectionAll->setShortcutContext(Qt::WidgetShortcut);
 //    QIcon selectionclearicon(":/icons/selectionclear.svg");
 //    m_aSelectionAll->setIcon(selectionclearicon);
     connect(m_aSelectionAll, SIGNAL(triggered()), this, SLOT(selectionAll()));
