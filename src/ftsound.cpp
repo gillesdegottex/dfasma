@@ -317,8 +317,6 @@ bool FTSound::reload() {
     if(!checkFileStatus(CFSMMESSAGEBOX))
         return false;
 
-    double fs_prev = fs;
-
     // Reset everything ...
     wavtoplay = &wav;
     m_giWavForWaveform->setSignal(wavtoplay);
@@ -348,9 +346,6 @@ bool FTSound::reload() {
         load_finalize();
         m_giWavForWaveform->updateMinMaxValues();
         gMW->m_gvWaveform->updateSceneRect();
-
-        if(fs_prev!=fs)
-            throw QString("The sampling rate of the file has changed. This is currently not supported. Please open the file with another instance of DFasma.");
     }
     catch(std::bad_alloc err){
         QMessageBox::critical(NULL, "Memory full!", "There is not enough free memory for re-loading this file.");
