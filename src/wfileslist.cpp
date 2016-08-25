@@ -688,8 +688,13 @@ void WFilesList::selectedFilesReload() {
 
         FileType* ft = (FileType*)l.at(i);
 
-        if(ft->reload())
-            didanysucceed = true;
+        try{
+            if(ft->reload())
+                didanysucceed = true;
+        }
+        catch (QString err){
+            QMessageBox::warning(this, "Failed to re-load file ...", "Data from the following file can't be re-loaded:\n"+ft->fileFullPath+"'\n\nReason:\n"+err, QMessageBox::Ok | QMessageBox::Abort, QMessageBox::Ok);
+        }
 
         if(ft==m_prevSelectedSound)
             reloadSelectedSound = true;
