@@ -59,6 +59,9 @@ script:
     - if [ "$TRAVIS_OS_NAME" = "osx" ]; then qmake "CONFIG+=fft_fftw3 file_audio_libsndfile file_sdif" "FILE_AUDIO_LIBDIR=/usr/local/opt/libsndfile" "FFT_LIBDIR=/usr/local/opt/fftw" "FILE_SDIF_LIBDIR=$TRAVIS_BUILD_DIR/external/sdif/easdif" dfasma.pro; fi
     - make
 
+    - if [ "`uname -m`" = "x86_64" ]; then export ARCH="amd64"; fi
+    - if [ "`uname -m`" = "x86" ]; then export ARCH="i386"; fi
+
     - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
             cd distrib
          && bash package_deb.sh ../dfasma
