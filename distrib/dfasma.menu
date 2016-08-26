@@ -1,0 +1,1 @@
+?package(dfasma):needs="X11" section="Applications/Sound" title="dfasma" command="/usr/bin/dfasma"
