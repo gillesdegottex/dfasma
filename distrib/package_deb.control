@@ -1,0 +1,16 @@
+Source: dfasma
+Maintainer: Gilles Degottex <gilles.degottex@gmail.com>
+Section: sound
+Priority: optional
+Homepage: http://gillesdegottex.github.io/dfasma
+Package: dfasma
+Version: TOBESET
+Architecture: TOBESET
+Installed-Size: TOBESET
+Depends:
+Conflicts: dfasma
+Description: DFasma - A tool to analyse and compare audio files in time and frequency
+ DFasma is a free open-source software which is used to compare audio files in time
+ and frequency. The comparison is first visual, using wavforms and spectra.
+ It is also possible to listen to time-frequency segments in order to allow perceptual
+ comparison. It is basically dedicated to analysis.

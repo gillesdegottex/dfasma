@@ -62,7 +62,7 @@ install:
 #  - ps: Get-ChildItem "C:\Program Files\Mega-Nerd\libsndfile"
   - ps: if ($env:platform -eq 'x64') {$libsndfile = "libsndfile-1.0.25-w64"}
   - ps: if ($env:platform -eq 'x86') {$libsndfile = "libsndfile-1.0.25-w32"}
-  - ps: Invoke-WebRequest "http://gillesdegottex.eu/$libsndfile.zip" -OutFile "$libsndfile.zip"
+  - ps: Invoke-WebRequest "http://gillesdegottex.eu/soft/$libsndfile.zip" -OutFile "$libsndfile.zip"
   - ps: 7z x "$libsndfile.zip" -y
   - ps: Move-Item "$libsndfile" libsndfile
 #  - ps: lib /MACHINE:X86 /def:libfftw3-3.def # Needed only for MSVC (lib is still unrecognized command)
@@ -92,7 +92,7 @@ install:
   - ps: New-Item -ItemType directory -Name sdif | Out-Null
   - ps: cd sdif
   - ps: New-Item -ItemType directory -Name easdif | Out-Null
-  - ps: Invoke-WebRequest "http://gillesdegottex.eu/EASDIF_SDIF.zip" -OutFile "EASDIF_SDIF.zip"
+  - ps: Invoke-WebRequest "http://gillesdegottex.eu/soft/EASDIF_SDIF.zip" -OutFile "EASDIF_SDIF.zip"
   - ps: 7z x "EASDIF_SDIF.zip" -y
   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\EASDIF_SDIF"
   - ps: New-Item -ItemType directory -Name build | Out-Null
@@ -138,7 +138,7 @@ build_script:
   - ps: Get-ChildItem c:\projects\dfasma\lib\libsndfile
   - ps: Get-ChildItem c:\projects\dfasma\lib\libfft
   - ps: .\distrib\package_windows_appveyor.ps1 $env:platform
-  - ps: Move-Item distrib/DFasma-*-Win*bit.exe .
+  - ps: Move-Item distrib\dfasma_*_win*.exe .
   - ps: Get-ChildItem .
   #- ps: $GITPROJECTVERSION = (git describe --tags --always) | Out-String
   #- ps: $GITPROJECTVERSION = $GITPROJECTVERSION -replace "`n|`r"
@@ -150,7 +150,7 @@ build_script:
 
 
 artifacts:
-  - path: DFasma-*-Win*bit.exe
+  - path: dfasma_*_win*.exe
     name: newinstallers   # Reference used for deployment
 
 
