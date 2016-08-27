@@ -150,7 +150,7 @@ build_script:
 
 
 artifacts:
-  - path: DFasma-*-Win*bit.exe
+  - path: dfasma_*_win*.exe
     name: newinstallers   # Reference used for deployment
 
 
