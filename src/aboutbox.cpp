@@ -91,19 +91,24 @@ AboutBox::AboutBox(QWidget *parent) :
     if(sizeof(FFTTYPE)==4)  fftinfostr += "single";
     if(sizeof(FFTTYPE)==8)  fftinfostr += "double";
     if(sizeof(FFTTYPE)==16)  fftinfostr += "quadruple";
-    fftinfostr += "); smallest: "+QString::number(20*log10(std::numeric_limits<FFTTYPE>::min()))+"dB)";
+    fftinfostr += "); smallest: "+QString::number(20*log10(std::numeric_limits<FFTTYPE>::min()))+"dB) [dynamic link]";
     ui->vlLibraries->addWidget(new QLabel(fftinfostr, this));
 
     // SDIF
     QString sdifinfostr = "";
     #ifdef SUPPORT_SDIF
         sdifinfostr = "<i>For SDIF file format:</i> <a href=\"http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/\">Easdif</a> version "+QString(EASDIF_VERSION_STRING);
+        #ifdef SUPPORT_SDIF_STATIC
+            sdifinfostr += " [static link]";
+        #else
+            sdifinfostr += " [dynamic link]";
+        #endif
     #else
         sdifinfostr = "<i>No support for SDIF file format</i>";
     #endif
     ui->vlLibraries->addWidget(new QLabel(sdifinfostr, this));
 
-    ui->vlLibraries->addWidget(new QLabel("<i>For reading Audio files:</i> "+FTSound::getAudioFileReadingDescription(), this));
+    ui->vlLibraries->addWidget(new QLabel("<i>For reading Audio files:</i> "+FTSound::getAudioFileReadingDescription()+" [dynamic link]", this));
     QStringList list = FTSound::getAudioFileReadingSupportedFormats();
     for(QStringList::Iterator it=list.begin(); it!=list.end(); ++it)
         ui->listSupportedFormats->addItem(*it);

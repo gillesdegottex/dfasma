@@ -32,7 +32,7 @@ CONFIG += file_audio_libsndfile
 
 # Additional file format support
 # SDIF (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
-#CONFIG += file_sdif
+CONFIG += file_sdif
 #CONFIG += file_sdif_static
 
 # Activate this line for logging some information into a txt file
@@ -205,6 +205,7 @@ CONFIG(file_sdif) {
     CONFIG(file_sdif_static) {
         message("    "SDIF linked statically)
         FILE_SDIF_LINKTYPE = "_static"
+        DEFINES += SUPPORT_SDIF_STATIC
     }
     else{
         message("    "SDIF linked dynamically)
