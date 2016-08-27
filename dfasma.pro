@@ -33,6 +33,7 @@ CONFIG += file_audio_libsndfile
 # Additional file format support
 # SDIF (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
 #CONFIG += file_sdif
+#CONFIG += file_sdif_static
 
 # Activate this line for logging some information into a txt file
 #CONFIG += debug_logfile
@@ -197,12 +198,21 @@ CONFIG(file_sdif) {
     message(Files: SDIF support: YES)
     DEFINES += SUPPORT_SDIF
 
-#    isEmpty(FILE_SDIF_LIBDIR) {
-#        FILE_SDIF_LIBDIR = "$$_PRO_FILE_PWD_/external/sdif"
-#    }
+    isEmpty(FILE_SDIF_LIBDIR) {
+        FILE_SDIF_LIBDIR = "$$_PRO_FILE_PWD_/external/sdif/easdif"
+    }
 
-    LIBS += -lEasdif
+    CONFIG(file_sdif_static) {
+        message("    "SDIF linked statically)
+        FILE_SDIF_LINKTYPE = "_static"
+    }
+    else{
+        message("    "SDIF linked dynamically)
+    }
+
+    LIBS += -lEasdif$$FILE_SDIF_LINKTYPE
     !isEmpty(FILE_SDIF_LIBDIR){
+        message("    "FILE_SDIF_LIBDIR=$$FILE_SDIF_LIBDIR)
         INCLUDEPATH += $$FILE_SDIF_LIBDIR/include
         LIBS += -L$$FILE_SDIF_LIBDIR/lib
     }
