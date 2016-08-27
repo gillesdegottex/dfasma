@@ -71,7 +71,7 @@ script:
     - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
             macdeployqt dfasma.app -dmg
          && sleep 3
-         && ls dfasma*
+         && ls -l dfasma*
          && export PACKAGENAME=dfasma_$PROJECTGITVERSION.dmg
          && mv dfasma.dmg $PACKAGENAME
       ; fi
