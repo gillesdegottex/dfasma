@@ -51,13 +51,13 @@ script:
           QTDIR="/opt/qt52"
           && PATH="$QTDIR/bin:$PATH"
           && qt52-env.sh
-      ;
-      fi
+      ; fi
     # Compile first SDIF itself
+    - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export MACOSX_DEPLOYMENT_TARGET="10.8"; fi
     - bash distrib/compile_sdif.sh
     - echo $TRAVIS_BUILD_DIR
     - if [ "$TRAVIS_OS_NAME" = "linux" ]; then qmake "CONFIG+=file_sdif file_sdif_static" "FILE_SDIF_LIBDIR=$TRAVIS_BUILD_DIR/external/sdif/easdif" dfasma.pro; fi
-    - if [ "$TRAVIS_OS_NAME" = "osx" ]; then qmake "CONFIG+=fft_fftw3 file_audio_libsndfile file_sdif" "FILE_AUDIO_LIBDIR=/usr/local/opt/libsndfile" "FFT_LIBDIR=/usr/local/opt/fftw" "FILE_SDIF_LIBDIR=$TRAVIS_BUILD_DIR/external/sdif/easdif" dfasma.pro; fi
+    - if [ "$TRAVIS_OS_NAME" = "osx" ]; then qmake "CONFIG+=fft_fftw3 file_audio_libsndfile file_sdif file_sdif_static" "FILE_AUDIO_LIBDIR=/usr/local/opt/libsndfile" "FFT_LIBDIR=/usr/local/opt/fftw" "FILE_SDIF_LIBDIR=$TRAVIS_BUILD_DIR/external/sdif/easdif" dfasma.pro; fi
     - make
 
     - if [ "`uname -m`" = "x86_64" ]; then export ARCH="amd64"; fi
