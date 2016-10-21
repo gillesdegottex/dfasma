@@ -52,6 +52,10 @@ script:
           && PATH="$QTDIR/bin:$PATH"
           && qt52-env.sh
       ; fi
+    - if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$CC" = "gcc" ]; then
+          export CC=gcc-4.8
+          && export CXX=g++-4.8
+      ; fi
     # Compile first SDIF itself
     - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export MACOSX_DEPLOYMENT_TARGET="10.8"; fi
     - bash distrib/compile_sdif.sh
