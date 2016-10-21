@@ -53,6 +53,7 @@ script:
           && qt52-env.sh
       ; fi
     # Compile first SDIF itself
+    - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export MACOSX_DEPLOYMENT_TARGET="10.8"; fi
     - bash distrib/compile_sdif.sh
     - echo $TRAVIS_BUILD_DIR
     - if [ "$TRAVIS_OS_NAME" = "linux" ]; then qmake "CONFIG+=file_sdif file_sdif_static" "FILE_SDIF_LIBDIR=$TRAVIS_BUILD_DIR/external/sdif/easdif" dfasma.pro; fi
