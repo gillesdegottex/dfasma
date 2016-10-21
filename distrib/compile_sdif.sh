@@ -23,6 +23,6 @@ mkdir build
 cd build
 echo $PWD/../easdif
 cmake -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX_DEFAULTS_INIT:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=$PWD/../easdif ../EASDIF_SDIF
-make
+make VERBOSE=1
 make install
 ls -l $PWD/../easdif
