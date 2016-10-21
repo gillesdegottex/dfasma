@@ -20,7 +20,7 @@ file provided in the source code of DFasma. Another copy can be found at
 
 #include "../src/ftsound.h"
 #include "../external/wavfile/wavfile.h"
-#include "../src/qthelper.h"
+#include "libqaudioextra/include/qaehelpers.h"
 
 QString FTSound::getAudioFileReadingDescription(){
     return QString("Built-in minimal WAV file reader");
