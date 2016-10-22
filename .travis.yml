@@ -59,6 +59,7 @@ script:
     # Compile first SDIF itself
     - if [ "$TRAVIS_OS_NAME" = "linux" ]; then bash distrib/compile_sdif.sh --static; fi
     - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export MACOSX_DEPLOYMENT_TARGET="10.8"; fi
+    - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export CXXFLAGS="-stdlib=libc++"; fi
     - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash distrib/compile_sdif.sh; fi
     - echo $TRAVIS_BUILD_DIR
     - if [ "$TRAVIS_OS_NAME" = "linux" ]; then qmake "CONFIG+=file_sdif file_sdif_static" "FILE_SDIF_LIBDIR=$TRAVIS_BUILD_DIR/external/sdif/easdif" dfasma.pro; fi
