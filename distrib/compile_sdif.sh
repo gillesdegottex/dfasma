@@ -13,19 +13,20 @@ mkdir easdif
 #cvs -d:pserver:anonymous@sdif.cvs.sourceforge.net:/cvsroot/sdif login
 cvs -z3 -d:pserver:anonymous@sdif.cvs.sourceforge.net:/cvsroot/sdif co -P EASDIF_SDIF
 
-if [ "$1" = "--static" ]; then
-  # Apply patch for installing static libraries
-  cd EASDIF_SDIF
-  patch -p0 < ../../../distrib/compile_sdif_install_static.diff
-  cd ..
-  SDIFSTATICOPT=-DEASDIF_BUILD_STATIC:BOOL=ON
+# Apply patch for installing static libraries
+cd EASDIF_SDIF
+patch -p0 < ../../../distrib/compile_sdif_install_static.diff
+cd ..
+
+if [ "$1" = "--osx" ]; then
+  OSXOPTS=-DUSE_LLVM_STD:BOOL=ON
 fi
 
 # Build path
 mkdir build
 cd build
 echo $PWD/../easdif
-cmake -DUSE_LLVM_STD:BOOL=ON -DSDIF_BUILD_STATIC:BOOL=ON $SDIFSTATICOPT -DCMAKE_INSTALL_PREFIX_DEFAULTS_INIT:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=$PWD/../easdif ../EASDIF_SDIF
+cmake $OSXOPTS -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX_DEFAULTS_INIT:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=$PWD/../easdif ../EASDIF_SDIF
 make VERBOSE=1
 make install
 ls -l $PWD/../easdif/*
