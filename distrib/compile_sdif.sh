@@ -19,6 +19,7 @@ patch -p0 < ../../../distrib/compile_sdif_install_static.diff
 cd ..
 
 if [ "$1" = "--osx" ]; then
+  # In order to use libc++ and not libstdc++
   OSXOPTS=-DUSE_LLVM_STD:BOOL=ON
 fi
 
