@@ -28,4 +28,4 @@ echo $PWD/../easdif
 cmake -DSDIF_BUILD_STATIC:BOOL=ON $SDIFSTATICOPT -DCMAKE_INSTALL_PREFIX_DEFAULTS_INIT:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=$PWD/../easdif ../EASDIF_SDIF
 make VERBOSE=1
 make install
-ls -l $PWD/../easdif
+ls -l $PWD/../easdif/*
