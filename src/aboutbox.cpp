@@ -108,7 +108,13 @@ AboutBox::AboutBox(QWidget *parent) :
     #endif
     ui->vlLibraries->addWidget(new QLabel(sdifinfostr, this));
 
-    ui->vlLibraries->addWidget(new QLabel("<i>For reading Audio files:</i> "+FTSound::getAudioFileReadingDescription()+" [dynamic link]", this));
+    QString fileaudiotxt = "<i>For reading Audio files:</i> "+FTSound::getAudioFileReadingDescription();
+    #ifdef file_audio_static
+        fileaudiotxt += " [static link]";
+    #else
+        fileaudiotxt += " [dynamic link]";
+    #endif
+    ui->vlLibraries->addWidget(new QLabel(fileaudiotxt, this));
     QStringList list = FTSound::getAudioFileReadingSupportedFormats();
     for(QStringList::Iterator it=list.begin(); it!=list.end(); ++it)
         ui->listSupportedFormats->addItem(*it);

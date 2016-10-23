@@ -31,6 +31,8 @@ CONFIG += fft_fftw3
 # For the audio file support
 # Chose among: file_audio_libsndfile, file_audio_libsox, file_audio_builtin
 CONFIG += file_audio_libsndfile
+# Try to use static link for the audio file lib
+#CONFIG += file_audio_static
 
 # Additional file format support
 # SDIF (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
@@ -118,7 +120,17 @@ CONFIG(file_audio_libsndfile, file_audio_libsndfile|file_audio_libsox|file_audio
         msvc: LIBS += "$$FILE_AUDIO_LIBDIR/lib/libsndfile-1.lib"
         gcc: LIBS += -L$$FILE_AUDIO_LIBDIR/lib -L$$FILE_AUDIO_LIBDIR/bin -lsndfile-1
     }
-    unix:LIBS += -lsndfile
+    unix {
+        CONFIG(file_audio_static){
+            message("    libsndfile static link")
+            # LIBS +=  -l:libsndfile.a
+            # LIBS += /usr/lib/x86_64-linux-gnu/libsndfile.a
+            LIBS +=  -Wl,-Bstatic -lsndfile -lFLAC -lvorbis -lvorbisenc -Wl,-Bdynamic -logg
+            DEFINES += file_audio_static
+        } else {
+            LIBS += -lsndfile
+        }
+    }
     !isEmpty(FILE_AUDIO_LIBDIR){
         message(FILE_AUDIO_LIBDIR=$$FILE_AUDIO_LIBDIR)
         INCLUDEPATH += $$FILE_AUDIO_LIBDIR/include
@@ -179,12 +191,12 @@ CONFIG(fft_fftw3, fft_fftw3|fft_builtin_fftreal){
             LIBS += -L$$FFT_LIBDIR/lib
         }
         CONFIG(fft_static){
+            message("    FFTW3 static link")
             # LIBS += $$FFT_LIBDIR/libfftw3.a
             # LIBS += -l:libfftw3.a
             LIBS +=  -Wl,-Bstatic -lfftw3 -Wl,-Bdynamic
             DEFINES += FFT_FFTW3_STATIC
-        }
-        else {
+        } else {
             LIBS += -lfftw3
             # LIBS += -lfftw3f
         }
