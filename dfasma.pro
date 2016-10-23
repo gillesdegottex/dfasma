@@ -25,6 +25,8 @@
 # For the Discrete Fast Fourier Transform
 # Chose among: fft_fftw3, fft_builtin_fftreal
 CONFIG += fft_fftw3
+# Try to use static link for the fft lib
+#CONFIG += fft_static
 
 # For the audio file support
 # Chose among: file_audio_libsndfile, file_audio_libsox, file_audio_builtin
@@ -176,8 +178,16 @@ CONFIG(fft_fftw3, fft_fftw3|fft_builtin_fftreal){
             INCLUDEPATH += $$FFT_LIBDIR/include
             LIBS += -L$$FFT_LIBDIR/lib
         }
-        LIBS += -lfftw3
-        # LIBS += -lfftw3f
+        CONFIG(fft_static){
+            # LIBS += $$FFT_LIBDIR/libfftw3.a
+            # LIBS += -l:libfftw3.a
+            LIBS +=  -Wl,-Bstatic -lfftw3 -Wl,-Bdynamic
+            DEFINES += FFT_FFTW3_STATIC
+        }
+        else {
+            LIBS += -lfftw3
+            # LIBS += -lfftw3f
+        }
     }
 }
 CONFIG(fft_builtin_fftreal, fft_fftw3|fft_builtin_fftreal){
@@ -203,12 +213,12 @@ CONFIG(file_sdif) {
     }
 
     CONFIG(file_sdif_static) {
-        message("    "SDIF linked statically)
+        message("    "SDIF static link)
         FILE_SDIF_LINKTYPE = "_static"
         DEFINES += SUPPORT_SDIF_STATIC
     }
     else{
-        message("    "SDIF linked dynamically)
+        message("    "SDIF dynamic link)
     }
 
     LIBS += -lEasdif$$FILE_SDIF_LINKTYPE

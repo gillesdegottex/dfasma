@@ -91,7 +91,7 @@ AboutBox::AboutBox(QWidget *parent) :
     if(sizeof(FFTTYPE)==4)  fftinfostr += "single";
     if(sizeof(FFTTYPE)==8)  fftinfostr += "double";
     if(sizeof(FFTTYPE)==16)  fftinfostr += "quadruple";
-    fftinfostr += "); smallest: "+QString::number(20*log10(std::numeric_limits<FFTTYPE>::min()))+"dB) [dynamic link]";
+    fftinfostr += "); smallest: "+QString::number(20*log10(std::numeric_limits<FFTTYPE>::min()))+"dB)";
     ui->vlLibraries->addWidget(new QLabel(fftinfostr, this));
 
     // SDIF
