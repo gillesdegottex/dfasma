@@ -125,7 +125,7 @@ CONFIG(file_audio_libsndfile, file_audio_libsndfile|file_audio_libsox|file_audio
             message("    libsndfile static link")
             # LIBS +=  -l:libsndfile.a
             # LIBS += /usr/lib/x86_64-linux-gnu/libsndfile.a
-            LIBS +=  -Wl,-Bstatic -lsndfile -lFLAC -lvorbis -lvorbisenc -Wl,-Bdynamic -logg
+            LIBS +=  -Wl,-Bstatic -lsndfile -lFLAC -lvorbis -lvorbisenc -logg -Wl,-Bdynamic
             DEFINES += file_audio_static
         } else {
             LIBS += -lsndfile
