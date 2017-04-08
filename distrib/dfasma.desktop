@@ -3,8 +3,8 @@ Type=Application
 Name=DFasma
 GenericName=
 Comment=Compare sound files
+Comment[fr]=Comparaison de fichiers son
 Icon=dfasma
 Exec=dfasma %F
 Terminal=false
 Categories=AudioVideo;Audio;Player;
-
