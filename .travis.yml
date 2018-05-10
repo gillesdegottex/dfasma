@@ -1,4 +1,6 @@
 language: cpp
+sudo: required
+dist: xenial
 
 compiler:
     - clang
@@ -22,7 +24,6 @@ before_install:
     - git submodule update --init --recursive
     - git fetch --tags
     - sleep 1
-    - git checkout $TRAVIS_BRANCH
     - export PROJECTGITVERSION=`git describe --tags --always |sed 's/^v//'`
     - echo $PROJECTGITVERSION
     - echo $TRAVIS_OS_NAME
@@ -30,12 +31,14 @@ before_install:
     - echo $TRAVIS_TAG
     - export TRAVIS_TAG=`git describe --tags --exact-match HEAD 2>/dev/null`
     - echo $TRAVIS_TAG
+    - echo $TRAVIS_BRANCH
     #- if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa; fi
-    - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo add-apt-repository --yes ppa:beineri/opt-qt521; fi
+    #- if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo add-apt-repository --yes ppa:beineri/opt-qt521; fi
     - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get -qq update; fi
 
 install:
-    - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install qt52*; fi
+    - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install --yes qtbase5-dev qtdeclarative5-dev libqt5webkit5-dev qt5-default qttools5-dev-tools qtmultimedia5-dev libqt5svg5-dev; fi
+    #- if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install qt52*; fi
     #- if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install qtbase5-dev qtdeclarative5-dev libqt5webkit5-dev; fi
     #- if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install qt5-default qttools5-dev-tools qtmobility-dev qtmultimedia5-dev libqt5svg5-dev; fi
     - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install libfftw3-dev libsndfile1-dev libpulse-dev; fi
@@ -45,19 +48,26 @@ install:
     - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install qt5; fi
     - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install cvs libtool; fi
     - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH=/usr/local/opt/qt5/bin:$PATH; fi
+    
+    - qmake --version
 
 script:
-    - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-          QTDIR="/opt/qt52"
-          && PATH="$QTDIR/bin:$PATH"
-          && qt52-env.sh
-      ;
-      fi
+    #- if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+    #      QTDIR="/opt/qt52"
+    #      && PATH="$QTDIR/bin:$PATH"
+    #      && qt52-env.sh
+    #  ; fi
+    #- if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$CC" = "gcc" ]; then
+    #      export CC=gcc-4.8
+    #      && export CXX=g++-4.8
+    #  ; fi
     # Compile first SDIF itself
-    - bash distrib/compile_sdif.sh
+    - if [ "$TRAVIS_OS_NAME" = "linux" ]; then bash distrib/compile_sdif.sh; fi
+    - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export MACOSX_DEPLOYMENT_TARGET="10.8"; fi
+    - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash distrib/compile_sdif.sh --osx; fi
     - echo $TRAVIS_BUILD_DIR
     - if [ "$TRAVIS_OS_NAME" = "linux" ]; then qmake "CONFIG+=file_sdif file_sdif_static" "FILE_SDIF_LIBDIR=$TRAVIS_BUILD_DIR/external/sdif/easdif" dfasma.pro; fi
-    - if [ "$TRAVIS_OS_NAME" = "osx" ]; then qmake "CONFIG+=fft_fftw3 file_audio_libsndfile file_sdif" "FILE_AUDIO_LIBDIR=/usr/local/opt/libsndfile" "FFT_LIBDIR=/usr/local/opt/fftw" "FILE_SDIF_LIBDIR=$TRAVIS_BUILD_DIR/external/sdif/easdif" dfasma.pro; fi
+    - if [ "$TRAVIS_OS_NAME" = "osx" ]; then qmake "CONFIG+=fft_fftw3 file_audio_libsndfile file_sdif file_sdif_static" "FILE_AUDIO_LIBDIR=/usr/local/opt/libsndfile" "FFT_LIBDIR=/usr/local/opt/fftw" "FILE_SDIF_LIBDIR=$TRAVIS_BUILD_DIR/external/sdif/easdif" dfasma.pro; fi
     - make
 
     - if [ "`uname -m`" = "x86_64" ]; then export ARCH="amd64"; fi

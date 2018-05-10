@@ -18,11 +18,16 @@ cd EASDIF_SDIF
 patch -p0 < ../../../distrib/compile_sdif_install_static.diff
 cd ..
 
+if [ "$1" = "--osx" ]; then
+  # In order to use libc++ and not libstdc++
+  OSXOPTS=-DUSE_LLVM_STD:BOOL=ON
+fi
+
 # Build path
 mkdir build
 cd build
 echo $PWD/../easdif
-cmake -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX_DEFAULTS_INIT:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=$PWD/../easdif ../EASDIF_SDIF
-make
+cmake $OSXOPTS -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX_DEFAULTS_INIT:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=$PWD/../easdif ../EASDIF_SDIF
+make VERBOSE=1
 make install
-ls -l $PWD/../easdif
+ls -l $PWD/../easdif/*
