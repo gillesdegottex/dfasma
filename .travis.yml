@@ -13,6 +13,7 @@ os:
 branches:
     only:
         - master
+        - devel
 
 matrix:
     exclude:
