@@ -1,6 +1,3 @@
 [submodule "external/libqaudioextra"]
 	path = external/libqaudioextra
 	url = https://github.com/gillesdegottex/libqaudioextra.git
-[submodule "external/REAPER"]
-	path = external/REAPER
-	url = https://github.com/gillesdegottex/REAPER.git
