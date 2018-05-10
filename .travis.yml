@@ -44,7 +44,7 @@ install:
     #- if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install qt5-default qttools5-dev-tools qtmobility-dev qtmultimedia5-dev libqt5svg5-dev; fi
     - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install libfftw3-dev libsndfile1-dev libpulse-dev; fi
     - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install cvs libtool; fi
-    - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install fftw3; fi
+    - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install fftw; fi
     - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install libsndfile; fi
     - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install qt5; fi
     - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install cvs libtool; fi
