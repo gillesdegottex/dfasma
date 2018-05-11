@@ -969,36 +969,65 @@ void WMainWindow::play(bool filtered){
            || m_audioengine->state()==QAudio::StoppedState){
         // COUTD << "MainWindow::play QAudio::IdleState || QAudio::StoppedState" << endl;
 
-            // If stopped, play the whole signal or its selection
-            FTSound* currentftsound = gFL->getCurrentFTSound(true);
-            if(currentftsound){
+            double tstart = m_gvWaveform->m_giPlayCursor->pos().x();
+            double tstop = gFL->getMaxLastSampleTime();
+            if(m_gvWaveform->m_selection.width()>0){
+                tstart = m_gvWaveform->m_selection.left();
+                tstop = m_gvWaveform->m_selection.right();
+            }
 
-                double tstart = m_gvWaveform->m_giPlayCursor->pos().x();
-                double tstop = gFL->getMaxLastSampleTime();
-                if(m_gvWaveform->m_selection.width()>0){
-                    tstart = m_gvWaveform->m_selection.left();
-                    tstop = m_gvWaveform->m_selection.right();
+            double fstart = 0.0;
+            double fstop = gFL->getFs();
+            if(filtered && m_gvSpectrumAmplitude->m_selection.width()>0){
+                fstart = m_gvSpectrumAmplitude->m_selection.left();
+                fstop = m_gvSpectrumAmplitude->m_selection.right();
+            }
+
+            if(0){
+                // Preparation for #568: Doesn't work ... obviously ...
+                // Need to build a queue that will automatically play the sounds of the queue and show the necessary info (e.g. playing cursor) on the interface.
+                QList<QListWidgetItem*> list = gFL->selectedItems();
+                // Play all selected items
+                for(int i=0; i<list.size(); i++){
+                    try {
+
+                        if(((FileType*)list.at(i))->getType()!=FileType::FTSOUND)
+                            continue;
+
+                        FTSound* snd = (FTSound*)list.at(i);
+
+                        m_gvWaveform->m_initialPlayPosition = tstart;
+                        m_playingftsound = snd;
+                        m_audioengine->startPlayback(snd, tstart, tstop, fstart, fstop);
+
+                        ui->actionPlay->setEnabled(false);
+                        // Delay the stop and re-play,
+                        // to avoid the audio engine to go hysterical and crash.
+                        QTimer::singleShot(250, this, SLOT(enablePlay()));
+                    }
+                    catch(QString err){
+                        statusBar()->showMessage("Error during playback: "+err);
+                    }
                 }
+            }
+            else{
+                // If stopped, play the whole signal or its selection
+                FTSound* currentftsound = gFL->getCurrentFTSound(true);
+                if(currentftsound){
 
-                double fstart = 0.0;
-                double fstop = gFL->getFs();
-                if(filtered && m_gvSpectrumAmplitude->m_selection.width()>0){
-                    fstart = m_gvSpectrumAmplitude->m_selection.left();
-                    fstop = m_gvSpectrumAmplitude->m_selection.right();
-                }
+                    try {
+                        m_gvWaveform->m_initialPlayPosition = tstart;
+                        m_playingftsound = currentftsound;
+                        m_audioengine->startPlayback(currentftsound, tstart, tstop, fstart, fstop);
 
-                try {
-                    m_gvWaveform->m_initialPlayPosition = tstart;
-                    m_playingftsound = currentftsound;
-                    m_audioengine->startPlayback(currentftsound, tstart, tstop, fstart, fstop);
-
-                    ui->actionPlay->setEnabled(false);
-                    // Delay the stop and re-play,
-                    // to avoid the audio engine to go hysterical and crash.
-                    QTimer::singleShot(250, this, SLOT(enablePlay()));
-                }
-                catch(QString err){
-                    statusBar()->showMessage("Error during playback: "+err);
+                        ui->actionPlay->setEnabled(false);
+                        // Delay the stop and re-play,
+                        // to avoid the audio engine to go hysterical and crash.
+                        QTimer::singleShot(250, this, SLOT(enablePlay()));
+                    }
+                    catch(QString err){
+                        statusBar()->showMessage("Error during playback: "+err);
+                    }
                 }
             }
         }
