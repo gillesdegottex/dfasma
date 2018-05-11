@@ -453,7 +453,7 @@ void FTFZero::save() {
     if(m_fileformat==FFAsciiTimeValue){
         QFile data(fileFullPath);
         if(!data.open(QFile::WriteOnly))
-            throw QString("FTZero: Cannot open file");
+            throw QString("FTZero: Cannot open file for writting");
 
         QTextStream stream(&data);
         stream.setRealNumberPrecision(12);
