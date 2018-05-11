@@ -462,6 +462,18 @@ void FTFZero::save() {
         for(size_t li=0; li<ts.size(); li++)
             stream << ts[li] << " " << f0s[li] << endl;
     }
+    if(m_fileformat==FFAsciiValue){
+        QFile data(fileFullPath);
+        if(!data.open(QFile::WriteOnly))
+            throw QString("FTZero: Cannot open file for writting");
+
+        QTextStream stream(&data);
+        stream.setRealNumberPrecision(12);
+        stream.setRealNumberNotation(QTextStream::ScientificNotation);
+        stream.setCodec("ASCII");
+        for(size_t li=0; li<ts.size(); li++)
+            stream << f0s[li] << endl;
+    }
     else if(m_fileformat==FFSDIF){
         #ifdef SUPPORT_SDIF
             SdifFileT* filew = SdifFOpen(fileFullPath.toLatin1().constData(), eWriteFile);
