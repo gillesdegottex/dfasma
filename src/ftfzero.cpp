@@ -223,18 +223,23 @@ void FTFZero::load() {
         if(!std::getline(fin, line))
             throw QString("FTFZero:FFAutoDetect: There is not a single line in this file.");
 
-        // Guess the format using grammar check
-
-        double t;
-        // Check: <number> <number>
-        std::istringstream iss(line);
-        if((iss >> t >> t) && iss.eof())
-            m_fileformat = FFAsciiTimeValue;
+        // Guess the format using magic words
+        if(line.find("EST_File")==0)
+            m_fileformat = FFEST;
         else{
-            // Check: <number>
+            // Guess the format using grammar check
+
+            double t;
+            // Check: <number> <number>
             std::istringstream iss(line);
-            if((iss >> t) && iss.eof())
-                m_fileformat = FFAsciiValue;
+            if((iss >> t >> t) && iss.eof())
+                m_fileformat = FFAsciiTimeValue;
+            else{
+                // Check: <number>
+                std::istringstream iss(line);
+                if((iss >> t) && iss.eof())
+                    m_fileformat = FFAsciiValue;
+            }
         }
     }
 
@@ -279,17 +284,53 @@ void FTFZero::load() {
         double voiced = false;
         double value;
         string line;
+        enum DataType {ESTDTunknown, ESTDTASCII, ESTDTBinary1, ESTDTBinary2};
+        DataType datatype = ESTDTunknown;
+        int nbframes = -1;
+
         bool skippingheader = true;
         while(skippingheader && std::getline(fin, line)) {
-            if(line.find("EST_Header_End")==0)
+            if(line.find("EST_Header_End")!=string::npos)
                 skippingheader = false;
+            else if(line.find("DataType")!=string::npos){
+                if(line.find("binary2")!=string::npos)
+                    datatype = ESTDTBinary2;
+                else if(line.find("ascii")!=string::npos)
+                    datatype = ESTDTASCII;
+            }
+            else if(line.find("NumFrames")!=string::npos){
+                string NumFramesKeyWord;
+                std::istringstream(line) >> NumFramesKeyWord >> nbframes;
+            }
         }
-        while(std::getline(fin, line)) {
-            std::istringstream(line) >> t >> voiced >> value;
-            ts.push_back(t);
-            if(!voiced || value<0.0)
-                value = 0.0;
-            f0s.push_back(value);
+
+        if(datatype==ESTDTASCII){
+            while(std::getline(fin, line)) {
+                std::istringstream(line) >> t >> voiced >> value;
+                ts.push_back(t);
+                if(!voiced || value<0.0)
+                    value = 0.0;
+                f0s.push_back(value);
+            }
+        }
+        else if(datatype==ESTDTBinary2){
+            float tf;
+            for(int l=0; l<nbframes; ++l){
+                fin.read((char*)&tf, sizeof(tf));
+                ts.push_back(tf);
+            }
+            char vuc;
+            for(int l=0; l<nbframes; ++l){
+                fin.read((char*)&vuc, sizeof(vuc));
+                // DCOUT << vuc << endl; // Don't use it
+            }
+            float valuef;
+            for(int l=0; l<nbframes; ++l){
+                fin.read((char*)&valuef, sizeof(valuef));
+                if(valuef<0.0)
+                    valuef = 0.0;
+                f0s.push_back(valuef);
+            }
         }
     }
     else if(m_fileformat==FFSDIF){
