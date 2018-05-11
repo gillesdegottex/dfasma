@@ -292,6 +292,8 @@ void FTSound::setColor(const QColor &_color){
     m_giWavForSpectrumPhase->setPen(pen);
     m_giWavForSpectrumGroupDelay->setPen(pen);
     m_giSQNRForSpectrumAmplitude->setPen(pen);
+
+    m_giWavForWaveform->update();
 }
 
 void FTSound::zposReset(){
