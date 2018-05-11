@@ -573,9 +573,11 @@ void WMainWindow::updateViewsAfterAddFile(bool isfirsts) {
 void WMainWindow::viewsDisplayedChanged() {
     ui->wSpectra->setVisible(ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked() || ui->actionShowGroupDelaySpectrum->isChecked());
 
-    gMW->m_gvWaveform->m_aWaveformShowWindow->setChecked(gMW->m_gvWaveform->m_aWaveformShowWindow->isChecked() && (ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked() || ui->actionShowGroupDelaySpectrum->isChecked()));
-    gMW->m_gvWaveform->m_aWaveformShowWindow->setEnabled(ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked() || ui->actionShowGroupDelaySpectrum->isChecked());
-
+    gMW->m_gvWaveform->m_aWaveformShowWindow->setChecked(gMW->m_gvWaveform->m_aWaveformShowWindow->isChecked() && (ui->actionShowAmplitudeSpectrum->isChecked() || ui->actionShowPhaseSpectrum->isChecked() || ui->actionShowGroupDelaySpectrum->isChecked() || (ui->actionShowSpectrogram->isChecked() && gMW->m_gvWaveform->m_aWaveformStickToSTFTWindows->isChecked())));
+    gMW->m_gvWaveform->m_aWaveformShowWindow->setEnabled(ui->actionShowAmplitudeSpectrum->isChecked()
+                                                         || ui->actionShowPhaseSpectrum->isChecked()
+                                                         || ui->actionShowGroupDelaySpectrum->isChecked()
+                                                         || (ui->actionShowSpectrogram->isChecked() && gMW->m_gvWaveform->m_aWaveformStickToSTFTWindows->isChecked()));
     // Set the horizontal scroll bars of the spectra
     m_gvSpectrumAmplitude->updateScrollBars();
 
