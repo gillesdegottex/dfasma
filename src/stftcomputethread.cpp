@@ -258,7 +258,7 @@ void STFTComputeThread::run() {
 
                             // TODO Use windowedwavseg instead of m_fft->setInput ?
 
-                            m_fft->execute(false); // Compute the DFT
+                            m_fft->execute(false); // Compute the DFT // Switch to FFTScarf #558
 
                             // Retrieve DFT's output
                             stftfrpa = stftpa+ni*dftsize;
