@@ -299,8 +299,10 @@ void FTFZero::load() {
                     datatype = ESTDTASCII;
             }
             else if(line.find("NumFrames")!=string::npos){
-                string NumFramesKeyWord;
-                std::istringstream(line) >> NumFramesKeyWord >> nbframes;
+                std::string numframeskeyword;
+                std::istringstream strstr(line);
+                strstr >> numframeskeyword;
+                strstr >> nbframes;
             }
         }
 
