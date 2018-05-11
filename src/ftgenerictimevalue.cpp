@@ -206,7 +206,7 @@ void FTGenericTimeValue::load(){
     }
 
     if(m_fileformat==FFAutoDetect)
-        throw QString("Cannot detect the file format of this F0 file");
+        throw QString("Cannot detect the file format of this generic time/value file");
 
     // Load the data given the format found or the one given
     if(m_fileformat==FFAsciiTimeValue){
