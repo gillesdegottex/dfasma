@@ -503,7 +503,7 @@ void FTFZero::save() {
         for(size_t li=0; li<ts.size(); li++)
             stream << ts[li] << " " << f0s[li] << endl;
     }
-    if(m_fileformat==FFAsciiValue){
+    else if(m_fileformat==FFAsciiValue){
         QFile data(fileFullPath);
         if(!data.open(QFile::WriteOnly))
             throw QString("FTZero: Cannot open file for writting");
