@@ -288,12 +288,20 @@ void FTSound::setColor(const QColor &_color){
     QPen pen(getColor());
     pen.setWidth(0);
     m_giWavForWaveform->setPen(pen);
-    m_giWavForSpectrumAmplitude->setPen(pen);
-    m_giWavForSpectrumPhase->setPen(pen);
-    m_giWavForSpectrumGroupDelay->setPen(pen);
-    m_giSQNRForSpectrumAmplitude->setPen(pen);
-
     m_giWavForWaveform->update();
+    m_giWavForSpectrumAmplitude->setPen(pen);
+    m_giWavForSpectrumAmplitude->update();
+    m_giWavForSpectrumPhase->setPen(pen);
+    m_giWavForSpectrumPhase->update();
+    m_giWavForSpectrumGroupDelay->setPen(pen);
+    m_giWavForSpectrumGroupDelay->update();
+    m_giSQNRForSpectrumAmplitude->setPen(pen);
+    m_giSQNRForSpectrumAmplitude->update();
+
+    gMW->ui->pbSpectrogramSTFTUpdate->show();
+    if(gMW->m_gvSpectrogram->m_aAutoUpdate->isChecked())
+        gMW->m_gvSpectrogram->updateSTFTPlot();
+
 }
 
 void FTSound::zposReset(){
