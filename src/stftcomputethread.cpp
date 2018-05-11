@@ -442,7 +442,7 @@ void STFTComputeThread::run() {
                     bool colormap_reversed = params_running.colormap_reversed;
 
                     QAEColorMap& cmap = QAEColorMap::getAt(params_running.colormap_index);
-                    cmap.setColor(params_running.stftparams.snd->getColor());
+                    cmap.setColor(params_running.color);
 
                     QRgb* pimgb = (QRgb*)(params_running.imgstft->bits());
 

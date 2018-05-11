@@ -25,6 +25,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include <QMutex>
 
 #include "qaesigproc.h"
+#include "qaecolormap.h"
 class FTSound;
 
 class STFTComputeThread : public QThread
@@ -104,6 +105,7 @@ public:
         FFTTYPE upper;
         bool loudnessweighting;
         int colorrangemode;
+        QColor color;   // Used when colormap_index=
 
         void clear(){
             stftparams.clear();
@@ -118,7 +120,7 @@ public:
         ImageParameters(){
             clear();
         }
-        ImageParameters(STFTComputeThread::STFTParameters reqSTFTparams, QImage* reqImgSTFT, int reqcolormap_index, bool reqcolormap_reversed, FFTTYPE reqlower, FFTTYPE requpper, bool reqloudnessweighting, int reqcolorrangemode){
+        ImageParameters(STFTComputeThread::STFTParameters reqSTFTparams, QImage* reqImgSTFT, int reqcolormap_index, bool reqcolormap_reversed, FFTTYPE reqlower, FFTTYPE requpper, bool reqloudnessweighting, int reqcolorrangemode, QColor reqcolor){
             clear();
             stftparams = reqSTFTparams;
             imgstft = reqImgSTFT;
@@ -128,6 +130,7 @@ public:
             upper = requpper;
             loudnessweighting = reqloudnessweighting;
             colorrangemode = reqcolorrangemode;
+            color = reqcolor;
         }
 
         bool operator==(const ImageParameters& param){
@@ -137,6 +140,14 @@ public:
                 return false;
             if(colormap_index!=param.colormap_index)
                 return false;
+            else{
+                // If the color map is still the same
+                QAEColorMap& cmap = QAEColorMap::getAt(colormap_index);
+                if(cmap.isColored()){
+                    if(color!=param.color)
+                        return false;
+                }
+            }
             if(colormap_reversed!=param.colormap_reversed)
                 return false;
             if(lower!=param.lower)
