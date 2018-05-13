@@ -3,7 +3,7 @@
 # Compile Easdif from submodule
 # and install everything in external/easdif directory.
 
-if [ $# -ne 2 ]; then
+if [ $# -lt 2 ]; then
     # Usage: compile_sdif.sh <SOURCEDIR> <DESTDIR>
     exit 1
 fi
@@ -19,7 +19,7 @@ cd "$DESTDIR"
 # Install path
 mkdir -p easdif
 
-if [ "$3" = "OSX" ]; then
+if [ "$3" = "--osx" ]; then
   # In order to use libc++ and not libstdc++
   OSXOPTS=-DUSE_LLVM_STD:BOOL=ON
 fi
