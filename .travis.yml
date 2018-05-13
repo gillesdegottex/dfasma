@@ -80,6 +80,7 @@ script:
 
     # This checkout if for ensuring that git describe --tags --always gives a proper output
     # otherwise only the commit's sha appear bcs Travis always checkout a commit, never a HEAD
+    # If this is done at the very beginning, the test of Pull request won't work!
     - get checkout $TRAVIS_BRANCH
 
     - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
