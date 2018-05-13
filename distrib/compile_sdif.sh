@@ -27,9 +27,12 @@ fi
 # Build path
 mkdir -p build
 cd build
+echo "SDIF: START CMAKE"
 cmake $OSXOPTS -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX_DEFAULTS_INIT:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=$PWD/../easdif $SOURCEDIR
-# make VERBOSE=1
-make
+echo "SDIF: START MAKE"
+make VERBOSE=1
+#make
+echo "SDIF: START MAKE INSTALL"
 make install
 ls -l $PWD/../easdif/*
 
