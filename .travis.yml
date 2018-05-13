@@ -83,6 +83,11 @@ script:
     # otherwise only the commit's sha appear bcs Travis always checkout a commit, never a HEAD
     # If this is done at the very beginning, the test of Pull request won't work!
     - git checkout $TRAVIS_BRANCH
+    - git status
+    - git branch
+    - git describe --tags --always
+
+    - cd distrib; bash package_getversion.sh; cd ..
 
     - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
             cd distrib
