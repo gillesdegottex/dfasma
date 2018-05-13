@@ -87,6 +87,7 @@ script:
     - git status
     - git branch
     - git describe --tags --always
+    - git describe --tags
 
     - cd distrib; bash package_getversion.sh; cd ..
 
