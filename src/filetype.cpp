@@ -113,6 +113,8 @@ FileType::FileContainer FileType::guessContainer(const QString& filepath){
     // TODO Could make a ligther one based on the file extension, instead of opening the file
 
     int nchan = FTSound::getNumberOfChannels(filepath);
+    bool istext = FileType::isFileTEXT(filepath);   // This detection is not 100% accurate
+    bool isascii = FileType::isFileASCII(filepath); // This detection is not 100% accurate
     if(nchan>0)
         return FCANYSOUND;
     #ifdef SUPPORT_SDIF
@@ -121,10 +123,12 @@ FileType::FileContainer FileType::guessContainer(const QString& filepath){
     #endif
     else if(FileType::isFileEST(filepath))
         return FCEST;
-    else if(FileType::isFileTEXT(filepath))// This detection is not 100% accurate
+    else if(istext)
         return FCTEXT;
-//    else if(FileType::isFileASCII(filepath))// This detection is not 100% accurate
-//        return FCASCII;
+    else if(isascii)
+        return FCASCII;
+    else if(!istext && !isascii)
+        return FCBINARY;
     #ifndef SUPPORT_SDIF
     else if(FileType::hasFileExtension(filepath, ".sdif"))
         throw QString("Support of SDIF files not compiled in this distribution of DFasma.");
