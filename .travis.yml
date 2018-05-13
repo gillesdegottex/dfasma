@@ -78,6 +78,10 @@ script:
     - if [ "`uname -m`" = "x86_64" ]; then export ARCH="amd64"; fi
     - if [ "`uname -m`" = "x86" ]; then export ARCH="i386"; fi
 
+    # This checkout if for ensuring that git describe --tags --always gives a proper output
+    # otherwise only the commit's sha appear bcs Travis always checkout a commit, never a HEAD
+    - get checkout $TRAVIS_BRANCH
+
     - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
             cd distrib
          && bash package_deb.sh ../dfasma
