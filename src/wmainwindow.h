@@ -129,7 +129,7 @@ public slots:
     void removeWidgetGenericTimeValue(WidgetGenericTimeValue* fgtv);
 
 public:
-    explicit WMainWindow(QStringList filestoload, QStringList genfilestoload=QStringList(), QWidget* parent=0);
+    explicit WMainWindow(QStringList filestoload, QStringList gvtfilestoload=QStringList(), QStringList gtvb32filestoload=QStringList(), QStringList gtvb64filestoload=QStringList(), QWidget* parent=0);
     ~WMainWindow();
     bool isLoading() const {return m_loading;}
 

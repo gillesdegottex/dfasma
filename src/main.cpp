@@ -110,12 +110,15 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
     parser.addVersionOption();
     parser.addPositionalArgument("files", "Files to load", "[files...]");
-    QCommandLineOption gentimevalueOption(QStringList() << "g" << "gentimevalue", "Load the <file> as generic time/value", "file");
-    parser.addOption(gentimevalueOption);
+    parser.addOption(QCommandLineOption(QStringList() << "g" << "gtv", "Load <file> as generic time/value (guess the format)", "file"));
+    parser.addOption(QCommandLineOption(QStringList() << "gb32", "Load <file> as generic time/value (32b float binary format)", "file"));
+    parser.addOption(QCommandLineOption(QStringList() << "gb64", "Load <file> as generic time/value (64b float binary format)", "file"));
 
     parser.process(app); // Process the actual command line arguments
     QStringList filestoload = parser.positionalArguments();
-    QStringList genfilestoload = parser.values("g");
+    QStringList gtvfilestoload = parser.values("g");
+    QStringList gtvb32filestoload = parser.values("gb32");
+    QStringList gtvb64filestoload = parser.values("gb64");
 
 
     // Initialize some external libraries
@@ -134,7 +137,7 @@ int main(int argc, char *argv[])
     #endif
 
     // Create the main window and run it
-    WMainWindow* w = new WMainWindow(filestoload, genfilestoload);
+    WMainWindow* w = new WMainWindow(filestoload, gtvfilestoload, gtvb32filestoload, gtvb64filestoload);
     QObject::connect(&app, SIGNAL(focusWindowChanged(QWindow*)), w, SLOT(focusWindowChanged(QWindow*)));
     w->show();
 

@@ -51,7 +51,7 @@ class WFilesList : public QListWidget
     // I cannot find a way to do it already from the Qt5 library.
     // (FilesListWidget::hasItem returns NULL)
     std::map<FileType*,bool> m_present_files;
-    void addExistingFilesRecursive(const QStringList& files, FileType::FType type=FileType::FTUNSET);
+    void addExistingFilesRecursive(const QStringList& files, FileType::FType type=FileType::FTUNSET, int format=0);
 
     std::deque<FileType*> m_current_sourced;
 
@@ -77,8 +77,8 @@ public:
     std::deque<FTGenericTimeValue*> ftgenerictimevalues;
     bool hasFile(FileType *ft) const;
 
-    void addExistingFiles(const QStringList& files, FileType::FType type=FileType::FTUNSET);
-    void addExistingFile(const QString& filepath, FileType::FType type=FileType::FTUNSET);
+    void addExistingFiles(const QStringList& files, FileType::FType type=FileType::FTUNSET, int format=0);
+    void addExistingFile(const QString& filepath, FileType::FType type=FileType::FTUNSET, int format=0);
 
     FileType* currentFile() const;
     FTSound* getCurrentFTSound(bool forceselect=false);

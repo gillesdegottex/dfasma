@@ -153,7 +153,7 @@ void WFilesList::stopFileProgressDialog() {
     QCoreApplication::processEvents(); // To show the progress
 }
 
-void WFilesList::addExistingFilesRecursive(const QStringList& files, FileType::FType type) {
+void WFilesList::addExistingFilesRecursive(const QStringList& files, FileType::FType type, int format) {
     for(int fi=0; fi<files.size() && !m_prgdlg->wasCanceled(); fi++) {
         if(QFileInfo(files[fi]).isDir()) {
 //            COUTD << "Add recursive" << endl;
@@ -164,7 +164,7 @@ void WFilesList::addExistingFilesRecursive(const QStringList& files, FileType::F
             if(fpd.count()>0){
                 for(int fpdi=0; fpdi<int(fpd.count()) && !m_prgdlg->wasCanceled(); ++fpdi){
 //                    COUTD << "Dir: " << fpd[fpdi].toLatin1().constData() << endl;
-                    addExistingFilesRecursive(QStringList(fpd.filePath(fpd[fpdi])));
+                    addExistingFilesRecursive(QStringList(fpd.filePath(fpd[fpdi])), type, format);
                 }
             }
 
@@ -177,32 +177,32 @@ void WFilesList::addExistingFilesRecursive(const QStringList& files, FileType::F
 //                    COUTD << "File: " << fpd[fpdi].toLatin1().constData() << endl;
                     m_prgdlg->setValue(fpdi);
                     QCoreApplication::processEvents(); // To show the progress
-                    addExistingFile(fpd.filePath(fpd[fpdi]));
+                    addExistingFile(fpd.filePath(fpd[fpdi]), type, format);   // TODO type might be missing
                 }
             }
         }
         else {
             if(m_prgdlg) m_prgdlg->setValue(fi);
             QCoreApplication::processEvents(); // To show the progress
-            addExistingFile(files[fi], type);
+            addExistingFile(files[fi], type, format);
         }
     }
 }
 
-void WFilesList::addExistingFiles(const QStringList& files, FileType::FType type) {
+void WFilesList::addExistingFiles(const QStringList& files, FileType::FType type, int format) {
 
     // These progress dialogs HAVE to be built on the stack otherwise ghost dialogs appear.
     QProgressDialog prgdlg("Opening files...", "Abort", 0, files.size(), this);
     prgdlg.setMinimumDuration(500);
     m_prgdlg = &prgdlg;
 
-    addExistingFilesRecursive(files, type);
+    addExistingFilesRecursive(files, type, format);
 
     stopFileProgressDialog();
     m_prgdlg = NULL;
 }
 
-void WFilesList::addExistingFile(const QString& filepath, FileType::FType type) {
+void WFilesList::addExistingFile(const QString& filepath, FileType::FType type, int format) {
     // Not used for directories, use addExistingFiles instead
 
     try{
@@ -286,7 +286,8 @@ void WFilesList::addExistingFile(const QString& filepath, FileType::FType type) 
                 type = FileType::FTFZERO;
             }
             else if(container==FileType::FCBINARY) {
-                // TODO
+                // If supported by DFasma, it can only be binary Generic Time/Value file.
+                type = FileType::FTGENTIMEVALUE;
             }
         }
 
@@ -341,7 +342,7 @@ void WFilesList::addExistingFile(const QString& filepath, FileType::FType type) 
                 widget = gMW->addWidgetGenericTimeValue();
             else
                 widget = gMW->m_wGenericTimeValues.at(viewid);
-            addItem(new FTGenericTimeValue(filepath, widget, container));
+            addItem(new FTGenericTimeValue(filepath, widget, container, (FTGenericTimeValue::FileFormat)format));
         }
     }
     catch (QString err)

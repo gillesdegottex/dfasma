@@ -59,7 +59,11 @@ FTGenericTimeValue::ClassConstructor::ClassConstructor(){
         FTGenericTimeValue::s_formatstrings.push_back("Unspecified");
         FTGenericTimeValue::s_formatstrings.push_back("Auto");
         FTGenericTimeValue::s_formatstrings.push_back("Text - Auto");
-        FTGenericTimeValue::s_formatstrings.push_back("Text - Time Value (*.txt)");
+        FTGenericTimeValue::s_formatstrings.push_back("Text - [Time, Value] (*.txt)");
+        FTGenericTimeValue::s_formatstrings.push_back("Text - [Value] (*.txt)");
+        FTGenericTimeValue::s_formatstrings.push_back("Binary - Auto (*.*)");
+        FTGenericTimeValue::s_formatstrings.push_back("Binary - float 32bits (*.*)");
+        FTGenericTimeValue::s_formatstrings.push_back("Binary - float 64bits (*.*)");
         FTGenericTimeValue::s_formatstrings.push_back("SDIF - 1FQ0/1FQ0 (*.sdif)"); // TODO
     }
 }
@@ -138,8 +142,10 @@ FTGenericTimeValue::FTGenericTimeValue(const QString& _fileName, WidgetGenericTi
     m_fileformat = fileformat;
     if(container==FileType::FCSDIF)
         m_fileformat = FFSDIF;
-    else if(container==FileType::FCASCII)
+    else if(container==FileType::FCASCII && (fileformat==FFNotSpecified || fileformat==FFAutoDetect))
         m_fileformat = FFAsciiAutoDetect;
+    else if(container==FileType::FCBINARY && (fileformat==FFNotSpecified || fileformat==FFAutoDetect))
+        m_fileformat = FFBinaryAutoDetect;
 
     if(!fileFullPath.isEmpty()){
         checkFileStatus(CFSMEXCEPTION);
@@ -182,26 +188,39 @@ void FTGenericTimeValue::load(){
             m_fileformat = FFSDIF;
     #endif
     // Check for text/ascii formats
-    if(m_fileformat==FFAutoDetect || m_fileformat==FFAsciiAutoDetect){
-        // Find the format using grammar check
+    if(m_fileformat==FFAutoDetect || m_fileformat==FFAsciiAutoDetect || m_fileformat==FFBinaryAutoDetect){
 
-        std::ifstream fin(fileFullPath.toLatin1().constData());
-        if(!fin.is_open())
-            throw QString("FTGenericTimeValue:FFAutoDetect: Cannot open the file.");
-        double t;
-        string line, text;
-        // Check the first line only (Assuming it is enough)
-        if(!std::getline(fin, line))
-            throw QString("FTGenericTimeValue:FFAutoDetect: There is not a single line in this file.");
+        if(m_fileformat==FFAsciiAutoDetect || (m_fileformat!=FFAsciiAutoDetect && isFileASCII(fileFullPath))){
+            // Find the format using grammar check
 
-        // Check: <number> <number>
-        std::istringstream iss(line);
-        if((iss >> t >> t) && iss.eof())
-            m_fileformat = FFAsciiTimeValue;        
-        else{
+            std::ifstream fin(fileFullPath.toLatin1().constData());
+            if(!fin.is_open())
+                throw QString("FTGenericTimeValue:FFAutoDetect: Cannot open the file.");
+            double t;
+            string line, text;
+            // Check the first line only (Assuming it is enough)
+            if(!std::getline(fin, line))
+                throw QString("FTGenericTimeValue:FFAutoDetect: There is not a single line in this file.");
+
+            // Check: <number> <number>
             std::istringstream iss(line);
-            if((iss >> t) && iss.eof())
-                m_fileformat = FFAsciiValue;
+            if((iss >> t >> t) && iss.eof())
+                m_fileformat = FFAsciiTimeValue;
+            else{
+                std::istringstream iss(line);
+                if((iss >> t) && iss.eof())
+                    m_fileformat = FFAsciiValue;
+            }
+        }
+        else if(m_fileformat!=FFAsciiAutoDetect || m_fileformat==FFBinaryAutoDetect){
+            // It should be a binary file
+
+            // Guess the format from the file size in bytes
+            // It should be multiple of 4 for float32 and multiple of 8 for double64
+            QFileInfo fileinfo(fileFullPath);
+            qint64 filesize = fileinfo.size();
+            if(filesize%8==0)       m_fileformat=FFBinaryFloat64;
+            else if(filesize%4==0)  m_fileformat=FFBinaryFloat32;
         }
     }
 
@@ -246,6 +265,57 @@ void FTGenericTimeValue::load(){
                 m_values_max = std::max(m_values_max, value);
             }
             values.push_back(value);
+            t += gMW->m_dlgSettings->ui->sbF0DefaultStepSize->value();
+        }
+    }
+    else if(m_fileformat==FFBinaryFloat32){
+
+        QFileInfo fileinfo(fileFullPath);
+        qint64 filesize = fileinfo.size();
+        if(filesize%4>0)    throw QString("FTGenericTimeValue:FFBinaryFloat32: The file size indicates that the file is not made of 32bits float binary values.");
+
+        ifstream fin(fileFullPath.toLatin1().constData(), std::ifstream::binary);
+        if(!fin.is_open())
+            throw QString("FTGenericTimeValue:FFBinaryFloat32: Cannot open file");
+
+        double t=0.0;
+        float value; // TODO a definition that ensure sizeof(float)=32
+        if(sizeof(value)!=4) throw QString("The float representation is not 32bits on this machine, the loaded data is likely to be wrong.");
+        m_values_min = +std::numeric_limits<double>::infinity();
+        m_values_max = -std::numeric_limits<double>::infinity();
+
+        while (fin.read(reinterpret_cast<char*>(&value), sizeof(value))){
+            ts.push_back(t);
+            values.push_back(value);
+            if(!std::isinf(value)){
+                m_values_min = std::min(m_values_min, double(value));
+                m_values_max = std::max(m_values_max, double(value));
+            }
+            t += gMW->m_dlgSettings->ui->sbF0DefaultStepSize->value();
+        }
+    }
+    else if(m_fileformat==FFBinaryFloat64){
+        QFileInfo fileinfo(fileFullPath);
+        qint64 filesize = fileinfo.size();
+        if(filesize%8>0)    throw QString("FTGenericTimeValue:FFBinaryFloat64: The file size indicates that the file is not made of 64bits float binary values.");
+
+        ifstream fin(fileFullPath.toLatin1().constData(), std::ifstream::binary);
+        if(!fin.is_open())
+            throw QString("FTGenericTimeValue:FFBinaryFloat64: Cannot open file");
+
+        double t=0.0;
+        double value; // TODO a definition that ensure sizeof(float)=32
+        if(sizeof(value)!=8) throw QString("The double representation is not 64bits on this machine, the loaded data is likely to be wrong.");
+        m_values_min = +std::numeric_limits<double>::infinity();
+        m_values_max = -std::numeric_limits<double>::infinity();
+
+        while (fin.read(reinterpret_cast<char*>(&value), sizeof(value))){
+            ts.push_back(t);
+            values.push_back(value);
+            if(!std::isinf(value)){
+                m_values_min = std::min(m_values_min, value);
+                m_values_max = std::max(m_values_max, value);
+            }
             t += gMW->m_dlgSettings->ui->sbF0DefaultStepSize->value();
         }
     }
@@ -535,6 +605,9 @@ void FTGenericTimeValue::updateStatistics(){
 QString FTGenericTimeValue::info() const {
     QString str = FileType::info();
     str += "Number of values: " + QString::number(ts.size()) + "<br/>";
+
+    str += "Format: " + s_formatstrings[m_fileformat].remove(QRegExp("\\(.+\\)")) + "<br/>";
+
     if(ts.size()>0){
         str += "Average sampling: " + QString("%1").arg(m_meandts, 0,'f',gMW->m_dlgSettings->ui->sbViewsTimeDecimals->value()) + "s<br/>";
         str += QString("Values in [%1, %2]").arg(m_valuemin, 0,'g',3).arg(m_valuemax, 0,'g',5);

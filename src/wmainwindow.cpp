@@ -42,6 +42,7 @@ file provided in the source code of DFasma. Another copy can be found at
 #include "ftsound.h"
 #include "ftfzero.h"
 #include "ftlabels.h"
+#include "ftgenerictimevalue.h"
 #include "../external/audioengine/audioengine.h"
 #include "aboutbox.h"
 #include "wgenerictimevalue.h"
@@ -84,7 +85,7 @@ using namespace std;
 
 WMainWindow* gMW = NULL;
 
-WMainWindow::WMainWindow(QStringList filestoload, QStringList genericfilestoload, QWidget *parent)
+WMainWindow::WMainWindow(QStringList filestoload, QStringList gvtfilestoload, QStringList gtvb32filestoload, QStringList gtvb64filestoload, QWidget *parent)
     : QMainWindow(parent)
     , m_last_file_editing(NULL)
     , m_dlgSettings(NULL)
@@ -322,8 +323,12 @@ WMainWindow::WMainWindow(QStringList filestoload, QStringList genericfilestoload
     // Doesn't work any more (at least with sftp). The gvfs "miracle" might not be very reliable.
 
     gFL->addExistingFiles(filestoload);
-    if(!genericfilestoload.isEmpty())
-        gFL->addExistingFiles(genericfilestoload, FileType::FTGENTIMEVALUE);
+    if(!gvtfilestoload.isEmpty())
+        gFL->addExistingFiles(gvtfilestoload, FileType::FTGENTIMEVALUE);
+    if(!gtvb32filestoload.isEmpty())
+        gFL->addExistingFiles(gtvb32filestoload, FileType::FTGENTIMEVALUE, FTGenericTimeValue::FFBinaryFloat32);
+    if(!gtvb64filestoload.isEmpty())
+        gFL->addExistingFiles(gtvb64filestoload, FileType::FTGENTIMEVALUE, FTGenericTimeValue::FFBinaryFloat64);
     updateViewsAfterAddFile(true);
 
     if(gFL->ftsnds.size()>0)
