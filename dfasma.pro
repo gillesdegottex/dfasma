@@ -36,7 +36,7 @@ CONFIG += file_audio_libsndfile
 
 # Additional file format support
 # SDIF (sources at: http://sdif.cvs.sourceforge.net/viewvc/sdif/Easdif/)
-#CONFIG += file_sdif
+CONFIG += file_sdif
 #CONFIG += file_sdif_static
 
 # Activate this line for logging some information into a txt file
@@ -216,15 +216,22 @@ CONFIG(fft_builtin_fftreal, fft_fftw3|fft_builtin_fftreal){
 
 # SDIF file library ------------------------------------------------------------
 
-Easdif.target = $$OUT_PWD/external/EASDIF_SDIF_build/easdif/include/easdif/easdif.h
-#Easdif.target = .buildfile
-Easdif.commands = bash $$PWD/distrib/compile_sdif.sh $$PWD/external/EASDIF_SDIF external/EASDIF_SDIF_build
-#Easdif.depends = FORCE
-PRE_TARGETDEPS += $$OUT_PWD/external/EASDIF_SDIF_build/easdif/include/easdif/easdif.h
-#PRE_TARGETDEPS += .buildfile
-QMAKE_EXTRA_TARGETS += Easdif
-
 CONFIG(file_sdif) {
+
+    Easdif.target = $$OUT_PWD/external/EASDIF_SDIF_build/easdif/include/easdif/easdif.h
+    #Easdif.target = .buildfile
+    unix:!macx {
+        linux:Easdif.commands = bash $$PWD/distrib/compile_sdif.sh $$PWD/external/EASDIF_SDIF external/EASDIF_SDIF_build
+    }
+    macx: {
+        linux:Easdif.commands = bash $$PWD/distrib/compile_sdif.sh --osx $$PWD/external/EASDIF_SDIF external/EASDIF_SDIF_build
+    }
+
+    #Easdif.depends = FORCE
+    PRE_TARGETDEPS += $$OUT_PWD/external/EASDIF_SDIF_build/easdif/include/easdif/easdif.h
+    #PRE_TARGETDEPS += .buildfile
+    QMAKE_EXTRA_TARGETS += Easdif
+
     message(Files: SDIF support: YES)
     DEFINES += SUPPORT_SDIF
 
