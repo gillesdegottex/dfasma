@@ -24,6 +24,7 @@ matrix:
 before_install:
     - git submodule update --init --recursive
     - git fetch --tags
+    - if [ "`git log --source |grep $TRAVIS_COMMIT |grep HEAD`" ]; then echo "THAT'S A HEAD, NOT A PR!!!"; fi
     - sleep 1
     - export PROJECTGITVERSION=`git describe --tags --always |sed 's/^v//'`
     - echo $PROJECTGITVERSION
