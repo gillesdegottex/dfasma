@@ -19,7 +19,7 @@ cd "$DESTDIR"
 # Install path
 mkdir -p easdif
 
-if [ "$3" = "--osx" ]; then
+if [ "$3" = "OSX" ]; then
   # In order to use libc++ and not libstdc++
   OSXOPTS=-DUSE_LLVM_STD:BOOL=ON
 fi
