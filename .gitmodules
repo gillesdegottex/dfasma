@@ -4,6 +4,6 @@
 [submodule "external/REAPER"]
 	path = external/REAPER
 	url = https://github.com/gillesdegottex/REAPER.git
-[submodule "external/EASDIF_SDIF"]
-	path = external/EASDIF_SDIF
+[submodule "external/sdif/EASDIF_SDIF"]
+	path = external/sdif/EASDIF_SDIF
 	url = https://github.com/gillesdegottex/EASDIF_SDIF.git
