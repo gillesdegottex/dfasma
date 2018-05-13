@@ -6,10 +6,11 @@ platform:
 
 configuration:
   - Release
-  
+
 branches:
   only:
     - master
+    - devel
 
 install:
   - git fetch --tags
@@ -23,7 +24,7 @@ install:
   - ps: echo $env:QTDIR
   - ps: Get-ChildItem C:\Qt\5.4
   - set PATH=%PATH%;%QTDIR%\bin
-  
+
   - ps: cd "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC"
 #  - ps: Get-ChildItem .
   - cmd: if "%PLATFORM%" == "x64" call vcvarsall.bat amd64
@@ -70,7 +71,7 @@ install:
 
 # Leave lib folder
   - ps: cd ..
-  
+
 # For packaging
 # InnoSetup
 #     Directly from author (working)
@@ -81,7 +82,7 @@ install:
 #  - ps: Get-ChildItem "C:\Program Files (x86)\Inno Setup 5"
 
   - echo %CD%
-  
+
   - git submodule update --init --recursive
 #  - ps: cd ..
 
@@ -122,7 +123,7 @@ install:
   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif\lib"
   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif\include"
   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif\include\easdif"
-  
+
   # Go back to the project's root
   - ps: cd "c:\projects\dfasma"
 
@@ -166,4 +167,3 @@ deploy:
   on:
     appveyor_repo_tag: true        # deploy on tag push only
     #branch: /v\d+\.\d+\.\d+/      # Doesn't work anymore
-
