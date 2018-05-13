@@ -86,6 +86,8 @@ public:
     std::vector<WAVTYPE> wavfiltered;
     std::vector<WAVTYPE>* wavtoplay;
     WAVTYPE m_filteredmaxamp;
+    WAVTYPE m_energpersample;    // avg energy/sample
+    void updateEnergyPerSample(double tstart=0.0, double tstop=0.0);
     QAEGIUniformlySampledSignal* m_giWavForWaveform;
 
     FTFZero* m_f0; // Corresponding f0 file

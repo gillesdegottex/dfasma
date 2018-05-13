@@ -787,7 +787,7 @@
      <x>0</x>
      <y>0</y>
      <width>831</width>
-     <height>29</height>
+     <height>26</height>
     </rect>
    </property>
   </widget>
@@ -1093,6 +1093,17 @@
    </property>
    <property name="toolTip">
     <string>Add Generic Time/Value</string>
+   </property>
+  </action>
+  <action name="actionGainAlign">
+   <property name="text">
+    <string>Gain Alignment</string>
+   </property>
+   <property name="toolTip">
+    <string>Align one waveform energy to a fixed value</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
    </property>
   </action>
  </widget>

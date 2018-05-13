@@ -136,6 +136,8 @@ void FTSound::constructor_internal() {
     m_end = 0;
     m_avoidclickswinpos = 0;
 
+    m_energpersample = -1.0;
+
     m_stftpa = NULL;
     m_stft_min = std::numeric_limits<FFTTYPE>::infinity();
     m_stft_max = -std::numeric_limits<FFTTYPE>::infinity();
@@ -540,6 +542,49 @@ void FTSound::updateClippedState(){
         setBackgroundColor(QColor(255,192,192));
     else
         setBackgroundColor(QColor(255,255,255));
+}
+void FTSound::updateEnergyPerSample(double tstart, double tstop){
+
+    // Fix and make time selection
+    if(tstart>tstop){
+        double tmp = tstop;
+        tstop = tstart;
+        tstart = tmp;
+    }
+
+    if(tstop==tstart){
+        m_energpersample = 0.0;
+        return;
+    }
+
+    qint64 nstart; // [sample index]
+    qint64 nend;   // [sample index]
+
+    if(tstart==0.0 && tstop==0.0){
+        nstart = 0;
+        nend = wav.size()-1;
+    }
+    else{
+        nstart = int(0.5+tstart*fs);
+        nend = int(0.5+tstop*fs);
+    }
+
+    if(nstart<0) nstart=0;
+    if(nstart>qint64(wav.size()-1)+m_giWavForWaveform->delay()) nstart=wav.size()-1+m_giWavForWaveform->delay();
+    if(nend<0) nend=0;
+    if(nend>qint64(wav.size()-1)+m_giWavForWaveform->delay()) nend=wav.size()-1+m_giWavForWaveform->delay();
+
+    int delayedstart = nstart-m_giWavForWaveform->delay();
+    if(delayedstart<0) delayedstart=0;
+    if(delayedstart>int(wavtoplay->size())-1) delayedstart=int(wavtoplay->size())-1;
+    int delayedend = nend-m_giWavForWaveform->delay();
+    if(delayedend<0) delayedend=0;
+    if(delayedend>int(wavtoplay->size())-1) delayedend=int(wavtoplay->size())-1;
+
+    m_energpersample = 0.0;
+    for(int n=delayedstart; n<=delayedend; n++)
+        m_energpersample += wav[n]*wav[n];
+    m_energpersample /= delayedend-delayedstart;
 }
 
 void FTSound::setSamplingRate(double _fs){

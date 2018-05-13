@@ -101,6 +101,7 @@ WDialogSettings::WDialogSettings(QWidget *parent) :
     gMW->m_settings.addFont(ui->lblGridFontSample);
     gMW->m_settings.add(ui->dsbEstimationF0Min);
     gMW->m_settings.add(ui->dsbEstimationF0Max);
+    gMW->m_settings.add(ui->dsbGainAlignRefdB);
     ui->pbGridFontChange->setText(ui->lblGridFontSample->font().family());
 
     // Load the documentation

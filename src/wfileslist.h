@@ -119,6 +119,7 @@ public slots:
 
     void selectedFilesEstimateF0();
     void selectedFilesEstimateVoicedUnvoicedMarkers();
+    void selectedFilesGainAlign();
 };
 
 #endif // FILESLISTWIDGET_H

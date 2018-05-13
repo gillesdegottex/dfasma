@@ -848,6 +848,77 @@ void WFilesList::selectedFilesEstimateVoicedUnvoicedMarkers() {
     gMW->updateWindowTitle();
 }
 
+void WFilesList::selectedFilesGainAlign() {
+    QList<QListWidgetItem*> l = selectedItems();
+
+    // Get the time range ...
+    double tstart = gMW->m_gvWaveform->m_giPlayCursor->pos().x();
+    double tend = gFL->getMaxLastSampleTime();
+    if(gMW->m_gvWaveform->m_selection.width()>0){
+        tstart = gMW->m_gvWaveform->m_selection.left();
+        tend = gMW->m_gvWaveform->m_selection.right();
+    }
+
+//    bool force = QGuiApplication::keyboardModifiers().testFlag(Qt::ShiftModifier);
+
+    // These progress dialogs HAVE to be built on the stack otherwise ghost dialogs appear.
+    QProgressDialog prgdlg("Align gains...", "Abort", 0, l.size(), this);
+    prgdlg.setMinimumDuration(500);
+    m_prgdlg = &prgdlg;
+
+    for(int i=0; i<l.size() && !m_prgdlg->wasCanceled(); i++) {
+        FileType* currentfile = (FileType*)l.at(i);
+
+        try {
+            // If from a sound, update the energy/second value
+            FTSound* currentftsound = (FTSound*)currentfile;
+            currentftsound->updateEnergyPerSample(tstart, tend);
+
+            currentftsound->m_giWavForWaveform->setGain(qae::db2lin(gMW->m_dlgSettings->ui->dsbGainAlignRefdB->value()-qae::lin2db(std::sqrt(currentftsound->m_energpersample))));
+
+            if(currentftsound->m_giWavForWaveform->gain()>1e10)
+                currentftsound->m_giWavForWaveform->setGain(1e10);
+            else if(currentftsound->m_giWavForWaveform->gain()<1e-10)
+                currentftsound->m_giWavForWaveform->setGain(1e-10);
+
+            currentftsound->needDFTUpdate();
+            currentftsound->setStatus();
+
+            gMW->m_gvWaveform->m_scene->update();
+            gMW->m_gvSpectrumAmplitude->updateDFTs();
+            gFL->fileInfoUpdate();
+            gMW->ui->pbSpectrogramSTFTUpdate->show();
+            if(gMW->m_gvSpectrogram->m_aAutoUpdate->isChecked())
+                gMW->m_gvSpectrogram->updateSTFTSettings();
+
+            m_prgdlg->setValue(i);
+        }
+        catch(QString err){
+            gMW->globalWaitingBarDone();
+            stopFileProgressDialog();
+            QMessageBox::StandardButton ret=QMessageBox::warning(gMW, "Error during F0 estimation", "Estimation of the F0 of "+currentfile->visibleName+" failed for the following reason:\n"+err, QMessageBox::Ok | QMessageBox::Abort, QMessageBox::Ok);
+            if(ret==QMessageBox::Abort)
+                if(m_prgdlg)
+                    m_prgdlg->cancel();
+        }
+    }
+
+    stopFileProgressDialog();
+    m_prgdlg = NULL;
+
+    gMW->updateWindowTitle();
+}
+
+
+
+
+
+
+
+
+
+
+
 double WFilesList::getFs() const {
     if(ftsnds.size()>0)
         return ftsnds[0]->fs;
