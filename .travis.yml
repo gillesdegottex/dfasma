@@ -71,7 +71,6 @@ script:
     # - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash distrib/compile_sdif.sh --osx; fi
     - echo $TRAVIS_BUILD_DIR
     - if [ "$TRAVIS_OS_NAME" = "linux" ]; then qmake "CONFIG+=file_sdif file_sdif_static" dfasma.pro; fi
-    - if [ "$TRAVIS_OS_NAME" = "linux" ]; then qmake dfasma.pro; fi
     - if [ "$TRAVIS_OS_NAME" = "osx" ]; then qmake "CONFIG+=fft_fftw3 file_audio_libsndfile file_sdif file_sdif_static" "FILE_AUDIO_LIBDIR=/usr/local/opt/libsndfile" "FFT_LIBDIR=/usr/local/opt/fftw" dfasma.pro; fi
     - if [ "$TRAVIS_OS_NAME" = "osx" ]; then make easdif_buildfile; fi
     - make
