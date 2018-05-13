@@ -30,7 +30,7 @@ Copy-Item c:\projects\dfasma\release\dfasma.exe ${PACKAGENAME}
 # Add libraries
 Copy-Item c:\projects\dfasma\lib\libfft\libfftw3-3.dll ${PACKAGENAME}
 Copy-Item c:\projects\dfasma\lib\libsndfile\bin\libsndfile-1.dll ${PACKAGENAME}
-Copy-Item c:\projects\dfasma\external\sdif\easdif\bin\Easdif.dll ${PACKAGENAME}
+#Copy-Item c:\projects\dfasma\external\sdif\easdif\bin\Easdif.dll ${PACKAGENAME} # Remove as long as Easdif doesn't compile on windows anymore
 
 # Add the Qt related libs, qt translations and installer of MSVC redist.
 cd $PACKAGENAME
