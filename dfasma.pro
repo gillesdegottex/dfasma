@@ -1,7 +1,7 @@
 # Project created by QtCreator
 #
 # Copyright (C) 2014 Gilles Degottex <gilles.degottex@gmail.com>
-# 
+#
 # This file is part of DFasma.
 #
 # DFasma is free software: you can redistribute it and/or modify
@@ -216,12 +216,20 @@ CONFIG(fft_builtin_fftreal, fft_fftw3|fft_builtin_fftreal){
 
 # SDIF file library ------------------------------------------------------------
 
+Easdif.target = $$OUT_PWD/external/EASDIF_SDIF_build/easdif/include/easdif/easdif.h
+#Easdif.target = .buildfile
+Easdif.commands = bash $$PWD/distrib/compile_sdif.sh $$PWD/external/EASDIF_SDIF external/EASDIF_SDIF_build
+#Easdif.depends = FORCE
+PRE_TARGETDEPS += $$OUT_PWD/external/EASDIF_SDIF_build/easdif/include/easdif/easdif.h
+#PRE_TARGETDEPS += .buildfile
+QMAKE_EXTRA_TARGETS += Easdif
+
 CONFIG(file_sdif) {
     message(Files: SDIF support: YES)
     DEFINES += SUPPORT_SDIF
 
     isEmpty(FILE_SDIF_LIBDIR) {
-        FILE_SDIF_LIBDIR = "$$_PRO_FILE_PWD_/external/sdif/easdif"
+        FILE_SDIF_LIBDIR = "external/EASDIF_SDIF_build/easdif"
     }
 
     CONFIG(file_sdif_static) {
