@@ -93,7 +93,7 @@ install:
   - ps: New-Item -ItemType directory -Name sdif | Out-Null
   - ps: cd sdif
   - ps: New-Item -ItemType directory -Name easdif | Out-Null
-  - ps: Invoke-WebRequest "http://gillesdegottex.eu/soft/EASDIF_SDIF.zip" -OutFile "EASDIF_SDIF.zip"
+  - ps: Invoke-WebRequest "http://gillesdegottex.eu/soft/EASDIF_SDIF.1.4.26.zip" -OutFile "EASDIF_SDIF.zip"
   - ps: 7z x "EASDIF_SDIF.zip" -y
   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\EASDIF_SDIF"
   - ps: New-Item -ItemType directory -Name build | Out-Null
