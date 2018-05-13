@@ -224,7 +224,7 @@ CONFIG(file_sdif) {
         Easdif.commands = bash $$PWD/distrib/compile_sdif.sh $$PWD/external/EASDIF_SDIF external/EASDIF_SDIF_build; touch easdif_buildfile
     }
     macx: {
-        Easdif.commands = bash $$PWD/distrib/compile_sdif.sh --osx $$PWD/external/EASDIF_SDIF external/EASDIF_SDIF_build; touch easdif_buildfile
+        Easdif.commands = bash $$PWD/distrib/compile_sdif.sh $$PWD/external/EASDIF_SDIF external/EASDIF_SDIF_build --osx; touch easdif_buildfile
         #Easdif.depends = FORCE
     }
     #PRE_TARGETDEPS += $$OUT_PWD/external/EASDIF_SDIF_build/easdif/include/easdif/easdif.h
