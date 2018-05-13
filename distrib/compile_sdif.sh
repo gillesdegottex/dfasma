@@ -32,3 +32,5 @@ cmake $OSXOPTS -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE
 make
 make install
 ls -l $PWD/../easdif/*
+
+touch easdif_buildfile
