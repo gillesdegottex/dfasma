@@ -235,7 +235,7 @@ CONFIG(file_sdif) {
     DEFINES += SUPPORT_SDIF
 
     isEmpty(FILE_SDIF_LIBDIR) {
-        FILE_SDIF_LIBDIR = "external/EASDIF_SDIF_build/easdif"
+        FILE_SDIF_LIBDIR = "$$OUT_PWD/external/EASDIF_SDIF_build/easdif"
     }
 
     CONFIG(file_sdif_static) {
