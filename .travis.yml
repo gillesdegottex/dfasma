@@ -25,12 +25,12 @@ before_install:
     - git submodule update --init --recursive
     # This checkout if for ensuring that git describe --tags --always gives a proper output
     # otherwise only the commit's sha appear bcs Travis always checkout a commit, never a HEAD
-    - if [ -n "$TRAVIS_PULL_REQUEST" ]; then echo "We're on a HEAD, it's not a Pull Request"; git checkout $TRAVIS_BRANCH; fi
+    - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "We're on a HEAD, it's not a Pull Request"; git checkout $TRAVIS_BRANCH; fi
     - git fetch --unshallow
     - git fetch --tags
     - sleep 1
     - export PROJECTGITVERSION=`git describe --tags --always |sed 's/^v//'`
-    - if [ "$TRAVIS_PULL_REQUEST" ]; then echo "Building a Pull Request"; fi
+    - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then echo "Building a Pull Request"; fi
     - echo $PROJECTGITVERSION
     - echo $TRAVIS_OS_NAME
     - echo $TRAVIS_PULL_REQUEST
