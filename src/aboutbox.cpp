@@ -84,6 +84,11 @@ AboutBox::AboutBox(QWidget *parent) :
 
     // Libraries
 
+    // Qt
+    QString qtinfostr = "";
+    qtinfostr += "<i>Qt:</i> Compiled with "+QString(QT_VERSION_STR)+" Running with "+qVersion();
+    ui->vlLibraries->addWidget(new QLabel(qtinfostr, this));
+
     // FFT
     QString fftinfostr = "";
     fftinfostr += "<i>Fast Fourier Transform (FFT):</i> "+qae::FFTwrapper::getLibraryInfo();
