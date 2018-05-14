@@ -76,7 +76,7 @@ QString DFasmaVersion(){
             dfasmaversion += "-" + dfasmabranchgit;
     }
     else {
-        QFile readmefile(":/README.txt");
+        QFile readmefile(":/README.md");
         readmefile.open(QFile::ReadOnly | QFile::Text);
         QTextStream readmefilestream(&readmefile);
         readmefilestream.readLine();

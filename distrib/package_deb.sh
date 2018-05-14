@@ -60,7 +60,7 @@ cp $BINFILE $PKGNAME/usr/bin/
 
 # Any legal and info txt
 mkdir -p $PKGNAME/usr/share/doc/dfasma
-cp ../README.txt $PKGNAME/usr/share/doc/dfasma/
+cp ../README.md $PKGNAME/usr/share/doc/dfasma/
 cp ../LICENSE.txt $PKGNAME/usr/share/doc/dfasma/
 
 # The menu related files

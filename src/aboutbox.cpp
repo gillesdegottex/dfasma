@@ -77,7 +77,7 @@ AboutBox::AboutBox(QWidget *parent) :
             ALSO, THE COPYRIGHT HOLDERS AND CONTRIBUTORS DO NOT TAKE ANY LEGAL RESPONSIBILITY \
             REGARDING THE IMPLEMENTATIONS OF THE PROCESSING TECHNIQUES OR ALGORITHMS \
             (E.G. CONSEQUENCES OF BUGS OR ERRONEOUS IMPLEMENTATIONS).<br/> \
-            Please see the README.txt file for additional information.";
+            Please see the README.md file for additional information.";
 
     ui->txtAbout->setText(txt);
 
