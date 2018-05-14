@@ -1,73 +1,115 @@
 language: cpp
 sudo: required
 dist: xenial
+
 compiler:
-- clang
-- gcc
+    - clang
+    - gcc
+
 os:
-- linux
-- osx
+    - linux
+    - osx
+
 branches:
-  only:
-  - master
-  - devel
+    only:
+        - master
+        - devel
+
 matrix:
-  exclude:
-  - compiler: clang
-    os: linux
+    exclude:
+        - compiler: clang
+          os: linux
+
+
 before_install:
-- git submodule update --init --recursive
-- if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "We're on a HEAD, it's not a
-  Pull Request"; git checkout $TRAVIS_BRANCH; fi
-- git fetch --unshallow
-- git fetch --tags
-- sleep 1
-- export PROJECTGITVERSION=`git describe --tags --always |sed 's/^v//'`
-- echo $PROJECTGITVERSION
-- if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then echo "Building Pull Request $TRAVIS_PULL_REQUEST";
-  export PROJECTGITVERSION=pr_$TRAVIS_PULL_REQUEST; fi
-- echo $TRAVIS_OS_NAME
-- echo $TRAVIS_PULL_REQUEST
-- echo $TRAVIS_COMMIT
-- echo $TRAVIS_TAG
-- export TRAVIS_TAG=`git describe --tags --exact-match HEAD 2>/dev/null`
-- echo $TRAVIS_TAG
-- echo $TRAVIS_BRANCH
-- if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get -qq update; fi
+    - git submodule update --init --recursive
+    # This checkout if for ensuring that git describe --tags --always gives a proper output
+    # otherwise only the commit's sha appear bcs Travis always checkout a commit, never a HEAD
+    - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "We're on a HEAD, it's not a Pull Request"; git checkout $TRAVIS_BRANCH; fi
+    - git fetch --unshallow
+    - git fetch --tags
+    - sleep 1
+    - export PROJECTGITVERSION=`git describe --tags --always |sed 's/^v//'`
+    - echo $PROJECTGITVERSION
+    - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then echo "Building Pull Request $TRAVIS_PULL_REQUEST"; export PROJECTGITVERSION=pr_$TRAVIS_PULL_REQUEST; fi
+    - echo $TRAVIS_OS_NAME
+    - echo $TRAVIS_PULL_REQUEST
+    - echo $TRAVIS_COMMIT
+    - echo $TRAVIS_TAG
+    - export TRAVIS_TAG=`git describe --tags --exact-match HEAD 2>/dev/null`
+    - echo $TRAVIS_TAG
+    - echo $TRAVIS_BRANCH
+    #- if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa; fi
+    #- if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo add-apt-repository --yes ppa:beineri/opt-qt521; fi
+    - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get -qq update; fi
+
 install:
-- if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install --yes qtbase5-dev
-  qtdeclarative5-dev libqt5webkit5-dev qt5-default qttools5-dev-tools qtmultimedia5-dev
-  libqt5svg5-dev; fi
-- if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install libfftw3-dev libsndfile1-dev
-  libpulse-dev; fi
-- if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install cvs libtool; fi
-- if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew cask uninstall oclint && brew install
-  fftw && brew install libsndfile && brew install qt5 && brew install cvs libtool
-  && export PATH=/usr/local/opt/qt5/bin:$PATH ; fi
-- qmake --version
+    - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install --yes qtbase5-dev qtdeclarative5-dev libqt5webkit5-dev qt5-default qttools5-dev-tools qtmultimedia5-dev libqt5svg5-dev; fi
+    #- if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install qt52*; fi
+    #- if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install qtbase5-dev qtdeclarative5-dev libqt5webkit5-dev; fi
+    #- if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install qt5-default qttools5-dev-tools qtmobility-dev qtmultimedia5-dev libqt5svg5-dev; fi
+    - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install libfftw3-dev libsndfile1-dev libpulse-dev; fi
+    - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install cvs libtool; fi
+    - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+           brew cask uninstall oclint
+        && brew install fftw
+        && brew install libsndfile
+        && brew install qt5
+        && brew install cvs libtool
+        && export PATH=/usr/local/opt/qt5/bin:$PATH
+        ; fi
+
+    - qmake --version
+
 script:
-- if [ "$TRAVIS_OS_NAME" = "osx" ]; then export MACOSX_DEPLOYMENT_TARGET="10.8"; fi
-- echo $TRAVIS_BUILD_DIR
-- if [ "$TRAVIS_OS_NAME" = "linux" ]; then qmake "CONFIG+=file_sdif file_sdif_static"
-  dfasma.pro; fi
-- if [ "$TRAVIS_OS_NAME" = "osx" ]; then qmake "CONFIG+=fft_fftw3 file_audio_libsndfile
-  file_sdif file_sdif_static" "FILE_AUDIO_LIBDIR=/usr/local/opt/libsndfile" "FFT_LIBDIR=/usr/local/opt/fftw"
-  dfasma.pro; fi
-- make
-- if [ "`uname -m`" = "x86_64" ]; then export ARCH="amd64"; fi
-- if [ "`uname -m`" = "x86" ]; then export ARCH="i386"; fi
-- cd distrib; bash package_getversion.sh; cd ..
-- if [ "$TRAVIS_OS_NAME" = "linux" ]; then cd distrib && bash package_deb.sh ../dfasma
-  && export PACKAGENAME=dfasma_`bash package_getversion.sh`\_$ARCH.deb ; fi
-- if [ "$TRAVIS_OS_NAME" = "osx" ]; then macdeployqt dfasma.app -dmg && sleep 3 &&
-  ls -l dfasma* && export PACKAGENAME=dfasma_$PROJECTGITVERSION.dmg && mv dfasma.dmg
-  $PACKAGENAME ; fi
-- ls -l $PWD/$PACKAGENAME
+    #- if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+    #      QTDIR="/opt/qt52"
+    #      && PATH="$QTDIR/bin:$PATH"
+    #      && qt52-env.sh
+    #  ; fi
+    #- if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$CC" = "gcc" ]; then
+    #      export CC=gcc-4.8
+    #      && export CXX=g++-4.8
+    #  ; fi
+    # Compile first SDIF itself
+    # - if [ "$TRAVIS_OS_NAME" = "linux" ]; then bash distrib/compile_sdif.sh; fi
+    - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export MACOSX_DEPLOYMENT_TARGET="10.8"; fi
+    # - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash distrib/compile_sdif.sh --osx; fi
+    - echo $TRAVIS_BUILD_DIR
+    - if [ "$TRAVIS_OS_NAME" = "linux" ]; then qmake "CONFIG+=file_sdif file_sdif_static" dfasma.pro; fi
+    - if [ "$TRAVIS_OS_NAME" = "osx" ]; then qmake "CONFIG+=fft_fftw3 file_audio_libsndfile file_sdif file_sdif_static" "FILE_AUDIO_LIBDIR=/usr/local/opt/libsndfile" "FFT_LIBDIR=/usr/local/opt/fftw" dfasma.pro; fi
+    # - if [ "$TRAVIS_OS_NAME" = "osx" ]; then make easdif_buildfile; fi
+    - make
+
+    - if [ "`uname -m`" = "x86_64" ]; then export ARCH="amd64"; fi
+    - if [ "`uname -m`" = "x86" ]; then export ARCH="i386"; fi
+
+    - cd distrib; bash package_getversion.sh; cd ..
+
+    - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+            cd distrib
+         && bash package_deb.sh ../dfasma
+         && export PACKAGENAME=dfasma_`bash package_getversion.sh`\_$ARCH.deb
+      ; fi
+
+    - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+            macdeployqt dfasma.app -dmg
+         && sleep 3
+         && ls -l dfasma*
+         && export PACKAGENAME=dfasma_$PROJECTGITVERSION.dmg
+         && mv dfasma.dmg $PACKAGENAME
+      ; fi
+
+    - ls -l $PWD/$PACKAGENAME
+    #- echo $TRAVIS_TAG
+
 deploy:
   provider: releases
   api_key:
     secure: c74wX8ECqXNSvQtMX2rcu0fYZkQUjy+r++qhAWfvENGnu5jJyY5fKZ8Kv3PZjBWVTrOzeDMyq49LrAHD1ll5T3gd0c3InQ9J3trd6VLC+EuiLaOdx10xg9G87JPoCn+D1Ixh0qKzNqRrDg01Ne5Jwo/UdBV5Emt8MaZTs00s37/X+lO1slc05rJKEAV/rFYpG62yENuWHLn+yfX26RDo64eLp4GuOCB6geJxRo1ZTODptxeg8vjPh5bmjoNwJtPj1mZroCuERnglZApO9PjyQcAP+Sgtur3I2RI9VfUNU1omzkREiiwlbAExP2MomXs/f8EeuDTFRhslGfZIZ7VC5a2hdyPLnF/ad5fBzTeZaxgpLMLSRSsYA6d6boBFzXYG+FD8qXiYitlnhO/QzKCHCbqixXYtbaUla+QfEpawfqUoJe6RyXps/szV84qv5kTztPNkKsPsprWiFfrcHkOPbM1q0hQ/5WZ4tIyxkMkWbAfR8JiINDrBHaVMOPy943zHeC2ToGy5KlB3kzk/5Uu5Ytgi3Jshw0txu0wP52GThrFnsKOVGiOrAhMAwJezPYBvX6OcU3MSFXihBKKhIkyqn4wO8cXHGdxAIQsUbffaYcDHWO/HmBDvUMHC8mBNeRo9fMwccLzDTRAMeR8HU9U2tJwXYbBHTEbwf9SCgBmdDeI=
-  file: dfasma.flop
+  file: $PACKAGENAME
   on:
     repo: gillesdegottex/dfasma
     branch: devel
+    tags: true
+    condition: $CC = gcc
