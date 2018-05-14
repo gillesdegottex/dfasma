@@ -23,12 +23,17 @@ matrix:
 
 before_install:
     - git submodule update --init --recursive
+    # This checkout if for ensuring that git describe --tags --always gives a proper output
+    # otherwise only the commit's sha appear bcs Travis always checkout a commit, never a HEAD
+    - if [ -n "$TRAVIS_PULL_REQUEST" ]; then echo "We're on a HEAD, it's not a Pull Request"; git checkout $TRAVIS_BRANCH; fi
+    - git fetch --unshallow
     - git fetch --tags
-    - if [ "`git log --source |grep $TRAVIS_COMMIT |grep HEAD`" ]; then echo "THAT'S A HEAD, NOT A PR!!!"; fi
     - sleep 1
     - export PROJECTGITVERSION=`git describe --tags --always |sed 's/^v//'`
+    - if [ "$TRAVIS_PULL_REQUEST" ]; then echo "Building a Pull Request"; fi
     - echo $PROJECTGITVERSION
     - echo $TRAVIS_OS_NAME
+    - echo $TRAVIS_PULL_REQUEST
     - echo $TRAVIS_COMMIT
     - echo $TRAVIS_TAG
     - export TRAVIS_TAG=`git describe --tags --exact-match HEAD 2>/dev/null`
@@ -78,16 +83,6 @@ script:
 
     - if [ "`uname -m`" = "x86_64" ]; then export ARCH="amd64"; fi
     - if [ "`uname -m`" = "x86" ]; then export ARCH="i386"; fi
-
-    # This checkout if for ensuring that git describe --tags --always gives a proper output
-    # otherwise only the commit's sha appear bcs Travis always checkout a commit, never a HEAD
-    # If this is done at the very beginning, the test of Pull request won't work!
-    - git checkout $TRAVIS_BRANCH
-    - git fetch --tags
-    - git status
-    - git branch
-    - git describe --tags --always
-    - git describe --tags
 
     - cd distrib; bash package_getversion.sh; cd ..
 
