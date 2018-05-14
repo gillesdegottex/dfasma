@@ -86,44 +86,44 @@ install:
   - git submodule update --init --recursive
 #  - ps: cd ..
 
-# # Install SDIF
-# # Doesn't compile anymore bcs of deprecated behaviors CMP0042 and CMP0054
-#   - choco install cmake -version 3.0.2
-#   # - choco install make
-#   - ps: cd external
-#   - ps: New-Item -ItemType directory -Name sdif | Out-Null
-#   - ps: cd sdif
-#   - ps: New-Item -ItemType directory -Name easdif | Out-Null
-#   - ps: Invoke-WebRequest "http://gillesdegottex.eu/soft/EASDIF_SDIF.1.4.26.zip" -OutFile "EASDIF_SDIF.zip"
-#   - ps: 7z x "EASDIF_SDIF.zip" -y
-#   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\EASDIF_SDIF"
-#   - ps: New-Item -ItemType directory -Name build | Out-Null
-#   - ps: cd build
-#   - ps: if ($env:platform -eq 'x86') {cmake -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=c:/projects/dfasma/external/sdif/easdif ../EASDIF_SDIF}
-#   - ps: if ($env:platform -eq 'x64') {cmake -G"Visual Studio 12 Win64" -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=c:/projects/dfasma/external/sdif/easdif ../EASDIF_SDIF}
-#   - ps: Get-ChildItem .
-#   # - ps: if ($env:platform -eq 'x86') {msbuild libs.vcxproj /property:Platform=x86}
-#   # - ps: if ($env:platform -eq 'x64') {msbuild libs.vcxproj /property:Platform=x64}
-#   - ps: cmake --build . --config Release --target libs
-#   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\build\"
-#   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\build\bin\Release"
-#   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\build\lib\Release"
-#   # - ps: msbuild INSTALL.vcxproj
-#   - ps: New-Item -ItemType directory -Name ..\easdif\lib | Out-Null
-#   - ps: Copy-Item lib\Release\* ..\easdif\lib
-#   - ps: New-Item -ItemType directory -Name ..\easdif\bin | Out-Null
-#   - ps: Copy-Item bin\Release\* ..\easdif\bin
-#   - ps: New-Item -ItemType directory -Name ..\easdif\include | Out-Null
-#   - ps: New-Item -ItemType directory -Name ..\easdif\include\easdif | Out-Null
-#   - ps: Copy-Item SDIF\sdifconfig\sdif*.h ..\easdif\include
-#   - ps: Copy-Item easdif\*.hpp ..\easdif\include\easdif
-#   - ps: Copy-Item ..\EASDIF_SDIF\easdif\*.hpp ..\easdif\include\easdif
-#   - ps: Copy-Item ..\EASDIF_SDIF\easdif\easdif.h ..\easdif\include\easdif
-#   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif"
-#   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif\bin"
-#   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif\lib"
-#   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif\include"
-#   - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif\include\easdif"
+# Install SDIF
+# Doesn't compile anymore bcs of deprecated behaviors CMP0042 and CMP0054
+  - choco install cmake -version 3.8.0
+  # - choco install make
+  - ps: cd external
+  - ps: New-Item -ItemType directory -Name sdif | Out-Null
+  - ps: cd sdif
+  - ps: New-Item -ItemType directory -Name easdif | Out-Null
+  - ps: Invoke-WebRequest "http://gillesdegottex.eu/soft/EASDIF_SDIF.1.4.26.zip" -OutFile "EASDIF_SDIF.zip"
+  - ps: 7z x "EASDIF_SDIF.zip" -y
+  - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\EASDIF_SDIF"
+  - ps: New-Item -ItemType directory -Name build | Out-Null
+  - ps: cd build
+  - ps: if ($env:platform -eq 'x86') {cmake -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=c:/projects/dfasma/external/sdif/easdif ../EASDIF_SDIF}
+  - ps: if ($env:platform -eq 'x64') {cmake -G"Visual Studio 12 Win64" -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=c:/projects/dfasma/external/sdif/easdif ../EASDIF_SDIF}
+  - ps: Get-ChildItem .
+  # - ps: if ($env:platform -eq 'x86') {msbuild libs.vcxproj /property:Platform=x86}
+  # - ps: if ($env:platform -eq 'x64') {msbuild libs.vcxproj /property:Platform=x64}
+  - ps: cmake --build . --config Release --target libs
+  - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\build\"
+  - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\build\bin\Release"
+  - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\build\lib\Release"
+  # - ps: msbuild INSTALL.vcxproj
+  - ps: New-Item -ItemType directory -Name ..\easdif\lib | Out-Null
+  - ps: Copy-Item lib\Release\* ..\easdif\lib
+  - ps: New-Item -ItemType directory -Name ..\easdif\bin | Out-Null
+  - ps: Copy-Item bin\Release\* ..\easdif\bin
+  - ps: New-Item -ItemType directory -Name ..\easdif\include | Out-Null
+  - ps: New-Item -ItemType directory -Name ..\easdif\include\easdif | Out-Null
+  - ps: Copy-Item SDIF\sdifconfig\sdif*.h ..\easdif\include
+  - ps: Copy-Item easdif\*.hpp ..\easdif\include\easdif
+  - ps: Copy-Item ..\EASDIF_SDIF\easdif\*.hpp ..\easdif\include\easdif
+  - ps: Copy-Item ..\EASDIF_SDIF\easdif\easdif.h ..\easdif\include\easdif
+  - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif"
+  - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif\bin"
+  - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif\lib"
+  - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif\include"
+  - ps: Get-ChildItem "c:\projects\dfasma\external\sdif\easdif\include\easdif"
 
   # Go back to the project's root
   - ps: cd "c:\projects\dfasma"
