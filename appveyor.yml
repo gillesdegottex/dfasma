@@ -92,7 +92,6 @@ install:
   - ps: Get-ChildItem "C:\Program Files\CMake\bin\"
   - set PATH="C:\Program Files (x86)\CMake 3.8\bin\";%PATH%
   - set PATH=C:\Program Files\CMake\bin;%PATH%
-  # - cmd: call "C:\Program Files (x86)\cmake\bin\cmake" --version
   # - choco install make
   - ps: cd external
   - ps: New-Item -ItemType directory -Name sdif | Out-Null
@@ -134,8 +133,8 @@ install:
 
 build_script:
 # Compile
-  # - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\dfasma\lib\libsndfile" "FFT_LIBDIR=C:\projects\dfasma\lib\libfft" "CONFIG+=file_sdif" "FILE_SDIF_LIBDIR=C:\projects\dfasma\external\sdif\easdif" dfasma.pro
-  - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\dfasma\lib\libsndfile" "FFT_LIBDIR=C:\projects\dfasma\lib\libfft" dfasma.pro
+  - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\dfasma\lib\libsndfile" "FFT_LIBDIR=C:\projects\dfasma\lib\libfft" "CONFIG+=file_sdif" "FILE_SDIF_LIBDIR=C:\projects\dfasma\external\sdif\easdif" dfasma.pro
+  # - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\dfasma\lib\libsndfile" "FFT_LIBDIR=C:\projects\dfasma\lib\libfft" dfasma.pro
   - set PATH=%PATH%;C:\Qt\Tools\QtCreator\bin
   - C:\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release
 
