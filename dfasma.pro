@@ -39,6 +39,7 @@ CONFIG += file_audio_libsndfile
 #CONFIG += file_sdif
 #CONFIG += file_sdif_static
 
+
 # Activate this line for logging some information into a txt file
 #CONFIG += debug_logfile
 
