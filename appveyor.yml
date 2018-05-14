@@ -89,9 +89,6 @@ install:
 # Install SDIF
 # Doesn't compile anymore bcs of deprecated behaviors CMP0042 and CMP0054
   - choco install cmake -version 3.8.0
-  - ps: Get-ChildItem "C:\Program Files"
-  - ps: Get-ChildItem "C:\Program Files (x86)"
-  - ps: Get-ChildItem "C:\Program Files (x86)\CMake 3.8\bin\"
   - ps: Get-ChildItem "C:\Program Files\CMake\bin\"
   - set PATH="C:\Program Files (x86)\CMake 3.8\bin\";%PATH%
   - set PATH=C:\Program Files\CMake\bin;%PATH%
