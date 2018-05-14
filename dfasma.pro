@@ -218,8 +218,8 @@ CONFIG(fft_builtin_fftreal, fft_fftw3|fft_builtin_fftreal){
 
 CONFIG(file_sdif) {
 
-    #Easdif.target = $$OUT_PWD/external/EASDIF_SDIF_build/easdif/include/easdif/easdif.h
-    Easdif.target = easdif_buildfile
+    Easdif.target = $$OUT_PWD/external/EASDIF_SDIF_build/easdif/include/easdif/easdif.h
+    #Easdif.target = $$OUT_PWD/external/EASDIF_SDIF_build/easdif_buildfile
     unix:!macx {
         Easdif.commands = bash $$PWD/distrib/compile_sdif.sh $$PWD/external/EASDIF_SDIF external/EASDIF_SDIF_build
     }
@@ -227,8 +227,8 @@ CONFIG(file_sdif) {
         Easdif.commands = bash $$PWD/distrib/compile_sdif.sh $$PWD/external/EASDIF_SDIF external/EASDIF_SDIF_build --osx
         #Easdif.depends = FORCE
     }
-    #PRE_TARGETDEPS += $$OUT_PWD/external/EASDIF_SDIF_build/easdif/include/easdif/easdif.h
-    PRE_TARGETDEPS += easdif_buildfile
+    PRE_TARGETDEPS += $$OUT_PWD/external/EASDIF_SDIF_build/easdif/include/easdif/easdif.h
+    #PRE_TARGETDEPS += $$OUT_PWD/external/EASDIF_SDIF_build/easdif_buildfile
     QMAKE_EXTRA_TARGETS += Easdif
 
     message(Files: SDIF support: YES)
