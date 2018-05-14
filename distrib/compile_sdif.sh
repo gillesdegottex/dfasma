@@ -28,8 +28,8 @@ fi
 mkdir -p build
 cd build
 cmake $OSXOPTS -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX_DEFAULTS_INIT:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=$PWD/../easdif $SOURCEDIR
-make VERBOSE=1
-#make
+# make VERBOSE=1
+make
 make install
 ls -l $PWD/../easdif/*
 
