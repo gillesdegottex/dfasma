@@ -51,10 +51,10 @@ message(CONFIG=$$CONFIG)
 # Generate the version number from git
 # (if fail, fall back on the version present in the README.txt file)
 DFASMAVERSIONGITPRO = $$system(git describe --tags --always)
-DFASMABRANCHGITPRO = $$system(git name-rev --name-only HEAD)
+DFASMABRANCHGITPRO = $$system(git rev-parse --abbrev-ref HEAD)
 message(Git: DFasma version: $$DFASMAVERSIONGITPRO Branch: $$DFASMABRANCHGITPRO)
-DEFINES += DFASMAVERSIONGIT=$$system(git describe --tags --always)
-DEFINES += DFASMABRANCHGIT=$$system(git rev-parse --abbrev-ref HEAD)
+DEFINES += DFASMAVERSIONGIT=$$DFASMAVERSIONGITPRO
+DEFINES += DFASMABRANCHGIT=$$DFASMABRANCHGITPRO
 
 # To place the application's files in the proper folder
 # To place the shortcut in the proper folder
