@@ -337,6 +337,11 @@ WMainWindow::WMainWindow(QStringList filestoload, QStringList gvtfilestoload, QS
 
     connect(ui->actionFileOpen, SIGNAL(triggered()), this, SLOT(openFile())); // Allow this only at the end
 
+    // Set the focus on the first file
+    gFL->setFocus();
+    if(gFL->count()>0)
+        gFL->setCurrentRow(0);
+
     m_loading = false;
 }
 
