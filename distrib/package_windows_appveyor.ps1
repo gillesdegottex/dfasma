@@ -8,12 +8,12 @@ echo "Version: ${VERSION}"
 If ($arch -eq 'x64') {
     echo "Packaging for 64bits Windows"
     $PACKAGENAME = "dfasma_${VERSION}_win64"
-    $QTPATH = "\Qt\5.4\msvc2013_64_opengl"
+    $QTPATH = "\Qt\5.10\msvc2015_64"
 }
 Else {
 echo "Packaging for 32bits Windows"
     $PACKAGENAME = "dfasma_${VERSION}_win32"
-    $QTPATH = "\Qt\5.4\msvc2013_opengl"
+    $QTPATH = "\Qt\5.10\msvc2015"
 }
 
 echo "Packaging ${PACKAGENAME}"
