@@ -6,4 +6,4 @@
 	url = https://github.com/gillesdegottex/REAPER.git
 [submodule "external/EASDIF_SDIF"]
 	path = external/EASDIF_SDIF
-	url = https://github.com/gillesdegottex/EASDIF_SDIF.git
+	url = https://github.com/roebel/EASDIF_SDIF.git
