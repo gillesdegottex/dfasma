@@ -1,10 +1,10 @@
 [Desktop Entry]
 Type=Application
 Name=DFasma
-GenericName=
+GenericName=DFasma
 Comment=Compare sound files
 Comment[fr]=Comparaison de fichiers son
 Icon=dfasma
-Exec=dfasma %F
+Exec=dfasma.sh %U
 Terminal=false
 Categories=AudioVideo;Audio;Player;
