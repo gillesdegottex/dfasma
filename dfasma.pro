@@ -238,6 +238,9 @@ CONFIG(file_sdif) {
     isEmpty(FILE_SDIF_LIBDIR) {
         FILE_SDIF_LIBDIR = "$$OUT_PWD/external/EASDIF_SDIF_build/easdif"
     }
+    isEmpty(FILE_SDIF_LIBDIR_STATIC) {
+        FILE_SDIF_LIBDIR_STATIC = "$$OUT_PWD/external/EASDIF_SDIF_build/build"
+    }
 
     CONFIG(file_sdif_static) {
         message("    "SDIF static link)
@@ -252,7 +255,12 @@ CONFIG(file_sdif) {
     !isEmpty(FILE_SDIF_LIBDIR){
         message("    "FILE_SDIF_LIBDIR=$$FILE_SDIF_LIBDIR)
         INCLUDEPATH += $$FILE_SDIF_LIBDIR/include
-        LIBS += -L$$FILE_SDIF_LIBDIR/lib
+        CONFIG(file_sdif_static){
+            LIBS += -L$$FILE_SDIF_LIBDIR_STATIC/lib
+        }
+        else{
+            LIBS += -L$$FILE_SDIF_LIBDIR/lib
+        }
     }
 }
 else {
