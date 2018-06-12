@@ -3,7 +3,7 @@
 	url = https://gitlab.com/gillesdegottex/libqaudioextra.git
 [submodule "external/REAPER"]
 	path = external/REAPER
-	url = https://github.com/gillesdegottex/REAPER.git
+	url = https://github.com/google/REAPER.git
 [submodule "external/EASDIF_SDIF"]
 	path = external/EASDIF_SDIF
 	url = https://github.com/roebel/EASDIF_SDIF.git
