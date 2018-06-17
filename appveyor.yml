@@ -27,7 +27,6 @@ install:
 
   - ps: echo $env:APPVEYOR_PROJECT_SLUG
   - echo %APPVEYOR_PROJECT_SLUG%
-  # - set  %APPLICATION_PATH%
   - echo %CD%
   - ps: Get-ChildItem .
 
@@ -55,7 +54,7 @@ install:
   - ps: Get-ChildItem .
   - ps: cd ..
   - ps: Move-Item "$libfft" libfft
-#  - ps: Get-ChildItem C:\projects\dfasma\lib\fftw-3.3.4-dll32
+#  - ps: Get-ChildItem C:\projects\%APPVEYOR_PROJECT_SLUG%\lib\fftw-3.3.4-dll32
 #  - ps: lib /MACHINE:X86 /def:libfftw3-3.def # Needed only for MSVC (lib is still unrecognized command)
 
   - ps: echo "Install libsndfile"
@@ -72,7 +71,7 @@ install:
   - ps: 7z x "$libsndfile.zip" -y
   - ps: Move-Item "$libsndfile" libsndfile
 #  - ps: lib /MACHINE:X86 /def:libfftw3-3.def # Needed only for MSVC (lib is still unrecognized command)
-#  - ps: Get-ChildItem "c:\projects\dfasma\lib\$libsndfile"
+#  - ps: Get-ChildItem "c:\projects\%APPVEYOR_PROJECT_SLUG%\lib\$libsndfile"
 
 # Leave lib folder
   - ps: cd ..
@@ -138,8 +137,8 @@ install:
 
 build_script:
 # Compile
-  - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\dfasma\lib\libsndfile" "FFT_LIBDIR=C:\projects\dfasma\lib\libfft" "CONFIG+=file_sdif" "FILE_SDIF_LIBDIR=C:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif\easdif" dfasma.pro
-  # - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\dfasma\lib\libsndfile" "FFT_LIBDIR=C:\projects\dfasma\lib\libfft" dfasma.pro
+  - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\%APPVEYOR_PROJECT_SLUG%\lib\libsndfile" "FFT_LIBDIR=C:\projects\%APPVEYOR_PROJECT_SLUG%\lib\libfft" "CONFIG+=file_sdif" "FILE_SDIF_LIBDIR=C:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif\easdif" dfasma.pro
+  # - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\%APPVEYOR_PROJECT_SLUG%\lib\libsndfile" "FFT_LIBDIR=C:\projects\%APPVEYOR_PROJECT_SLUG%\lib\libfft" dfasma.pro
   - set PATH=%PATH%;C:\Qt\Tools\QtCreator\bin
   - C:\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release
 
@@ -164,15 +163,15 @@ artifacts:
     name: newinstallers   # Reference used for deployment
 
 
-deploy:
-- provider: GitHub
-  release: Version $(releaseversion)
-  tag: $(appveyor_repo_tag_name)
-  auth_token:
-    secure: TQgRc2OQ+3qGZXRW1yf2AIuYeOAC2FeC4wgfhZv2qZr8yMZF6AST9ER9xfRMJ4Ze # your encrypted token from GitHub
-  artifact: newinstallers
-  draft: true
-  prerelease: false
-  on:
-    appveyor_repo_tag: true        # deploy on tag push only
-    #branch: /v\d+\.\d+\.\d+/      # Doesn't work anymore
+# deploy:
+# - provider: GitHub
+#   release: Version $(releaseversion)
+#   tag: $(appveyor_repo_tag_name)
+#   auth_token:
+#     secure: TQgRc2OQ+3qGZXRW1yf2AIuYeOAC2FeC4wgfhZv2qZr8yMZF6AST9ER9xfRMJ4Ze # your encrypted token from GitHub
+#   artifact: newinstallers
+#   draft: true
+#   prerelease: false
+#   on:
+#     appveyor_repo_tag: true        # deploy on tag push only
+#     #branch: /v\d+\.\d+\.\d+/      # Doesn't work anymore
