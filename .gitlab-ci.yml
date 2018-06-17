@@ -5,17 +5,21 @@ variables:
 #image: gcc
 image: ubuntu:18.04
 
+cache:
+  paths:
+  - apt-cache/
+
+
 stages:
   - build
 
-
 before_script:
-  - apt update -qq
-  - apt -qq -y install lsb
-  - apt -qq -y install qtbase5-dev qtdeclarative5-dev libqt5webkit5-dev qt5-default qttools5-dev-tools qtmultimedia5-dev libqt5opengl5-dev libqt5svg5-dev libfftw3-dev libpulse-dev libasound2-dev
-  - apt -qq -y install g++
-  - apt -qq -y install git cmake cvs libtool
-  - apt -qq -y install libfftw3-dev libsndfile1-dev libpulse-dev
+  - apt-get update -qq
+  - apt-get -qq -y install lsb
+  - apt-get -qq -y install qtbase5-dev qtdeclarative5-dev libqt5webkit5-dev qt5-default qttools5-dev-tools qtmultimedia5-dev libqt5opengl5-dev libqt5svg5-dev libfftw3-dev libpulse-dev libasound2-dev
+  - apt-get -qq -y install g++
+  - apt-get -qq -y install git cmake cvs libtool
+  - apt-get -qq -y install libfftw3-dev libsndfile1-dev libpulse-dev
 
   # - lsb_release -a
   - uname -a
