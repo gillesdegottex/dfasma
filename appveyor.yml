@@ -142,7 +142,7 @@ install:
 
 build_script:
 # Compile
-  - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\%APPVEYOR_PROJECT_SLUG%\lib\libsndfile" "FFT_LIBDIR=C:\projects\%APPVEYOR_PROJECT_SLUG%\lib\libfft" "CONFIG+=file_sdif" "FILE_SDIF_LIBDIR=C:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif" dfasma.pro
+  - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\%APPVEYOR_PROJECT_SLUG%\lib\libsndfile" "FFT_LIBDIR=C:\projects\%APPVEYOR_PROJECT_SLUG%\lib\libfft" "CONFIG+=file_sdif" "FILE_SDIF_LIBDIR=external\sdif\easdif" dfasma.pro
   # - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\%APPVEYOR_PROJECT_SLUG%\lib\libsndfile" "FFT_LIBDIR=C:\projects\%APPVEYOR_PROJECT_SLUG%\lib\libfft" dfasma.pro
   - set PATH=%PATH%;C:\Qt\Tools\QtCreator\bin
   - C:\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release
