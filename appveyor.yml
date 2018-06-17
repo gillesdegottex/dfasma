@@ -27,7 +27,7 @@ install:
 
   - echo %APPVEYOR_PROJECT_SLUG%
   - echo %APPLICATION_PATH%
-  - ps: %CD%
+  - echo %CD%
   - ps: Get-ChildItem .
 
   - ps: cd "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC"
