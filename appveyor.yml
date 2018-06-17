@@ -25,8 +25,10 @@ install:
   - ps: Get-ChildItem C:\Qt\5.10
   - set PATH=%PATH%;%QTDIR%\bin
 
+  - echo %CD%
+  - ps: Get-ChildItem .
+
   - ps: cd "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC"
-#  - ps: Get-ChildItem .
   - cmd: if "%PLATFORM%" == "x64" call vcvarsall.bat amd64
   - cmd: if "%PLATFORM%" == "x86" call vcvarsall.bat x86
 #  - cmd: vcvarsall amd64
