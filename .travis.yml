@@ -17,7 +17,9 @@ before_install:
     - git submodule update --init --recursive
     # This checkout if for ensuring that git describe --tags --always gives a proper output
     # otherwise only the commit's sha appear bcs Travis always checkout a commit, never a HEAD
-    - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "We're on a HEAD, it's not a Pull Request"; git checkout $TRAVIS_BRANCH; fi
+    # But if we checkout, we also move to HEAD, that might be already after the commit to build!
+    # - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "We're on a HEAD, it's not a Pull Request"; git checkout $TRAVIS_BRANCH; fi
+    - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "We're on a HEAD, it's not a Pull Request"; fi
     - git fetch --unshallow
     - git fetch --tags
     - sleep 1
