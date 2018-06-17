@@ -5,9 +5,9 @@ variables:
 #image: gcc
 image: ubuntu:18.04
 
-cache:
-  paths:
-  - apt-cache/
+# cache:
+#   paths:
+#   - apt-cache/
 
 
 stages:
@@ -47,7 +47,7 @@ build:
     - ls -l $PWD
 
   artifacts:
-    name: "$PKGNAME"
+    name: "${PKGNAME}"
     paths:
         - dfasma_*.deb
 
