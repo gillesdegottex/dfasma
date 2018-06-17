@@ -25,12 +25,12 @@ cd distrib
 New-Item -ItemType directory -Name ${PACKAGENAME} | Out-Null
 
 # Add the executable
-Copy-Item c:\projects\dfasma\release\dfasma.exe ${PACKAGENAME}
+Copy-Item c:\projects\$env:APPVEYOR_PROJECT_SLUG\release\dfasma.exe ${PACKAGENAME}
 
 # Add libraries
-Copy-Item c:\projects\dfasma\lib\libfft\libfftw3-3.dll ${PACKAGENAME}
-Copy-Item c:\projects\dfasma\lib\libsndfile\bin\libsndfile-1.dll ${PACKAGENAME}
-#Copy-Item c:\projects\dfasma\external\sdif\easdif\bin\Easdif.dll ${PACKAGENAME} # Remove as long as Easdif doesn't compile on windows anymore
+Copy-Item c:\projects\$env:APPVEYOR_PROJECT_SLUG\lib\libfft\libfftw3-3.dll ${PACKAGENAME}
+Copy-Item c:\projects\$env:APPVEYOR_PROJECT_SLUG\lib\libsndfile\bin\libsndfile-1.dll ${PACKAGENAME}
+#Copy-Item c:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif\easdif\bin\Easdif.dll ${PACKAGENAME} # Remove as long as Easdif doesn't compile on windows anymore
 
 # Add the Qt related libs, qt translations and installer of MSVC redist.
 cd $PACKAGENAME
@@ -45,7 +45,7 @@ cd ..
 If ($arch -eq 'x64') { $INNOSCRIPT = "DFasma_MSVC2012_Win64bit.iss" }
 Else                 { $INNOSCRIPT = "DFasma_MSVC2012_Win32bit.iss" }
 $env:Path += ";C:\\Program Files (x86)\\Inno Setup 5"
-& "c:\Program Files (x86)\Inno Setup 5\ISCC.exe" /o. /dMyAppVersion=${VERSION} c:\projects\dfasma\distrib\${INNOSCRIPT}
+& "c:\Program Files (x86)\Inno Setup 5\ISCC.exe" /o. /dMyAppVersion=${VERSION} c:\projects\$env:APPVEYOR_PROJECT_SLUG\distrib\${INNOSCRIPT}
 
 # Get out of distrib
 cd ..

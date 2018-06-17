@@ -7,11 +7,11 @@
 # installed (e.g. fftw3, libsndfile, etc.)
 # 
 # Usage for downloading the very latest updates (risks of unstability!):
-#   $ bash dfasma-compile-from-github.sh
+#   $ bash compile_dfasma_from_gitlab.sh
 # 
 # Usage for downloading a specific version (using its tag name):
-#   $ bash dfasma-compile-from-github.sh v1.0.0
-# The tags beeing listed here: https://github.com/gillesdegottex/dfasma/tags
+#   $ bash compile_dfasma_from_gitlab.sh v1.0.0
+# The tags beeing listed here: https://gitlab.com/gillesdegottex/dfasma/tags
 # 
 
 # You might want to update this depending on your Qt installation
@@ -24,7 +24,7 @@ OPTIONS="CONFIG+=file_sdif"
 
 # ------------------------------------------------------------------------------
 
-printf "\033[0;31mCompiling DFasma from GitHub\033[0m\n"
+printf "\033[0;31mCompiling DFasma from GitLab\033[0m\n"
 
 printf "\033[0;31mUsing: $QMAKENAME\033[0m\n"
 
@@ -33,7 +33,7 @@ if [ -n "$OPTIONS" ]; then
 fi
 
 # Setup the working directory
-DFASMACOMPDIR=dfasma_from_github
+DFASMACOMPDIR=dfasma_from_gitlab
 if [ -n "$1" ]; then
     DFASMACOMPDIR=$DFASMACOMPDIR-$1
 fi
@@ -42,7 +42,7 @@ fi
 rm -fr $DFASMACOMPDIR
 
 # Pull the repo
-git clone git://github.com/gillesdegottex/dfasma $DFASMACOMPDIR
+git clone git@gitlab.com:gillesdegottex/dfasma.git $DFASMACOMPDIR
 cd $DFASMACOMPDIR
 
 if [[ "$OPTIONS" == *"file_sdif"* ]]; then
