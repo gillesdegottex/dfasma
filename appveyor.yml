@@ -27,7 +27,7 @@ install:
 
   - ps: echo $env:APPVEYOR_PROJECT_SLUG
   - echo %APPVEYOR_PROJECT_SLUG%
-  - set  %APPLICATION_PATH%
+  # - set  %APPLICATION_PATH%
   - echo %CD%
   - ps: Get-ChildItem .
 
@@ -35,7 +35,7 @@ install:
   - cmd: if "%PLATFORM%" == "x64" call vcvarsall.bat amd64
   - cmd: if "%PLATFORM%" == "x86" call vcvarsall.bat x86
 #  - cmd: vcvarsall amd64
-  - ps: cd "C:\projects\%APPVEYOR_PROJECT_SLUG%"
+  - ps: cd "C:\projects\$env:APPVEYOR_PROJECT_SLUG"
 
   - ps: New-Item -ItemType directory -Name lib | Out-Null
   - ps: cd lib
@@ -104,18 +104,18 @@ install:
   - ps: New-Item -ItemType directory -Name easdif | Out-Null
   - ps: Invoke-WebRequest "http://gillesdegottex.eu/soft/EASDIF_SDIF.1.4.26.zip" -OutFile "EASDIF_SDIF.zip"
   - ps: 7z x "EASDIF_SDIF.zip" -y
-  - ps: Get-ChildItem "c:\projects\%APPVEYOR_PROJECT_SLUG%\external\sdif\EASDIF_SDIF"
+  - ps: Get-ChildItem "c:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif\EASDIF_SDIF"
   - ps: New-Item -ItemType directory -Name build | Out-Null
   - ps: cd build
-  - ps: if ($env:platform -eq 'x86') {cmake -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=c:/projects/%APPVEYOR_PROJECT_SLUG%/external/sdif/easdif ../EASDIF_SDIF}
-  - ps: if ($env:platform -eq 'x64') {cmake -G"Visual Studio 12 Win64" -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=c:/projects/%APPVEYOR_PROJECT_SLUG%/external/sdif/easdif ../EASDIF_SDIF}
+  - ps: if ($env:platform -eq 'x86') {cmake -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=c:/projects/$env:APPVEYOR_PROJECT_SLUG/external/sdif/easdif ../EASDIF_SDIF}
+  - ps: if ($env:platform -eq 'x64') {cmake -G"Visual Studio 12 Win64" -DSDIF_BUILD_STATIC:BOOL=ON -DEASDIF_BUILD_STATIC:BOOL=ON -DCMAKE_INSTALL_PREFIX:STRING=c:/projects/$env:APPVEYOR_PROJECT_SLUG/external/sdif/easdif ../EASDIF_SDIF}
   - ps: Get-ChildItem .
   # - ps: if ($env:platform -eq 'x86') {msbuild libs.vcxproj /property:Platform=x86}
   # - ps: if ($env:platform -eq 'x64') {msbuild libs.vcxproj /property:Platform=x64}
   - ps: cmake --build . --config Release --target libs
-  - ps: Get-ChildItem "c:\projects\%APPVEYOR_PROJECT_SLUG%\external\sdif\build\"
-  - ps: Get-ChildItem "c:\projects\%APPVEYOR_PROJECT_SLUG%\external\sdif\build\bin\Release"
-  - ps: Get-ChildItem "c:\projects\%APPVEYOR_PROJECT_SLUG%\external\sdif\build\lib\Release"
+  - ps: Get-ChildItem "c:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif\build\"
+  - ps: Get-ChildItem "c:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif\build\bin\Release"
+  - ps: Get-ChildItem "c:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif\build\lib\Release"
   # - ps: msbuild INSTALL.vcxproj
   - ps: New-Item -ItemType directory -Name ..\easdif\lib | Out-Null
   - ps: Copy-Item lib\Release\* ..\easdif\lib
@@ -127,26 +127,26 @@ install:
   - ps: Copy-Item easdif\*.hpp ..\easdif\include\easdif
   - ps: Copy-Item ..\EASDIF_SDIF\easdif\*.hpp ..\easdif\include\easdif
   - ps: Copy-Item ..\EASDIF_SDIF\easdif\easdif.h ..\easdif\include\easdif
-  - ps: Get-ChildItem "c:\projects\%APPVEYOR_PROJECT_SLUG%\external\sdif\easdif"
-  - ps: Get-ChildItem "c:\projects\%APPVEYOR_PROJECT_SLUG%\external\sdif\easdif\bin"
-  - ps: Get-ChildItem "c:\projects\%APPVEYOR_PROJECT_SLUG%\external\sdif\easdif\lib"
-  - ps: Get-ChildItem "c:\projects\%APPVEYOR_PROJECT_SLUG%\external\sdif\easdif\include"
-  - ps: Get-ChildItem "c:\projects\%APPVEYOR_PROJECT_SLUG%\external\sdif\easdif\include\easdif"
+  - ps: Get-ChildItem "c:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif\easdif"
+  - ps: Get-ChildItem "c:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif\easdif\bin"
+  - ps: Get-ChildItem "c:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif\easdif\lib"
+  - ps: Get-ChildItem "c:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif\easdif\include"
+  - ps: Get-ChildItem "c:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif\easdif\include\easdif"
 
   # Go back to the project's root
-  - ps: cd "c:\projects\%APPVEYOR_PROJECT_SLUG%"
+  - ps: cd "c:\projects\$env:APPVEYOR_PROJECT_SLUG"
 
 build_script:
 # Compile
-  - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\dfasma\lib\libsndfile" "FFT_LIBDIR=C:\projects\dfasma\lib\libfft" "CONFIG+=file_sdif" "FILE_SDIF_LIBDIR=C:\projects\%APPVEYOR_PROJECT_SLUG%\external\sdif\easdif" dfasma.pro
+  - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\dfasma\lib\libsndfile" "FFT_LIBDIR=C:\projects\dfasma\lib\libfft" "CONFIG+=file_sdif" "FILE_SDIF_LIBDIR=C:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif\easdif" dfasma.pro
   # - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\dfasma\lib\libsndfile" "FFT_LIBDIR=C:\projects\dfasma\lib\libfft" dfasma.pro
   - set PATH=%PATH%;C:\Qt\Tools\QtCreator\bin
   - C:\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release
 
 # Build package
-  - ps: Get-ChildItem c:\projects\%APPVEYOR_PROJECT_SLUG%\lib
-  - ps: Get-ChildItem c:\projects\%APPVEYOR_PROJECT_SLUG%\lib\libsndfile
-  - ps: Get-ChildItem c:\projects\%APPVEYOR_PROJECT_SLUG%\lib\libfft
+  - ps: Get-ChildItem c:\projects\$env:APPVEYOR_PROJECT_SLUG\lib
+  - ps: Get-ChildItem c:\projects\$env:APPVEYOR_PROJECT_SLUG\lib\libsndfile
+  - ps: Get-ChildItem c:\projects\$env:APPVEYOR_PROJECT_SLUG\lib\libfft
   - ps: .\distrib\package_windows_appveyor.ps1 $env:platform
   - ps: Move-Item distrib\dfasma_*_win*.exe .
   - ps: Get-ChildItem .
