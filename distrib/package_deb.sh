@@ -13,7 +13,7 @@ else
 fi
 echo "Architecture: "$ARCH
 
-PKGNAME=dfasma_$VERSION\_$ARCH
+PKGNAME=$(bash package_getname.sh $1 $2)
 echo "Package name "$PKGNAME
 
 rm -fr $PKGNAME
@@ -82,4 +82,5 @@ sed -i "s/^Installed-Size:.*$/Installed-Size: $INSTALLEDSIZE/g" $PKGNAME/DEBIAN/
 
 dpkg-deb --build $PKGNAME
 
-ls $PKGNAME.deb
+ls -l $PKGNAME.deb
+echo "$PKGNAME.deb"

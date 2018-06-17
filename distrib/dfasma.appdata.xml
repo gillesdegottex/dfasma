@@ -17,8 +17,8 @@
     </p>
   </description>
   <screenshots>
-	  <screenshot type="default" width="400" height="289">https://raw.githubusercontent.com/gillesdegottex/dfasma/gh-pages/images/ss1.4_2spectrocomparison.png</screenshot>
+	  <screenshot type="default" width="400" height="289">http://gitlab.com/gillesdegottex/dfasma-website/raw/master/images/ss1.4_2spectrocomparison.png</screenshot>
 </screenshots>
-  <url type="homepage">https://github.com/gillesdegottex/dfasma/</url>
+  <url type="homepage">http://gillesdegottex.gitlab.io/dfasma-website/</url>
   <updatecontact>gilles.degottex@gmail.com</updatecontact>
 </application>

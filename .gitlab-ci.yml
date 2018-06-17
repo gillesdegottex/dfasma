@@ -5,17 +5,21 @@ variables:
 #image: gcc
 image: ubuntu:18.04
 
+# cache:
+#   paths:
+#   - apt-cache/
+
+
 stages:
   - build
 
-
 before_script:
-  - apt update -qq
-  - apt -qq -y install lsb
-  - apt -qq -y install qtbase5-dev qtdeclarative5-dev libqt5webkit5-dev qt5-default qttools5-dev-tools qtmultimedia5-dev libqt5opengl5-dev libqt5svg5-dev libfftw3-dev libpulse-dev libasound2-dev
-  - apt -qq -y install g++
-  - apt -qq -y install git cmake cvs libtool
-  - apt -qq -y install libfftw3-dev libsndfile1-dev libpulse-dev
+  - apt-get update -qq
+  - apt-get -qq -y install lsb
+  - apt-get -qq -y install qtbase5-dev qtdeclarative5-dev libqt5webkit5-dev qt5-default qttools5-dev-tools qtmultimedia5-dev libqt5opengl5-dev libqt5svg5-dev libfftw3-dev libpulse-dev libasound2-dev
+  - apt-get -qq -y install g++
+  - apt-get -qq -y install git cmake cvs libtool
+  - apt-get -qq -y install libfftw3-dev libsndfile1-dev libpulse-dev
 
   # - lsb_release -a
   - uname -a
@@ -30,17 +34,22 @@ build:
     - qmake "CONFIG+=file_sdif file_sdif_static" dfasma.pro;
     - make
 
-    # - export PACKAGENAME=dfasma_`bash package_getversion.sh`\_$ARCH.deb
-    # - echo $PACKAGENAME
-    # - ls -l $PWD/$PACKAGENAME
-
-deb:
-  stage: build
-  script:
     - cd distrib; bash package_getversion.sh; cd ..
     - cd distrib
     - bash package_deb.sh ../dfasma
+    - echo $(bash package_getname.sh ../dfasma)
+    - export PKGNAME=$(bash package_getname.sh ../dfasma).deb
+    - echo $PKGNAME
+    - cp $PKGNAME ..
+    - cd ..
+
+    - echo $PWD
     - ls -l $PWD
+
   artifacts:
+    name: "dfasma-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}-${CI_COMMIT_TAG}-git1ubuntu18"
     paths:
-    - dfasma_*.deb
+        - dfasma_*.deb
+
+    # only:
+    #     - tags

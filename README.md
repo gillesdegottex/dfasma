@@ -1,7 +1,7 @@
                                 DFasma
            A tool to compare audio files in time and frequency
-                            Version 1.5.11
-                https://github.com/gillesdegottex/dfasma
+                            Version 1.5.13
+             http://gillesdegottex.gitlab.io/dfasma-website/
 
 
 DFasma is an open-source software used to compare audio files in time and
@@ -10,7 +10,7 @@ It is also possible to listen to time-frequency segments in order to allow
 perceptual comparison.
 
 This software is coded in C/C++ using the Qt library (http://qt-project.org).
-It is stored as a GitHub project (https://github.com/gillesdegottex/dfasma).
+It is stored as a GitLab project (https://gitlab.com/gillesdegottex/dfasma).
 
 
 ### Goals

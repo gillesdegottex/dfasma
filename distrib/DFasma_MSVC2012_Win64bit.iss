@@ -4,7 +4,7 @@
 #define MyAppName "DFasma"
 ;#define MyAppVersion "1.1.0"   ; defined by the packaging script
 #define MyAppPublisher "DFasma"
-#define MyAppURL "http://gillesdegottex.github.io/dfasma/"
+#define MyAppURL "http://gillesdegottex.gitlab.io/dfasma-website/"
 #define MyAppExeName "dfasma.exe"
 
 [Setup]
@@ -96,10 +96,10 @@ const
   VC_2010_SP1_REDIST_X64 = '{1D8E6291-B0D5-35EC-8441-6616F567A0F7}';
   VC_2010_SP1_REDIST_IA64 = '{88C73C1C-2DE5-3B01-AFB8-B46EF4AB41CD}';
 
-  // Microsoft Visual C++ 2012 x86 Minimum Runtime - 11.0.61030.0 (Update 4) 
+  // Microsoft Visual C++ 2012 x86 Minimum Runtime - 11.0.61030.0 (Update 4)
   VC_2012_REDIST_MIN_UPD4_X86 = '{BD95A8CD-1D9F-35AD-981A-3E7925026EBB}';
   VC_2012_REDIST_MIN_UPD4_X64 = '{CF2BEA3C-26EA-32F8-AA9B-331F7E34BA97}';
-  // Microsoft Visual C++ 2012 x86 Additional Runtime - 11.0.61030.0 (Update 4) 
+  // Microsoft Visual C++ 2012 x86 Additional Runtime - 11.0.61030.0 (Update 4)
   VC_2012_REDIST_ADD_UPD4_X86 = '{B175520C-86A2-35A7-8619-86DC379688B9}';
   VC_2012_REDIST_ADD_UPD4_X64 = '{37B8F9C7-03FB-3253-8781-2517C99D7C00}';
 
@@ -117,7 +117,7 @@ const
   VC_2015_REDIST_X86_ADD = '{BE960C1C-7BAD-3DE6-8B1A-2616FE532845}';
   VC_2015_REDIST_X64_ADD = '{BC958BD2-5DAC-3862-BB1A-C1BE0790438D}';
 
-function MsiQueryProductState(szProduct: string): INSTALLSTATE; 
+function MsiQueryProductState(szProduct: string): INSTALLSTATE;
   external 'MsiQueryProductState{#AW}@msi.dll stdcall';
 
 function VCVersionInstalled(const ProductID: string): Boolean;
@@ -132,6 +132,6 @@ begin
   // this statement, the following won't install your VC redist only when
   // the Visual C++ 2010 Redist (x86) and Visual C++ 2010 SP1 Redist(x86)
   // are installed for the current user
-  Result := not (VCVersionInstalled(VC_2015_REDIST_X64_MIN) or 
+  Result := not (VCVersionInstalled(VC_2015_REDIST_X64_MIN) or
     VCVersionInstalled(VC_2015_REDIST_X64_ADD));
 end;
