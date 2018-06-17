@@ -58,7 +58,7 @@ AboutBox::AboutBox(QWidget *parent) :
     txt += "Its design is inspired by the <i>Xspect</i> software which was developed at <a href='http://www.ircam.fr'>Ircam</a>.</p>";
     // <a href='http://recherche.ircam.fr/equipes/analyse-synthese/DOCUMENTATIONS/xspect/xsintro1.2.html'>Xspect software</a>
 
-    txt += "<p>To suggest a new functionality or report a bug, do not hesitate to <a href='https://github.com/gillesdegottex/dfasma/issues'>raise an issue on GitHub.</a></p>";
+    txt += "<p>To suggest a new functionality or report a bug, do not hesitate to <a href='https://gitlab.com/gillesdegottex/dfasma/issues'>raise an issue on GitLab.</a></p>";
 
     txt += "<h4>Legal</h4>\
             The core of this software is under the <a href=\"http://www.gnu.org/licenses/gpl.html\">GPL (v3) License</a>.\
@@ -69,7 +69,7 @@ AboutBox::AboutBox(QWidget *parent) :
             <br/><br/>\
             Copyright &copy; 2014 Gilles Degottex <a href='mailto:gilles.degottex@gmail.com'>&lt;gilles.degottex@gmail.com&gt;</a><br/>\
             <i>DFasma</i> is coded in C++/<a href='http://qt-project.org'>Qt</a>.\
-            The source code is hosted on <a href='https://github.com/gillesdegottex/dfasma'>GitHub</a>.";
+            The source code is hosted on <a href='https://gitlab.com/gillesdegottex/dfasma'>GitLab</a>.";
 
     txt += "<h4>Disclaimer</h4>\
             ALL THE FUNCTIONALITIES OF <I>DFASMA</I> AND ITS CODE ARE PROVIDED WITHOUT ANY WARRANTY \

@@ -2,7 +2,7 @@ Source: dfasma
 Maintainer: Gilles Degottex <gilles.degottex@gmail.com>
 Section: sound
 Priority: optional
-Homepage: http://gillesdegottex.github.io/dfasma
+Homepage: http://gillesdegottex.gitlab.io/dfasma-website/
 Package: dfasma
 Version: TOBESET
 Architecture: TOBESET

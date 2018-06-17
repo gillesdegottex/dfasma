@@ -47,7 +47,7 @@ build:
     - ls -l $PWD
 
   artifacts:
-    name: "dfasma_${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}-${CI_COMMIT_TAG}-git1ubuntu18"
+    name: "dfasma-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}-${CI_COMMIT_TAG}-git1ubuntu18"
     paths:
         - dfasma_*.deb
 
