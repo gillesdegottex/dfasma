@@ -25,7 +25,7 @@ install:
   - ps: Get-ChildItem C:\Qt\5.10
   - set PATH=%PATH%;%QTDIR%\bin
 
-  - ps: $env:APPVEYOR_PROJECT_SLUG
+  - ps: echo $env:APPVEYOR_PROJECT_SLUG
   - echo %APPVEYOR_PROJECT_SLUG%
   - set  %APPLICATION_PATH%
   - echo %CD%
