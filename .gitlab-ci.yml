@@ -41,5 +41,9 @@ build:
     - ls -l $PWD
 
   artifacts:
+    name: "$PKGNAME"
     paths:
-    - distrib/dfasma_*.deb
+        - distrib/dfasma_*.deb
+
+    # only:
+    #     - tags
