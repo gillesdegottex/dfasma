@@ -37,4 +37,4 @@ build:
 
   artifacts:
     paths:
-    - dfasma_*.deb
+    - "dfasma_*.deb"
