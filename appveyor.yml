@@ -126,10 +126,15 @@ install:
   - ps: Copy-Item easdif\*.hpp ..\easdif\include\easdif
   - ps: Copy-Item ..\EASDIF_SDIF\easdif\*.hpp ..\easdif\include\easdif
   - ps: Copy-Item ..\EASDIF_SDIF\easdif\easdif.h ..\easdif\include\easdif
+
   - ps: Get-ChildItem "c:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif\easdif"
+
   - ps: Get-ChildItem "c:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif\easdif\bin"
+
   - ps: Get-ChildItem "c:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif\easdif\lib"
+
   - ps: Get-ChildItem "c:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif\easdif\include"
+
   - ps: Get-ChildItem "c:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif\easdif\include\easdif"
 
   # Go back to the project's root
@@ -137,7 +142,7 @@ install:
 
 build_script:
 # Compile
-  - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\%APPVEYOR_PROJECT_SLUG%\lib\libsndfile" "FFT_LIBDIR=C:\projects\%APPVEYOR_PROJECT_SLUG%\lib\libfft" "CONFIG+=file_sdif" "FILE_SDIF_LIBDIR=C:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif\easdif" dfasma.pro
+  - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\%APPVEYOR_PROJECT_SLUG%\lib\libsndfile" "FFT_LIBDIR=C:\projects\%APPVEYOR_PROJECT_SLUG%\lib\libfft" "CONFIG+=file_sdif" "FILE_SDIF_LIBDIR=C:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif" dfasma.pro
   # - qmake "CONFIG+=fft_fftw3 file_audio_libsndfile" "FILE_AUDIO_LIBDIR=C:\projects\%APPVEYOR_PROJECT_SLUG%\lib\libsndfile" "FFT_LIBDIR=C:\projects\%APPVEYOR_PROJECT_SLUG%\lib\libfft" dfasma.pro
   - set PATH=%PATH%;C:\Qt\Tools\QtCreator\bin
   - C:\Qt\Tools\QtCreator\bin\jom.exe -f Makefile.Release
