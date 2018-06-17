@@ -7,7 +7,6 @@ image: ubuntu:18.04
 
 stages:
   - build
-  - deb
 
 
 before_script:
@@ -36,6 +35,7 @@ build:
     # - ls -l $PWD/$PACKAGENAME
 
 deb:
+  stage: build
   script:
     - cd distrib; bash package_getversion.sh; cd ..
     - cd distrib
