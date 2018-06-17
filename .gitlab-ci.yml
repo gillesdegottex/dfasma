@@ -36,8 +36,10 @@ build:
     - echo $(bash package_getname.sh ../dfasma)
     - export PKGNAME=$(bash package_getname.sh ../dfasma).deb
     - echo $PKGNAME
+
+    - echo $PWD
     - ls -l $PWD
 
   artifacts:
     paths:
-    - $PKGNAME
+    - distrib/dfasma_*.deb
