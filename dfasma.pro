@@ -254,7 +254,8 @@ CONFIG(file_sdif) {
     LIBS += -lEasdif$$FILE_SDIF_LINKTYPE
     !isEmpty(FILE_SDIF_LIBDIR){
         message("    "FILE_SDIF_LIBDIR=$$FILE_SDIF_LIBDIR)
-        INCLUDEPATH += $$FILE_SDIF_LIBDIR/include
+        win32: INCLUDEPATH += $$FILE_SDIF_LIBDIR\include
+        unix: INCLUDEPATH += $$FILE_SDIF_LIBDIR/include
         CONFIG(file_sdif_static){
             LIBS += -L$$FILE_SDIF_LIBDIR_STATIC/lib
         }
