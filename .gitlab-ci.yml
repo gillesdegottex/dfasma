@@ -30,17 +30,11 @@ build:
     - qmake "CONFIG+=file_sdif file_sdif_static" dfasma.pro;
     - make
 
-    # - export PACKAGENAME=dfasma_`bash package_getversion.sh`\_$ARCH.deb
-    # - echo $PACKAGENAME
-    # - ls -l $PWD/$PACKAGENAME
-
-deb:
-  stage: build
-  script:
     - cd distrib; bash package_getversion.sh; cd ..
     - cd distrib
     - bash package_deb.sh ../dfasma
     - ls -l $PWD
+
   artifacts:
     paths:
     - dfasma_*.deb
