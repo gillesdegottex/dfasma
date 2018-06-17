@@ -9,5 +9,4 @@ else
     ARCH=amd64
 fi
 
-PKGNAME=dfasma_$VERSION\_$ARCH
-echo $PKGNAME.deb
+echo dfasma_$VERSION\_$ARCH.deb
