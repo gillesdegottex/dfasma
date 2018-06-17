@@ -9,4 +9,4 @@ else
     ARCH=amd64
 fi
 
-echo dfasma_$VERSION\_$ARCH.deb
+echo dfasma_$VERSION\_$ARCH

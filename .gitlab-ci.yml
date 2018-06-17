@@ -34,7 +34,7 @@ build:
     - cd distrib
     - bash package_deb.sh ../dfasma
     - echo $(bash package_getname.sh ../dfasma)
-    - export PKGNAME=$(bash package_getname.sh ../dfasma)
+    - export PKGNAME=$(bash package_getname.sh ../dfasma).deb
     - echo $PKGNAME
     - ls -l $PWD
 
