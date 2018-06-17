@@ -30,8 +30,8 @@ build:
     - qmake "CONFIG+=file_sdif file_sdif_static" dfasma.pro;
     - make
 
-    # - cd distrib; bash package_getversion.sh; cd ..
-    # cd distrib
-    # bash package_deb.sh ../dfasma
-    # export PACKAGENAME=dfasma_`bash package_getversion.sh`\_$ARCH.deb
-    # - ls -l $PWD/$PACKAGENAME
+    - cd distrib; bash package_getversion.sh; cd ..
+    cd distrib
+    bash package_deb.sh ../dfasma
+    export PACKAGENAME=dfasma_`bash package_getversion.sh`\_$ARCH.deb
+    - ls -l $PWD/$PACKAGENAME
