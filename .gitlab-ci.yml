@@ -31,8 +31,8 @@ build:
     - make
 
     - cd distrib; bash package_getversion.sh; cd ..
-    cd distrib
-    bash package_deb.sh ../dfasma
-    export PACKAGENAME=dfasma_`bash package_getversion.sh`\_$ARCH.deb
-    echo $PACKAGENAME
+    - cd distrib
+    - bash package_deb.sh ../dfasma
+    - export PACKAGENAME=dfasma_`bash package_getversion.sh`\_$ARCH.deb
+    - echo $PACKAGENAME
     - ls -l $PWD/$PACKAGENAME
