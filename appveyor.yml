@@ -15,6 +15,7 @@ branches:
 install:
   - git fetch --unshallow
   - git fetch --tags
+  - git tag
   - echo APPVEYOR_REPO_TAG_NAME %APPVEYOR_REPO_TAG_NAME%
   - echo APPVEYOR_REPO_TAG %APPVEYOR_REPO_TAG%
   - echo appveyor_repo_tag_name %appveyor_repo_tag_name%
