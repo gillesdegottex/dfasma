@@ -13,6 +13,7 @@ branches:
     - devel
 
 install:
+  - git fetch --unshallow
   - git fetch --tags
   - echo APPVEYOR_REPO_TAG_NAME %APPVEYOR_REPO_TAG_NAME%
   - echo APPVEYOR_REPO_TAG %APPVEYOR_REPO_TAG%
