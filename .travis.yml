@@ -79,6 +79,6 @@ deploy:
   skip_cleanup: true
   on:
     repo: gillesdegottex/dfasma
-    branch: devel
+    # branch: devel
     tags: true
     condition: $CC = gcc
