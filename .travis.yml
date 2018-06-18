@@ -22,6 +22,7 @@ before_install:
     - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then echo "We're on a HEAD, it's not a Pull Request"; fi
     - git fetch --unshallow
     - git fetch --tags
+    - git tag
     - sleep 1
     - export PROJECTGITVERSION=`git describe --tags --always |sed 's/^v//'`
     - echo $PROJECTGITVERSION
