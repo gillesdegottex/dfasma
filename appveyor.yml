@@ -13,7 +13,7 @@ branches:
     - devel
 
 install:
-  # - git fetch --unshallow
+  # - git fetch --unshallow # Appveyor fetch already all of the repo, no need of unshallowing
   - git fetch --tags
   - git tag
   - echo APPVEYOR_REPO_TAG_NAME %APPVEYOR_REPO_TAG_NAME%
