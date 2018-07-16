@@ -168,6 +168,8 @@ build_script:
 artifacts:
   - path: dfasma_*_win*.exe
     name: newinstallers   # Reference used for deployment
+  - path: release/dfasma.exe
+    name: executable   # Reference used for deployment
 
 
 # deploy:
