@@ -47,8 +47,8 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: 
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
 
 [Run]
+Filename: "{app}\vcredist_x86.exe"; Check: VCRedistNeedsInstall; Parameters: "/qb"; WorkingDir: {app}; Flags: postinstall; StatusMsg: Installing Micosoft Visual C/C++ runtime ...
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
-Filename: "{app}\vcredist_x86.exe"; Check: VCRedistNeedsInstall; Parameters: "/qb"; WorkingDir: {app}; StatusMsg: Installing Micosoft Visual C/C++ runtime ...
 
 [Code]
 #IFDEF UNICODE
