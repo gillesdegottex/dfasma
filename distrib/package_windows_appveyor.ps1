@@ -30,7 +30,7 @@ Copy-Item c:\projects\$env:APPVEYOR_PROJECT_SLUG\release\dfasma.exe ${PACKAGENAM
 # Add libraries
 Copy-Item c:\projects\$env:APPVEYOR_PROJECT_SLUG\lib\libfft\libfftw3-3.dll ${PACKAGENAME}
 Copy-Item c:\projects\$env:APPVEYOR_PROJECT_SLUG\lib\libsndfile\bin\libsndfile-1.dll ${PACKAGENAME}
-#Copy-Item c:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif\easdif\bin\Easdif.dll ${PACKAGENAME} # Remove as long as Easdif doesn't compile on windows anymore
+Copy-Item c:\projects\$env:APPVEYOR_PROJECT_SLUG\external\sdif\easdif\bin\Easdif.dll ${PACKAGENAME} # Remove as long as Easdif doesn't compile on windows anymore
 
 # Add the Qt related libs, qt translations and installer of MSVC redist.
 cd $PACKAGENAME
