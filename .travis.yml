@@ -36,7 +36,7 @@ before_install:
     - echo $TRAVIS_BRANCH
 
 install:
-    - brew cask uninstall oclint
+    #- brew cask uninstall oclint
     - brew install fftw
     - brew install libsndfile
     - brew install qt5
