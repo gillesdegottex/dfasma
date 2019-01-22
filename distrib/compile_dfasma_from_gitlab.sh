@@ -18,7 +18,7 @@
 QMAKENAME=qmake
 
 # For SDIF support (deactivate if it doesn't work for some reasons)
-OPTIONS="CONFIG+=file_sdif"
+OPTIONS="CONFIG+=file_sdif file_sdif_static"
 # For SDIF support using Ircam's SDIF installation
 #OPTIONS="CONFIG+=file_sdif INCLUDEPATH+=/u/formes/share/include LIBS+=-L/u/formes/share/lib/x86_64-Linux-rh65"
 
@@ -45,12 +45,12 @@ rm -fr $DFASMACOMPDIR
 git clone git@gitlab.com:gillesdegottex/dfasma.git $DFASMACOMPDIR
 cd $DFASMACOMPDIR
 
-if [[ "$OPTIONS" == *"file_sdif"* ]]; then
-    if [[ "$OPTIONS" != *"/u/formes/share"* ]]; then
-        bash distrib/compile_sdif.sh
-        OPTIONS="$OPTIONS FILE_SDIF_LIBDIR=external/sdif/easdif"
-    fi
-fi
+#if [[ "$OPTIONS" == *"file_sdif"* ]]; then
+    #if [[ "$OPTIONS" != *"/u/formes/share"* ]]; then
+        #bash distrib/compile_sdif.sh
+        #OPTIONS="$OPTIONS FILE_SDIF_LIBDIR=external/sdif/easdif"
+    #fi
+#fi
 
 # If asked, move to the requested tag
 if [ -n "$1" ]; then
