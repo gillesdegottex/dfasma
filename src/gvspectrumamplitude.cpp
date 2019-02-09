@@ -1294,6 +1294,9 @@ void GVSpectrumAmplitude::aunzoom(){
     ymin = ymin-3;
     ymax = ymax+3;
 
+    if(std::isinf(ymin) || std::isinf(ymax))
+        return;
+
     QRectF rect = QRectF(0.0, -ymax, gFL->getFs()/2, (ymax-ymin));
 
     if(rect.bottom()>(-gMW->ui->sldAmplitudeSpectrumMin->value()))
