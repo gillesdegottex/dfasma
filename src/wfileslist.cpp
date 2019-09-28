@@ -140,6 +140,9 @@ void WFilesList::checkFileModifications(){
     for(size_t fi=0; fi<ftlabels.size(); fi++)
         if(!ftlabels[fi]->isDistantFile())
             ftlabels[fi]->checkFileStatus();
+    for(size_t fi=0; fi<ftgenerictimevalues.size(); fi++)
+        if(!ftgenerictimevalues[fi]->isDistantFile())
+            ftgenerictimevalues[fi]->checkFileStatus();
 
     gFL->fileInfoUpdate();
 }
