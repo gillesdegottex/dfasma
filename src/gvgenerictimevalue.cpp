@@ -93,6 +93,11 @@ GVGenericTimeValue::GVGenericTimeValue(WidgetGenericTimeValue *parent)
     connect(m_aShowGrid, SIGNAL(toggled(bool)), this, SLOT(gridSetVisible(bool)));
 //    connect(gMW->m_gvWaveform->m_aWaveformShowSelectedWaveformOnTop, SIGNAL(triggered()), m_scene, SLOT(update()));
 
+    m_aUpdateSceneRect = new QAction(tr("Update scene"), this);
+    m_aUpdateSceneRect->setObjectName("m_aUpdateSceneRect");
+    m_aUpdateSceneRect->setStatusTip(tr("Update the min and max values visible in the view"));
+    connect(m_aUpdateSceneRect, SIGNAL(triggered()), this, SLOT(updateSceneRect()));
+
     // Cursor
     m_giCursorHoriz = new QGraphicsLineItem(0, -1000, 0, 1000);
     m_giCursorHoriz->hide();
@@ -195,6 +200,8 @@ GVGenericTimeValue::GVGenericTimeValue(WidgetGenericTimeValue *parent)
 //    m_contextmenu.addAction(m_aShowProperties);
 //    connect(m_aShowProperties, SIGNAL(triggered()), m_dlgSettings, SLOT(show()));
 //    connect(m_dlgSettings, SIGNAL(accepted()), this, SLOT(settingsModified()));
+
+    m_contextmenu.addAction(m_aUpdateSceneRect);
 
     connect(gMW->m_gvWaveform->horizontalScrollBar(), SIGNAL(valueChanged(int)), horizontalScrollBar(), SLOT(setValue(int)));
     connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), gMW->m_gvWaveform->horizontalScrollBar(), SLOT(setValue(int)));
