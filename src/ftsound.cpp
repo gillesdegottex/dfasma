@@ -704,7 +704,7 @@ double FTSound::setPlay(const QAudioFormat& format, double tstart, double tstop,
                 cout << "LP-filtering (cutoff=" << fstop << ", size=" << wavfiltered.size() << ")" << endl;
                 // Filter the signal
                 for(size_t bi=0; bi<num.size(); bi++)
-                    qae::filtfilt<WAVTYPE>(wavfiltered, num[bi], den[bi], wavfiltered, delayedstart, delayedend);
+                    qae::filtfilt<WAVTYPE>(wavfiltered, num[bi], den[bi], wavfiltered, delayedstart, delayedend);   // TODO I can truely use the same container for both input and output ??
 
                 gMW->globalWaitingBarClear();
             }
